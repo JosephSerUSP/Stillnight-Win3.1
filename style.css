@@ -279,8 +279,7 @@ html, body {
 }
 .tile-player {
     font-weight: bold;
-    border: 2px solid #ffffff;
-    box-shadow: 0 0 0 1px #000000 inset;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px #000000 inset;
     background-color: #e8e8ff;
 }
 .tile-enemy   { color: #800000; }

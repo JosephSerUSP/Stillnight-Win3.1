@@ -62,6 +62,9 @@ export class Window_Inspect extends Window {
     this.skillsEl = document.getElementById("inspect-skills");
     this.flavorEl = document.getElementById("inspect-flavor");
     this.notesEl = document.getElementById("inspect-notes");
+    this.equipmentListContainerEl = document.getElementById("inspect-equipment-list-container");
+    this.equipmentListEl = document.getElementById("inspect-equipment-list");
+    this.equipmentFilterEl = document.getElementById("inspect-equipment-filter");
     this.btnClose = document.getElementById("btn-inspect-close");
     this.btnOk = document.getElementById("btn-inspect-ok");
   }
@@ -139,5 +142,20 @@ export class Window_Event extends Window {
     this.descriptionEl = document.getElementById("event-description");
     this.choicesEl = document.getElementById("event-choices");
     this.btnClose = document.getElementById("btn-event-close");
+  }
+}
+
+/**
+ * The window for generic confirmations.
+ * @class
+ * @extends Window
+ */
+export class Window_Confirm extends Window {
+  constructor() {
+    super("confirm-overlay");
+    this.titleEl = document.getElementById("confirm-title");
+    this.messageEl = document.getElementById("confirm-message");
+    this.btnOk = document.getElementById("btn-confirm-ok");
+    this.btnCancel = document.getElementById("btn-confirm-cancel");
   }
 }

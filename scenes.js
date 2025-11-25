@@ -8,6 +8,7 @@ import {
   Window_Formation,
   Window_Inventory,
   Window_Inspect,
+  Window_Confirm,
 } from "./windows.js";
 
 /**
@@ -37,6 +38,7 @@ export class Scene_Map {
     this.formationWindow = new Window_Formation();
     this.inventoryWindow = new Window_Inventory();
     this.inspectWindow = new Window_Inspect();
+    this.confirmWindow = new Window_Confirm();
 
     this.battleWindow.btnRound.addEventListener(
       "click",
@@ -144,6 +146,59 @@ export class Scene_Map {
     });
     this.btnFormation.addEventListener("click", this.openFormation.bind(this));
     this.btnInventory.addEventListener("click", this.openInventory.bind(this));
+    document.addEventListener("keydown", this.onKeyDown.bind(this));
+  }
+
+  onKeyDown(e) {
+    if (!this.runActive) return;
+
+    let dx = 0;
+    let dy = 0;
+
+    switch (e.key) {
+      case "ArrowUp":
+      case "w":
+        dy = -1;
+        break;
+      case "ArrowDown":
+      case "s":
+        dy = 1;
+        break;
+      case "ArrowLeft":
+      case "a":
+        dx = -1;
+        break;
+      case "ArrowRight":
+      case "d":
+        dx = 1;
+        break;
+      default:
+        return;
+    }
+
+    if (dx !== 0 || dy !== 0) {
+      e.preventDefault();
+      this.movePlayer(dx, dy);
+    }
+  }
+
+  movePlayer(dx, dy) {
+    const newX = this.map.playerX + dx;
+    const newY = this.map.playerY + dy;
+
+    if (
+      newX >= 0 &&
+      newX < this.map.MAX_W &&
+      newY >= 0 &&
+      newY < this.map.MAX_H
+    ) {
+      const tileEl = this.explorationGridEl.querySelector(
+        `[data-x='${newX}'][data-y='${newY}']`
+      );
+      if (tileEl) {
+        this.onTileClick({ currentTarget: tileEl });
+      }
+    }
   }
 
   /**
@@ -364,6 +419,7 @@ export class Scene_Map {
     this.map.playerX = x;
     this.map.playerY = y;
     this.map.revealAroundPlayer();
+    this.updateGrid();
 
     if (ch === ".") {
       this.logMessage("[Step] Your footsteps echo softly.");
@@ -551,39 +607,31 @@ export class Scene_Map {
   renderBattleAscii() {
     if (!this.battleState) return;
     const { enemies, round } = this.battleState;
+    const pad = (str, len) => (str + " ".repeat(len)).slice(0, len);
 
-    let ascii = "";
-    ascii += "== STILLNIGHT BATTLE ==\n";
-    ascii += "Round: " + round + "\n";
-    ascii += "------------------------\n";
-    ascii += "ENEMIES\n";
+    let ascii = " ".repeat(14) + "== BATTLE ==\n\n";
+
+    // Enemies (top)
+    const enemyRows = [[], []];
     enemies.forEach((e, idx) => {
-      ascii += ` ${idx + 1}) ${e.name} (${e.tag}, ${e.element})\n`;
-      ascii += `     HP [${"#".repeat(
-        Math.round((e.hp / e.maxHp) * 16)
-      )}${"-".repeat(
-        16 - Math.round((e.hp / e.maxHp) * 16)
-      )}] ${e.hp}/${e.maxHp}\n`;
+      const row = idx % 2;
+      const str = ` ${e.name} (HP ${e.hp}/${e.maxHp}) `;
+      enemyRows[row].push(pad(str, 28));
     });
-    ascii += "\nPARTY\n";
+    ascii += enemyRows[1].join("") + "\n";
+    ascii += enemyRows[0].join("") + "\n";
+
+    ascii += "\n" + "-".repeat(56) + "\n\n";
+
+    // Party (bottom)
+    const partyRows = [[], []];
     this.party.members.slice(0, 4).forEach((p, i) => {
-      ascii += `   ${p.name} (Lv${p.level}, ${
-        p.element
-      }, ${this.partyRow(i)})\n`;
-      ascii += `   HP [${"#".repeat(
-        Math.round((p.hp / p.maxHp) * 16)
-      )}${"-".repeat(
-        16 - Math.round((p.hp / p.maxHp) * 16)
-      )}] ${p.hp}/${p.maxHp}\n`;
+      const row = i < 2 ? 1 : 0;
+      const str = ` ${p.name} (HP ${p.hp}/${p.maxHp}) `;
+      partyRows[row].push(pad(str, 28));
     });
-    ascii += "------------------------\n";
-    if (this.battleState.victoryPending) {
-      ascii += "VICTORY! Click the button to return.\n";
-    } else if (!this.runActive) {
-      ascii += "Your run has ended.\n";
-    } else {
-      ascii += "Use Resolve Round or Flee.\n";
-    }
+    ascii += partyRows[1].join("") + "\n";
+    ascii += partyRows[0].join("") + "\n";
 
     this.battleWindow.asciiEl.textContent = ascii;
   }
@@ -704,6 +752,9 @@ export class Scene_Map {
       ) {
         this.battleWindow.btnRound.disabled = false;
         this.battleWindow.btnFlee.disabled = false;
+      }
+      if (!this.battleState.finished) {
+        this.appendBattleLog("Use Resolve Round or Flee.");
       }
       this.battleBusy = false;
       this.updateAll();
@@ -1081,6 +1132,15 @@ export class Scene_Map {
     this.setStatus("Exploration");
   }
 
+  clearEventTile(char) {
+    const f = this.map.floors[this.map.floorIndex];
+    const { playerX, playerY } = this.map;
+    if (f.tiles[playerY][playerX] === char) {
+      f.tiles[playerY][playerX] = ".";
+    }
+    this.updateGrid();
+  }
+
   attemptRecruit(recruit) {
     if (this.party.members.length < this.party.MAX_MEMBERS) {
       this.party.members.push(new Game_Actor(recruit));
@@ -1088,6 +1148,7 @@ export class Scene_Map {
       this.setStatus(
         this.dataManager.terms.recruit.recruited.replace("{0}", recruit.name)
       );
+      this.clearEventTile("U");
       this.closeRecruitEvent();
       this.updateParty();
       return;
@@ -1122,6 +1183,7 @@ export class Scene_Map {
         .replace("{1}", recruit.name)
     );
     this.party.members[index] = new Game_Actor(recruit);
+    this.clearEventTile("U");
     this.updateParty();
     this.closeRecruitEvent();
   }
@@ -1332,55 +1394,131 @@ export class Scene_Map {
 
     this.inspectWindow.btnClose.onclick = () => this.closeInspect();
     this.inspectWindow.btnOk.onclick = () => this.closeInspect();
-    this.inspectWindow.btnEquip.onclick = () => this.openEquipmentScreen();
+    this.inspectWindow.equipEl.onclick = () => this.openEquipmentScreen();
   }
 
   closeInspect() {
+    this.inspectWindow.equipmentListContainerEl.style.display = "none";
+    this.inspectWindow.equipmentListEl.innerHTML = "";
     this.inspectWindow.close();
     this.setStatus("Exploration");
   }
 
   openEquipmentScreen() {
-    this.inspectWindow.bodyEl.innerHTML = "<p>Select an item to equip:</p>";
-    const list = document.createElement("div");
-    list.className = "shop-item-list";
-    const equipable = this.party.inventory.filter((i) => i.type === "equipment");
+    this.inspectWindow.equipmentListContainerEl.style.display = "block";
+    this.renderEquipmentList("All");
+  }
 
-    if (equipable.length > 0) {
-      equipable.forEach((item, invIndex) => {
+  renderEquipmentList(filter) {
+    const listEl = this.inspectWindow.equipmentListEl;
+    const filterEl = this.inspectWindow.equipmentFilterEl;
+    listEl.innerHTML = "";
+    filterEl.innerHTML = "";
+    const member = this.inspectWindow.member;
+
+    const itemTypes = ["All", "Weapon", "Armor", "Accessory"];
+    itemTypes.forEach(type => {
+      const btn = document.createElement("button");
+      btn.className = "win-btn";
+      btn.textContent = type;
+      if (filter === type) {
+        btn.disabled = true;
+      }
+      btn.onclick = () => this.renderEquipmentList(type);
+      filterEl.appendChild(btn);
+    });
+
+    const inventoryItems = this.party.inventory.filter(
+      (i) => i.type === "equipment" && (filter === "All" || i.equipType === filter)
+    );
+    const otherMemberItems = this.party.members
+      .filter((m) => m !== member && m.equipmentItem && (filter === "All" || m.equipmentItem.equipType === filter))
+      .map((m) => ({
+        ...m.equipmentItem,
+        equippedBy: m.name,
+        equippedMember: m,
+      }));
+
+    const allEquipable = [...inventoryItems, ...otherMemberItems];
+
+    if (allEquipable.length > 0) {
+      allEquipable.forEach((item) => {
         const row = document.createElement("div");
         row.className = "shop-row";
         const label = document.createElement("span");
-        label.textContent = `${item.name} (+${item.damageBonus} DMG)`;
+        let text = `${item.name} (+${item.damageBonus} DMG)`;
+        if (item.equippedBy) {
+          text += ` (on ${item.equippedBy})`;
+        }
+        label.textContent = text;
         const btn = document.createElement("button");
         btn.className = "win-btn";
-        btn.textContent = "Equip";
+        btn.textContent = item.equippedBy ? "Swap" : "Equip";
         btn.addEventListener("click", () => {
-          this.equipItem(item, invIndex);
+          this.equipItem(member, item);
         });
         row.appendChild(label);
         row.appendChild(btn);
-        list.appendChild(row);
+        listEl.appendChild(row);
       });
     } else {
-      list.innerHTML = "<p>No equipable items in inventory.</p>";
+      listEl.innerHTML = "<p>No equipable items of this type.</p>";
     }
-    this.inspectWindow.bodyEl.appendChild(list);
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "win-btn";
+    closeBtn.textContent = "Close";
+    closeBtn.onclick = () => {
+      this.inspectWindow.equipmentListContainerEl.style.display = "none";
+      this.inspectWindow.equipmentListEl.innerHTML = "";
+      this.inspectWindow.equipmentFilterEl.innerHTML = "";
+    };
+    listEl.appendChild(closeBtn);
   }
 
-  equipItem(item, invIndex) {
-    const member = this.inspectWindow.member;
-    if (member.equipmentItem) {
-      this.party.inventory.push(member.equipmentItem);
+  equipItem(member, item) {
+    const doEquip = () => {
+      // Unequip current item if one exists
+      if (member.equipmentItem) {
+        this.party.inventory.push(member.equipmentItem);
+        beep(600, 80); // Unequip sound
+      }
+      // Equip the new item
+      member.equipmentItem = item;
+      // Remove the new item from inventory
+      const invIndex = this.party.inventory.findIndex((i) => i.id === item.id);
+      if (invIndex > -1) {
+        this.party.inventory.splice(invIndex, 1);
+      }
+      this.logMessage(`[Equip] ${member.name} equipped ${item.name}.`);
+      this.closeInspect();
+      this.updateAll();
+      beep(800, 100); // Equip sound
+    };
+
+    // If the item is equipped by another member, show confirmation
+    if (item.equippedMember) {
+      const otherMember = item.equippedMember;
+      this.confirmWindow.titleEl.textContent = "Confirm Swap";
+      this.confirmWindow.messageEl.textContent = `Swap ${item.name} from ${otherMember.name} to ${member.name}?`;
+      this.confirmWindow.open();
+      this.confirmWindow.btnOk.onclick = () => {
+        const currentItem = member.equipmentItem;
+        otherMember.equipmentItem = currentItem;
+        member.equipmentItem = item;
+        this.logMessage(
+          `[Equip] ${member.name} swapped ${item.name} with ${otherMember.name}.`
+        );
+        this.confirmWindow.close();
+        this.closeInspect();
+        this.updateAll();
+        beep(700, 150); // Swap sound
+      };
+      this.confirmWindow.btnCancel.onclick = () => {
+        this.confirmWindow.close();
+      };
+    } else {
+      doEquip();
     }
-    member.equipmentItem = item;
-    this.party.inventory.splice(
-      this.party.inventory.findIndex((i) => i.id === item.id),
-      1
-    );
-    this.logMessage(`[Equip] ${member.name} equipped ${item.name}.`);
-    this.closeInspect();
-    this.updateAll();
-    beep(800, 100);
   }
 }
