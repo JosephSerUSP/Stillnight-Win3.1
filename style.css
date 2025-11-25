@@ -279,8 +279,7 @@ html, body {
 }
 .tile-player {
     font-weight: bold;
-    border: 2px solid #ffffff;
-    box-shadow: 0 0 0 1px #000000 inset;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px #000000 inset;
     background-color: #e8e8ff;
 }
 .tile-enemy   { color: #800000; }
@@ -350,6 +349,120 @@ html, body {
 .hp-fill {
     height: 100%;
     background-color: #00a000;
+}
+
+/* Night theme */
+body.night-theme {
+    background-color: #2e2e2e;
+    color: #e0e0e0;
+}
+
+.night-theme .win-window {
+    background-color: #3c3c3c;
+    border-color: #555;
+    box-shadow:
+        0 0 0 1px #777 inset,
+        0 0 0 2px #555 inset,
+        0 0 0 3px #222 inset;
+}
+
+.night-theme .title-bar {
+    background: linear-gradient(90deg, #1c1c1c, #3c3c3c);
+    color: #e0e0e0;
+}
+
+.night-theme .win-btn {
+    background-color: #555;
+    color: #e0e0e0;
+    border-color: #777 #222 #222 #777;
+}
+
+.night-theme .win-btn:active {
+    border-color: #222 #777 #777 #222;
+}
+
+.night-theme .panel {
+    background-color: #3c3c3c;
+    border-color: #555;
+    box-shadow:
+        1px 1px 0 #777 inset,
+        -1px -1px 0 #222 inset;
+}
+
+.night-theme .group-box {
+    border-color: #555;
+    box-shadow:
+        1px 1px 0 #777 inset,
+        -1px -1px 0 #222 inset;
+}
+
+.night-theme .group-box legend {
+    background-color: #3c3c3c;
+}
+
+.night-theme .card-list {
+    background-color: #2e2e2e;
+    border-color: #555;
+    box-shadow:
+        1px 1px 0 #777 inset,
+        -1px -1px 0 #222 inset;
+}
+
+.night-theme .card-item:hover {
+    background-color: #555;
+    color: #e0e0e0;
+}
+
+.night-theme .card-item.selected {
+    background-color: #005588;
+    color: #e0e0e0;
+}
+
+.night-theme .card-item.disabled {
+    color: #777;
+    background-color: #222;
+}
+
+.night-theme .exploration-frame {
+    background-color: #222;
+}
+
+.night-theme .tile {
+    background-color: #3c3c3c;
+    border-color: #555;
+    box-shadow:
+        1px 1px 0 #777 inset,
+        -1px -1px 0 #222 inset;
+}
+
+.night-theme .tile:hover {
+    background-color: #555;
+}
+
+.night-theme .tile-fog {
+    background-color: #222;
+    color: #555;
+}
+
+.night-theme .tile-player {
+    border-color: #fff;
+    box-shadow: 0 0 0 1px #000 inset;
+    background-color: #555;
+}
+
+.night-theme .log-content {
+    background-color: #1c1c1c;
+    color: #aaffaa;
+    border-color: #555;
+}
+
+.night-theme .hp-bar {
+    background-color: #222;
+    border-color: #555;
+}
+
+.night-theme .hp-fill {
+    background-color: #d9534f;
 }
 
 /* Log = Fixedsys-style console */
