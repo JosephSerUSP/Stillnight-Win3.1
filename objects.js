@@ -44,7 +44,7 @@ export class Game_Actor extends Game_Unit {
    * @returns {number} The experience needed for the next level.
    */
   xpNeeded(level) {
-    return level * 10 + 10;
+    return level * 4 + 10;
   }
 
   /**

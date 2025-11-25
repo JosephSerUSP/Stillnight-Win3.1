@@ -1,7 +1,7 @@
 {
   "party": [
     {
-      "name": "🧚 Pixie",
+      "name": "Pixie",
       "maxHp": 9,
       "level": 1,
       "role": "Support / Trickster",
@@ -19,7 +19,7 @@
       "flavor": "A wandering mote-courier who got lost between shrines and never looked back."
     },
     {
-      "name": "💀 Skeleton",
+      "name": "Skeleton",
       "maxHp": 11,
       "level": 1,
       "role": "Frontline / Bruiser",
@@ -37,7 +37,7 @@
       "flavor": "An old execution scaffold given marching orders and never told to stop."
     },
     {
-      "name": "😇 Angel",
+      "name": "Angel",
       "maxHp": 12,
       "level": 2,
       "role": "Healer / Radiance",
@@ -55,7 +55,7 @@
       "flavor": "A minor choir-member demoted to dungeon duty after asking the wrong questions."
     },
     {
-      "name": "👿 Demon",
+      "name": "Demon",
       "maxHp": 12,
       "level": 2,
       "role": "Offense / Curse",
@@ -77,7 +77,7 @@
       "flavor": "Claims they’re only here for the scenery. Keeps a very detailed grudge ledger."
     },
     {
-      "name": "🧟 Ghoul",
+      "name": "Ghoul",
       "maxHp": 10,
       "level": 1,
       "role": "Frontline / Regrowth",
@@ -97,7 +97,7 @@
   ],
   "recruits": [
     {
-      "name": "🕯 Candle",
+      "name": "Candle",
       "maxHp": 10,
       "level": 2,
       "role": "Illuminator",
@@ -115,7 +115,7 @@
       "flavor": "A sentient wax candle flickering with curiosity."
     },
     {
-      "name": "🦇 Bat",
+      "name": "Vampire",
       "maxHp": 8,
       "level": 1,
       "role": "Scout",
@@ -133,7 +133,7 @@
       "flavor": "A small vampire bat with a big appetite for adventure."
     },
     {
-      "name": "🪨 Golem",
+      "name": "Golem",
       "maxHp": 14,
       "level": 1,
       "role": "Tank",
@@ -151,7 +151,7 @@
       "flavor": "A pile of rocks animated by a forgotten spell."
     },
     {
-      "name": "🔥 Imp",
+      "name": "Imp",
       "maxHp": 9,
       "level": 2,
       "role": "Pyromancer",
