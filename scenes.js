@@ -44,7 +44,7 @@ export class Scene_Map {
     );
     this.battleWindow.btnFlee.addEventListener(
       "click",
-      this.closeBattle.bind(this)
+      this.attemptFlee.bind(this)
     );
     this.battleWindow.btnVictory.addEventListener(
       "click",
@@ -62,6 +62,15 @@ export class Scene_Map {
     this.formationWindow.btnCancel.addEventListener(
       "click",
       this.closeFormation.bind(this)
+    );
+
+    this.inventoryWindow.btnClose.addEventListener(
+      "click",
+      this.closeInventory.bind(this)
+    );
+    this.inventoryWindow.btnClose2.addEventListener(
+      "click",
+      this.closeInventory.bind(this)
     );
   }
 
@@ -290,7 +299,7 @@ export class Scene_Map {
    */
   updateParty() {
     this.partyGridEl.innerHTML = "";
-    this.party.members.forEach((member, index) => {
+    this.party.members.slice(0, 4).forEach((member, index) => {
       const slot = document.createElement("div");
       slot.className = "party-slot";
       slot.dataset.index = index;
@@ -362,6 +371,15 @@ export class Scene_Map {
     } else if (ch === "R") {
       this.party.members.forEach((m) => (m.hp = m.maxHp));
       this.logMessage("[Recover] A soft glow restores your party.");
+      this.party.members.forEach((member) => {
+        const xpBonus = member.getPassiveValue("RECOVERY_XP_BONUS");
+        if (xpBonus > 0) {
+          this.gainXp(member, xpBonus);
+          this.logMessage(
+            `[Passive] ${member.name} gains ${xpBonus} bonus XP.`
+          );
+        }
+      });
       this.setStatus("Recovered HP.");
     } else if (ch === "S") {
       this.descendStairs();
@@ -385,6 +403,7 @@ export class Scene_Map {
     }
 
     beep(600, 80);
+    this.applyMovePassives();
     this.updateAll();
   }
 
@@ -501,6 +520,7 @@ export class Scene_Map {
       this.appendBattleLog(` - ${e.name} (${e.tag}, ${e.element})`);
     });
 
+    this.applyBattleStartPassives();
     this.renderBattleAscii();
     this.battleWindow.open();
     this.modeLabelEl.textContent = "Battle";
@@ -598,7 +618,7 @@ export class Scene_Map {
 
       const mult = this.elementMultiplier(p.element, target.element);
       let dmg = Math.round(base * mult);
-      if (p.name.includes("Demon")) dmg += 1; // Blood Price
+      dmg += p.getPassiveValue("DEAL_DAMAGE_MOD");
       if (dmg < 1) dmg = 1;
 
       const usedSkill =
@@ -629,8 +649,8 @@ export class Scene_Map {
       if (row === "Front") dmg += 1;
       else dmg -= 1;
 
-      if (target.name.includes("Demon")) dmg += 1;
-      if (target.name.includes("Skeleton")) dmg = Math.max(1, dmg - 1);
+      dmg += target.getPassiveValue("TAKE_DAMAGE_MOD");
+      dmg -= target.getPassiveValue("DAMAGE_RESIST");
       if (dmg < 1) dmg = 1;
 
       events.push({
@@ -722,21 +742,72 @@ export class Scene_Map {
    * that would iterate through all party members and check for passive skills that should be triggered
    * by the "onBattleVictory" event.
    */
-  pixieVictoryHeal() {
-    const pixie = this.party.members.find(
-      (p) => p.name.includes("Pixie") && p.hp > 0
-    );
-    if (!pixie) return;
-    const heal = randInt(1, 2);
-    this.party.members.forEach((m) => {
-      if (m.hp > 0) {
-        m.hp = Math.min(m.maxHp, m.hp + heal);
+  applyPostBattlePassives() {
+    this.party.members.forEach((member) => {
+      if (member.hp > 0) {
+        const heal = member.getPassiveValue("POST_BATTLE_HEAL");
+        if (heal > 0) {
+          this.party.members.forEach((m) => {
+            if (m.hp > 0) {
+              m.hp = Math.min(m.maxHp, m.hp + heal);
+            }
+          });
+          this.logMessage(
+            `[Passive] ${member.name} heals the party for ${heal} HP.`
+          );
+        }
       }
     });
-    this.logMessage(
-      `[Passive] Pixie scatters motes; party recovers ${heal} HP.`
-    );
     this.updateParty();
+  }
+
+  applyBattleStartPassives() {
+    this.party.members.forEach((member) => {
+      if (member.hp > 0) {
+        const damage = member.getPassiveValue("BATTLE_START_DAMAGE");
+        if (damage > 0) {
+          const target = this.battleState.enemies.find((e) => e.hp > 0);
+          if (target) {
+            target.hp = Math.max(0, target.hp - damage);
+            this.appendBattleLog(
+              `[Passive] ${member.name} hits ${target.name} for ${damage}.`
+            );
+          }
+        }
+      }
+    });
+  }
+
+  applyMovePassives() {
+    this.party.members.forEach((member) => {
+      if (member.hp > 0) {
+        const heal = member.getPassiveValue("MOVE_HEAL");
+        if (heal > 0) {
+          member.hp = Math.min(member.maxHp, member.hp + heal);
+          this.logMessage(
+            `[Passive] ${member.name} regenerates ${heal} HP.`
+          );
+        }
+      }
+    });
+    this.updateParty();
+  }
+
+  getFleeChance() {
+    let baseChance = 0.5;
+    this.party.members.forEach((member) => {
+      baseChance += member.getPassiveValue("FLEE_CHANCE_BONUS");
+    });
+    return Math.max(0, Math.min(1, baseChance));
+  }
+
+  attemptFlee() {
+    if (Math.random() < this.getFleeChance()) {
+      this.logMessage("[Battle] You successfully fled!");
+      this.closeBattle();
+    } else {
+      this.appendBattleLog("You failed to flee!");
+    }
   }
 
   onBattleVictoryClick() {
@@ -756,7 +827,7 @@ export class Scene_Map {
     );
     this.statusGoldEl.textContent = this.party.gold;
 
-    this.pixieVictoryHeal();
+    this.applyPostBattlePassives();
 
     this.clearEnemyTileAfterBattle();
 
@@ -1243,7 +1314,8 @@ export class Scene_Map {
     } else {
       this.inspectWindow.equipEl.textContent = "—";
     }
-    this.inspectWindow.passiveEl.textContent = member.passive || "—";
+    this.inspectWindow.passiveEl.textContent =
+      member.passives.map((p) => p.description).join(", ") || "—";
     this.inspectWindow.skillsEl.textContent =
       (member.skills && member.skills.length) ? member.skills.join(", ") : "—";
     this.inspectWindow.flavorEl.textContent = member.flavor || "—";

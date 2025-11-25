@@ -29,7 +29,7 @@ export class Game_Actor extends Game_Unit {
   constructor(actorData) {
     super(actorData);
     this.role = actorData.role;
-    this.passive = actorData.passive;
+    this.passives = actorData.passives || [];
     this.skills = actorData.skills.slice();
     this.spriteKey = actorData.spriteKey;
     this.flavor = actorData.flavor;
@@ -45,6 +45,16 @@ export class Game_Actor extends Game_Unit {
    */
   xpNeeded(level) {
     return level * 10 + 10;
+  }
+
+  /**
+   * Gets the value of a specific passive.
+   * @param {string} code - The code of the passive to get.
+   * @returns {number} The value of the passive, or 0 if not found.
+   */
+  getPassiveValue(code) {
+    const passive = this.passives.find((p) => p.code === code);
+    return passive ? passive.value : 0;
   }
 }
 

@@ -7,7 +7,13 @@
       "role": "Support / Trickster",
       "element": "Wind",
       "equipment": "Glass Ring",
-      "passive": "Trick Heal: small heal to party on victory.",
+      "passives": [
+        {
+          "code": "POST_BATTLE_HEAL",
+          "value": 2,
+          "description": "Trick Heal: small heal to party on victory."
+        }
+      ],
       "skills": ["Gleam Shot", "Soothing Mote"],
       "spriteKey": "pixie",
       "flavor": "A wandering mote-courier who got lost between shrines and never looked back."
@@ -19,7 +25,13 @@
       "role": "Frontline / Bruiser",
       "element": "Bone",
       "equipment": "Rusty Greaves",
-      "passive": "Grim Guard: incoming damage -1 (min 1).",
+      "passives": [
+        {
+          "code": "DAMAGE_RESIST",
+          "value": 1,
+          "description": "Grim Guard: incoming damage -1 (min 1)."
+        }
+      ],
       "skills": ["Rattle Slash", "Guard"],
       "spriteKey": "skeleton",
       "flavor": "An old execution scaffold given marching orders and never told to stop."
@@ -31,7 +43,13 @@
       "role": "Healer / Radiance",
       "element": "Light",
       "equipment": "Halo Circlet",
-      "passive": "Mercy: Recovery tiles grant bonus XP.",
+      "passives": [
+        {
+          "code": "RECOVERY_XP_BONUS",
+          "value": 10,
+          "description": "Mercy: Recovery tiles grant bonus XP."
+        }
+      ],
       "skills": ["Beam", "Minor Miracle"],
       "spriteKey": "angel",
       "flavor": "A minor choir-member demoted to dungeon duty after asking the wrong questions."
@@ -43,7 +61,17 @@
       "role": "Offense / Curse",
       "element": "Dark",
       "equipment": "Spiteful Ring",
-      "passive": "Blood Price: +1 dealt, +1 taken.",
+      "passives": [
+        {
+          "code": "DEAL_DAMAGE_MOD",
+          "value": 1,
+          "description": "Blood Price: +1 dealt, +1 taken."
+        },
+        {
+          "code": "TAKE_DAMAGE_MOD",
+          "value": 1
+        }
+      ],
       "skills": ["Hex Claw", "Spite Bolt"],
       "spriteKey": "demon",
       "flavor": "Claims they’re only here for the scenery. Keeps a very detailed grudge ledger."
@@ -55,7 +83,13 @@
       "role": "Frontline / Regrowth",
       "element": "Dark",
       "equipment": "Tattered Cloak",
-      "passive": "Regrowth: regenerates 1 HP when moving.",
+      "passives": [
+        {
+          "code": "MOVE_HEAL",
+          "value": 1,
+          "description": "Regrowth: regenerates 1 HP when moving."
+        }
+      ],
       "skills": ["Claw", "Decay Touch"],
       "spriteKey": "ghoul",
       "flavor": "A restless corpse, persistently renewing its own decay."
@@ -69,7 +103,13 @@
       "role": "Illuminator",
       "element": "Fire",
       "equipment": "Sooty Wick",
-      "passive": "Glare: small light damage at start of battle.",
+      "passives": [
+        {
+          "code": "BATTLE_START_DAMAGE",
+          "value": 1,
+          "description": "Glare: small light damage at start of battle."
+        }
+      ],
       "skills": ["Flare", "Smoke Screen"],
       "spriteKey": "candle",
       "flavor": "A sentient wax candle flickering with curiosity."
@@ -81,7 +121,13 @@
       "role": "Scout",
       "element": "Dark",
       "equipment": "Leather Wings",
-      "passive": "Echo Location: slightly boosts flee chance.",
+      "passives": [
+        {
+          "code": "FLEE_CHANCE_BONUS",
+          "value": 0.1,
+          "description": "Echo Location: slightly boosts flee chance."
+        }
+      ],
       "skills": ["Screech", "Drain"],
       "spriteKey": "bat",
       "flavor": "A small vampire bat with a big appetite for adventure."
@@ -93,7 +139,13 @@
       "role": "Tank",
       "element": "Earth",
       "equipment": "Pebble Core",
-      "passive": "Steadfast: receives -1 damage.",
+      "passives": [
+        {
+          "code": "DAMAGE_RESIST",
+          "value": 1,
+          "description": "Steadfast: receives -1 damage."
+        }
+      ],
       "skills": ["Slam", "Guard"],
       "spriteKey": "golem",
       "flavor": "A pile of rocks animated by a forgotten spell."
@@ -105,7 +157,13 @@
       "role": "Pyromancer",
       "element": "Fire",
       "equipment": "Smolder Ring",
-      "passive": "Combustion: adds +1 damage but takes +1 each turn.",
+      "passives": [
+        {
+          "code": "DEAL_DAMAGE_MOD",
+          "value": 1,
+          "description": "Combustion: adds +1 damage but takes +1 each turn."
+        }
+      ],
       "skills": ["Spark", "Ember Burst"],
       "spriteKey": "imp",
       "flavor": "A mischievous spark given form."
