@@ -1782,10 +1782,17 @@ renderElements(elements) {
     // If the item is equipped by another member, show confirmation
     if (item.equippedMember) {
       const otherMember = item.equippedMember;
-      this.confirmWindow.titleEl.textContent = "Confirm Swap";
-      this.confirmWindow.messageEl.textContent = `Swap ${item.name} from ${otherMember.name} to ${member.name}?`;
-      this.confirmWindow.open();
-      this.confirmWindow.btnOk.onclick = () => {
+      this.confirmWindow.setTitle("Confirm Swap");
+      this.confirmWindow.setMessage(
+        `Swap ${item.name} from ${otherMember.name} to ${member.name}?`
+      );
+
+      // Clear old commands before adding new ones
+      this.confirmWindow.commandContainer.innerHTML = "";
+      this.confirmWindow.commands = [];
+      this.confirmWindow.handlers = {};
+
+      this.confirmWindow.addCommand("OK", "ok", () => {
         const currentItem = member.equipmentItem;
         otherMember.equipmentItem = currentItem;
         member.equipmentItem = item;
@@ -1796,10 +1803,11 @@ renderElements(elements) {
         this.closeInspect();
         this.updateAll();
         beep(700, 150); // Swap sound
-      };
-      this.confirmWindow.btnCancel.onclick = () => {
+      });
+      this.confirmWindow.addCommand("Cancel", "cancel", () => {
         this.confirmWindow.close();
-      };
+      });
+      this.confirmWindow.open();
     } else {
       doEquip();
     }

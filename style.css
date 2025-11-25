@@ -528,6 +528,16 @@ body.night-theme {
     margin-right: 8px;
 }
 
+#window-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none; /* Allow interaction with elements behind it */
+}
+
+#window-container > .modal-overlay {
+    pointer-events: all; /* Capture pointer events for windows */
+}
+
 /* ===== Modal overlay / dialogs ================================= */
 .modal-overlay {
     position: absolute;
@@ -577,160 +587,3 @@ body.night-theme {
     gap: 4px;
 }
 
-/* Battle dialog specifics */
-.dialog-battle { width: 520px; }
-.dialog-ascii {
-    background-color: #000000;
-    color: #c0ffb0;
-    border: 1px solid #808080;
-    box-shadow:
-        1px 1px 0 #ffffff inset,
-        -1px -1px 0 #404040 inset;
-    padding: 4px;
-    font-family: "Fixedsys", "Lucida Console", "Courier New", monospace;
-    font-size: 11px;
-    height: 200px;
-    white-space: pre;
-    overflow-y: auto;
-}
-.dialog-log {
-    background-color: #000000;
-    color: #00ff00;
-    border: 1px solid #808080;
-    padding: 2px;
-    font-family: "Fixedsys", "Lucida Console", "Courier New", monospace;
-    font-size: 10px;
-    height: 80px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-}
-#btn-battle-victory { display: none; }
-
-/* Inspect dialog – larger sprite box + flavor */
-.dialog-inspect { width: 480px; }
-.inspect-body {
-    background-color: #ffffff;
-    border: 1px solid #808080;
-    box-shadow:
-        1px 1px 0 #ffffff inset,
-        -1px -1px 0 #404040 inset;
-    padding: 4px;
-    font-size: 11px;
-}
-.inspect-layout {
-    display: flex;
-    gap: 10px;
-}
-.inspect-sprite {
-    width: 128px;
-    height: 192px;
-    border: 1px solid #808080;
-    box-shadow:
-        1px 1px 0 #ffffff inset,
-        -1px -1px 0 #404040 inset;
-    background-color: #000000;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-}
-.inspect-fields { flex: 1; }
-.inspect-row {
-    display: flex;
-    margin-bottom: 2px;
-}
-.inspect-label {
-    width: 80px;
-    font-weight: bold;
-}
-.inspect-value { flex: 1; }
-.inspect-notes {
-    margin-top: 4px;
-    font-size: 10px;
-}
-
-/* Shop dialog */
-.dialog-shop { width: 420px; }
-.shop-body {
-    background-color: #ffffff;
-    border: 1px solid #808080;
-    box-shadow:
-        1px 1px 0 #ffffff inset,
-        -1px -1px 0 #404040 inset;
-    padding: 4px;
-    font-size: 11px;
-}
-.shop-row {
-    margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-}
-.shop-row button { margin-left: 4px; }
-.shop-gold { font-weight: bold; }
-
-/* Formation dialog */
-.dialog-formation { width: 420px; }
-.formation-body {
-    background-color: #ffffff;
-    border: 1px solid #808080;
-    box-shadow:
-        1px 1px 0 #ffffff inset,
-        -1px -1px 0 #404040 inset;
-    padding: 4px;
-    font-size: 11px;
-}
-.formation-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-    margin-bottom: 4px;
-}
-.formation-reserve-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-    margin-bottom: 4px;
-    max-height: 200px;
-    overflow-y: auto;
-}
-.formation-slot {
-    border: 1px solid #808080;
-    padding: 2px;
-    font-size: 10px;
-    background-color: #c0c0c0;
-    box-shadow:
-        1px 1px 0 #ffffff inset,
-        -1px -1px 0 #404040 inset;
-    cursor: pointer;
-}
-.formation-slot.selected {
-    background-color: #000080;
-    color: #ffffff;
-}
-.formation-label {
-    font-size: 10px;
-    margin-bottom: 4px;
-}
-
-/* Event dialog */
-.dialog-event { width: 480px; }
-.event-body {
-    background-color: #ffffff;
-    border: 1px solid #808080;
-    box-shadow:
-        1px 1px 0 #ffffff inset,
-        -1px -1px 0 #404040 inset;
-    padding: 4px;
-    font-size: 11px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-.event-description {
-    font-size: 11px;
-    line-height: 1.4;
-}
-.event-choices {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}

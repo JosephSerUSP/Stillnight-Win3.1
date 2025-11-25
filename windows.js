@@ -1,27 +1,134 @@
 /**
- * The base class for all windows.
+ * The base class for all windows. Handles the creation of the window's HTML structure.
  * @class
  */
-class Window {
+export class Window_Base {
   /**
-   * @param {string} overlayId - The ID of the modal overlay element.
+   * @param {number} x - The x-coordinate of the window.
+   * @param {number} y - The y-coordinate of the window.
+   * @param {number} width - The width of the window.
+   * @param {number} height - The height of the window.
    */
-  constructor(overlayId) {
-    this.overlay = document.getElementById(overlayId);
+  constructor(x, y, width, height) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this._createWindowElement();
+  }
+
+  /**
+   * Creates the window element and its inner structure.
+   * @private
+   */
+  _createWindowElement() {
+    this.overlay = document.createElement("div");
+    this.overlay.className = "modal-overlay";
+    this.overlay.style.display = "none";
+
+    this.windowElement = document.createElement("div");
+    this.windowElement.className = "dialog";
+    this.windowElement.style.width = `${this.width}px`;
+    this.windowElement.style.height = `${this.height}px`;
+    this.windowElement.style.left = `${this.x}px`;
+    this.windowElement.style.top = `${this.y}px`;
+
+    this.titleBar = document.createElement("div");
+    this.titleBar.className = "dialog-titlebar";
+
+    this.titleText = document.createElement("span");
+    this.titleText.textContent = "Window";
+
+    this.content = document.createElement("div");
+    this.content.className = "dialog-content";
+
+    this.titleBar.appendChild(this.titleText);
+    this.windowElement.appendChild(this.titleBar);
+    this.windowElement.appendChild(this.content);
+    this.overlay.appendChild(this.windowElement);
+
+    document.body.appendChild(this.overlay);
+  }
+
+  /**
+   * Sets the title of the window.
+   * @param {string} title - The title text.
+   */
+  setTitle(title) {
+    this.titleText.textContent = title;
   }
 
   /**
    * Opens the window.
    */
   open() {
-    this.overlay.classList.add("active");
+    this.overlay.style.display = "flex";
   }
 
   /**
    * Closes the window.
    */
   close() {
-    this.overlay.classList.remove("active");
+    this.overlay.style.display = "none";
+  }
+
+  /**
+   * Returns the main content element of the window.
+   * @returns {HTMLElement} The content element.
+   */
+  getContent() {
+    return this.content;
+  }
+}
+
+/**
+ * A window class that displays a list of clickable commands.
+ * @class
+ * @extends Window_Base
+ */
+export class Window_Selectable extends Window_Base {
+  /**
+   * @param {number} x - The x-coordinate of the window.
+   * @param {number} y - The y-coordinate of the window.
+   * @param {number} width - The width of the window.
+   * @param {number} height - The height of the window.
+   */
+  constructor(x, y, width, height) {
+    super(x, y, width, height);
+    this.commands = [];
+    this.handlers = {};
+
+    this.commandContainer = document.createElement("div");
+    this.commandContainer.className = "dialog-buttons";
+    this.content.appendChild(this.commandContainer);
+  }
+
+  /**
+   * Adds a command to the window.
+   * @param {string} name - The name of the command to display.
+   * @param {string} symbol - The symbol to identify the command.
+   * @param {function} handler - The function to call when the command is selected.
+   */
+  addCommand(name, symbol, handler) {
+    this.commands.push({ name, symbol });
+    this.handlers[symbol] = handler;
+    this._createButton(name, symbol);
+  }
+
+  /**
+   * Creates a button for a command.
+   * @param {string} name - The name of the command.
+   * @param {string} symbol - The symbol of the command.
+   * @private
+   */
+  _createButton(name, symbol) {
+    const button = document.createElement("button");
+    button.className = "win-btn";
+    button.textContent = name;
+    button.addEventListener("click", () => {
+      this.handlers[symbol]();
+    });
+    this.commandContainer.appendChild(button);
   }
 }
 
@@ -152,14 +259,26 @@ export class Window_Event extends Window {
 /**
  * The window for generic confirmations.
  * @class
- * @extends Window
+ * @extends Window_Selectable
  */
-export class Window_Confirm extends Window {
+export class Window_Confirm extends Window_Selectable {
   constructor() {
-    super("confirm-overlay");
-    this.titleEl = document.getElementById("confirm-title");
-    this.messageEl = document.getElementById("confirm-message");
-    this.btnOk = document.getElementById("btn-confirm-ok");
-    this.btnCancel = document.getElementById("btn-confirm-cancel");
+    const width = 320;
+    const height = 120;
+    const x = Math.floor((960 - width) / 2);
+    const y = Math.floor((560 - height) / 2);
+    super(x, y, width, height);
+
+    this.messageEl = document.createElement("div");
+    this.messageEl.style.marginBottom = "8px";
+    this.getContent().prepend(this.messageEl);
+  }
+
+  /**
+   * Sets the message text of the confirmation window.
+   * @param {string} message - The message to display.
+   */
+  setMessage(message) {
+    this.messageEl.textContent = message;
   }
 }
