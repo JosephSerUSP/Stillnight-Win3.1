@@ -1,6 +1,6 @@
 [
-  { "name": "👺 Goblin",  "maxHp": 14, "minDmg": 2, "maxDmg": 5, "tag": "Ambusher",      "xpReward": 7,  "baseGold": 5,  "element": "Earth" },
-  { "name": "🫧 Ooze",    "maxHp": 18, "minDmg": 1, "maxDmg": 4, "tag": "Absorber",      "xpReward": 8,  "baseGold": 6,  "element": "Water" },
-  { "name": "💀 Ghast",   "maxHp": 16, "minDmg": 2, "maxDmg": 6, "tag": "Rot",           "xpReward": 10, "baseGold": 7,  "element": "Dark" },
-  { "name": "😇 Seraph",  "maxHp": 20, "minDmg": 3, "maxDmg": 7, "tag": "Fallen Light",  "xpReward": 12, "baseGold": 9,  "element": "Light" }
+  { "name": "👺 Goblin",  "maxHp": 14, "minDmg": 2, "maxDmg": 5, "tag": "Ambusher",      "xpReward": 7,  "baseGold": 5,  "elements": ["Green"] },
+  { "name": "🫧 Ooze",    "maxHp": 18, "minDmg": 1, "maxDmg": 4, "tag": "Absorber",      "xpReward": 8,  "baseGold": 6,  "elements": ["Blue", "Blue"] },
+  { "name": "💀 Ghast",   "maxHp": 16, "minDmg": 2, "maxDmg": 6, "tag": "Rot",           "xpReward": 10, "baseGold": 7,  "elements": ["Black"] },
+  { "name": "😇 Seraph",  "maxHp": 20, "minDmg": 3, "maxDmg": 7, "tag": "Fallen Light",  "xpReward": 12, "baseGold": 9,  "elements": ["White", "Red"] }
 ]

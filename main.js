@@ -13,7 +13,7 @@ async function main() {
 }
 
 // Start the game when the DOM is ready
-window.addEventListener("DOMContentLoaded", main);
+window.addEventListener("load", main);
 
 // Theme switcher
 const themeBtn = document.getElementById("btn-theme");

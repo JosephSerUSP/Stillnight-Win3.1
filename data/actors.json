@@ -5,7 +5,7 @@
       "maxHp": 9,
       "level": 1,
       "role": "Support / Trickster",
-      "element": "Wind",
+      "elements": ["Green", "Green"],
       "equipment": "Glass Ring",
       "passives": [
         {
@@ -14,7 +14,7 @@
           "description": "Trick Heal: small heal to party on victory."
         }
       ],
-      "skills": ["Gleam Shot", "Soothing Mote"],
+      "skills": ["windBlade", "soothingMote"],
       "spriteKey": "pixie",
       "flavor": "A wandering mote-courier who got lost between shrines and never looked back."
     },
@@ -23,7 +23,7 @@
       "maxHp": 11,
       "level": 1,
       "role": "Frontline / Bruiser",
-      "element": "Bone",
+      "elements": ["Black"],
       "equipment": "Rusty Greaves",
       "passives": [
         {
@@ -32,7 +32,7 @@
           "description": "Grim Guard: incoming damage -1 (min 1)."
         }
       ],
-      "skills": ["Rattle Slash", "Guard"],
+      "skills": ["rattleSlash", "guard"],
       "spriteKey": "skeleton",
       "flavor": "An old execution scaffold given marching orders and never told to stop."
     },
@@ -41,7 +41,7 @@
       "maxHp": 12,
       "level": 2,
       "role": "Healer / Radiance",
-      "element": "Light",
+      "elements": ["White", "White", "Green"],
       "equipment": "Halo Circlet",
       "passives": [
         {
@@ -50,7 +50,7 @@
           "description": "Mercy: Recovery tiles grant bonus XP."
         }
       ],
-      "skills": ["Beam", "Minor Miracle"],
+      "skills": ["beam", "minorMiracle"],
       "spriteKey": "angel",
       "flavor": "A minor choir-member demoted to dungeon duty after asking the wrong questions."
     },
@@ -59,7 +59,7 @@
       "maxHp": 12,
       "level": 2,
       "role": "Offense / Curse",
-      "element": "Dark",
+      "elements": ["Black", "Red"],
       "equipment": "Spiteful Ring",
       "passives": [
         {
@@ -72,7 +72,7 @@
           "value": 1
         }
       ],
-      "skills": ["Hex Claw", "Spite Bolt"],
+      "skills": ["hexClaw", "spiteBolt"],
       "spriteKey": "demon",
       "flavor": "Claims they’re only here for the scenery. Keeps a very detailed grudge ledger."
     },
@@ -81,7 +81,7 @@
       "maxHp": 10,
       "level": 1,
       "role": "Frontline / Regrowth",
-      "element": "Dark",
+      "elements": ["Black", "Green"],
       "equipment": "Tattered Cloak",
       "passives": [
         {
@@ -90,7 +90,7 @@
           "description": "Regrowth: regenerates 1 HP when moving."
         }
       ],
-      "skills": ["Claw", "Decay Touch"],
+      "skills": ["claw", "decayTouch"],
       "spriteKey": "ghoul",
       "flavor": "A restless corpse, persistently renewing its own decay."
     }
@@ -101,7 +101,7 @@
       "maxHp": 10,
       "level": 2,
       "role": "Illuminator",
-      "element": "Fire",
+      "elements": ["Red", "White"],
       "equipment": "Sooty Wick",
       "passives": [
         {
@@ -110,7 +110,7 @@
           "description": "Glare: small light damage at start of battle."
         }
       ],
-      "skills": ["Flare", "Smoke Screen"],
+      "skills": ["flare", "smokeScreen"],
       "spriteKey": "candle",
       "flavor": "A sentient wax candle flickering with curiosity."
     },
@@ -119,7 +119,7 @@
       "maxHp": 8,
       "level": 1,
       "role": "Scout",
-      "element": "Dark",
+      "elements": ["Black"],
       "equipment": "Leather Wings",
       "passives": [
         {
@@ -128,7 +128,7 @@
           "description": "Echo Location: slightly boosts flee chance."
         }
       ],
-      "skills": ["Screech", "Drain"],
+      "skills": ["screech", "drain"],
       "spriteKey": "bat",
       "flavor": "A small vampire bat with a big appetite for adventure."
     },
@@ -137,7 +137,7 @@
       "maxHp": 14,
       "level": 1,
       "role": "Tank",
-      "element": "Earth",
+      "elements": [],
       "equipment": "Pebble Core",
       "passives": [
         {
@@ -146,7 +146,7 @@
           "description": "Steadfast: receives -1 damage."
         }
       ],
-      "skills": ["Slam", "Guard"],
+      "skills": ["slam", "guard"],
       "spriteKey": "golem",
       "flavor": "A pile of rocks animated by a forgotten spell."
     },
@@ -155,7 +155,7 @@
       "maxHp": 9,
       "level": 2,
       "role": "Pyromancer",
-      "element": "Fire",
+      "elements": ["Red", "Red", "Red"],
       "equipment": "Smolder Ring",
       "passives": [
         {
@@ -164,7 +164,7 @@
           "description": "Combustion: adds +1 damage but takes +1 each turn."
         }
       ],
-      "skills": ["Spark", "Ember Burst"],
+      "skills": ["spark", "emberBurst"],
       "spriteKey": "imp",
       "flavor": "A mischievous spark given form."
     }

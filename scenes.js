@@ -1,5 +1,5 @@
 import { Game_Map, Game_Party, Game_Enemy, Game_Actor } from "./objects.js";
-import { beep, randInt, shuffleArray } from "./core.js";
+import { beep, randInt, shuffleArray, getPrimaryElements } from "./core.js";
 import {
   Window_Battle,
   Window_Shop,
@@ -73,6 +73,15 @@ export class Scene_Map {
     this.inventoryWindow.btnClose2.addEventListener(
       "click",
       this.closeInventory.bind(this)
+    );
+
+    this.shopWindow.btnClose.addEventListener(
+      "click",
+      this.closeShop.bind(this)
+    );
+    this.shopWindow.btnLeave.addEventListener(
+      "click",
+      this.closeShop.bind(this)
     );
   }
 
@@ -358,10 +367,13 @@ export class Scene_Map {
       const slot = document.createElement("div");
       slot.className = "party-slot";
       slot.dataset.index = index;
+      slot.dataset.testid = `party-slot-${index}`;
 
       const nameEl = document.createElement("div");
       nameEl.className = "party-slot-name";
-      nameEl.textContent = member.name;
+      const primaryElements = getPrimaryElements(member.elements);
+      const elementEmojis = primaryElements.map(this.elementToEmoji).join("");
+      nameEl.textContent = `${elementEmojis}${member.name}`;
 
       const hpLabel = document.createElement("div");
       const row = this.partyRow(index);
@@ -573,7 +585,8 @@ export class Scene_Map {
 
     this.appendBattleLog(this.dataManager.terms.battle.enemies_emerge);
     enemies.forEach((e) => {
-      this.appendBattleLog(` - ${e.name} (${e.tag}, ${e.element})`);
+      const elementEmojis = e.elements.map(this.elementToEmoji).join("");
+      this.appendBattleLog(` - ${e.name} (${e.tag}, ${elementEmojis})`);
     });
 
     this.applyBattleStartPassives();
@@ -615,8 +628,11 @@ export class Scene_Map {
     const enemyRows = [[], []];
     enemies.forEach((e, idx) => {
       const row = idx % 2;
-      const str = ` ${e.name} (HP ${e.hp}/${e.maxHp}) `;
-      enemyRows[row].push(pad(str, 28));
+      const primaryElements = getPrimaryElements(e.elements);
+      const elementEmojis = primaryElements.map(this.elementToEmoji).join("");
+      const str = ` ${elementEmojis}${e.name} (HP ${e.hp}/${e.maxHp}) `;
+      const gauge = ` ${this.createHpGauge(e.hp, e.maxHp)} `;
+      enemyRows[row].push(pad(str, 28) + pad(gauge, 28));
     });
     ascii += enemyRows[1].join("") + "\n";
     ascii += enemyRows[0].join("") + "\n";
@@ -627,8 +643,11 @@ export class Scene_Map {
     const partyRows = [[], []];
     this.party.members.slice(0, 4).forEach((p, i) => {
       const row = i < 2 ? 1 : 0;
-      const str = ` ${p.name} (HP ${p.hp}/${p.maxHp}) `;
-      partyRows[row].push(pad(str, 28));
+      const primaryElements = getPrimaryElements(p.elements);
+      const elementEmojis = primaryElements.map(this.elementToEmoji).join("");
+      const str = ` ${elementEmojis}${p.name} (HP ${p.hp}/${p.maxHp}) `;
+      const gauge = ` ${this.createHpGauge(p.hp, p.maxHp)} `;
+      partyRows[row].push(pad(str, 28) + pad(gauge, 28));
     });
     ascii += partyRows[1].join("") + "\n";
     ascii += partyRows[0].join("") + "\n";
@@ -664,20 +683,56 @@ export class Scene_Map {
       if (row === "Front") base += 1;
       else base -= 1;
 
-      const mult = this.elementMultiplier(p.element, target.element);
+      const mult = this.elementMultiplier(p.elements, target.elements);
       let dmg = Math.round(base * mult);
       dmg += p.getPassiveValue("DEAL_DAMAGE_MOD");
       if (dmg < 1) dmg = 1;
 
-      const usedSkill =
+      const skillId =
         p.skills && p.skills.length
-          ? " using " + p.skills[randInt(0, p.skills.length - 1)]
-          : "";
+          ? p.skills[randInt(0, p.skills.length - 1)]
+          : null;
+      const skill = skillId ? this.dataManager.skills[skillId] : null;
 
-      events.push({
-        msg: `${p.name}${usedSkill} hits ${target.name} for ${dmg}.`,
-        apply: () => (target.hp = Math.max(0, target.hp - dmg)),
-      });
+      if (skill) {
+        let boost = 1;
+        if (skill.element) {
+          const matches = p.elements.filter(
+            (e) => e === skill.element
+          ).length;
+          boost += matches * 0.25;
+        }
+
+        const skillName = `${this.elementToEmoji(skill.element)}${skill.name}`;
+        let msg = `${p.name} uses ${skillName}!`;
+        events.push({ msg, apply: () => {} });
+
+        skill.effects.forEach((effect) => {
+          if (effect.type === "hp_damage") {
+            const formula = effect.formula.replace("a.level", p.level);
+            let skillDmg = Math.round(eval(formula) * boost);
+            if (skillDmg < 1) skillDmg = 1;
+            events.push({
+              msg: `  ${target.name} takes ${skillDmg} damage.`,
+              apply: () => (target.hp = Math.max(0, target.hp - skillDmg)),
+            });
+          }
+          if (effect.type === "add_status") {
+            const chance = (effect.chance || 1) * boost;
+            if (Math.random() < chance) {
+              events.push({
+                msg: `  ${target.name} is afflicted with ${effect.status}.`,
+                apply: () => {},
+              });
+            }
+          }
+        });
+      } else {
+        events.push({
+          msg: `${p.name} attacks ${target.name} for ${dmg}.`,
+          apply: () => (target.hp = Math.max(0, target.hp - dmg)),
+        });
+      }
     });
 
     enemies.forEach((e) => {
@@ -690,7 +745,7 @@ export class Scene_Map {
       const idx = this.party.members.indexOf(target);
 
       let dmgBase = randInt(e.minDmg, e.maxDmg);
-      const mult = this.elementMultiplier(e.element, target.element);
+      const mult = this.elementMultiplier(e.elements, target.elements);
       let dmg = Math.round(dmgBase * mult);
 
       const row = this.partyRow(idx);
@@ -1083,7 +1138,9 @@ export class Scene_Map {
           </div>
           <div class="inspect-row">
             <span class="inspect-label">Element</span>
-            <span class="inspect-value">${recruit.element}</span>
+            <span class="inspect-value">${
+              recruit.elements.map(this.elementToEmoji).join(" ") || "—"
+            }</span>
           </div>
           <div class="inspect-row">
             <span class="inspect-label">Equipment</span>
@@ -1096,7 +1153,11 @@ export class Scene_Map {
           <div class="inspect-row">
             <span class="inspect-label">Skills</span>
             <span class="inspect-value">${
-              recruit.skills.join(", ") || "—"
+              (recruit.skills && recruit.skills.length)
+                ? recruit.skills
+                    .map((s) => this.dataManager.skills[s].name)
+                    .join(", ")
+                : "—"
             }</span>
           </div>
           <div class="inspect-row">
@@ -1188,12 +1249,49 @@ export class Scene_Map {
     this.closeRecruitEvent();
   }
 
-  elementMultiplier(attackerEl, defenderEl) {
-    const row = this.dataManager.elements[attackerEl];
-    if (!row) return 1;
-    if (row.strong && row.strong.includes(defenderEl)) return 1.5;
-    if (row.weak && row.weak.includes(defenderEl)) return 0.75;
-    return 1;
+  elementToEmoji(element) {
+    switch (element) {
+      case "Red":
+        return "🔴";
+      case "Green":
+        return "🟢";
+      case "Blue":
+        return "🔵";
+      case "White":
+        return "⚪";
+      case "Black":
+        return "⚫";
+      default:
+        return "◼️";
+    }
+  }
+
+  createHpGauge(hp, maxHp) {
+    const totalLength = 15;
+    let filledCount = Math.round((hp / maxHp) * totalLength);
+    if (hp > 0 && filledCount === 0) {
+      filledCount = 1;
+    }
+    const emptyCount = totalLength - filledCount;
+    return `[${'#'.repeat(filledCount)}${' '.repeat(emptyCount)}]`;
+  }
+
+  elementMultiplier(attackerElements, defenderElements) {
+    let multiplier = 1;
+    for (const attackerEl of attackerElements) {
+      for (const defenderEl of defenderElements) {
+        const row = this.dataManager.elements[attackerEl];
+        if (row) {
+          if (row.strong && row.strong.includes(defenderEl)) {
+            multiplier *= 1.5;
+          }
+          if (row.weak && row.weak.includes(defenderEl)) {
+            multiplier *= 0.75;
+          }
+        }
+      }
+    }
+    return multiplier;
   }
 
   partyRow(index) {
@@ -1368,7 +1466,8 @@ export class Scene_Map {
     this.inspectWindow.rowPosEl.textContent = this.partyRow(index);
     this.inspectWindow.hpEl.textContent = `${member.hp} / ${member.maxHp}`;
     this.inspectWindow.xpEl.textContent = `${member.xp || 0} / ${need}`;
-    this.inspectWindow.elementEl.textContent = member.element || "—";
+    this.inspectWindow.elementEl.textContent =
+      member.elements.map(this.elementToEmoji).join(" ") || "—";
     if (member.equipmentItem) {
       this.inspectWindow.equipEl.textContent = member.equipmentItem.name;
     } else if (member.baseEquipment) {
@@ -1379,7 +1478,11 @@ export class Scene_Map {
     this.inspectWindow.passiveEl.textContent =
       member.passives.map((p) => p.description).join(", ") || "—";
     this.inspectWindow.skillsEl.textContent =
-      (member.skills && member.skills.length) ? member.skills.join(", ") : "—";
+      (member.skills && member.skills.length)
+        ? member.skills
+            .map((s) => this.dataManager.skills[s].name)
+            .join(", ")
+        : "—";
     this.inspectWindow.flavorEl.textContent = member.flavor || "—";
     this.inspectWindow.notesEl.textContent =
       "Row is determined by the 2×2 formation grid.";

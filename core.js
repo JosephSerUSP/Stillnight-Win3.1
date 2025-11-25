@@ -47,3 +47,25 @@ export function beep(frequency = 440, duration = 120) {
     // ignore audio errors
   }
 }
+
+/**
+ * Determines the primary element(s) from an array of elements.
+ * The primary element is the one that appears most frequently.
+ * If there's a tie, all tied elements are returned.
+ * @param {string[]} elements - The array of elements.
+ * @returns {string[]} An array of the primary element(s).
+ */
+export function getPrimaryElements(elements) {
+  if (!elements || elements.length === 0) {
+    return [];
+  }
+
+  const counts = elements.reduce((acc, element) => {
+    acc[element] = (acc[element] || 0) + 1;
+    return acc;
+  }, {});
+
+  const maxCount = Math.max(...Object.values(counts));
+
+  return Object.keys(counts).filter((element) => counts[element] === maxCount);
+}
