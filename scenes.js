@@ -371,11 +371,11 @@ export class Scene_Map {
 
       const nameEl = document.createElement("div");
       nameEl.className = "party-slot-name";
-      const primaryElements = getPrimaryElements(member.elements);
-      const elementEmojis = primaryElements
-        .map(this.elementToEmoji.bind(this))
-        .join("");
-      nameEl.textContent = `${elementEmojis}${member.name}`;
+      const elementIcon = this.createElementIcon(member.elements);
+      nameEl.appendChild(elementIcon);
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = member.name;
+      nameEl.appendChild(nameSpan);
 
       const hpLabel = document.createElement("div");
       const row = this.partyRow(index);
@@ -587,8 +587,9 @@ export class Scene_Map {
 
     this.appendBattleLog(this.dataManager.terms.battle.enemies_emerge);
     enemies.forEach((e) => {
-      const elementEmojis = e.elements.map(this.elementToEmoji.bind(this)).join("");
-      this.appendBattleLog(` - ${e.name} (${e.tag}, ${elementEmojis})`);
+        const primaryElements = getPrimaryElements(e.elements);
+        const elementAscii = primaryElements.map(e => this.elementToAscii(e)).join('');
+        this.appendBattleLog(` - ${e.name} (${e.tag}, ${elementAscii})`);
     });
 
     this.applyBattleStartPassives();
@@ -629,14 +630,12 @@ export class Scene_Map {
     // Enemies (top)
     const enemyRows = [[], []];
     enemies.forEach((e, idx) => {
-      const row = idx % 2;
-      const primaryElements = getPrimaryElements(e.elements);
-      const elementEmojis = primaryElements
-        .map(this.elementToEmoji.bind(this))
-        .join("");
-      const str = ` ${elementEmojis}${e.name} (HP ${e.hp}/${e.maxHp}) `;
-      const gauge = ` ${this.createHpGauge(e.hp, e.maxHp)} `;
-      enemyRows[row].push(pad(str, 28) + pad(gauge, 28));
+        const row = idx % 2;
+        const primaryElements = getPrimaryElements(e.elements);
+        const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
+        const str = ` ${elementAscii}${e.name} (HP ${e.hp}/${e.maxHp}) `;
+        const gauge = ` ${this.createHpGauge(e.hp, e.maxHp)} `;
+        enemyRows[row].push(pad(str, 28) + pad(gauge, 28));
     });
     ascii += enemyRows[1].join("") + "\n";
     ascii += enemyRows[0].join("") + "\n";
@@ -646,14 +645,12 @@ export class Scene_Map {
     // Party (bottom)
     const partyRows = [[], []];
     this.party.members.slice(0, 4).forEach((p, i) => {
-      const row = i < 2 ? 1 : 0;
-      const primaryElements = getPrimaryElements(p.elements);
-      const elementEmojis = primaryElements
-        .map(this.elementToEmoji.bind(this))
-        .join("");
-      const str = ` ${elementEmojis}${p.name} (HP ${p.hp}/${p.maxHp}) `;
-      const gauge = ` ${this.createHpGauge(p.hp, p.maxHp)} `;
-      partyRows[row].push(pad(str, 28) + pad(gauge, 28));
+        const row = i < 2 ? 1 : 0;
+        const primaryElements = getPrimaryElements(p.elements);
+        const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
+        const str = ` ${elementAscii}${p.name} (HP ${p.hp}/${p.maxHp}) `;
+        const gauge = ` ${this.createHpGauge(p.hp, p.maxHp)} `;
+        partyRows[row].push(pad(str, 28) + pad(gauge, 28));
     });
     ascii += partyRows[1].join("") + "\n";
     ascii += partyRows[0].join("") + "\n";
@@ -979,6 +976,16 @@ export class Scene_Map {
     this.dataManager.items.forEach((tpl) => {
       const row = document.createElement("div");
       row.className = "shop-row";
+
+      const icon = document.createElement('div');
+      icon.className = 'icon';
+      const iconId = tpl.icon || 6; // Use icon 6 as a placeholder
+      if (iconId > 0) {
+          const iconIndex = iconId - 1;
+          icon.style.backgroundPosition = `-${(iconIndex % 10) * 12}px -${Math.floor(iconIndex / 10) * 12}px`;
+      }
+      row.appendChild(icon);
+
       const label = document.createElement("span");
       label.textContent = `${tpl.name} (${tpl.cost}G): ${tpl.description}`;
       const btn = document.createElement("button");
@@ -1126,7 +1133,7 @@ export class Scene_Map {
         <div class="inspect-fields">
           <div class="inspect-row">
             <span class="inspect-label">Name</span>
-            <span class="inspect-value">${recruit.name}</span>
+            <span id="recruit-name" class="inspect-value"></span>
           </div>
           <div class="inspect-row">
             <span class="inspect-label">Level</span>
@@ -1144,9 +1151,7 @@ export class Scene_Map {
           </div>
           <div class="inspect-row">
             <span class="inspect-label">Element</span>
-            <span class="inspect-value">${
-              recruit.elements.map(this.elementToEmoji.bind(this)).join(" ") || "—"
-            }</span>
+            <span id="recruit-element-icon" class="inspect-value"></span>
           </div>
           <div class="inspect-row">
             <span class="inspect-label">Equipment</span>
@@ -1189,6 +1194,20 @@ export class Scene_Map {
     });
     this.recruitWindow.buttonsEl.appendChild(joinBtn);
     this.recruitWindow.buttonsEl.appendChild(declineBtn);
+
+    const nameContainer = this.recruitWindow.bodyEl.querySelector('#recruit-name');
+    nameContainer.appendChild(this.createElementIcon(recruit.elements));
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = recruit.name;
+    nameContainer.appendChild(nameSpan);
+
+    const elementIconContainer = this.recruitWindow.bodyEl.querySelector('#recruit-element-icon');
+    if (recruit.elements && recruit.elements.length > 0) {
+        elementIconContainer.appendChild(this.renderElements(recruit.elements));
+    } else {
+        elementIconContainer.textContent = "—";
+    }
+
     this.recruitWindow.open();
     this.setStatus("Recruit encountered.");
     beep(400, 100);
@@ -1256,28 +1275,95 @@ export class Scene_Map {
   }
 
   formatSkillName(skillId) {
-    const skill = this.dataManager.skills[skillId];
-    if (!skill) return "";
-    const elementEmoji = this.elementToEmoji(skill.element);
-    return `${elementEmoji}${skill.name}`;
+      const skill = this.dataManager.skills[skillId];
+      if (!skill) return "";
+      const elementIcon = this.createElementIcon([skill.element]);
+      return `${elementIcon.innerHTML}${skill.name}`;
   }
 
-  elementToEmoji(element) {
+  elementToAscii(element) {
     switch (element) {
-      case "Red":
-        return "(R)";
-      case "Green":
-        return "(G)";
-      case "Blue":
-        return "(B)";
-      case "White":
-        return "(W)";
-      case "Black":
-        return "(K)";
-      default:
-        return "(-)";
+        case "Red": return "(R)";
+        case "Green": return "(G)";
+        case "Blue": return "(B)";
+        case "White": return "(W)";
+        case "Black": return "(K)";
+        default: return "";
     }
   }
+
+  elementToIcon(element) {
+    switch (element) {
+        case "Red": return 1;
+        case "Green": return 2;
+        case "Blue": return 3;
+        case "White": return 4;
+        case "Black": return 5;
+        case "l_Red": return 11;
+        case "l_Green": return 12;
+        case "l_Blue": return 13;
+        case "l_White": return 14;
+        case "l_Black": return 15;
+        default: return 0;
+    }
+}
+createElementIcon(elements) {
+    const primaryElements = getPrimaryElements(elements);
+    const container = document.createElement('div');
+
+    if (primaryElements.length <= 1) {
+        container.className = 'element-icon-container-name';
+        const icon = document.createElement('div');
+        icon.className = 'icon';
+        if (primaryElements.length === 1) {
+            const iconId = this.elementToIcon(primaryElements[0]);
+            if (iconId > 0) {
+                const iconIndex = iconId - 1;
+                icon.style.backgroundPosition = `-${(iconIndex % 10) * 12}px -${Math.floor(iconIndex / 10) * 12}px`;
+            }
+        }
+        container.appendChild(icon);
+    } else {
+        container.className = 'element-icon-container';
+        const positions = [
+            { top: '0px', left: '0px' },
+            { top: '6px', left: '6px' },
+            { top: '0px', left: '6px' },
+            { top: '6px', left: '0px' },
+        ];
+        primaryElements.forEach((element, index) => {
+            if (index < 4) {
+                const icon = document.createElement('div');
+                icon.className = 'element-icon';
+                const iconId = this.elementToIcon('l_' + element);
+                if (iconId > 0) {
+                    const iconIndex = iconId - 1;
+                    icon.style.backgroundPosition = `-${(iconIndex % 10) * 12}px -${Math.floor(iconIndex / 10) * 12}px`;
+                    icon.style.top = positions[index].top;
+                    icon.style.left = positions[index].left;
+                    container.appendChild(icon);
+                }
+            }
+        });
+    }
+    return container;
+}
+
+renderElements(elements) {
+    const container = document.createElement('div');
+    container.className = 'element-container';
+    elements.forEach(element => {
+        const icon = document.createElement('div');
+        icon.className = 'icon';
+        const iconId = this.elementToIcon(element);
+        if (iconId > 0) {
+            const iconIndex = iconId - 1;
+            icon.style.backgroundPosition = `-${(iconIndex % 10) * 12}px -${Math.floor(iconIndex / 10) * 12}px`;
+        }
+        container.appendChild(icon);
+    });
+    return container;
+}
 
   createHpGauge(hp, maxHp) {
     const totalLength = 15;
@@ -1413,8 +1499,19 @@ export class Scene_Map {
       this.party.inventory.forEach((item, idx) => {
         const row = document.createElement("div");
         row.className = "shop-row";
+
+        const icon = document.createElement('div');
+        icon.className = "icon";
+        const iconId = item.icon || 6; // Use icon 6 as a placeholder
+        if (iconId > 0) {
+            const iconIndex = iconId - 1;
+            icon.style.backgroundPosition = `-${(iconIndex % 10) * 12}px -${Math.floor(iconIndex / 10) * 12}px`;
+        }
+        row.appendChild(icon);
+
         const desc = document.createElement("span");
         desc.textContent = `${item.name}: ${item.description}`;
+        desc.style.flexGrow = "1";
         row.appendChild(desc);
 
         const btns = document.createElement("div");
@@ -1486,13 +1583,21 @@ export class Scene_Map {
     this.inspectWindow.spriteEl.style.backgroundImage = `url('assets/portraits/${
       member.spriteKey || "default"
     }.png')`;
-    this.inspectWindow.nameEl.textContent = member.name;
+    this.inspectWindow.nameEl.innerHTML = "";
+    this.inspectWindow.nameEl.appendChild(this.createElementIcon(member.elements));
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = member.name;
+    this.inspectWindow.nameEl.appendChild(nameSpan);
     this.inspectWindow.levelEl.textContent = member.level;
     this.inspectWindow.rowPosEl.textContent = this.partyRow(index);
     this.inspectWindow.hpEl.textContent = `${member.hp} / ${member.maxHp}`;
     this.inspectWindow.xpEl.textContent = `${member.xp || 0} / ${need}`;
-    this.inspectWindow.elementEl.textContent =
-      member.elements.map(this.elementToEmoji.bind(this)).join(" ") || "—";
+    this.inspectWindow.elementEl.innerHTML = "";
+    if (member.elements && member.elements.length > 0) {
+        this.inspectWindow.elementEl.appendChild(this.renderElements(member.elements));
+    } else {
+        this.inspectWindow.elementEl.textContent = "—";
+    }
     if (member.equipmentItem) {
       this.inspectWindow.equipEl.textContent = member.equipmentItem.name;
     } else if (member.baseEquipment) {
@@ -1502,7 +1607,7 @@ export class Scene_Map {
     }
     this.inspectWindow.passiveEl.textContent =
       member.passives.map((p) => p.description).join(", ") || "—";
-    this.inspectWindow.skillsEl.textContent =
+    this.inspectWindow.skillsEl.innerHTML =
       (member.skills && member.skills.length)
         ? member.skills
             .map((s) => this.formatSkillName(s))
