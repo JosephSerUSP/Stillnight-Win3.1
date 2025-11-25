@@ -617,40 +617,59 @@ export class Scene_Map {
   /**
    * Renders the battle screen.
    */
-  renderBattleAscii() {
+renderBattleAscii() {
     if (!this.battleState) return;
     const { enemies, round } = this.battleState;
     const pad = (str, len) => (str + " ".repeat(len)).slice(0, len);
 
+    // Helper: Names -> Spacer -> Gauges
+    const buildRowBlock = (rowItems) => {
+      if (!rowItems.length) return "";
+      const namesLine = rowItems.map(item => item.nameStr).join("");
+      const spacerLine = rowItems.map(item => item.spacerStr).join("");
+      const gaugesLine = rowItems.map(item => item.gaugeStr).join("");
+      return namesLine + "\n" + spacerLine + "\n" + gaugesLine + "\n";
+    };
+
     let ascii = " ".repeat(14) + "== BATTLE ==\n\n";
 
-    // Enemies (top)
+    // --- Enemies (top) ---
     const enemyRows = [[], []];
     enemies.forEach((e, idx) => {
         const row = idx % 2;
         const primaryElements = getPrimaryElements(e.elements);
         const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
-        const str = ` ${elementAscii}${e.name} (HP ${e.hp}/${e.maxHp}) `;
-        const gauge = ` ${this.createHpGauge(e.hp, e.maxHp)} `;
-        enemyRows[row].push(pad(str, 28) + pad(gauge, 28));
+        
+        enemyRows[row].push({ 
+            nameStr: pad(` ${elementAscii}${e.name} (HP ${e.hp}/${e.maxHp}) `, 28),
+            // "Half line" simulation: A blank line to separate text from gauge
+            spacerStr: pad("", 28), 
+            // Alternative for a visible line: pad(" " + "-".repeat(26) + " ", 28),
+            gaugeStr: pad(` ${this.createHpGauge(e.hp, e.maxHp)} `, 28)
+        });
     });
-    ascii += enemyRows[1].join("") + "\n";
-    ascii += enemyRows[0].join("") + "\n";
+
+    ascii += buildRowBlock(enemyRows[1]);
+    ascii += buildRowBlock(enemyRows[0]);
 
     ascii += "\n" + "-".repeat(56) + "\n\n";
 
-    // Party (bottom)
+    // --- Party (bottom) ---
     const partyRows = [[], []];
     this.party.members.slice(0, 4).forEach((p, i) => {
         const row = i < 2 ? 1 : 0;
         const primaryElements = getPrimaryElements(p.elements);
         const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
-        const str = ` ${elementAscii}${p.name} (HP ${p.hp}/${p.maxHp}) `;
-        const gauge = ` ${this.createHpGauge(p.hp, p.maxHp)} `;
-        partyRows[row].push(pad(str, 28) + pad(gauge, 28));
+        
+        partyRows[row].push({ 
+            nameStr: pad(` ${elementAscii}${p.name} (HP ${p.hp}/${p.maxHp}) `, 28),
+            spacerStr: pad("", 28), // The blank separator line
+            gaugeStr: pad(` ${this.createHpGauge(p.hp, p.maxHp)} `, 28)
+        });
     });
-    ascii += partyRows[1].join("") + "\n";
-    ascii += partyRows[0].join("") + "\n";
+
+    ascii += buildRowBlock(partyRows[1]);
+    ascii += buildRowBlock(partyRows[0]);
 
     this.battleWindow.asciiEl.textContent = ascii;
   }
