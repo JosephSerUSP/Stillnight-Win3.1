@@ -83,6 +83,10 @@ export class Window_Shop extends Window {
     this.btnClose = document.getElementById("btn-shop-close");
     this.btnLeave = document.getElementById("btn-shop-leave");
   }
+
+  closeShop() {
+    this.close();
+  }
 }
 
 /**

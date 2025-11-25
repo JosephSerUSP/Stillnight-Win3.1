@@ -46,6 +46,12 @@ export class DataManager {
   terms = null;
 
   /**
+   * The skill data.
+   * @type {Object}
+   */
+  skills = null;
+
+  /**
    * Loads all the game data.
    */
   async loadData() {
@@ -58,6 +64,13 @@ export class DataManager {
       items: "data/items.json",
       terms: "data/terms.json",
     };
+
+    try {
+      const { skills } = await import("./data/skills.js");
+      this.skills = skills;
+    } catch (error) {
+      console.error("Failed to load skills.js:", error);
+    }
 
     for (const [key, src] of Object.entries(dataSources)) {
       try {
