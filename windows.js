@@ -14,7 +14,14 @@ class Window {
    * Opens the window.
    */
   open() {
-    this.overlay.classList.add("active");
+    return new Promise(resolve => {
+        this.overlay.classList.add("active");
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                resolve();
+            });
+        });
+    });
   }
 
   /**

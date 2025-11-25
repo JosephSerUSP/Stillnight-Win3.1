@@ -401,7 +401,7 @@ export class Scene_Map {
    * Handles tile clicks.
    * @param {MouseEvent} e - The click event.
    */
-  onTileClick(e) {
+  async onTileClick(e) {
     if (!this.runActive) {
       this.setStatus("The run has ended. Start a new run.");
       return;
@@ -458,7 +458,7 @@ export class Scene_Map {
     } else if (ch === "E") {
       this.setStatus("Enemy encountered!");
       this.logMessage("[Battle] Shapes uncoil from the dark.");
-      this.openBattle(x, y);
+      await this.openBattle(x, y);
       return;
     } else if (ch === "¥") {
       this.openShop();
@@ -539,7 +539,7 @@ export class Scene_Map {
    * @param {number} tileX - The x-coordinate of the tile the battle is on.
    * @param {number} tileY - The y-coordinate of the tile the battle is on.
    */
-  openBattle(tileX, tileY) {
+  async openBattle(tileX, tileY) {
     const floor = this.map.floors[this.map.floorIndex];
     const depth = floor.depth;
 
@@ -591,7 +591,7 @@ export class Scene_Map {
 
     this.applyBattleStartPassives();
     this.renderBattleAscii();
-    this.battleWindow.open();
+    await this.battleWindow.open();
     this.modeLabelEl.textContent = "Battle";
     beep(350, 200);
   }
@@ -619,67 +619,102 @@ export class Scene_Map {
    */
 renderBattleAscii() {
     if (!this.battleState) return;
-    const { enemies, round } = this.battleState;
-    const pad = (str, len) => (str + " ".repeat(len)).slice(0, len);
 
-    // Helper: Names -> Spacer -> Gauges
-    const buildRowBlock = (rowItems) => {
-      if (!rowItems.length) return "";
-      const namesLine = rowItems.map(item => item.nameStr).join("");
-      const spacerLine = rowItems.map(item => item.spacerStr).join("");
-      const gaugesLine = rowItems.map(item => item.gaugeStr).join("");
-      return namesLine + "\n" + spacerLine + "\n" + gaugesLine + "\n";
+    const { enemies } = this.battleState;
+    this.battleWindow.asciiEl.innerHTML = '';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'battle-title';
+    titleEl.textContent = '== BATTLE ==';
+    this.battleWindow.asciiEl.appendChild(titleEl);
+
+    const createUnitElement = (unit, isPartyMember, index) => {
+        const unitEl = document.createElement('div');
+        unitEl.className = 'battle-unit';
+        unitEl.dataset.id = isPartyMember ? `party-${index}` : `enemy-${index}`;
+        unitEl.dataset.index = index;
+
+        const nameContainer = document.createElement('div');
+        nameContainer.className = 'unit-name-container';
+
+        const nameEl = document.createElement('div');
+        nameEl.className = 'unit-name';
+        
+        const elementIcon = this.createElementIcon(unit.elements);
+        nameEl.appendChild(elementIcon);
+
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = unit.name;
+        nameEl.appendChild(nameSpan);
+
+        const hpTextEl = document.createElement('div');
+        hpTextEl.className = 'unit-hp-text';
+        hpTextEl.textContent = `(HP ${unit.hp}/${unit.maxHp})`;
+
+        nameContainer.appendChild(nameEl);
+        nameContainer.appendChild(hpTextEl);
+
+        const gaugeContainerEl = document.createElement('div');
+        gaugeContainerEl.className = 'unit-hp-gauge-container';
+
+        const gaugeEl = document.createElement('div');
+        gaugeEl.className = 'unit-hp-gauge';
+        gaugeEl.innerHTML = this.createHpGauge(unit.hp, unit.maxHp);
+
+        gaugeContainerEl.appendChild(gaugeEl);
+
+        unitEl.appendChild(nameContainer);
+        unitEl.appendChild(gaugeContainerEl);
+
+        return unitEl;
     };
 
-    let ascii = " ".repeat(14) + "== BATTLE ==\n\n";
+    const createRow = (className) => {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'battle-row ' + (className || '');
+        return rowEl;
+    };
 
     // --- Enemies (top) ---
-    const enemyRows = [[], []];
+    const enemySideEl = document.createElement('div');
+    enemySideEl.className = 'enemy-side';
     enemies.forEach((e, idx) => {
-        const row = idx % 2;
-        const primaryElements = getPrimaryElements(e.elements);
-        const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
-        
-        enemyRows[row].push({ 
-            nameStr: pad(` ${elementAscii}${e.name} (HP ${e.hp}/${e.maxHp}) `, 28),
-            // "Half line" simulation: A blank line to separate text from gauge
-            spacerStr: pad("", 28), 
-            // Alternative for a visible line: pad(" " + "-".repeat(26) + " ", 28),
-            gaugeStr: pad(` ${this.createHpGauge(e.hp, e.maxHp)} `, 28)
-        });
+        enemySideEl.appendChild(createUnitElement(e, false, idx));
     });
+    this.battleWindow.asciiEl.appendChild(enemySideEl);
 
-    ascii += buildRowBlock(enemyRows[1]);
-    ascii += buildRowBlock(enemyRows[0]);
-
-    ascii += "\n" + "-".repeat(56) + "\n\n";
+    // --- Divider ---
+    const dividerEl = document.createElement('div');
+    dividerEl.className = 'battle-divider';
+    dividerEl.textContent = '-'.repeat(56);
+    this.battleWindow.asciiEl.appendChild(dividerEl);
 
     // --- Party (bottom) ---
-    const partyRows = [[], []];
+    const partySideEl = document.createElement('div');
+    partySideEl.className = 'party-side';
     this.party.members.slice(0, 4).forEach((p, i) => {
-        const row = i < 2 ? 1 : 0;
-        const primaryElements = getPrimaryElements(p.elements);
-        const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
-        
-        partyRows[row].push({ 
-            nameStr: pad(` ${elementAscii}${p.name} (HP ${p.hp}/${p.maxHp}) `, 28),
-            spacerStr: pad("", 28), // The blank separator line
-            gaugeStr: pad(` ${this.createHpGauge(p.hp, p.maxHp)} `, 28)
-        });
+        partySideEl.appendChild(createUnitElement(p, true, i));
     });
-
-    ascii += buildRowBlock(partyRows[1]);
-    ascii += buildRowBlock(partyRows[0]);
-
-    this.battleWindow.asciiEl.textContent = ascii;
+    this.battleWindow.asciiEl.appendChild(partySideEl);
   }
 
   /**
    * Resolves a round of battle.
    */
+  flashUnitName(unitId, color) {
+    const unitEl = this.battleWindow.asciiEl.querySelector(`[data-id='${unitId}'] .unit-name`);
+    if (unitEl) {
+        const className = color === 'white' ? 'flash-white' : 'flash-red';
+        unitEl.classList.add(className);
+        setTimeout(() => {
+            unitEl.classList.remove(className);
+        }, 600);
+    }
+}
+
   resolveBattleRound() {
     if (!this.battleState || this.battleState.finished || this.battleBusy)
-      return;
+        return;
     this.battleBusy = true;
     this.battleWindow.btnRound.disabled = true;
     this.battleWindow.btnFlee.disabled = true;
@@ -690,182 +725,230 @@ renderBattleAscii() {
     const events = [];
 
     this.party.members.slice(0, 4).forEach((p, index) => {
-      if (p.hp <= 0) return;
-      const target = enemies.find((e) => e.hp > 0);
-      if (!target) return;
-      let base = randInt(2, 4) + Math.floor(p.level / 2);
-      if (p.equipmentItem && p.equipmentItem.damageBonus) {
-        base += p.equipmentItem.damageBonus;
-      }
-
-      const row = this.partyRow(index);
-      if (row === "Front") base += 1;
-      else base -= 1;
-
-      const mult = this.elementMultiplier(p.elements, target.elements);
-      let dmg = Math.round(base * mult);
-      dmg += p.getPassiveValue("DEAL_DAMAGE_MOD");
-      if (dmg < 1) dmg = 1;
-
-      const skillId =
-        p.skills && p.skills.length
-          ? p.skills[randInt(0, p.skills.length - 1)]
-          : null;
-      const skill = skillId ? this.dataManager.skills[skillId] : null;
-
-      if (skill) {
-        let boost = 1;
-        if (skill.element) {
-          const matches = p.elements.filter(
-            (e) => e === skill.element
-          ).length;
-          boost += matches * 0.25;
+        if (p.hp <= 0) return;
+        const targetIndex = enemies.findIndex((e) => e.hp > 0);
+        if (targetIndex === -1) return;
+        const target = enemies[targetIndex];
+        let base = randInt(2, 4) + Math.floor(p.level / 2);
+        if (p.equipmentItem && p.equipmentItem.damageBonus) {
+            base += p.equipmentItem.damageBonus;
         }
 
-        const skillName = `${this.elementToAscii(skill.element)}${skill.name}`;
-        let msg = `${p.name} uses ${skillName}!`;
-        events.push({ msg, apply: () => {} });
+        const row = this.partyRow(index);
+        if (row === "Front") base += 1;
+        else base -= 1;
 
-        skill.effects.forEach((effect) => {
-          if (effect.type === "hp_damage") {
-            const formula = effect.formula.replace("a.level", p.level);
-            let skillDmg = Math.round(eval(formula) * boost);
-            if (skillDmg < 1) skillDmg = 1;
-            events.push({
-              msg: `  ${target.name} takes ${skillDmg} damage.`,
-              apply: () => (target.hp = Math.max(0, target.hp - skillDmg)),
-            });
-          }
-          if (effect.type === "add_status") {
-            const chance = (effect.chance || 1) * boost;
-            if (Math.random() < chance) {
-              events.push({
-                msg: `  ${target.name} is afflicted with ${effect.status}.`,
-                apply: () => {},
-              });
+        const mult = this.elementMultiplier(p.elements, target.elements);
+        let dmg = Math.round(base * mult);
+        dmg += p.getPassiveValue("DEAL_DAMAGE_MOD");
+        if (dmg < 1) dmg = 1;
+
+        const skillId =
+            p.skills && p.skills.length
+                ? p.skills[randInt(0, p.skills.length - 1)]
+                : null;
+        const skill = skillId ? this.dataManager.skills[skillId] : null;
+
+        if (skill) {
+            let boost = 1;
+            if (skill.element) {
+                const matches = p.elements.filter(
+                    (e) => e === skill.element
+                ).length;
+                boost += matches * 0.25;
             }
-          }
-        });
-      } else {
-        events.push({
-          msg: `${p.name} attacks ${target.name} for ${dmg}.`,
-          apply: () => (target.hp = Math.max(0, target.hp - dmg)),
-        });
-      }
+
+            const skillName = `${this.elementToAscii(skill.element)}${skill.name}`;
+            let msg = `${p.name} uses ${skillName}!`;
+            events.push({
+                msg, apply: () => {
+                    if (p.hp <= 0) return false;
+                    this.flashUnitName(`party-${index}`, 'white');
+                }
+            });
+
+            skill.effects.forEach((effect) => {
+                if (effect.type === "hp_damage") {
+                    const formula = effect.formula.replace("a.level", p.level);
+                    let skillDmg = Math.round(eval(formula) * boost);
+                    if (skillDmg < 1) skillDmg = 1;
+                    const oldHp = target.hp;
+                    events.push({
+                        msg: `  ${target.name} takes ${skillDmg} damage.`,
+                        apply: () => {
+                            const newHp = Math.max(0, oldHp - skillDmg);
+                            target.hp = newHp;
+                            this.flashUnitName(`enemy-${targetIndex}`, 'red');
+                            this.updateHpGaugeWithAnimation(`enemy-${targetIndex}`, oldHp, newHp, target.maxHp);
+                            this.updateHpText(`enemy-${targetIndex}`, newHp, target.maxHp);
+                        },
+                    });
+                }
+                if (effect.type === "add_status") {
+                    const chance = (effect.chance || 1) * boost;
+                    if (Math.random() < chance) {
+                        events.push({
+                            msg: `  ${target.name} is afflicted with ${effect.status}.`,
+                            apply: () => {},
+                        });
+                    }
+                }
+            });
+        } else {
+            const oldHp = target.hp;
+            events.push({
+                msg: `${p.name} attacks ${target.name} for ${dmg}.`,
+                apply: () => {
+                    if (p.hp <= 0) return false;
+                    this.flashUnitName(`party-${index}`, 'white');
+                    const newHp = Math.max(0, oldHp - dmg);
+                    target.hp = newHp;
+                    this.flashUnitName(`enemy-${targetIndex}`, 'red');
+                    this.updateHpGaugeWithAnimation(`enemy-${targetIndex}`, oldHp, newHp, target.maxHp);
+                    this.updateHpText(`enemy-${targetIndex}`, newHp, target.maxHp);
+                },
+            });
+        }
     });
 
-    enemies.forEach((e) => {
-      if (e.hp <= 0) return;
-      const possibleTargets = this.party.members
-        .slice(0, 4)
-        .filter((p) => p.hp > 0);
-      if (possibleTargets.length === 0) return;
-      const target = possibleTargets[randInt(0, possibleTargets.length - 1)];
+    enemies.forEach((e, index) => {
+        if (e.hp <= 0) return;
+        const possibleTargets = this.party.members
+            .slice(0, 4)
+            .filter((p) => p.hp > 0);
+        if (possibleTargets.length === 0) return;
 
-      const skillId =
-        e.skills && e.skills.length
-          ? e.skills[randInt(0, e.skills.length - 1)]
-          : null;
-      const skill = skillId ? this.dataManager.skills[skillId] : null;
+        const targetIndex = this.party.members.findIndex(p => p.hp > 0 && possibleTargets.includes(p));
+        const target = this.party.members[targetIndex];
 
-      if (skill) {
-        let boost = 1;
-        if (skill.element) {
-          const matches = e.elements.filter(
-            (el) => el === skill.element
-          ).length;
-          boost += matches * 0.25;
-        }
 
-        const skillName = `${this.elementToAscii(skill.element)}${skill.name}`;
-        let msg = `${e.name} uses ${skillName}!`;
-        events.push({ msg, apply: () => {} });
+        const skillId =
+            e.skills && e.skills.length
+                ? e.skills[randInt(0, e.skills.length - 1)]
+                : null;
+        const skill = skillId ? this.dataManager.skills[skillId] : null;
 
-        skill.effects.forEach((effect) => {
-          if (effect.type === "hp_damage") {
-            const formula = effect.formula.replace("a.level", e.level);
-            let skillDmg = Math.round(eval(formula) * boost);
-            if (skillDmg < 1) skillDmg = 1;
-            events.push({
-              msg: `  ${target.name} takes ${skillDmg} damage.`,
-              apply: () => (target.hp = Math.max(0, target.hp - skillDmg)),
-            });
-          }
-          if (effect.type === "add_status") {
-            const chance = (effect.chance || 1) * boost;
-            if (Math.random() < chance) {
-              events.push({
-                msg: `  ${target.name} is afflicted with ${effect.status}.`,
-                apply: () => {},
-              });
+        if (skill) {
+            let boost = 1;
+            if (skill.element) {
+                const matches = e.elements.filter(
+                    (el) => el === skill.element
+                ).length;
+                boost += matches * 0.25;
             }
-          }
-        });
-      } else {
-        const dmg = Math.max(1, e.level + randInt(-1, 2));
-        events.push({
-          msg: `${e.name} attacks ${target.name} for ${dmg}.`,
-          apply: () => (target.hp = Math.max(0, target.hp - dmg)),
-        });
-      }
+
+            const skillName = `${this.elementToAscii(skill.element)}${skill.name}`;
+            let msg = `${e.name} uses ${skillName}!`;
+            events.push({
+                msg, apply: () => {
+                    if (e.hp <= 0) return false;
+                    this.flashUnitName(`enemy-${index}`, 'white');
+                }
+            });
+
+            skill.effects.forEach((effect) => {
+                if (effect.type === "hp_damage") {
+                    const formula = effect.formula.replace("a.level", e.level);
+                    let skillDmg = Math.round(eval(formula) * boost);
+                    if (skillDmg < 1) skillDmg = 1;
+                    const oldHp = target.hp;
+                    events.push({
+                        msg: `  ${target.name} takes ${skillDmg} damage.`,
+                        apply: () => {
+                            const newHp = Math.max(0, oldHp - skillDmg);
+                            target.hp = newHp;
+                            this.flashUnitName(`party-${targetIndex}`, 'red');
+                            this.updateHpGaugeWithAnimation(`party-${targetIndex}`, oldHp, newHp, target.maxHp);
+                            this.updateHpText(`party-${targetIndex}`, newHp, target.maxHp);
+                        }
+                    });
+                }
+                if (effect.type === "add_status") {
+                    const chance = (effect.chance || 1) * boost;
+                    if (Math.random() < chance) {
+                        events.push({
+                            msg: `  ${target.name} is afflicted with ${effect.status}.`,
+                            apply: () => {},
+                        });
+                    }
+                }
+            });
+        } else {
+            const dmg = Math.max(1, e.level + randInt(-1, 2));
+            const oldHp = target.hp;
+            events.push({
+                msg: `${e.name} attacks ${target.name} for ${dmg}.`,
+                apply: () => {
+                    if (e.hp <= 0) return false;
+                    this.flashUnitName(`enemy-${index}`, 'white');
+                    const newHp = Math.max(0, oldHp - dmg);
+                    target.hp = newHp;
+                    this.flashUnitName(`party-${targetIndex}`, 'red');
+                    this.updateHpGaugeWithAnimation(`party-${targetIndex}`, oldHp, newHp, target.maxHp);
+                    this.updateHpText(`party-${targetIndex}`, newHp, target.maxHp);
+                }
+            });
+        }
     });
 
     const delay = 450;
     let i = 0;
 
     const playNext = () => {
-      if (i < events.length) {
-        const ev = events[i];
-        ev.apply();
-        this.appendBattleLog(ev.msg);
-        this.renderBattleAscii();
-        i++;
-        setTimeout(playNext, delay);
-      } else {
-        finalizeRound();
-      }
+        if (i < events.length) {
+            const ev = events[i];
+            const success = ev.apply();
+            if (ev.msg && success !== false) {
+                this.appendBattleLog(ev.msg);
+            }
+            // this.renderBattleAscii(); // This was causing the animations to be cancelled
+            i++;
+            setTimeout(playNext, delay);
+        } else {
+            finalizeRound();
+        }
     };
 
     const finalizeRound = () => {
-      const anyEnemyAlive = enemies.some((e) => e.hp > 0);
-      const anyPartyAlive = this.party.members
-        .slice(0, 4)
-        .some((p) => p.hp > 0);
+        const anyEnemyAlive = enemies.some((e) => e.hp > 0);
+        const anyPartyAlive = this.party.members
+            .slice(0, 4)
+            .some((p) => p.hp > 0);
 
-      if (!anyPartyAlive) {
-        this.appendBattleLog(this.dataManager.terms.battle.your_party_collapses);
-        this.logMessage(this.dataManager.terms.log.party_falls);
-        this.runActive = false;
-        this.battleState.finished = true;
-      } else if (!anyEnemyAlive) {
-        this.appendBattleLog(this.dataManager.terms.battle.victory);
-        this.battleState.finished = true;
-        this.battleState.victoryPending = true;
-      }
+        if (!anyPartyAlive) {
+            this.appendBattleLog(this.dataManager.terms.battle.your_party_collapses);
+            this.logMessage(this.dataManager.terms.log.party_falls);
+            this.runActive = false;
+            this.battleState.finished = true;
+        } else if (!anyEnemyAlive) {
+            this.appendBattleLog(this.dataManager.terms.battle.victory);
+            this.battleState.finished = true;
+            this.battleState.victoryPending = true;
+        }
 
-      this.updateParty();
-      this.renderBattleAscii();
+        this.updateParty();
+        this.renderBattleAscii();
 
-      if (this.battleState && this.battleState.victoryPending) {
-        this.battleWindow.btnVictory.style.display = "inline-block";
-      }
-      if (
-        !this.battleState ||
-        (!this.battleState.finished || !this.battleState.victoryPending)
-      ) {
-        this.battleWindow.btnRound.disabled = false;
-        this.battleWindow.btnFlee.disabled = false;
-      }
-      if (!this.battleState.finished) {
-        this.appendBattleLog("Use Resolve Round or Flee.");
-      }
-      this.battleBusy = false;
-      this.updateAll();
+        if (this.battleState && this.battleState.victoryPending) {
+            this.battleWindow.btnVictory.style.display = "inline-block";
+        }
+        if (
+            !this.battleState ||
+            (!this.battleState.finished || !this.battleState.victoryPending)
+        ) {
+            this.battleWindow.btnRound.disabled = false;
+            this.battleWindow.btnFlee.disabled = false;
+        }
+        if (!this.battleState.finished) {
+            this.appendBattleLog("Use Resolve Round or Flee.");
+        }
+        this.battleBusy = false;
+        this.updateAll();
     };
 
     playNext();
     beep(300, 80);
-  }
+}
 
   gainXp(member, amount) {
     if (!member || amount <= 0) return;
@@ -1415,15 +1498,85 @@ renderElements(elements) {
     return container;
 }
 
+  updateHpText(unitId, hp, maxHp) {
+    const hpTextEl = this.battleWindow.asciiEl.querySelector(`[data-id='${unitId}'] .unit-hp-text`);
+    if (hpTextEl) {
+        hpTextEl.textContent = `(HP ${hp}/${maxHp})`;
+    }
+}
+
+  updateHpGaugeWithAnimation(unitId, oldHp, newHp, maxHp) {
+    const gaugeEl = this.battleWindow.asciiEl.querySelector(`[data-id='${unitId}'] .unit-hp-gauge`);
+    if (!gaugeEl) return;
+
+    const totalLength = 15;
+    const oldFilledCount = Math.round((oldHp / maxHp) * totalLength);
+    const newFilledCount = Math.round((newHp / maxHp) * totalLength);
+    const hpRatio = newHp / maxHp;
+
+    let colorClass = '';
+    if (hpRatio < 0.2) {
+        colorClass = 'hp-red';
+    } else if (hpRatio < 0.4) {
+        colorClass = 'hp-yellow';
+    }
+
+    const hpChange = newFilledCount - oldFilledCount;
+    const delay = 32; // 2 frames at 60fps
+
+    gaugeEl.innerHTML = `[<span class="gauge-filled"></span><span class="gauge-empty"></span>]`;
+    const filledEl = gaugeEl.querySelector('.gauge-filled');
+    const emptyEl = gaugeEl.querySelector('.gauge-empty');
+
+    filledEl.className = `gauge-filled ${colorClass}`;
+    filledEl.textContent = '#'.repeat(oldFilledCount);
+    emptyEl.textContent = ' '.repeat(totalLength - oldFilledCount);
+
+    if (hpChange !== 0) {
+        const char = hpChange > 0 ? '#' : '';
+        const targetEl = hpChange > 0 ? filledEl : emptyEl;
+        const currentLength = hpChange > 0 ? oldFilledCount : totalLength - oldFilledCount;
+        const finalLength = hpChange > 0 ? newFilledCount : totalLength - newFilledCount;
+
+        let i = currentLength;
+        const interval = setInterval(() => {
+            if (i === finalLength) {
+                clearInterval(interval);
+            } else {
+                if (hpChange > 0) {
+                    filledEl.textContent += '#';
+                    emptyEl.textContent = emptyEl.textContent.slice(1);
+                    i++;
+                } else {
+                    filledEl.textContent = filledEl.textContent.slice(0, -1);
+                    emptyEl.textContent += ' ';
+                    i--;
+                }
+            }
+        }, delay);
+    }
+}
   createHpGauge(hp, maxHp) {
     const totalLength = 15;
-    let filledCount = Math.round((hp / maxHp) * totalLength);
+    const hpRatio = hp / maxHp;
+    let filledCount = Math.round(hpRatio * totalLength);
     if (hp > 0 && filledCount === 0) {
-      filledCount = 1;
+        filledCount = 1;
     }
     const emptyCount = totalLength - filledCount;
-    return `[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
-  }
+
+    let colorClass = '';
+    if (hpRatio < 0.2) {
+        colorClass = 'hp-red';
+    } else if (hpRatio < 0.4) {
+        colorClass = 'hp-yellow';
+    }
+
+    const filledHtml = `<span class="${colorClass}">${'#'.repeat(filledCount)}</span>`;
+    const emptyHtml = `<span>${' '.repeat(emptyCount)}</span>`;
+
+    return `[${filledHtml}${emptyHtml}]`;
+}
 
   elementMultiplier(attackerElements, defenderElements) {
     let multiplier = 1;

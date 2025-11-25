@@ -734,3 +734,113 @@ body.night-theme {
     flex-direction: column;
     gap: 4px;
 }
+
+.battle-title {
+    text-align: center;
+    margin-bottom: 10px;
+}
+.unit-name-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.unit-name {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-grow: 1;
+}
+.unit-hp-text {
+    font-size: 0.9em;
+}
+.unit-hp-gauge-container {
+    margin-top: -5px;
+}
+.battle-divider {
+    text-align: center;
+    margin: 10px 0;
+}
+
+
+@keyframes flash-white {
+    0%, 100% { color: inherit; }
+    50% { color: white; }
+}
+.flash-white {
+    animation: flash-white 0.3s 2;
+}
+@keyframes flash-red {
+    0%, 100% { color: inherit; }
+    50% { color: red; }
+}
+.flash-red {
+    animation: flash-red 0.3s 2;
+}
+
+
+.hp-red {
+    color: red;
+}
+.hp-yellow {
+    color: yellow;
+}
+
+.enemy-side, .party-side {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 10px;
+    padding: 10px 0;
+    grid-template-areas:
+        "back-left back-right"
+        "front-left front-right";
+}
+
+.battle-unit {
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Explicit placement for each slot --- */
+
+/* Enemy front-left (slot 0) */
+.enemy-side .battle-unit[data-index="0"] {
+    grid-area: front-left;
+    justify-self: end; /* push to center */
+}
+/* Enemy front-right (slot 1) */
+.enemy-side .battle-unit[data-index="1"] {
+    grid-area: front-right;
+    justify-self: start; /* push to center */
+}
+/* Enemy back-left (slot 2) */
+.enemy-side .battle-unit[data-index="2"] {
+    grid-area: back-left;
+    justify-self: start; /* push to outside */
+}
+/* Enemy back-right (slot 3) */
+.enemy-side .battle-unit[data-index="3"] {
+    grid-area: back-right;
+    justify-self: end; /* push to outside */
+}
+
+/* Party front-left (slot 0) */
+.party-side .battle-unit[data-index="0"] {
+    grid-area: front-left;
+    justify-self: end; /* push to center */
+}
+/* Party front-right (slot 1) */
+.party-side .battle-unit[data-index="1"] {
+    grid-area: front-right;
+    justify-self: start; /* push to center */
+}
+/* Party back-left (slot 2) */
+.party-side .battle-unit[data-index="2"] {
+    grid-area: back-left;
+    justify-self: start; /* push to outside */
+}
+/* Party back-right (slot 3) */
+.party-side .battle-unit[data-index="3"] {
+    grid-area: back-right;
+    justify-self: end; /* push to outside */
+}
