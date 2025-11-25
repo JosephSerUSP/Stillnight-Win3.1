@@ -1,3 +1,4 @@
+
 import { randInt, shuffleArray } from "./core.js";
 
 /**
@@ -13,7 +14,7 @@ class Game_Unit {
     this.maxHp = unitData.maxHp;
     this.hp = unitData.maxHp;
     this.level = unitData.level;
-    this.element = unitData.element;
+    this.elements = unitData.elements || [];
   }
 }
 
@@ -30,7 +31,7 @@ export class Game_Actor extends Game_Unit {
     super(actorData);
     this.role = actorData.role;
     this.passives = actorData.passives || [];
-    this.skills = actorData.skills.slice();
+    this.skills = actorData.skills ? actorData.skills.slice() : [];
     this.spriteKey = actorData.spriteKey;
     this.flavor = actorData.flavor;
     this.xp = 0;
@@ -71,6 +72,7 @@ export class Game_Enemy extends Game_Unit {
   constructor(enemyData, depth) {
     super(enemyData);
     this.tag = enemyData.tag;
+    this.skills = enemyData.skills || [];
     this.maxHp = enemyData.maxHp + (depth - 1) * 4;
     this.hp = this.maxHp;
     this.minDmg = enemyData.minDmg + (depth - 1);
@@ -273,7 +275,7 @@ export class Game_Map {
         used.push(shrinePos);
       }
     }
-    if (meta.depth >= 2) {
+    if (meta.depth >= 2 || index === 0) { // Always on first floor for testing
       const shopPos = pickCell(used);
       if (shopPos) {
         tiles[shopPos[1]][shopPos[0]] = "¥";
