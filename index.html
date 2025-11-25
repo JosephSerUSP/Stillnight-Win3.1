@@ -194,7 +194,14 @@
                                 </div>
                                 <div class="inspect-row">
                                     <span class="inspect-label">Equipment</span>
-                                    <span class="inspect-value" id="inspect-equip"></span>
+                                    <button class="win-btn inspect-value" id="inspect-equip"></button>
+                                </div>
+                                <div id="inspect-equipment-list-container" style="display: none;">
+                                    <div class="group-box">
+                                        <legend>Change Equipment</legend>
+                                        <div id="inspect-equipment-filter" class="stack-nav-buttons" style="margin-bottom: 4px;"></div>
+                                        <div id="inspect-equipment-list"></div>
+                                    </div>
                                 </div>
                                 <div class="inspect-row">
                                     <span class="inspect-label">Passive</span>
@@ -300,6 +307,22 @@
                     </div>
                     <div class="dialog-buttons" id="recruit-buttons">
                         <!-- buttons will be injected dynamically depending on state -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generic Confirmation Dialog -->
+        <div class="modal-overlay" id="confirm-overlay">
+            <div class="dialog" style="width: 320px;">
+                <div class="dialog-titlebar">
+                    <span id="confirm-title">Confirmation</span>
+                </div>
+                <div class="dialog-content">
+                    <div id="confirm-message" style="margin-bottom: 8px;"></div>
+                    <div class="dialog-buttons">
+                        <button class="win-btn" id="btn-confirm-ok">OK</button>
+                        <button class="win-btn" id="btn-confirm-cancel">Cancel</button>
                     </div>
                 </div>
             </div>
