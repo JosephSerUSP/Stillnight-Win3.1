@@ -5,7 +5,7 @@ import { randInt, shuffleArray } from "./core.js";
  * The base class for all game units.
  * @class
  */
-class Game_Unit {
+class Game_Base {
   /**
    * @param {Object} unitData - The data for the unit.
    */
@@ -21,13 +21,14 @@ class Game_Unit {
 /**
  * The class for game actors.
  * @class
- * @extends Game_Unit
+ * @extends Game_Base
  */
-export class Game_Actor extends Game_Unit {
+export class Game_Battler extends Game_Base {
   /**
    * @param {Object} actorData - The data for the actor.
+   * @param {number} depth - The depth of the floor.
    */
-  constructor(actorData) {
+  constructor(actorData, depth = 1, isEnemy = false) {
     super(actorData);
     this.role = actorData.role;
     this.passives = actorData.passives || [];
@@ -37,6 +38,15 @@ export class Game_Actor extends Game_Unit {
     this.xp = 0;
     this.baseEquipment = actorData.equipment || null;
     this.equipmentItem = null;
+    this.expGrowth = actorData.expGrowth || 5;
+    this.evolutions = actorData.evolutions || [];
+    this.gold = actorData.gold || 0;
+    this.isEnemy = isEnemy;
+
+    if (this.isEnemy) {
+      this.maxHp += (depth - 1) * 4;
+      this.hp = this.maxHp;
+    }
   }
 
   /**
@@ -45,7 +55,7 @@ export class Game_Actor extends Game_Unit {
    * @returns {number} The experience needed for the next level.
    */
   xpNeeded(level) {
-    return level * 4 + 10;
+    return Math.floor(level * (this.expGrowth * 0.5) + 10);
   }
 
   /**
@@ -56,29 +66,6 @@ export class Game_Actor extends Game_Unit {
   getPassiveValue(code) {
     const passive = this.passives.find((p) => p.code === code);
     return passive ? passive.value : 0;
-  }
-}
-
-/**
- * The class for game enemies.
- * @class
- * @extends Game_Unit
- */
-export class Game_Enemy extends Game_Unit {
-  /**
-   * @param {Object} enemyData - The data for the enemy.
-   * @param {number} depth - The depth of the floor.
-   */
-  constructor(enemyData, depth) {
-    super(enemyData);
-    this.tag = enemyData.tag;
-    this.skills = enemyData.skills || [];
-    this.maxHp = enemyData.maxHp + (depth - 1) * 4;
-    this.hp = this.maxHp;
-    this.minDmg = enemyData.minDmg + (depth - 1);
-    this.maxDmg = enemyData.maxDmg + (depth - 1);
-    this.xpReward = enemyData.xpReward + depth * 2;
-    this.goldReward = enemyData.baseGold + depth * 2;
   }
 }
 
@@ -95,7 +82,7 @@ export class Game_Party {
 
   /**
    * The party members.
-   * @type {Game_Actor[]}
+   * @type {Game_Battler[]}
    */
   members = [];
 
@@ -115,8 +102,17 @@ export class Game_Party {
    * Creates the initial party members.
    * @param {Object} actorData - The actor data from the data manager.
    */
-  createInitialMembers(actorData) {
-    this.members = actorData.party.map((data) => new Game_Actor(data));
+  createInitialMembers(actorData, initialSetupData) {
+    this.gold = initialSetupData.initialGold;
+    this.inventory = initialSetupData.initialItems.slice();
+
+    const startingPool = actorData.filter(creature =>
+        initialSetupData.startingParty.includes(creature.id)
+    );
+
+    this.members = shuffleArray(startingPool)
+        .slice(0, 3)
+        .map(data => new Game_Battler(data));
   }
 }
 

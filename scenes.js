@@ -1,5 +1,5 @@
 
-import { Game_Map, Game_Party, Game_Enemy, Game_Actor } from "./objects.js";
+import { Game_Map, Game_Party, Game_Battler } from "./objects.js";
 import { beep, randInt, shuffleArray, getPrimaryElements } from "./core.js";
 import {
   Window_Battle,
@@ -97,9 +97,7 @@ export class Scene_Map {
    */
   startNewRun() {
     this.map.initFloors(this.dataManager.floors);
-    this.party.createInitialMembers(this.dataManager.actors);
-    this.party.gold = 0;
-    this.party.inventory = [];
+    this.party.createInitialMembers(this.dataManager.actors, this.dataManager.initialSetup);
     this.runActive = true;
     this.map.floorIndex = 0;
     const f = this.map.floors[this.map.floorIndex];
@@ -544,28 +542,25 @@ export class Scene_Map {
     const depth = floor.depth;
 
     let enemies = [];
+    const actorTemplates = this.dataManager.actors;
+
     if (this.map.floorIndex === this.map.floors.length - 1) {
       // Boss
       const bossHp = 40 + (depth - 3) * 5;
-      enemies.push({
+      enemies.push(new Game_Battler({
         name: "🌑 Eternal Warden",
-        tag: "Boss",
+        role: "Boss",
         maxHp: bossHp,
-        hp: bossHp,
-        minDmg: 4 + depth,
-        maxDmg: 7 + depth,
-        xpReward: 40 + depth * 10,
-        goldReward: 30 + depth * 5,
         elements: ["Black"],
-      });
+        skills: ["shadowClaw", "infernalPact"],
+        gold: 100,
+        expGrowth: 10,
+      }, depth, true));
     } else {
       const enemyCount = randInt(1, 3);
       for (let i = 0; i < enemyCount; i++) {
-        const tpl =
-          this.dataManager.enemies[
-            randInt(0, this.dataManager.enemies.length - 1)
-          ];
-        enemies.push(new Game_Enemy(tpl, depth));
+        const tpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
+        enemies.push(new Game_Battler(tpl, depth, true));
       }
     }
 
@@ -589,7 +584,7 @@ export class Scene_Map {
     enemies.forEach((e) => {
         const primaryElements = getPrimaryElements(e.elements);
         const elementAscii = primaryElements.map(e => this.elementToAscii(e)).join('');
-        this.appendBattleLog(` - ${e.name} (${e.tag}, ${elementAscii})`);
+        this.appendBattleLog(` - ${e.name} (${e.role}, ${elementAscii})`);
     });
 
     this.applyBattleStartPassives();
@@ -706,8 +701,8 @@ export class Scene_Map {
           boost += matches * 0.25;
         }
 
-        const skillName = `${this.elementToEmoji(skill.element)}${skill.name}`;
-        let msg = `${p.name} uses ${skillName}!`;
+        const elementAscii = skill.element ? this.elementToAscii(skill.element) : '';
+        let msg = `${p.name} uses ${elementAscii}${skill.name}!`;
         events.push({ msg, apply: () => {} });
 
         skill.effects.forEach((effect) => {
@@ -745,24 +740,52 @@ export class Scene_Map {
         .filter((p) => p.hp > 0);
       if (possibleTargets.length === 0) return;
       const target = possibleTargets[randInt(0, possibleTargets.length - 1)];
-      const idx = this.party.members.indexOf(target);
 
-      let dmgBase = randInt(e.minDmg, e.maxDmg);
-      const mult = this.elementMultiplier(e.elements, target.elements);
-      let dmg = Math.round(dmgBase * mult);
+      const skillId =
+        e.skills && e.skills.length
+          ? e.skills[randInt(0, e.skills.length - 1)]
+          : null;
+      const skill = skillId ? this.dataManager.skills[skillId] : null;
 
-      const row = this.partyRow(idx);
-      if (row === "Front") dmg += 1;
-      else dmg -= 1;
+      if (skill) {
+        let boost = 1;
+        if (skill.element) {
+          const matches = e.elements.filter(
+            (el) => el === skill.element
+          ).length;
+          boost += matches * 0.25;
+        }
 
-      dmg += target.getPassiveValue("TAKE_DAMAGE_MOD");
-      dmg -= target.getPassiveValue("DAMAGE_RESIST");
-      if (dmg < 1) dmg = 1;
+        let msg = `${e.name} uses ${skill.name}!`;
+        events.push({ msg, apply: () => {} });
 
-      events.push({
-        msg: `${e.name} lashes out at ${target.name} for ${dmg}.`,
-        apply: () => (target.hp = Math.max(0, target.hp - dmg)),
-      });
+        skill.effects.forEach((effect) => {
+          if (effect.type === "hp_damage") {
+            const formula = effect.formula.replace("a.level", e.level);
+            let skillDmg = Math.round(eval(formula) * boost);
+            if (skillDmg < 1) skillDmg = 1;
+            events.push({
+              msg: `  ${target.name} takes ${skillDmg} damage.`,
+              apply: () => (target.hp = Math.max(0, target.hp - skillDmg)),
+            });
+          }
+          if (effect.type === "add_status") {
+            const chance = (effect.chance || 1) * boost;
+            if (Math.random() < chance) {
+              events.push({
+                msg: `  ${target.name} is afflicted with ${effect.status}.`,
+                apply: () => {},
+              });
+            }
+          }
+        });
+      } else {
+        const dmg = Math.max(1, e.level + randInt(-1, 2));
+        events.push({
+          msg: `${e.name} attacks ${target.name} for ${dmg}.`,
+          apply: () => (target.hp = Math.max(0, target.hp - dmg)),
+        });
+      }
     });
 
     const delay = 450;
@@ -922,8 +945,8 @@ export class Scene_Map {
   onBattleVictoryClick() {
     if (!this.battleState || !this.battleState.victoryPending) return;
     const enemies = this.battleState.enemies;
-    const totalXp = enemies.reduce((sum, e) => sum + (e.xpReward || 0), 0);
-    const totalGold = enemies.reduce((sum, e) => sum + (e.goldReward || 0), 0);
+    const totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
+    const totalXp = enemies.reduce((sum, e) => sum + Math.floor(e.level * (e.expGrowth * 0.5) + 5), 0);
 
     const living = this.party.members.slice(0, 4).filter((p) => p.hp > 0);
     const share =
@@ -1117,14 +1140,14 @@ export class Scene_Map {
 
   // Recruit methods
   openRecruitEvent() {
-    if (this.dataManager.actors.recruits.length === 0) {
+    const recruitPool = ["c001", "c002", "c003", "c004", "c006", "c007", "c008", "c009", "c010"];
+    const availableCreatures = this.dataManager.actors.filter(creature => recruitPool.includes(creature.id));
+    if (availableCreatures.length === 0) {
       this.logMessage(this.dataManager.terms.recruit.no_one_here);
       return;
     }
-    const recruit =
-      this.dataManager.actors.recruits[
-        randInt(0, this.dataManager.actors.recruits.length - 1)
-      ];
+    const recruit = availableCreatures[randInt(0, availableCreatures.length - 1)];
+    const cost = randInt(25, 75);
     this.recruitWindow.bodyEl.innerHTML = `
       <div class="inspect-layout">
         <div class="inspect-sprite" style="background-image: url('assets/portraits/${
@@ -1159,7 +1182,7 @@ export class Scene_Map {
           </div>
           <div class="inspect-row">
             <span class="inspect-label">Passive</span>
-            <span class="inspect-value">${recruit.passive || "—"}</span>
+            <span class="inspect-value">${recruit.passives.map(p => p.description).join(', ') || "—"}</span>
           </div>
           <div class="inspect-row">
             <span class="inspect-label">Skills</span>
@@ -1181,9 +1204,15 @@ export class Scene_Map {
     this.recruitWindow.buttonsEl.innerHTML = "";
     const joinBtn = document.createElement("button");
     joinBtn.className = "win-btn";
-    joinBtn.textContent = "Join";
+    joinBtn.textContent = `Pay ${cost} Gold`;
     joinBtn.addEventListener("click", () => {
-      this.attemptRecruit(recruit);
+      if (this.party.gold >= cost) {
+        this.party.gold -= cost;
+        this.attemptRecruit(recruit);
+      } else {
+        this.logMessage(`[Recruit] You don't have enough gold.`);
+        this.closeRecruitEvent();
+      }
     });
     const declineBtn = document.createElement("button");
     declineBtn.className = "win-btn";
@@ -1229,7 +1258,7 @@ export class Scene_Map {
 
   attemptRecruit(recruit) {
     if (this.party.members.length < this.party.MAX_MEMBERS) {
-      this.party.members.push(new Game_Actor(recruit));
+      this.party.members.push(new Game_Battler(recruit));
       this.logMessage(`[Recruit] ${recruit.name} joins your party.`);
       this.setStatus(
         this.dataManager.terms.recruit.recruited.replace("{0}", recruit.name)
@@ -1268,7 +1297,7 @@ export class Scene_Map {
         .replace("{0}", replaced.name)
         .replace("{1}", recruit.name)
     );
-    this.party.members[index] = new Game_Actor(recruit);
+    this.party.members[index] = new Game_Battler(recruit);
     this.clearEventTile("U");
     this.updateParty();
     this.closeRecruitEvent();

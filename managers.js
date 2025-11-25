@@ -16,12 +16,6 @@ export class DataManager {
   elements = null;
 
   /**
-   * The enemy data.
-   * @type {Array}
-   */
-  enemies = null;
-
-  /**
    * The event data.
    * @type {Array}
    */
@@ -58,11 +52,11 @@ export class DataManager {
     const dataSources = {
       actors: "data/actors.json",
       elements: "data/elements.json",
-      enemies: "data/enemies.json",
       events: "data/events.json",
       floors: "data/floors.json",
       items: "data/items.json",
       terms: "data/terms.json",
+      initialSetup: "data/initial-setup.json",
     };
 
     try {
