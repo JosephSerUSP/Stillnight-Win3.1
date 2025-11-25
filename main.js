@@ -14,3 +14,9 @@ async function main() {
 
 // Start the game when the DOM is ready
 window.addEventListener("DOMContentLoaded", main);
+
+// Theme switcher
+const themeBtn = document.getElementById("btn-theme");
+themeBtn.addEventListener("click", () => {
+  document.body.classList.toggle("night-theme");
+});
