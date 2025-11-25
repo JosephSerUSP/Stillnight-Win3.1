@@ -586,7 +586,7 @@ export class Scene_Map {
     enemies.forEach((e) => {
         const primaryElements = getPrimaryElements(e.elements);
         const elementAscii = primaryElements.map(e => this.elementToAscii(e)).join('');
-        this.appendBattleLog(` - ${e.name} (${e.tag}, ${elementAscii})`);
+        this.appendBattleLog(` - ${e.name} (${e.role}, ${elementAscii})`);
     });
 
     this.applyBattleStartPassives();
@@ -703,7 +703,7 @@ export class Scene_Map {
           boost += matches * 0.25;
         }
 
-        const skillName = `${this.elementToEmoji(skill.element)}${skill.name}`;
+        const skillName = `${this.elementToAscii(skill.element)}${skill.name}`;
         let msg = `${p.name} uses ${skillName}!`;
         events.push({ msg, apply: () => {} });
 
@@ -758,7 +758,7 @@ export class Scene_Map {
           boost += matches * 0.25;
         }
 
-        const skillName = `${this.elementToEmoji(skill.element)}${skill.name}`;
+        const skillName = `${this.elementToAscii(skill.element)}${skill.name}`;
         let msg = `${e.name} uses ${skillName}!`;
         events.push({ msg, apply: () => {} });
 
