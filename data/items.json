@@ -1,0 +1,68 @@
+[
+  {
+    "id": "hp_tonic",
+    "name": "HP Tonic",
+    "type": "consumable",
+    "cost": 10,
+    "description": "Heals one member to full HP.",
+    "effects": {
+      "hp": 999
+    }
+  },
+  {
+    "id": "sigil_ink",
+    "name": "Sigil Ink",
+    "type": "consumable",
+    "cost": 20,
+    "description": "+2 max HP to one member.",
+    "effects": {
+      "maxHp": 2
+    }
+  },
+  {
+    "id": "whispered_lessons",
+    "name": "Whispered Lessons",
+    "type": "consumable",
+    "cost": 15,
+    "description": "+6 XP to one member.",
+    "effects": {
+      "xp": 6
+    }
+  },
+  {
+    "id": "silver_blade",
+    "name": "Silver Blade",
+    "type": "equipment",
+    "maxHpBonus": 0,
+    "damageBonus": 1,
+    "cost": 25,
+    "description": "Sharpened steel blade. +1 damage."
+  },
+  {
+    "id": "bone_plate",
+    "name": "Bone Plate",
+    "type": "equipment",
+    "maxHpBonus": 3,
+    "damageBonus": 0,
+    "cost": 25,
+    "description": "Sturdy bone harness. +3 max HP."
+  },
+  {
+    "id": "wind_charm",
+    "name": "Wind Charm",
+    "type": "equipment",
+    "maxHpBonus": 1,
+    "damageBonus": 1,
+    "cost": 35,
+    "description": "A charm of rushing air. +1 damage, +1 max HP."
+  },
+  {
+    "id": "light_amulet",
+    "name": "Light Amulet",
+    "type": "equipment",
+    "maxHpBonus": 2,
+    "damageBonus": 0,
+    "cost": 30,
+    "description": "Glowing amulet. +2 max HP, faintly warms your hands."
+  }
+]

@@ -1,0 +1,57 @@
+[
+  {
+    "title": "Whispering Shade",
+    "description": "A whisper from beyond promises knowledge... at a price.",
+    "choices": [
+      {
+        "label": "Offer HP (lose 3 HP each, gain XP)",
+        "effect": { "type": "multi", "effects": [
+          { "type": "hp", "value": -3, "target": "all" },
+          { "type": "xp", "value": 4, "target": "all" }
+        ]}
+      },
+      {
+        "label": "Decline",
+        "effect": { "type": "message", "value": "[Shrine] You ignore the whispers." }
+      }
+    ]
+  },
+  {
+    "title": "Gleaming Idol",
+    "description": "A gleaming idol stands before you, radiating warmth. Touching it could imbue power or curse you.",
+    "choices": [
+      {
+        "label": "Touch the idol",
+        "effect": { "type": "random", "outcomes": [
+          { "chance": 0.5, "effect": { "type": "maxHp", "value": 2, "target": "all" } },
+          { "chance": 0.5, "effect": { "type": "hp", "value": -2, "target": "all" } }
+        ]}
+      },
+      {
+        "label": "Walk away",
+        "effect": { "type": "message", "value": "[Shrine] You leave the idol untouched." }
+      }
+    ]
+  },
+  {
+    "title": "Bargaining Spirit",
+    "description": "A translucent merchant appears, offering to trade gold for knowledge.",
+    "choices": [
+      {
+        "label": "Pay 5G for knowledge",
+        "effect": { "type": "gold", "value": -5, "onSuccess": { "type": "xp", "value": 6, "target": "all" } }
+      },
+      {
+        "label": "Attempt to bargain",
+        "effect": { "type": "random", "outcomes": [
+          { "chance": 0.5, "effect": { "type": "xp", "value": 4, "target": "all" } },
+          { "chance": 0.5, "effect": { "type": "gold", "value": -2 } }
+        ]}
+      },
+      {
+        "label": "Leave",
+        "effect": { "type": "message", "value": "[Shrine] You refuse the deal." }
+      }
+    ]
+  }
+]

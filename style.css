@@ -1,0 +1,588 @@
+/* ===== Global Windows 3.1 look ================================== */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-color: #008080; /* teal desktop */
+    font-family: "MS Sans Serif", "Microsoft Sans Serif", Tahoma, sans-serif;
+    font-size: 11px;
+    color: #000000;
+}
+
+/* Simple tiled wallpaper using gradients; center the window */
+.desktop {
+    width: 100%;
+    height: 100%;
+    background-image:
+        linear-gradient(45deg, rgba(255,255,255,0.2) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.2) 75%, rgba(255,255,255,0.2)),
+        linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.1) 75%, rgba(0,0,0,0.1));
+    background-size: 16px 16px;
+    background-position: 0 0, 8px 8px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ===== Window frame ============================================= */
+.win-window {
+    width: 960px;
+    height: 560px;
+    background-color: #c0c0c0;
+    box-sizing: border-box;
+    border: 2px solid #000000;
+    box-shadow:
+        0 0 0 1px #ffffff inset,
+        0 0 0 2px #808080 inset,
+        0 0 0 3px #404040 inset;
+    display: flex;
+    flex-direction: column;
+}
+
+.title-bar {
+    height: 20px;
+    background: linear-gradient(90deg, #000080, #0000a8);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px 4px;
+    box-sizing: border-box;
+}
+.title-group {
+    display: flex;
+    align-items: center;
+}
+.title-icon {
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+    background-color: #c0c0c0;
+    border: 1px solid #000000;
+    box-shadow:
+        1px 1px 0 #ffffff inset,
+        -1px -1px 0 #808080 inset;
+}
+.title {
+    font-weight: bold;
+    white-space: nowrap;
+}
+.sys-buttons {
+    display: flex;
+    gap: 2px;
+}
+
+/* ===== Buttons & panels ========================================= */
+.win-btn {
+    font-family: inherit;
+    font-size: 11px;
+    min-width: 18px;
+    padding: 0 4px;
+    height: 18px;
+    background-color: #c0c0c0;
+    border-width: 2px;
+    border-style: solid;
+    border-color: #ffffff #404040 #404040 #ffffff;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+.win-btn:active {
+    border-color: #404040 #ffffff #ffffff #404040;
+    padding-top: 1px;
+    padding-left: 5px;
+}
+
+.window-content {
+    flex: 1;
+    padding: 4px;
+    box-sizing: border-box;
+    display: flex;
+    gap: 4px;
+}
+
+.panel {
+    background-color: #c0c0c0;
+    border: 2px solid #808080;
+    box-shadow:
+        1px 1px 0 #ffffff inset,
+        -1px -1px 0 #404040 inset;
+    box-sizing: border-box;
+}
+
+/* ===== Left panel: Stack / Run controls ========================= */
+.stack-nav {
+    width: 210px;
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+    gap: 4px;
+}
+.stack-nav h1 {
+    font-size: 11px;
+    margin: 0 0 4px 0;
+    font-weight: bold;
+}
+
+.group-box {
+    position: relative;
+    padding: 10px 4px 4px 4px;
+    margin-top: 6px;
+    border: 1px solid #808080;
+    box-shadow:
+        1px 1px 0 #ffffff inset,
+        -1px -1px 0 #404040 inset;
+}
+.group-box legend {
+    position: absolute;
+    top: -7px;
+    left: 8px;
+    padding: 0 4px;
+    background-color: #c0c0c0;
+    font-size: 11px;
+}
+
+.stack-nav-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-bottom: 4px;
+}
+.stack-nav-buttons .win-btn {
+    flex: 1 1 48%;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.card-list {
+    height: 110px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    border: 1px solid #808080;
+    box-shadow:
+        1px 1px 0 #ffffff inset,
+        -1px -1px 0 #404040 inset;
+}
+.card-item {
+    padding: 2px 4px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.card-item:hover {
+    background-color: #808080;
+    color: #ffffff;
+}
+.card-item.selected {
+    background-color: #000080;
+    color: #ffffff;
+}
+.card-item.disabled {
+    color: #808080;
+    background-color: #f0f0f0;
+    cursor: default;
+    pointer-events: none;
+}
+
+.info-box {
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+/* ===== Right side: main “card” + party/log ===================== */
+.right-side {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.card-area {
+    flex: 1;
+    display: flex;
+    gap: 4px;
+}
+
+/* map column stretches, right column fixed width */
+.card-main {
+    flex: 1;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.card-side-panels {
+    flex: 0 0 260px;   /* fixed width for party/log column */
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.card-header-title {
+    font-weight: bold;
+}
+.label {
+    display: inline-block;
+    min-width: 60px;
+}
+
+/* Exploration frame / grid = main “card” content */
+.exploration-frame {
+    flex: 1;
+    padding: 4px;
+    background-color: #a0a0a0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 16x16 grid, centered map */
+.exploration-grid {
+    width: 414px;  /* 16*24 + 15*2 */
+    height: 414px;
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    grid-template-rows: repeat(16, 1fr);
+    gap: 2px;
+    margin: auto;
+    margin-bottom: 4px;
+}
+
+.tile {
+    background-color: #c0c0c0;
+    border: 1px solid #808080;
+    box-shadow:
+        1px 1px 0 #ffffff inset,
+        -1px -1px 0 #404040 inset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+    height: 24px;
+    width: 24px;
+    line-height: 24px;
+}
+.tile:hover {
+    background-color: #e0e0e0;
+}
+.tile-fog {
+    background-color: #808080;
+    color: #c0c0c0;
+}
+.tile-player {
+    font-weight: bold;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 1px #000000 inset;
+    background-color: #e8e8ff;
+}
+.tile-enemy   { color: #800000; }
+.tile-stairs  { color: #000080; }
+.tile-recovery{ color: #008000; }
+.tile-shrine  { color: #400040; }
+.tile-shop    { color: #804000; }
+    .tile-recruit { color: #600060; }
+
+.legend {
+    font-size: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Party + log side panels */
+.party-panel, .log-panel {
+    padding: 3px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* party grows; log fixed height window */
+.party-panel {
+    flex: 1 1 auto;
+}
+.log-panel {
+    flex: 0 0 230px;
+}
+
+.party-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 2px;
+}
+
+.party-slot {
+    background-color: #c0c0c0;
+    border: 1px solid #808080;
+    box-shadow:
+        1px 1px 0 #ffffff inset,
+        -1px -1px 0 #404040 inset;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2px;
+    font-size: 10px;
+    cursor: pointer;
+}
+.party-slot:hover {
+    background-color: #d0d0d0;
+}
+.party-slot-name {
+    font-weight: bold;
+}
+.hp-bar {
+    height: 6px;
+    border: 1px solid #000000;
+    background-color: #808080;
+    margin-top: 1px;
+    overflow: hidden;
+}
+.hp-fill {
+    height: 100%;
+    background-color: #00a000;
+}
+
+/* Log = Fixedsys-style console */
+.log-content {
+    background-color: #000000;
+    color: #00ff00;
+    border: 1px solid #808080;
+    box-shadow:
+        1px 1px 0 #ffffff inset,
+        -1px -1px 0 #404040 inset;
+    padding: 2px;
+    font-family: "Fixedsys", "Lucida Console", "Courier New", monospace;
+    font-size: 10px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    height: 190px;
+}
+
+/* Status bar */
+.status-bar {
+    height: 20px;
+    border-top: 1px solid #ffffff;
+    box-shadow: 0 -1px 0 #808080 inset;
+    padding: 2px 4px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+}
+.status-bar span {
+    margin-right: 8px;
+}
+
+/* ===== Modal overlay / dialogs ================================= */
+.modal-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+.modal-overlay.active {
+    display: flex;
+}
+.dialog {
+    width: 520px;
+    background-color: #c0c0c0;
+    border: 2px solid #000000;
+    box-shadow:
+        0 0 0 1px #ffffff inset,
+        0 0 0 2px #808080 inset,
+        0 0 0 3px #404040 inset;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+.dialog-titlebar {
+    height: 18px;
+    background-color: #000080;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px 4px;
+    box-sizing: border-box;
+    font-size: 11px;
+}
+.dialog-content {
+    padding: 6px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.dialog-buttons {
+    margin-top: 4px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+}
+
+/* Battle dialog specifics */
+.dialog-battle { width: 520px; }
+.dialog-ascii {
+    background-color: #000000;
+    color: #c0ffb0;
+    border: 1px solid #808080;
+    box-shadow:
+        1px 1px 0 #ffffff inset,
+        -1px -1px 0 #404040 inset;
+    padding: 4px;
+    font-family: "Fixedsys", "Lucida Console", "Courier New", monospace;
+    font-size: 11px;
+    height: 200px;
+    white-space: pre;
+    overflow-y: auto;
+}
+.dialog-log {
+    background-color: #000000;
+    color: #00ff00;
+    border: 1px solid #808080;
+    padding: 2px;
+    font-family: "Fixedsys", "Lucida Console", "Courier New", monospace;
+    font-size: 10px;
+    height: 80px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+#btn-battle-victory { display: none; }
+
+/* Inspect dialog – larger sprite box + flavor */
+.dialog-inspect { width: 480px; }
+.inspect-body {
+    background-color: #ffffff;
+    border: 1px solid #808080;
+    box-shadow:
+        1px 1px 0 #ffffff inset,
+        -1px -1px 0 #404040 inset;
+    padding: 4px;
+    font-size: 11px;
+}
+.inspect-layout {
+    display: flex;
+    gap: 10px;
+}
+.inspect-sprite {
+    width: 128px;
+    height: 192px;
+    border: 1px solid #808080;
+    box-shadow:
+        1px 1px 0 #ffffff inset,
+        -1px -1px 0 #404040 inset;
+    background-color: #000000;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+.inspect-fields { flex: 1; }
+.inspect-row {
+    display: flex;
+    margin-bottom: 2px;
+}
+.inspect-label {
+    width: 80px;
+    font-weight: bold;
+}
+.inspect-value { flex: 1; }
+.inspect-notes {
+    margin-top: 4px;
+    font-size: 10px;
+}
+
+/* Shop dialog */
+.dialog-shop { width: 420px; }
+.shop-body {
+    background-color: #ffffff;
+    border: 1px solid #808080;
+    box-shadow:
+        1px 1px 0 #ffffff inset,
+        -1px -1px 0 #404040 inset;
+    padding: 4px;
+    font-size: 11px;
+}
+.shop-row { margin-bottom: 4px; }
+.shop-row button { margin-left: 4px; }
+.shop-gold { font-weight: bold; }
+
+/* Formation dialog */
+.dialog-formation { width: 420px; }
+.formation-body {
+    background-color: #ffffff;
+    border: 1px solid #808080;
+    box-shadow:
+        1px 1px 0 #ffffff inset,
+        -1px -1px 0 #404040 inset;
+    padding: 4px;
+    font-size: 11px;
+}
+.formation-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
+}
+.formation-reserve-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+.formation-slot {
+    border: 1px solid #808080;
+    padding: 2px;
+    font-size: 10px;
+    background-color: #c0c0c0;
+    box-shadow:
+        1px 1px 0 #ffffff inset,
+        -1px -1px 0 #404040 inset;
+    cursor: pointer;
+}
+.formation-slot.selected {
+    background-color: #000080;
+    color: #ffffff;
+}
+.formation-label {
+    font-size: 10px;
+    margin-bottom: 4px;
+}
+
+/* Event dialog */
+.dialog-event { width: 480px; }
+.event-body {
+    background-color: #ffffff;
+    border: 1px solid #808080;
+    box-shadow:
+        1px 1px 0 #ffffff inset,
+        -1px -1px 0 #404040 inset;
+    padding: 4px;
+    font-size: 11px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.event-description {
+    font-size: 11px;
+    line-height: 1.4;
+}
+.event-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}

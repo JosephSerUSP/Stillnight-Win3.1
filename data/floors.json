@@ -1,0 +1,11 @@
+[
+  { "title": "Floor 1: Entry Hall",      "intro": "You cross the threshold of Stillnight.",          "depth": 1 },
+  { "title": "Floor 1: Silent Shrine",   "intro": "A distant bell tolls once.",                     "depth": 1 },
+  { "title": "Floor 2: Chasm Crossing",  "intro": "Wind howls across a broken bridge.",             "depth": 2 },
+  { "title": "Floor 2: Glass Library",   "intro": "Shelves of crystal tomes hum quietly.",          "depth": 2 },
+  { "title": "Floor 3: Rusted Choir",    "intro": "Broken bells sway above a dry pit.",             "depth": 3 },
+  { "title": "Floor 3: Hollow Arcade",   "intro": "Columns slice the dark like teeth.",             "depth": 3 },
+  { "title": "Floor 4: Cryptic Vault",   "intro": "Relic pedestals gleam with unnatural light.",    "depth": 4 },
+  { "title": "Floor 5: Blood Chapel",    "intro": "Walls whisper of ancient oaths.",                "depth": 5 },
+  { "title": "Floor 6: Stillnight Sanctum", "intro": "A presence fills the air. The Eternal Warden awaits.", "depth": 6 }
+]
