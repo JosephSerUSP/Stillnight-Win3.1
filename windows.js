@@ -66,8 +66,8 @@ class Legacy_Window_Base {
  */
 export class Window_Base {
     /**
-     * @param {number} x - The x coordinate on screen.
-     * @param {number} y - The y coordinate on screen.
+     * @param {number} x - The relative x coordinate.
+     * @param {number} y - The relative y coordinate.
      * @param {number} width - The width of the window.
      * @param {number} height - The height of the window.
      */
@@ -78,13 +78,60 @@ export class Window_Base {
         this.element = document.createElement("div");
         this.element.className = "dialog";
         this.element.style.position = "absolute";
-        this.element.style.left = `${x}px`;
-        this.element.style.top = `${y}px`;
+
+        const gameContainer = document.querySelector(".win-window");
+        const rect = gameContainer.getBoundingClientRect();
+        this.element.style.left = `${rect.left + x}px`;
+        this.element.style.top = `${rect.top + y}px`;
         this.element.style.width = `${width}px`;
         this.element.style.height = `${height}px`;
         this.element.style.zIndex = "10";
 
         this.overlay.appendChild(this.element);
+
+        this._dragStart = null;
+        this._onDragHandler = this._onDrag.bind(this);
+        this._onDragEndHandler = this._onDragEnd.bind(this);
+    }
+
+    /**
+     * @method makeDraggable
+     * @description Makes the window draggable.
+     * @param {HTMLElement} titleBar - The title bar element that triggers the drag.
+     */
+    makeDraggable(titleBar) {
+        titleBar.addEventListener("mousedown", (e) => {
+            this._dragStart = {
+                x: e.clientX - this.element.offsetLeft,
+                y: e.clientY - this.element.offsetTop,
+            };
+            document.addEventListener("mousemove", this._onDragHandler);
+            document.addEventListener("mouseup", this._onDragEndHandler);
+        });
+    }
+
+    /**
+     * @method _onDrag
+     * @description Handles the drag movement.
+     * @param {MouseEvent} e - The mouse event.
+     * @private
+     */
+    _onDrag(e) {
+        if (this._dragStart) {
+            this.element.style.left = `${e.clientX - this._dragStart.x}px`;
+            this.element.style.top = `${e.clientY - this._dragStart.y}px`;
+        }
+    }
+
+    /**
+     * @method _onDragEnd
+     * @description Ends the drag operation.
+     * @private
+     */
+    _onDragEnd() {
+        this._dragStart = null;
+        document.removeEventListener("mousemove", this._onDragHandler);
+        document.removeEventListener("mouseup", this._onDragEndHandler);
     }
 
     /**
@@ -119,11 +166,14 @@ export class Window_Base {
  */
 export class Window_Battle extends Window_Base {
   constructor() {
-    super(96+453, 96+199, 528, 360); // 96 in relation to the canvas of the game. this should be positioned in relation to the canvas of the game.
-    // Create title bar
+    super(20, 20, 528, 360);
+    this.element.style.display = 'flex';
+    this.element.style.flexDirection = 'column';
+
     const titleBar = document.createElement("div");
     titleBar.className = "dialog-titlebar";
     this.element.appendChild(titleBar);
+    this.makeDraggable(titleBar);
 
     const titleText = document.createElement("span");
     titleText.textContent = "Battle – Stillnight";
@@ -135,25 +185,28 @@ export class Window_Battle extends Window_Base {
     this.btnClose.onclick = () => this.close();
     titleBar.appendChild(this.btnClose);
 
-    // Create content area
     const content = document.createElement("div");
     content.className = "dialog-content";
+    content.style.flexGrow = "1";
+    content.style.display = "flex";
+    content.style.flexDirection = "column";
     this.element.appendChild(content);
 
-    // Create ASCII display area
-    this.asciiEl = document.createElement("pre");
-    this.asciiEl.className = "battle-ascii";
-    content.appendChild(this.asciiEl);
+    const terminal = document.createElement("div");
+    terminal.className = "terminal";
+    content.appendChild(terminal);
 
-    // Create log area
+    this.viewportEl = document.createElement("div");
+    this.viewportEl.className = "terminal-viewport";
+    terminal.appendChild(this.viewportEl);
+
     this.logEl = document.createElement("div");
-    this.logEl.className = "battle-log";
-    content.appendChild(this.logEl);
+    this.logEl.className = "terminal-log";
+    terminal.appendChild(this.logEl);
 
-    // Create buttons
     const buttons = document.createElement("div");
     buttons.className = "dialog-buttons";
-    this.element.appendChild(buttons);
+    content.appendChild(buttons);
 
     this.btnRound = document.createElement("button");
     this.btnRound.className = "win-btn";
@@ -173,10 +226,26 @@ export class Window_Battle extends Window_Base {
   }
 
   /**
-   * @param {string} asciiArt - The ASCII art to display.
+   * @param {Array<Object>} battlers - The battler data to render.
    */
-  refresh(asciiArt) {
-    this.asciiEl.innerHTML = asciiArt;
+  refresh(battlers) {
+    this.viewportEl.innerHTML = ""; // Clear previous state
+
+    const header = document.createElement("div");
+    header.textContent = "== BATTLE ==";
+    header.style.textAlign = "center";
+    header.style.padding = "5px 0";
+    this.viewportEl.appendChild(header);
+
+    battlers.forEach(battlerData => {
+      const el = document.createElement("div");
+      el.style.position = "absolute";
+      el.style.top = `${battlerData.top}px`;
+      el.style.left = `${battlerData.left}px`;
+      el.style.whiteSpace = "pre";
+      el.innerHTML = battlerData.html;
+      this.viewportEl.appendChild(el);
+    });
   }
 }
 
