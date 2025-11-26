@@ -2,8 +2,8 @@
 import { randInt, shuffleArray } from "./core.js";
 
 /**
- * The base class for all game units.
- * @class
+ * @class Game_Base
+ * @description The base class for all game units.
  */
 class Game_Base {
   /**
@@ -20,14 +20,15 @@ class Game_Base {
 }
 
 /**
- * The class for game actors.
- * @class
+ * @class Game_Battler
+ * @description The class for game actors.
  * @extends Game_Base
  */
 export class Game_Battler extends Game_Base {
   /**
    * @param {Object} actorData - The data for the actor.
    * @param {number} depth - The depth of the floor.
+   * @param {boolean} isEnemy - Whether the actor is an enemy.
    */
   constructor(actorData, depth = 1, isEnemy = false) {
     super(actorData);
@@ -51,7 +52,8 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
-   * The experience needed to level up.
+   * @method xpNeeded
+   * @description The experience needed to level up.
    * @param {number} level - The current level.
    * @returns {number} The experience needed for the next level.
    */
@@ -60,7 +62,8 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
-   * Gets the value of a specific passive.
+   * @method getPassiveValue
+   * @description Gets the value of a specific passive.
    * @param {string} code - The code of the passive to get.
    * @returns {number} The value of the passive, or 0 if not found.
    */
@@ -71,8 +74,8 @@ export class Game_Battler extends Game_Base {
 }
 
 /**
- * The class for the game party.
- * @class
+ * @class Game_Party
+ * @description The class for the game party.
  */
 export class Game_Party {
   /**
@@ -100,7 +103,8 @@ export class Game_Party {
   inventory = [];
 
   /**
-   * Creates the initial party members.
+   * @method createInitialMembers
+   * @description Creates the initial party members.
    * @param {Object} actorData - The actor data from the data manager.
    */
   createInitialMembers(actorData) {
@@ -122,8 +126,8 @@ export class Game_Party {
 }
 
 /**
- * The class for the game map.
- * @class
+ * @class Game_Map
+ * @description The class for the game map.
  */
 export class Game_Map {
   /**
@@ -169,7 +173,8 @@ export class Game_Map {
   playerY = 0;
 
   /**
-   * Initializes the floors.
+   * @method initFloors
+   * @description Initializes the floors.
    * @param {Array} floorData - The floor data from the data manager.
    */
   initFloors(floorData) {
@@ -179,7 +184,8 @@ export class Game_Map {
   }
 
   /**
-   * Generates a floor.
+   * @method generateFloor
+   * @description Generates a floor.
    * @param {Object} meta - The metadata for the floor.
    * @param {number} index - The index of the floor.
    * @returns {Object} The generated floor object.
@@ -306,7 +312,8 @@ export class Game_Map {
   }
 
   /**
-   * Reveals the tiles around the player.
+   * @method revealAroundPlayer
+   * @description Reveals the tiles around the player.
    */
   revealAroundPlayer() {
     const floor = this.floors[this.floorIndex];
