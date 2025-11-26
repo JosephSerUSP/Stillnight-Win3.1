@@ -80,6 +80,7 @@ html, body {
     background-image: url('assets/system/iconset.png');
     display: inline-block;
     vertical-align: middle;
+    image-rendering: pixelated;
 }
 
 .element-icon-container, .element-icon-container-name, .element-container {
@@ -228,6 +229,16 @@ html, body {
     gap: 4px;
 }
 
+@keyframes blink {
+    50% {
+        opacity: 0;
+    }
+}
+
+.blink {
+    animation: blink 0.1s step-end 2;
+}
+
 .card-area {
     flex: 1;
     display: flex;
@@ -354,15 +365,29 @@ html, body {
 .party-slot {
     background-color: #c0c0c0;
     border: 1px solid #808080;
-    box-shadow:
-        1px 1px 0 #ffffff inset,
-        -1px -1px 0 #404040 inset;
+    box-shadow: 1px 1px 0 #ffffff inset, -1px -1px 0 #404040 inset;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
     padding: 2px;
     font-size: 10px;
     cursor: pointer;
+    gap: 4px;
+}
+.party-slot-portrait {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background-color: #000;
+    border: 1px solid #808080;
+    box-shadow: 1px 1px 0 #ffffff inset, -1px -1px 0 #404040 inset;
+    background-size: cover;
+    background-position: 50% 25%;
+    image-rendering: pixelated;
+}
+.party-slot-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 .party-slot:hover {
     background-color: #d0d0d0;
