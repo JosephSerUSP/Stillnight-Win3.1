@@ -369,6 +369,15 @@ export class Scene_Map {
       slot.dataset.index = index;
       slot.dataset.testid = `party-slot-${index}`;
 
+      const portrait = document.createElement("div");
+      portrait.className = "party-slot-portrait";
+      portrait.style.backgroundImage = `url('assets/portraits/${
+        member.spriteKey || "default"
+      }.png')`;
+
+      const info = document.createElement("div");
+      info.className = "party-slot-info";
+
       const nameEl = document.createElement("div");
       nameEl.className = "party-slot-name";
       const elementIcon = this.createElementIcon(member.elements);
@@ -385,15 +394,120 @@ export class Scene_Map {
       hpBar.className = "hp-bar";
       const hpFill = document.createElement("div");
       hpFill.className = "hp-fill";
-      hpFill.style.width = `${Math.max(0, (member.hp / member.maxHp) * 100)}%`;
+      hpFill.style.width = `${Math.max(
+        0,
+        ((member.prevHp || member.hp) / member.maxHp) * 100
+      )}%`;
+      this.animateHpGauge(
+        hpFill,
+        member.prevHp || member.hp,
+        member.hp,
+        member.maxHp,
+        500
+      );
+      member.prevHp = member.hp;
       hpBar.appendChild(hpFill);
 
-      slot.appendChild(nameEl);
-      slot.appendChild(hpLabel);
-      slot.appendChild(hpBar);
+      info.appendChild(nameEl);
+      info.appendChild(hpLabel);
+      info.appendChild(hpBar);
+
+      slot.appendChild(portrait);
+      slot.appendChild(info);
 
       slot.addEventListener("click", () => this.openInspect(member, index));
       this.partyGridEl.appendChild(slot);
+    });
+  }
+
+  animateHpGauge(element, startHp, endHp, maxHp, duration) {
+    const startTime = performance.now();
+    const startWidth = (startHp / maxHp) * 100;
+    const endWidth = (endHp / maxHp) * 100;
+
+    const frame = (currentTime) => {
+      const elapsedTime = currentTime - startTime;
+      const progress = Math.min(elapsedTime / duration, 1);
+      const currentWidth = startWidth + (endWidth - startWidth) * progress;
+      element.style.width = `${currentWidth}%`;
+
+      if (progress < 1) {
+        requestAnimationFrame(frame);
+      }
+    };
+
+    requestAnimationFrame(frame);
+  }
+
+  animateBattleHpGauge(battler, oldHp) {
+    return new Promise((resolve) => {
+      const duration = 500;
+      const interval = 30;
+      let elapsed = 0;
+
+      const interpolator = () => {
+        elapsed += interval;
+        const progress = Math.min(elapsed / duration, 1);
+        const currentHp = Math.round(oldHp + (battler.hp - oldHp) * progress);
+
+        this.renderBattleAscii(battler.name, currentHp);
+
+        if (progress < 1) {
+          setTimeout(interpolator, interval);
+        } else {
+          this.renderBattleAscii(); // Final render with correct HP
+          resolve();
+        }
+      };
+
+      interpolator();
+    });
+  }
+
+  flashBattlerName(battlerName) {
+    const battlerElement = this.battleWindow.asciiEl.querySelector(
+      `#battler-${battlerName}`
+    );
+    if (battlerElement) {
+      battlerElement.classList.add("blink");
+      setTimeout(() => {
+        battlerElement.classList.remove("blink");
+      }, 200);
+    }
+}
+
+  animateBattlerName(battler) {
+    return new Promise((resolve) => {
+      const originalName = battler.name;
+      let frame = 0;
+      const maxFrames = 15;
+      const interval = 50;
+
+      const animator = () => {
+        if (frame >= maxFrames) {
+          battler.name = originalName;
+          this.renderBattleAscii();
+          resolve();
+          return;
+        }
+
+        let newName = "";
+        for (let i = 0; i < originalName.length; i++) {
+          const char = originalName[i];
+          if (i === frame % originalName.length) {
+            newName += char === char.toUpperCase() ? char.toLowerCase() : char.toUpperCase();
+          } else {
+            newName += char;
+          }
+        }
+        battler.name = newName;
+        this.renderBattleAscii();
+
+        frame++;
+        setTimeout(animator, interval);
+      };
+
+      animator();
     });
   }
 
@@ -617,10 +731,17 @@ export class Scene_Map {
   /**
    * Renders the battle screen.
    */
-renderBattleAscii() {
+  renderBattleAscii(animatingBattlerName = null, animatingHp = null) {
     if (!this.battleState) return;
     const { enemies, round } = this.battleState;
-    const pad = (str, len) => (str + " ".repeat(len)).slice(0, len);
+
+    const stripHtml = (html) => html.replace(/<[^>]*>/g, "");
+
+    const pad = (str, len) => {
+        const visibleLength = stripHtml(str).length;
+        const padding = " ".repeat(Math.max(0, len - visibleLength));
+        return str + padding;
+    }
 
     // Helper: Names -> Spacer -> Gauges
     const buildRowBlock = (rowItems) => {
@@ -628,7 +749,7 @@ renderBattleAscii() {
       const namesLine = rowItems.map(item => item.nameStr).join("");
       const spacerLine = rowItems.map(item => item.spacerStr).join("");
       const gaugesLine = rowItems.map(item => item.gaugeStr).join("");
-      return namesLine + "\n" + spacerLine + "\n" + gaugesLine + "\n";
+      return `${namesLine}\n${spacerLine}\n${gaugesLine}\n`;
     };
 
     let ascii = " ".repeat(14) + "== BATTLE ==\n\n";
@@ -639,13 +760,15 @@ renderBattleAscii() {
         const row = idx % 2;
         const primaryElements = getPrimaryElements(e.elements);
         const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
+        const hp = e.name === animatingBattlerName ? animatingHp : e.hp;
+        const nameStr = `<span id="battler-${e.name.replace(/\s/g, '-')}">${e.name}</span>`;
         
         enemyRows[row].push({ 
-            nameStr: pad(` ${elementAscii}${e.name} (HP ${e.hp}/${e.maxHp}) `, 28),
+            nameStr: pad(` ${elementAscii}${nameStr} (HP ${hp}/${e.maxHp}) `, 28),
             // "Half line" simulation: A blank line to separate text from gauge
             spacerStr: pad("", 28), 
             // Alternative for a visible line: pad(" " + "-".repeat(26) + " ", 28),
-            gaugeStr: pad(` ${this.createHpGauge(e.hp, e.maxHp)} `, 28)
+            gaugeStr: pad(` ${this.createHpGauge(hp, e.maxHp)} `, 28)
         });
     });
 
@@ -660,24 +783,26 @@ renderBattleAscii() {
         const row = i < 2 ? 1 : 0;
         const primaryElements = getPrimaryElements(p.elements);
         const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
+        const hp = p.name === animatingBattlerName ? animatingHp : p.hp;
+        const nameStr = `<span id="battler-${p.name.replace(/\s/g, '-')}">${p.name}</span>`;
         
         partyRows[row].push({ 
-            nameStr: pad(` ${elementAscii}${p.name} (HP ${p.hp}/${p.maxHp}) `, 28),
+            nameStr: pad(` ${elementAscii}${nameStr} (HP ${hp}/${p.maxHp}) `, 28),
             spacerStr: pad("", 28), // The blank separator line
-            gaugeStr: pad(` ${this.createHpGauge(p.hp, p.maxHp)} `, 28)
+            gaugeStr: pad(` ${this.createHpGauge(hp, p.maxHp)} `, 28)
         });
     });
 
     ascii += buildRowBlock(partyRows[1]);
     ascii += buildRowBlock(partyRows[0]);
 
-    this.battleWindow.asciiEl.textContent = ascii;
+    this.battleWindow.asciiEl.innerHTML = ascii;
   }
 
   /**
-   * Resolves a round of battle.
+   * Resolves a round of battle using async/await for cleaner animation sequencing.
    */
-  resolveBattleRound() {
+  async resolveBattleRound() {
     if (!this.battleState || this.battleState.finished || this.battleBusy)
       return;
     this.battleBusy = true;
@@ -685,10 +810,12 @@ renderBattleAscii() {
     this.battleWindow.btnFlee.disabled = true;
 
     this.battleState.round++;
-
     const enemies = this.battleState.enemies;
     const events = [];
+    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
+    // --- 1. Build Event Queue ---
+    // (This part remains the same, generating the list of actions for the round)
     this.party.members.slice(0, 4).forEach((p, index) => {
       if (p.hp <= 0) return;
       const target = enemies.find((e) => e.hp > 0);
@@ -697,16 +824,13 @@ renderBattleAscii() {
       if (p.equipmentItem && p.equipmentItem.damageBonus) {
         base += p.equipmentItem.damageBonus;
       }
-
       const row = this.partyRow(index);
       if (row === "Front") base += 1;
       else base -= 1;
-
       const mult = this.elementMultiplier(p.elements, target.elements);
       let dmg = Math.round(base * mult);
       dmg += p.getPassiveValue("DEAL_DAMAGE_MOD");
       if (dmg < 1) dmg = 1;
-
       const skillId =
         p.skills && p.skills.length
           ? p.skills[randInt(0, p.skills.length - 1)]
@@ -721,11 +845,12 @@ renderBattleAscii() {
           ).length;
           boost += matches * 0.25;
         }
-
         const skillName = `${this.elementToAscii(skill.element)}${skill.name}`;
-        let msg = `${p.name} uses ${skillName}!`;
-        events.push({ msg, apply: () => {} });
-
+        events.push({
+          msg: `${p.name} uses ${skillName}!`,
+          battler: p,
+          apply: () => {},
+        });
         skill.effects.forEach((effect) => {
           if (effect.type === "hp_damage") {
             const formula = effect.formula.replace("a.level", p.level);
@@ -733,7 +858,11 @@ renderBattleAscii() {
             if (skillDmg < 1) skillDmg = 1;
             events.push({
               msg: `  ${target.name} takes ${skillDmg} damage.`,
-              apply: () => (target.hp = Math.max(0, target.hp - skillDmg)),
+              apply: () => {
+                const oldHp = target.hp;
+                target.hp = Math.max(0, target.hp - skillDmg);
+                return { battler: target, oldHp };
+              },
             });
           }
           if (effect.type === "add_status") {
@@ -749,11 +878,14 @@ renderBattleAscii() {
       } else {
         events.push({
           msg: `${p.name} attacks ${target.name} for ${dmg}.`,
-          apply: () => (target.hp = Math.max(0, target.hp - dmg)),
+          apply: () => {
+            const oldHp = target.hp;
+            target.hp = Math.max(0, target.hp - dmg);
+            return { battler: target, oldHp };
+          },
         });
       }
     });
-
     enemies.forEach((e) => {
       if (e.hp <= 0) return;
       const possibleTargets = this.party.members
@@ -761,7 +893,6 @@ renderBattleAscii() {
         .filter((p) => p.hp > 0);
       if (possibleTargets.length === 0) return;
       const target = possibleTargets[randInt(0, possibleTargets.length - 1)];
-
       const skillId =
         e.skills && e.skills.length
           ? e.skills[randInt(0, e.skills.length - 1)]
@@ -776,11 +907,12 @@ renderBattleAscii() {
           ).length;
           boost += matches * 0.25;
         }
-
         const skillName = `${this.elementToAscii(skill.element)}${skill.name}`;
-        let msg = `${e.name} uses ${skillName}!`;
-        events.push({ msg, apply: () => {} });
-
+        events.push({
+          msg: `${e.name} uses ${skillName}!`,
+          battler: e,
+          apply: () => {},
+        });
         skill.effects.forEach((effect) => {
           if (effect.type === "hp_damage") {
             const formula = effect.formula.replace("a.level", e.level);
@@ -788,7 +920,11 @@ renderBattleAscii() {
             if (skillDmg < 1) skillDmg = 1;
             events.push({
               msg: `  ${target.name} takes ${skillDmg} damage.`,
-              apply: () => (target.hp = Math.max(0, target.hp - skillDmg)),
+              apply: () => {
+                const oldHp = target.hp;
+                target.hp = Math.max(0, target.hp - skillDmg);
+                return { battler: target, oldHp };
+              },
             });
           }
           if (effect.type === "add_status") {
@@ -805,66 +941,70 @@ renderBattleAscii() {
         const dmg = Math.max(1, e.level + randInt(-1, 2));
         events.push({
           msg: `${e.name} attacks ${target.name} for ${dmg}.`,
-          apply: () => (target.hp = Math.max(0, target.hp - dmg)),
+          apply: () => {
+            const oldHp = target.hp;
+            target.hp = Math.max(0, target.hp - dmg);
+            return { battler: target, oldHp };
+          },
         });
       }
     });
-
-    const delay = 450;
-    let i = 0;
-
-    const playNext = () => {
-      if (i < events.length) {
-        const ev = events[i];
-        ev.apply();
-        this.appendBattleLog(ev.msg);
-        this.renderBattleAscii();
-        i++;
-        setTimeout(playNext, delay);
-      } else {
-        finalizeRound();
-      }
-    };
-
-    const finalizeRound = () => {
-      const anyEnemyAlive = enemies.some((e) => e.hp > 0);
-      const anyPartyAlive = this.party.members
-        .slice(0, 4)
-        .some((p) => p.hp > 0);
-
-      if (!anyPartyAlive) {
-        this.appendBattleLog(this.dataManager.terms.battle.your_party_collapses);
-        this.logMessage(this.dataManager.terms.log.party_falls);
-        this.runActive = false;
-        this.battleState.finished = true;
-      } else if (!anyEnemyAlive) {
-        this.appendBattleLog(this.dataManager.terms.battle.victory);
-        this.battleState.finished = true;
-        this.battleState.victoryPending = true;
-      }
-
-      this.updateParty();
-      this.renderBattleAscii();
-
-      if (this.battleState && this.battleState.victoryPending) {
-        this.battleWindow.btnVictory.style.display = "inline-block";
-      }
-      if (
-        !this.battleState ||
-        (!this.battleState.finished || !this.battleState.victoryPending)
-      ) {
-        this.battleWindow.btnRound.disabled = false;
-        this.battleWindow.btnFlee.disabled = false;
-      }
-      if (!this.battleState.finished) {
-        this.appendBattleLog("Use Resolve Round or Flee.");
-      }
-      this.battleBusy = false;
-      this.updateAll();
-    };
-
-    playNext();
     beep(300, 80);
+
+    // --- 2. Process Events Sequentially ---
+    for (const ev of events) {
+      if (ev.battler) {
+        await this.animateBattlerName(ev.battler);
+        await delay(300);
+      }
+
+      this.appendBattleLog(ev.msg);
+      const animInfo = ev.apply();
+
+      if (animInfo && animInfo.battler) {
+        this.flashBattlerName(animInfo.battler.name);
+        await this.animateBattleHpGauge(animInfo.battler, animInfo.oldHp);
+      } else {
+        this.renderBattleAscii();
+      }
+      await delay(600);
+    }
+
+    // --- 3. Finalize Round ---
+    const anyEnemyAlive = enemies.some((e) => e.hp > 0);
+    const anyPartyAlive = this.party.members
+      .slice(0, 4)
+      .some((p) => p.hp > 0);
+
+    if (!anyPartyAlive) {
+      this.appendBattleLog(this.dataManager.terms.battle.your_party_collapses);
+      this.logMessage(this.dataManager.terms.log.party_falls);
+      this.runActive = false;
+      this.battleState.finished = true;
+    } else if (!anyEnemyAlive) {
+      this.appendBattleLog(this.dataManager.terms.battle.victory);
+      this.battleState.finished = true;
+      this.battleState.victoryPending = true;
+    }
+
+    this.updateParty();
+    this.renderBattleAscii();
+
+    if (this.battleState && this.battleState.victoryPending) {
+      this.battleWindow.btnVictory.style.display = "inline-block";
+    }
+    if (
+      !this.battleState ||
+      (!this.battleState.finished || !this.battleState.victoryPending)
+    ) {
+      this.battleWindow.btnRound.disabled = false;
+      this.battleWindow.btnFlee.disabled = false;
+    }
+    if (!this.battleState.finished) {
+      this.appendBattleLog("Use Resolve Round or Flee.");
+    }
+    this.battleBusy = false;
+    this.updateAll();
   }
 
   gainXp(member, amount) {

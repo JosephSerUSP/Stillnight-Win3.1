@@ -13,6 +13,7 @@ class Game_Base {
     this.name = unitData.name;
     this.maxHp = unitData.maxHp;
     this.hp = unitData.maxHp;
+    this.prevHp = unitData.maxHp;
     this.level = unitData.level;
     this.elements = unitData.elements || [];
   }
