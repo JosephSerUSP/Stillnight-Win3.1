@@ -1,4 +1,4 @@
-import { getPrimaryElements } from "./core.js";
+import { getPrimaryElements, Graphics } from "./core.js";
 
 /**
  * @class WindowLayer
@@ -69,8 +69,8 @@ class Legacy_Window_Base {
  */
 export class Window_Base {
     /**
-     * @param {number} x - The relative x coordinate.
-     * @param {number} y - The relative y coordinate.
+     * @param {number|string} x - The relative x coordinate, or 'center'.
+     * @param {number|string} y - The relative y coordinate, or 'center'.
      * @param {number} width - The width of the window.
      * @param {number} height - The height of the window.
      */
@@ -81,8 +81,12 @@ export class Window_Base {
         this.element = document.createElement("div");
         this.element.className = "dialog";
         this.element.style.position = "absolute";
-        this.element.style.left = `${x}px`;
-        this.element.style.top = `${y}px`;
+
+        const finalX = x === 'center' ? (Graphics.width - width) / 2 : x;
+        const finalY = y === 'center' ? (Graphics.height - height) / 2 : y;
+
+        this.element.style.left = `${finalX}px`;
+        this.element.style.top = `${finalY}px`;
         this.element.style.width = `${width}px`;
         this.element.style.height = `${height}px`;
         this.element.style.zIndex = "10";
@@ -166,7 +170,7 @@ export class Window_Base {
  */
 export class Window_Battle extends Window_Base {
   constructor() {
-    super(20, 20, 528, 360);
+    super('center', 'center', 528, 360);
     this.element.style.display = 'flex';
     this.element.style.flexDirection = 'column';
 
@@ -332,26 +336,107 @@ export class Window_Battle extends Window_Base {
  * @description The window for inspecting creatures.
  * @extends Legacy_Window_Base
  */
-export class Window_Inspect extends Legacy_Window_Base {
+export class Window_Inspect extends Window_Base {
   constructor() {
-    super("inspect-overlay");
-    this.spriteEl = document.getElementById("inspect-sprite");
-    this.nameEl = document.getElementById("inspect-name");
-    this.levelEl = document.getElementById("inspect-level");
-    this.rowPosEl = document.getElementById("inspect-rowpos");
-    this.hpEl = document.getElementById("inspect-hp");
-    this.xpEl = document.getElementById("inspect-xp");
-    this.elementEl = document.getElementById("inspect-element");
-    this.equipEl = document.getElementById("inspect-equip");
-    this.passiveEl = document.getElementById("inspect-passive");
-    this.skillsEl = document.getElementById("inspect-skills");
-    this.flavorEl = document.getElementById("inspect-flavor");
-    this.notesEl = document.getElementById("inspect-notes");
-    this.equipmentListContainerEl = document.getElementById("inspect-equipment-list-container");
-    this.equipmentListEl = document.getElementById("inspect-equipment-list");
-    this.equipmentFilterEl = document.getElementById("inspect-equipment-filter");
-    this.btnClose = document.getElementById("btn-inspect-close");
-    this.btnOk = document.getElementById("btn-inspect-ok");
+    super('center', 'center', 480, 320);
+    this.element.id = "inspect-window";
+    this.element.style.display = 'flex';
+    this.element.style.flexDirection = 'column';
+
+    const titleBar = document.createElement("div");
+    titleBar.className = "dialog-titlebar";
+    this.element.appendChild(titleBar);
+    this.makeDraggable(titleBar);
+
+    const titleText = document.createElement("span");
+    titleText.textContent = "Creature – Stillnight";
+    titleBar.appendChild(titleText);
+
+    this.btnClose = document.createElement("button");
+    this.btnClose.className = "win-btn";
+    this.btnClose.textContent = "X";
+    titleBar.appendChild(this.btnClose);
+
+    const content = document.createElement("div");
+    content.className = "dialog-content";
+    content.style.flexGrow = "1";
+    this.element.appendChild(content);
+
+    const inspectBody = document.createElement('div');
+    inspectBody.className = 'inspect-body';
+    content.appendChild(inspectBody);
+
+    const layout = document.createElement('div');
+    layout.className = 'inspect-layout';
+    inspectBody.appendChild(layout);
+
+    this.spriteEl = document.createElement('div');
+    this.spriteEl.className = 'inspect-sprite';
+    layout.appendChild(this.spriteEl);
+
+    const fields = document.createElement('div');
+    fields.className = 'inspect-fields';
+    layout.appendChild(fields);
+
+    this.nameEl = this._createField(fields, "Name");
+    this.levelEl = this._createField(fields, "Level");
+    this.rowPosEl = this._createField(fields, "Row");
+    this.hpEl = this._createField(fields, "HP");
+    this.xpEl = this._createField(fields, "XP");
+    this.elementEl = this._createField(fields, "Element");
+    this.equipEl = this._createField(fields, "Equipment", true);
+    this.passiveEl = this._createField(fields, "Passive");
+    this.skillsEl = this._createField(fields, "Skills");
+    this.flavorEl = this._createField(fields, "Flavor");
+
+    this.equipmentListContainerEl = document.createElement('div');
+    this.equipmentListContainerEl.style.display = 'none';
+    fields.appendChild(this.equipmentListContainerEl);
+
+    const groupBox = document.createElement('div');
+    groupBox.className = 'group-box';
+    this.equipmentListContainerEl.appendChild(groupBox);
+
+    const legend = document.createElement('legend');
+    legend.textContent = 'Change Equipment';
+    groupBox.appendChild(legend);
+
+    this.equipmentFilterEl = document.createElement('div');
+    this.equipmentFilterEl.className = 'stack-nav-buttons';
+    this.equipmentFilterEl.style.marginBottom = '4px';
+    groupBox.appendChild(this.equipmentFilterEl);
+
+    this.equipmentListEl = document.createElement('div');
+    groupBox.appendChild(this.equipmentListEl);
+
+    this.notesEl = document.createElement('div');
+    this.notesEl.className = 'inspect-notes';
+    inspectBody.appendChild(this.notesEl);
+
+    const buttons = document.createElement("div");
+    buttons.className = "dialog-buttons";
+    this.element.appendChild(buttons);
+
+    this.btnOk = document.createElement("button");
+    this.btnOk.className = "win-btn";
+    this.btnOk.textContent = "OK";
+    buttons.appendChild(this.btnOk);
+  }
+
+  _createField(parent, label, isButton = false) {
+    const row = document.createElement('div');
+    row.className = 'inspect-row';
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'inspect-label';
+    labelSpan.textContent = label;
+    row.appendChild(labelSpan);
+
+    const valueEl = isButton ? document.createElement('button') : document.createElement('span');
+    valueEl.className = isButton ? 'win-btn inspect-value' : 'inspect-value';
+    row.appendChild(valueEl);
+
+    parent.appendChild(row);
+    return valueEl;
   }
 }
 
@@ -444,7 +529,7 @@ export class Window_Formation extends Legacy_Window_Base {
  */
 export class Window_Inventory extends Window_Base {
   constructor() {
-    super(100, 50, 400, 300); // x, y, width, height
+    super('center', 'center', 400, 300); // x, y, width, height
     this.element.id = "inventory-window";
     this.element.style.display = 'flex';
     this.element.style.flexDirection = 'column';
@@ -564,12 +649,39 @@ export class Window_Inventory extends Window_Base {
  * @description The window for recruiting new members.
  * @extends Legacy_Window_Base
  */
-export class Window_Recruit extends Legacy_Window_Base {
+export class Window_Recruit extends Window_Base {
   constructor() {
-    super("recruit-overlay");
-    this.bodyEl = document.getElementById("recruit-body");
-    this.buttonsEl = document.getElementById("recruit-buttons");
-    this.btnClose = document.getElementById("btn-recruit-close");
+    super('center', 'center', 480, 320);
+    this.element.id = "recruit-window";
+    this.element.style.display = 'flex';
+    this.element.style.flexDirection = 'column';
+
+    const titleBar = document.createElement("div");
+    titleBar.className = "dialog-titlebar";
+    this.element.appendChild(titleBar);
+    this.makeDraggable(titleBar);
+
+    const titleText = document.createElement("span");
+    titleText.textContent = "Recruit – Stillnight";
+    titleBar.appendChild(titleText);
+
+    this.btnClose = document.createElement("button");
+    this.btnClose.className = "win-btn";
+    this.btnClose.textContent = "X";
+    titleBar.appendChild(this.btnClose);
+
+    const content = document.createElement("div");
+    content.className = "dialog-content";
+    content.style.flexGrow = "1";
+    this.element.appendChild(content);
+
+    this.bodyEl = document.createElement('div');
+    this.bodyEl.className = 'inspect-body';
+    content.appendChild(this.bodyEl);
+
+    this.buttonsEl = document.createElement("div");
+    this.buttonsEl.className = "dialog-buttons";
+    this.element.appendChild(this.buttonsEl);
   }
 }
 

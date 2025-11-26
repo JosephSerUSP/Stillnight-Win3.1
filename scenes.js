@@ -1,4 +1,3 @@
-
 import { Game_Map, Game_Party, Game_Battler } from "./objects.js";
 import { beep, randInt, shuffleArray, getPrimaryElements } from "./core.js";
 import {
@@ -75,8 +74,10 @@ export class Scene_Map extends Scene_Base {
     this.shopWindow = new Window_Shop();
     this.eventWindow = new Window_Event();
     this.recruitWindow = new Window_Recruit();
+    this.windowLayer.addChild(this.recruitWindow)
     this.formationWindow = new Window_Formation();
     this.inspectWindow = new Window_Inspect();
+    this.windowLayer.addChild(this.inspectWindow)
     this.confirmWindow = new Window_Confirm();
 
     this.battleWindow.btnRound.addEventListener(
@@ -430,7 +431,7 @@ export class Scene_Map extends Scene_Base {
       const portrait = document.createElement("div");
       portrait.className = "party-slot-portrait";
       portrait.style.backgroundImage = `url('assets/portraits/${
-        member.spriteKey || "default"
+        member.spriteKey || "pixie"
       }.png')`;
 
       const info = document.createElement("div");
@@ -1424,7 +1425,7 @@ export class Scene_Map extends Scene_Base {
     this.recruitWindow.bodyEl.innerHTML = `
       <div class="inspect-layout">
         <div class="inspect-sprite" style="background-image: url('assets/portraits/${
-          recruit.spriteKey || "default"
+          recruit.spriteKey || "pixie"
         }.png')"></div>
         <div class="inspect-fields">
           <div class="inspect-row">
@@ -1958,27 +1959,28 @@ renderElements(elements) {
    */
   openInspect(member, index) {
     this.inspectWindow.member = member;
-    this.inspectWindow.memberIndex = index;
-
     const need = member.xpNeeded(member.level);
-    this.inspectWindow.spriteEl.style.backgroundImage = `url('assets/portraits/${
-      member.spriteKey || "default"
-    }.png')`;
+    const spriteKey = member.spriteKey || 'pixie';
+    this.inspectWindow.spriteEl.style.backgroundImage = `url('assets/portraits/${spriteKey}.png')`;
+
     this.inspectWindow.nameEl.innerHTML = "";
     this.inspectWindow.nameEl.appendChild(this.createElementIcon(member.elements));
     const nameSpan = document.createElement('span');
     nameSpan.textContent = member.name;
     this.inspectWindow.nameEl.appendChild(nameSpan);
+
     this.inspectWindow.levelEl.textContent = member.level;
     this.inspectWindow.rowPosEl.textContent = this.partyRow(index);
     this.inspectWindow.hpEl.textContent = `${member.hp} / ${member.maxHp}`;
     this.inspectWindow.xpEl.textContent = `${member.xp || 0} / ${need}`;
+
     this.inspectWindow.elementEl.innerHTML = "";
     if (member.elements && member.elements.length > 0) {
         this.inspectWindow.elementEl.appendChild(this.renderElements(member.elements));
     } else {
         this.inspectWindow.elementEl.textContent = "—";
     }
+
     if (member.equipmentItem) {
       this.inspectWindow.equipEl.textContent = member.equipmentItem.name;
     } else if (member.baseEquipment) {
@@ -1986,25 +1988,15 @@ renderElements(elements) {
     } else {
       this.inspectWindow.equipEl.textContent = "—";
     }
-    this.inspectWindow.passiveEl.textContent =
-      member.passives.map((p) => p.description).join(", ") || "—";
-    this.inspectWindow.skillsEl.innerHTML =
-      (member.skills && member.skills.length)
-        ? member.skills
-            .map((s) => this.formatSkillName(s))
-            .join(", ")
-        : "—";
+
+    this.inspectWindow.passiveEl.textContent = member.passives.map((p) => p.description).join(", ") || "—";
+    this.inspectWindow.skillsEl.innerHTML = (member.skills && member.skills.length) ? member.skills.map((s) => this.formatSkillName(s)).join(", ") : "—";
     this.inspectWindow.flavorEl.textContent = member.flavor || "—";
-    this.inspectWindow.notesEl.textContent =
-      "Row is determined by the 2×2 formation grid.";
+    this.inspectWindow.notesEl.textContent = "Row is determined by the 2×2 formation grid.";
 
     this.inspectWindow.open();
     this.setStatus(`Inspecting ${member.name}`);
-    this.logMessage(
-      `[Inspect] ${member.name} – Lv${member.level}, ${this.partyRow(
-        index
-      )}, HP ${member.hp}/${member.maxHp}.`
-    );
+    this.logMessage(`[Inspect] ${member.name} – Lv${member.level}, ${this.partyRow(index)}, HP ${member.hp}/${member.maxHp}.`);
 
     this.inspectWindow.btnClose.onclick = () => this.closeInspect();
     this.inspectWindow.btnOk.onclick = () => this.closeInspect();

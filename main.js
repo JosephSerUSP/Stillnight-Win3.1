@@ -9,6 +9,9 @@ async function main() {
   await dataManager.loadData();
 
   const scene = new Scene_Map(dataManager);
+  if (window.location.search.includes("test=true")) {
+    window.scene = scene;
+  }
   scene.start();
 }
 
