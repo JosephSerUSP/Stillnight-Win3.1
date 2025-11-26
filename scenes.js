@@ -10,6 +10,7 @@ import {
   Window_Inventory,
   Window_Inspect,
   Window_Confirm,
+  WindowLayer,
 } from "./windows.js";
 
 /**
@@ -62,7 +63,12 @@ export class Scene_Map extends Scene_Base {
     this.getDomElements();
     this.addEventListeners();
 
+    this.windowLayer = new WindowLayer();
+    this.windowLayer.appendToBody();
+
     this.battleWindow = new Window_Battle();
+    this.windowLayer.addChild(this.battleWindow);
+
     this.shopWindow = new Window_Shop();
     this.eventWindow = new Window_Event();
     this.recruitWindow = new Window_Recruit();
@@ -533,19 +539,37 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
-   * @method flashBattlerName
-   * @description Flashes the name of a battler.
-   * @param {string} battlerName - The name of the battler to flash.
+   * @method animateBattler
+   * @description Applies a temporary animation to a battler's name element.
+   * @param {Game_Battler} battler - The battler to animate.
+   * @param {string} animationType - The type of animation ('flash', 'shake', etc.).
    */
-  flashBattlerName(battlerName) {
-    const battlerElement = this.battleWindow.asciiEl.querySelector(
-      `#battler-${battlerName}`
-    );
+  animateBattler(battler, animationType) {
+    const battlerId = `battler-${battler.name.replace(/\s/g, '-')}`;
+    const battlerElement = this.battleWindow.asciiEl.querySelector(`#${battlerId}`);
+
     if (battlerElement) {
-      battlerElement.classList.add("blink");
+      let animationClass = '';
+      let duration = 0;
+
+      switch (animationType) {
+        case 'flash':
+          animationClass = 'blink';
+          duration = 200;
+          break;
+        case 'shake':
+          animationClass = 'shake';
+          duration = 500;
+          break;
+        // Add other animation cases here
+        default:
+          return; // No valid animation type provided
+      }
+
+      battlerElement.classList.add(animationClass);
       setTimeout(() => {
-        battlerElement.classList.remove("blink");
-      }, 200);
+        battlerElement.classList.remove(animationClass);
+      }, duration);
     }
   }
 
@@ -822,7 +846,7 @@ export class Scene_Map extends Scene_Base {
    */
   renderBattleAscii(animatingBattlerName = null, animatingHp = null) {
     if (!this.battleState) return;
-    const { enemies, round } = this.battleState;
+    const { enemies } = this.battleState;
 
     const stripHtml = (html) => html.replace(/<[^>]*>/g, "");
 
@@ -885,7 +909,7 @@ export class Scene_Map extends Scene_Base {
     ascii += buildRowBlock(partyRows[1]);
     ascii += buildRowBlock(partyRows[0]);
 
-    this.battleWindow.asciiEl.innerHTML = ascii;
+    this.battleWindow.refresh(ascii);
   }
 
   /**
@@ -1083,7 +1107,7 @@ export class Scene_Map extends Scene_Base {
       const animInfo = ev.apply();
 
       if (animInfo && animInfo.battler) {
-        this.flashBattlerName(animInfo.battler.name);
+        this.animateBattler(animInfo.battler, 'flash');
         await this.animateBattleHpGauge(animInfo.battler, animInfo.oldHp);
       } else {
         this.renderBattleAscii();
