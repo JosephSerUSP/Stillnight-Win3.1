@@ -43,7 +43,11 @@ class Scene_Base {
 
 /**
  * @class Scene_Map
- * @description The main scene for the map exploration.
+ * @description The main scene for map exploration. This class is currently a "God Class"
+ * that handles exploration, battles, shops, and more. The long-term goal is to refactor
+ * this class into a more specialized Scene_Map that only handles exploration, with other
+ * systems (battle, shop, etc.) being moved into their own dedicated scenes and managers
+ * as outlined in the design document.
  * @extends Scene_Base
  */
 export class Scene_Map extends Scene_Base {
@@ -72,13 +76,17 @@ export class Scene_Map extends Scene_Base {
     this.windowLayer.addChild(this.inventoryWindow);
 
     this.shopWindow = new Window_Shop();
+    this.windowLayer.addChild(this.shopWindow);
     this.eventWindow = new Window_Event();
+    this.windowLayer.addChild(this.eventWindow);
     this.recruitWindow = new Window_Recruit();
     this.windowLayer.addChild(this.recruitWindow)
     this.formationWindow = new Window_Formation();
+    this.windowLayer.addChild(this.formationWindow)
     this.inspectWindow = new Window_Inspect();
     this.windowLayer.addChild(this.inspectWindow)
     this.confirmWindow = new Window_Confirm();
+    this.windowLayer.addChild(this.confirmWindow);
 
     this.battleWindow.btnRound.addEventListener(
       "click",
