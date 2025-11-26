@@ -2,7 +2,11 @@ import { getPrimaryElements, Graphics } from "./core.js";
 
 /**
  * @class WindowLayer
- * @description A container that manages the z-indexing of windows.
+ * @description A container that manages all game windows. This is a key component
+ * for decoupling the UI from the main HTML file. The WindowLayer is appended to the
+ * main game container, and all windows are appended to the WindowLayer. This ensures
+ * that all windows are children of the game container and can be scaled and positioned
+ * correctly. It also provides a single point of control for managing window z-indexing.
  */
 export class WindowLayer {
   constructor() {
@@ -27,52 +31,19 @@ export class WindowLayer {
 }
 
 /**
- * @class Legacy_Window_Base
- * @description The base class for all legacy windows.
- */
-class Legacy_Window_Base {
-  /**
-   * @param {string} overlayId - The ID of the modal overlay element.
-   */
-  constructor(overlayId) {
-    this.overlay = document.getElementById(overlayId);
-  }
-
-  /**
-   * @method open
-   * @description Opens the window.
-   */
-  open() {
-    this.overlay.classList.add("active");
-  }
-
-  /**
-   * @method close
-   * @description Closes the window.
-   */
-  close() {
-    this.overlay.classList.remove("active");
-  }
-
-  /**
-   * @method refresh
-   * @description Refreshes the window's content.
-   */
-  refresh() {
-    // To be implemented by subclasses
-  }
-}
-
-/**
  * @class Window_Base
- * @description The base class for all windows.
+ * @description The base class for all UI windows. Handles DOM creation, positioning,
+ * and drag-and-drop functionality. Windows are rendered into a WindowLayer.
+ * @property {HTMLElement} overlay - The semi-transparent overlay that covers the game screen.
+ * @property {HTMLElement} element - The main window element.
  */
 export class Window_Base {
     /**
-     * @param {number|string} x - The relative x coordinate, or 'center'.
-     * @param {number|string} y - The relative y coordinate, or 'center'.
+     * Creates an instance of Window_Base.
+     * @param {number|string} x - The initial x coordinate, relative to the game container. Can be 'center'.
+     * @param {number|string} y - The initial y coordinate, relative to the game container. Can be 'center'.
      * @param {number} width - The width of the window.
-     * @param {number} height - The height of the window.
+     * @param {number|string} height - The height of the window. Can be 'auto'.
      */
     constructor(x, y, width, height) {
         this.overlay = document.createElement("div");
@@ -165,7 +136,11 @@ export class Window_Base {
 
 /**
  * @class Window_Battle
- * @description The window for battles.
+ * @description The window for battles. This window is designed to be a flexible,
+ * terminal-style display that can be easily extended with new animations and UI
+ * elements. The viewport and log are separate elements, allowing for independent
+ * scrolling and content updates. This is a significant improvement over the
+ * previous hardcoded HTML structure, which was difficult to modify and scale.
  * @extends Window_Base
  */
 export class Window_Battle extends Window_Base {
@@ -443,16 +418,63 @@ export class Window_Inspect extends Window_Base {
 /**
  * @class Window_Shop
  * @description The window for the shop.
- * @extends Legacy_Window_Base
+ * @extends Window_Base
  */
-export class Window_Shop extends Legacy_Window_Base {
+export class Window_Shop extends Window_Base {
   constructor() {
-    super("shop-overlay");
-    this.goldLabelEl = document.getElementById("shop-gold-label");
-    this.messageEl = document.getElementById("shop-message");
-    this.listContainer = document.getElementById("shop-item-list");
-    this.btnClose = document.getElementById("btn-shop-close");
-    this.btnLeave = document.getElementById("btn-shop-leave");
+    super('center', 'center', 420, 320);
+    this.element.id = "shop-window";
+    this.element.style.display = 'flex';
+    this.element.style.flexDirection = 'column';
+
+    const titleBar = document.createElement("div");
+    titleBar.className = "dialog-titlebar";
+    this.element.appendChild(titleBar);
+    this.makeDraggable(titleBar);
+
+    const titleText = document.createElement("span");
+    titleText.textContent = "Shop – Stillnight";
+    titleBar.appendChild(titleText);
+
+    this.btnClose = document.createElement("button");
+    this.btnClose.className = "win-btn";
+    this.btnClose.textContent = "X";
+    titleBar.appendChild(this.btnClose);
+
+    const content = document.createElement("div");
+    content.className = "dialog-content";
+    content.style.flexGrow = "1";
+    this.element.appendChild(content);
+
+    const shopBody = document.createElement('div');
+    shopBody.className = 'shop-body';
+    content.appendChild(shopBody);
+
+    const goldRow = document.createElement('div');
+    goldRow.className = 'shop-row';
+    goldRow.textContent = 'Current gold: ';
+    this.goldLabelEl = document.createElement('span');
+    this.goldLabelEl.className = 'shop-gold';
+    goldRow.appendChild(this.goldLabelEl);
+    shopBody.appendChild(goldRow);
+
+    this.listContainer = document.createElement('div');
+    shopBody.appendChild(this.listContainer);
+
+    this.messageEl = document.createElement('div');
+    this.messageEl.className = 'shop-row';
+    this.messageEl.style.marginTop = '6px';
+    this.messageEl.style.fontSize = '10px';
+    shopBody.appendChild(this.messageEl);
+
+    const buttons = document.createElement("div");
+    buttons.className = "dialog-buttons";
+    this.element.appendChild(buttons);
+
+    this.btnLeave = document.createElement("button");
+    this.btnLeave.className = "win-btn";
+    this.btnLeave.textContent = "Leave";
+    buttons.appendChild(this.btnLeave);
   }
 
   /**
@@ -464,7 +486,7 @@ export class Window_Shop extends Legacy_Window_Base {
    * @param {Function} buyCallback - The callback function to execute when an item is purchased.
    */
   open(gold, message, items, buyCallback) {
-    this.goldLabelEl.textContent = gold;
+    this.goldLabelEl.textContent = `${gold}G`;
     this.messageEl.textContent = message;
     this.renderItems(items, buyCallback);
     super.open();
@@ -509,23 +531,77 @@ export class Window_Shop extends Legacy_Window_Base {
 /**
  * @class Window_Formation
  * @description The window for party formation.
- * @extends Legacy_Window_Base
+ * @extends Window_Base
  */
-export class Window_Formation extends Legacy_Window_Base {
+export class Window_Formation extends Window_Base {
   constructor() {
-    super("formation-overlay");
-    this.gridEl = document.getElementById("formation-grid");
-    this.reserveGridEl = document.getElementById("formation-reserve-grid");
-    this.btnClose = document.getElementById("btn-formation-close");
-    this.btnOk = document.getElementById("btn-formation-ok");
-    this.btnCancel = document.getElementById("btn-formation-cancel");
+    super('center', 'center', 420, 320);
+    this.element.id = "formation-window";
+    this.element.style.display = 'flex';
+    this.element.style.flexDirection = 'column';
+
+    const titleBar = document.createElement("div");
+    titleBar.className = "dialog-titlebar";
+    this.element.appendChild(titleBar);
+    this.makeDraggable(titleBar);
+
+    const titleText = document.createElement("span");
+    titleText.textContent = "Formation – Stillnight";
+    titleBar.appendChild(titleText);
+
+    this.btnClose = document.createElement("button");
+    this.btnClose.className = "win-btn";
+    this.btnClose.textContent = "X";
+    titleBar.appendChild(this.btnClose);
+
+    const content = document.createElement("div");
+    content.className = "dialog-content";
+    content.style.flexGrow = "1";
+    this.element.appendChild(content);
+
+    const formationBody = document.createElement('div');
+    formationBody.className = 'formation-body';
+    content.appendChild(formationBody);
+
+    const label = document.createElement('div');
+    label.className = 'formation-label';
+    label.textContent = 'Drag and drop to rearrange. Active party is the first 4 members.';
+    formationBody.appendChild(label);
+
+    this.gridEl = document.createElement('div');
+    this.gridEl.className = 'formation-grid';
+    formationBody.appendChild(this.gridEl);
+
+    const reserveLabel = document.createElement('div');
+    reserveLabel.className = 'formation-label';
+    reserveLabel.style.marginTop = '10px';
+    reserveLabel.textContent = 'Reserve';
+    formationBody.appendChild(reserveLabel);
+
+    this.reserveGridEl = document.createElement('div');
+    this.reserveGridEl.className = 'formation-reserve-grid';
+    formationBody.appendChild(this.reserveGridEl);
+
+    const buttons = document.createElement("div");
+    buttons.className = "dialog-buttons";
+    this.element.appendChild(buttons);
+
+    this.btnOk = document.createElement("button");
+    this.btnOk.className = "win-btn";
+    this.btnOk.textContent = "OK";
+    buttons.appendChild(this.btnOk);
+
+    this.btnCancel = document.createElement("button");
+    this.btnCancel.className = "win-btn";
+    this.btnCancel.textContent = "Cancel";
+    buttons.appendChild(this.btnCancel);
   }
 }
 
 /**
  * @class Window_Inventory
  * @description The window for the inventory.
- * @extends Legacy_Window_Base
+ * @extends Window_Base
  */
 export class Window_Inventory extends Window_Base {
   constructor() {
@@ -688,29 +764,90 @@ export class Window_Recruit extends Window_Base {
 /**
  * @class Window_Event
  * @description The window for events.
- * @extends Legacy_Window_Base
+ * @extends Window_Base
  */
-export class Window_Event extends Legacy_Window_Base {
+export class Window_Event extends Window_Base {
   constructor() {
-    super("event-overlay");
-    this.titleEl = document.getElementById("event-title");
-    this.descriptionEl = document.getElementById("event-description");
-    this.choicesEl = document.getElementById("event-choices");
-    this.btnClose = document.getElementById("btn-event-close");
+    super('center', 'center', 480, 'auto');
+    this.element.id = "event-window";
+    this.element.style.display = 'flex';
+    this.element.style.flexDirection = 'column';
+    this.element.style.height = 'fit-content';
+
+    const titleBar = document.createElement("div");
+    titleBar.className = "dialog-titlebar";
+    this.element.appendChild(titleBar);
+    this.makeDraggable(titleBar);
+
+    this.titleEl = document.createElement("span");
+    titleBar.appendChild(this.titleEl);
+
+    this.btnClose = document.createElement("button");
+    this.btnClose.className = "win-btn";
+    this.btnClose.textContent = "X";
+    titleBar.appendChild(this.btnClose);
+
+    const content = document.createElement("div");
+    content.className = "dialog-content";
+    content.style.flexGrow = "1";
+    this.element.appendChild(content);
+
+    const eventBody = document.createElement('div');
+    eventBody.className = 'event-body';
+    content.appendChild(eventBody);
+
+    this.descriptionEl = document.createElement('div');
+    this.descriptionEl.className = 'event-description';
+    eventBody.appendChild(this.descriptionEl);
+
+    this.choicesEl = document.createElement('div');
+    this.choicesEl.className = 'event-choices';
+    eventBody.appendChild(this.choicesEl);
   }
 }
 
 /**
  * @class Window_Confirm
  * @description The window for generic confirmations.
- * @extends Legacy_Window_Base
+ * @extends Window_Base
  */
-export class Window_Confirm extends Legacy_Window_Base {
+export class Window_Confirm extends Window_Base {
   constructor() {
-    super("confirm-overlay");
-    this.titleEl = document.getElementById("confirm-title");
-    this.messageEl = document.getElementById("confirm-message");
-    this.btnOk = document.getElementById("btn-confirm-ok");
-    this.btnCancel = document.getElementById("btn-confirm-cancel");
+    super('center', 'center', 320, 'auto');
+    this.element.id = "confirm-window";
+    this.element.style.display = 'flex';
+    this.element.style.flexDirection = 'column';
+    this.element.style.height = 'fit-content';
+
+    const titleBar = document.createElement("div");
+    titleBar.className = "dialog-titlebar";
+    this.element.appendChild(titleBar);
+    this.makeDraggable(titleBar);
+
+    this.titleEl = document.createElement("span");
+    titleBar.appendChild(this.titleEl);
+
+    const content = document.createElement("div");
+    content.className = "dialog-content";
+    content.style.flexGrow = "1";
+    this.element.appendChild(content);
+
+    this.messageEl = document.createElement('div');
+    this.messageEl.style.marginBottom = '8px';
+    content.appendChild(this.messageEl);
+
+    const buttons = document.createElement("div");
+    buttons.className = "dialog-buttons";
+    content.appendChild(buttons);
+
+    this.btnOk = document.createElement("button");
+    this.btnOk.className = "win-btn";
+    this.btnOk.textContent = "OK";
+    buttons.appendChild(this.btnOk);
+
+    this.btnCancel = document.createElement("button");
+    this.btnCancel.className = "win-btn";
+    this.btnCancel.textContent = "Cancel";
+    buttons.appendChild(this.btnCancel);
   }
 }

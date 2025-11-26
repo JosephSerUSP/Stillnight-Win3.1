@@ -124,4 +124,27 @@ class Window_Selectable extends Window_Base {
 While the full roadmap is extensive, the immediate priority to unblock development is Phase 2 (Logic Extraction).
 Immediate Action Item:
 Move the contents of resolveBattleRound in scenes.js into a new file battle_system.js (or BattleManager), accepting actors and enemies as arguments, and returning a Log object. This decouples the calculation from the text rendering.
+7. Cleanup and Assessment (November 26, 2025)
+A general cleanup pass was performed on the project, focusing on the directives outlined in this document.
+
+Summary of Actions Taken:
+
+- All legacy window classes (`Window_Shop`, `Window_Formation`, `Window_Event`, `Window_Confirm`) were refactored to extend the new `Window_Base` class.
+- The obsolete `Legacy_Window_Base` class was removed from `windows.js`.
+- All static HTML for modals was removed from `index.html`.
+- Obsolete CSS selectors targeting the old static HTML were removed from `style.css`.
+- JSDoc-compliant comments were added to `Window_Base`.
+- Future-forward comments were added to `WindowLayer`, `Window_Battle`, and `Scene_Map` to provide context for future developers.
+
+Assessment of Phase 1:
+
+The project has made significant progress in implementing Phase 1 of the refactoring roadmap. The core components of the new windowing system (`Window_Base`, `WindowLayer`) are in place, and all windows now use this system. The dependency on static HTML for modals has been eliminated, which was the primary objective of this phase.
+
+However, the `index.html` file is not yet an empty container, as it still contains the main UI structure. `Scene_Map` also remains tightly coupled to this structure. While the most critical parts of Phase 1 are complete, there is still work to be done to fully realize the vision of a completely dynamic and decoupled UI.
+
+Overall Roadmap Assessment:
+
+The overall roadmap remains a valid and effective plan for achieving a more scalable, data-driven, and object-oriented architecture. The successful completion of the core Phase 1 objectives is a major step in the right direction and provides a solid foundation for the subsequent phases.
+
+The next priority should be Phase 2 (Logic Extraction), as stated in the "Implementation Notes for Current Prototype." Moving the battle logic out of `Scene_Map` will be the next major milestone in reducing the complexity of the codebase and improving its maintainability.
 --- END OF FILE documentation/design.md ---

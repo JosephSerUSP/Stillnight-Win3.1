@@ -640,37 +640,7 @@ body.night-theme {
     gap: 4px;
 }
 
-/* Battle dialog specifics */
-.dialog-battle { width: 520px; }
-.dialog-ascii {
-    background-color: #000000;
-    color: #c0ffb0;
-    border: 1px solid #808080;
-    box-shadow:
-        1px 1px 0 #ffffff inset,
-        -1px -1px 0 #404040 inset;
-    padding: 4px;
-    font-family: "Fixedsys", "Lucida Console", "Courier New", monospace;
-    font-size: 11px;
-    height: 200px;
-    white-space: pre;
-    overflow-y: auto;
-}
-.dialog-log {
-    background-color: #000000;
-    color: #00ff00;
-    border: 1px solid #808080;
-    padding: 2px;
-    font-family: "Fixedsys", "Lucida Console", "Courier New", monospace;
-    font-size: 10px;
-    height: 80px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-}
-#btn-battle-victory { display: none; }
-
 /* Inspect dialog – larger sprite box + flavor */
-.dialog-inspect { width: 480px; }
 .inspect-body {
     background-color: #ffffff;
     border: 1px solid #808080;
