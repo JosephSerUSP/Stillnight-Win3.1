@@ -64,16 +64,18 @@ export class Scene_Map extends Scene_Base {
     this.addEventListeners();
 
     this.windowLayer = new WindowLayer();
-    this.windowLayer.appendToBody();
+    const gameContainer = document.querySelector(".win-window");
+    this.windowLayer.appendTo(gameContainer);
 
     this.battleWindow = new Window_Battle();
     this.windowLayer.addChild(this.battleWindow);
+    this.inventoryWindow = new Window_Inventory();
+    this.windowLayer.addChild(this.inventoryWindow);
 
     this.shopWindow = new Window_Shop();
     this.eventWindow = new Window_Event();
     this.recruitWindow = new Window_Recruit();
     this.formationWindow = new Window_Formation();
-    this.inventoryWindow = new Window_Inventory();
     this.inspectWindow = new Window_Inspect();
     this.confirmWindow = new Window_Confirm();
 
@@ -135,9 +137,7 @@ export class Scene_Map extends Scene_Base {
    */
   startNewRun() {
     this.map.initFloors(this.dataManager.floors);
-    this.party.createInitialMembers(this.dataManager.actors);
-    this.party.gold = 0;
-    this.party.inventory = [];
+    this.party.createInitialMembers(this.dataManager);
     this.runActive = true;
     this.map.floorIndex = 0;
     const f = this.map.floors[this.map.floorIndex];
@@ -804,12 +804,7 @@ export class Scene_Map extends Scene_Base {
     this.battleWindow.btnRound.disabled = false;
     this.battleWindow.btnFlee.disabled = false;
 
-    this.appendBattleLog(this.dataManager.terms.battle.enemies_emerge);
-    enemies.forEach((e) => {
-        const primaryElements = getPrimaryElements(e.elements);
-        const elementAscii = primaryElements.map(e => this.elementToAscii(e)).join('');
-        this.appendBattleLog(` - ${e.name} (${e.role}, ${elementAscii})`);
-    });
+    this.battleWindow.logEnemyEmergence(enemies, this.dataManager.terms.battle);
 
     this.applyBattleStartPassives();
     this.renderBattleAscii();
@@ -829,18 +824,6 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
-   * @method appendBattleLog
-   * @description Appends a message to the battle log.
-   * @param {string} msg - The message to append.
-   */
-  appendBattleLog(msg) {
-    const div = document.createElement("div");
-    div.textContent = msg;
-    this.battleWindow.logEl.appendChild(div);
-    this.battleWindow.logEl.scrollTop = this.battleWindow.logEl.scrollHeight;
-  }
-
-  /**
    * @method renderBattleAscii
    * @description Renders the battle screen by creating and positioning DOM elements.
    * @param {string} animatingBattlerName - The name of the battler being animated.
@@ -849,43 +832,15 @@ export class Scene_Map extends Scene_Base {
   renderBattleAscii(animatingBattlerName = null, animatingHp = null) {
     if (!this.battleState) return;
     const { enemies } = this.battleState;
-    const battlerData = [];
 
-    // --- Enemies ---
-    enemies.forEach((e, idx) => {
-        const top = 30 + (idx % 2) * 40;
-        const left = 20 + Math.floor(idx / 2) * 220;
-        const hp = e.name === animatingBattlerName ? animatingHp : e.hp;
+    if(animatingBattlerName && animatingHp) {
+      const battler = [...enemies, ...this.party.members].find(b => b.name === animatingBattlerName);
+      if(battler) {
+        battler.hp = animatingHp;
+      }
+    }
 
-        const primaryElements = getPrimaryElements(e.elements);
-        const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
-        const nameStr = `<span id="battler-${e.name.replace(/\s/g, '-')}">${e.name}</span>`;
-        
-        battlerData.push({
-            top: top,
-            left: left,
-            html: `${elementAscii}${nameStr} (HP ${hp}/${e.maxHp})\n${this.createHpGauge(hp, e.maxHp)}`
-        });
-    });
-
-    // --- Party ---
-    this.party.members.slice(0, 4).forEach((p, idx) => {
-        const top = 140 + (idx % 2) * 40;
-        const left = 20 + Math.floor(idx / 2) * 220;
-        const hp = p.name === animatingBattlerName ? animatingHp : p.hp;
-
-        const primaryElements = getPrimaryElements(p.elements);
-        const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
-        const nameStr = `<span id="battler-${p.name.replace(/\s/g, '-')}">${p.name}</span>`;
-        
-        battlerData.push({
-            top: top,
-            left: left,
-            html: `${elementAscii}${nameStr} (HP ${hp}/${p.maxHp})\n${this.createHpGauge(hp, p.maxHp)}`
-        });
-    });
-
-    this.battleWindow.refresh(battlerData);
+    this.battleWindow.refresh(enemies, this.party.members.slice(0, 4));
   }
 
   /**
@@ -1079,7 +1034,7 @@ export class Scene_Map extends Scene_Base {
         await delay(300);
       }
 
-      this.appendBattleLog(ev.msg);
+      this.battleWindow.appendLog(ev.msg);
       const animInfo = ev.apply();
 
       if (animInfo && animInfo.battler) {
@@ -1098,12 +1053,12 @@ export class Scene_Map extends Scene_Base {
       .some((p) => p.hp > 0);
 
     if (!anyPartyAlive) {
-      this.appendBattleLog(this.dataManager.terms.battle.your_party_collapses);
+      this.battleWindow.appendLog(this.dataManager.terms.battle.your_party_collapses);
       this.logMessage(this.dataManager.terms.log.party_falls);
       this.runActive = false;
       this.battleState.finished = true;
     } else if (!anyEnemyAlive) {
-      this.appendBattleLog(this.dataManager.terms.battle.victory);
+      this.battleWindow.appendLog(this.dataManager.terms.battle.victory);
       this.battleState.finished = true;
       this.battleState.victoryPending = true;
     }
@@ -1122,7 +1077,7 @@ export class Scene_Map extends Scene_Base {
       this.battleWindow.btnFlee.disabled = false;
     }
     if (!this.battleState.finished) {
-      this.appendBattleLog("Use Resolve Round or Flee.");
+      this.battleWindow.appendLog("Use Resolve Round or Flee.");
     }
     this.battleBusy = false;
     this.updateAll();
@@ -1195,7 +1150,7 @@ export class Scene_Map extends Scene_Base {
           const target = this.battleState.enemies.find((e) => e.hp > 0);
           if (target) {
             target.hp = Math.max(0, target.hp - damage);
-            this.appendBattleLog(
+            this.battleWindow.appendLog(
               `[Passive] ${member.name} hits ${target.name} for ${damage}.`
             );
           }
@@ -1245,7 +1200,7 @@ export class Scene_Map extends Scene_Base {
       this.logMessage("[Battle] You successfully fled!");
       this.closeBattle();
     } else {
-      this.appendBattleLog("You failed to flee!");
+      this.battleWindow.appendLog("You failed to flee!");
     }
   }
 
@@ -1660,7 +1615,7 @@ export class Scene_Map extends Scene_Base {
    * @param {string} element - The element to convert.
    * @returns {string} The ASCII representation of the element.
    */
-  elementToAscii(element) {
+    elementToAscii(element) {
     switch (element) {
         case "Red": return "(R)";
         case "Green": return "(G)";
@@ -1670,7 +1625,7 @@ export class Scene_Map extends Scene_Base {
         default: return "";
     }
   }
-
+  
   /**
    * @method elementToIcon
    * @description Converts an element to its icon ID.
@@ -1762,26 +1717,6 @@ renderElements(elements) {
     });
     return container;
 }
-
-  /**
-   * @method createHpGauge
-   * @description Creates an HP gauge.
-   * @param {number} hp - The current HP.
-   * @param {number} maxHp - The maximum HP.
-   * @returns {string} The HP gauge.
-   */
-  createHpGauge(hp, maxHp) {
-    const totalLength = 15;
-    let filledCount = Math.round((hp / maxHp) * totalLength);
-    if (hp > 0 && filledCount === 0) {
-      filledCount = 1;
-    }
-    if (filledCount < 0) {
-      filledCount = 0;
-    }
-    const emptyCount = totalLength - filledCount;
-    return `[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
-  }
 
   /**
    * @method elementMultiplier
@@ -1939,7 +1874,7 @@ renderElements(elements) {
    */
   openInventory() {
     this.inventoryWindow.open();
-    this.renderInventory();
+    this.refreshInventoryWindow();
   }
 
   /**
@@ -1951,49 +1886,15 @@ renderElements(elements) {
   }
 
   /**
-   * @method renderInventory
-   * @description Renders the inventory.
+   * @method refreshInventoryWindow
+   * @description Refreshes the inventory window.
    */
-  renderInventory() {
-    this.inventoryWindow.listEl.innerHTML = "";
-    if (this.party.inventory.length === 0) {
-      this.inventoryWindow.emptyMsgEl.style.display = "block";
-    } else {
-      this.inventoryWindow.emptyMsgEl.style.display = "none";
-      this.party.inventory.forEach((item, idx) => {
-        const row = document.createElement("div");
-        row.className = "shop-row";
-
-        const icon = document.createElement('div');
-        icon.className = "icon";
-        const iconId = item.icon || 6; // Use icon 6 as a placeholder
-        if (iconId > 0) {
-            const iconIndex = iconId - 1;
-            icon.style.backgroundPosition = `-${(iconIndex % 10) * 12}px -${Math.floor(iconIndex / 10) * 12}px`;
-        }
-        row.appendChild(icon);
-
-        const desc = document.createElement("span");
-        desc.textContent = `${item.name}: ${item.description}`;
-        desc.style.flexGrow = "1";
-        row.appendChild(desc);
-
-        const btns = document.createElement("div");
-        const useBtn = document.createElement("button");
-        useBtn.className = "win-btn";
-        useBtn.textContent = "Use";
-        useBtn.addEventListener("click", () => this.useItem(item, idx));
-        const discardBtn = document.createElement("button");
-        discardBtn.className = "win-btn";
-        discardBtn.textContent = "Discard";
-        discardBtn.addEventListener("click", () => this.discardItem(item, idx));
-        btns.appendChild(useBtn);
-        btns.appendChild(discardBtn);
-
-        row.appendChild(btns);
-        this.inventoryWindow.listEl.appendChild(row);
-      });
-    }
+  refreshInventoryWindow() {
+    this.inventoryWindow.refresh(
+      this.party.inventory,
+      this.useItem.bind(this),
+      this.discardItem.bind(this)
+    );
   }
 
   /**
@@ -2003,16 +1904,8 @@ renderElements(elements) {
    * @param {number} index - The index of the item in the inventory.
    */
   useItem(item, index) {
-    this.inventoryWindow.listEl.innerHTML =
-      "Select a party member to use this on:";
-    this.party.members.forEach((m, idx) => {
-      const btn = document.createElement("button");
-      btn.className = "win-btn";
-      btn.textContent = `${m.name} (HP ${m.hp}/${m.maxHp})`;
-      btn.addEventListener("click", () => {
-        this.applyItemToMember(item, index, idx);
-      });
-      this.inventoryWindow.listEl.appendChild(btn);
+    this.inventoryWindow.showTargetSelection(this.party.members, (memberIndex) => {
+      this.applyItemToMember(item, index, memberIndex);
     });
   }
 
@@ -2038,7 +1931,7 @@ renderElements(elements) {
     this.logMessage(`[Inventory] Used ${item.name} on ${member.name}.`);
     this.party.inventory.splice(itemIndex, 1);
     this.updateParty();
-    this.renderInventory();
+    this.refreshInventoryWindow();
     this.updateAll();
     beep(700, 100);
   }
@@ -2051,7 +1944,7 @@ renderElements(elements) {
    */
   discardItem(item, index) {
     this.party.inventory.splice(index, 1);
-    this.renderInventory();
+    this.refreshInventoryWindow();
     this.updateAll();
     this.logMessage(`[Inventory] Discarded ${item.name}.`);
     beep(300, 80);

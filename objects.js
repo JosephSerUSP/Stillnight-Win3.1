@@ -105,23 +105,24 @@ export class Game_Party {
   /**
    * @method createInitialMembers
    * @description Creates the initial party members.
-   * @param {Object} actorData - The actor data from the data manager.
+   * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
    */
-  createInitialMembers(actorData) {
-    const availableCreatures = actorData.filter(creature => !creature.isEnemy);
+  createInitialMembers(dataManager) {
+    const { startingParty, actors, items } = dataManager;
 
-    if (Math.random() < 0.25) {
-      this.gold += 50;
-      const [creature1, creature2] = shuffleArray(availableCreatures).slice(0, 2);
-      const member1 = new Game_Battler(creature1);
-      const member2 = new Game_Battler(creature2);
-      member2.level += 3;
-      this.members = [member1, member2];
-    } else {
-      this.members = shuffleArray(availableCreatures)
-        .slice(0, 3)
-        .map(data => new Game_Battler(data));
-    }
+    this.gold = startingParty.getGold();
+    this.inventory = startingParty.getInventory(items);
+
+    const memberConfigs = startingParty.getMembers(actors);
+    this.members = memberConfigs.map(config => {
+      const actorData = actors.find(a => a.id === config.id);
+      if (!actorData) {
+        console.error(`Actor data not found for ID: ${config.id}`);
+        return null;
+      }
+      const newActorData = { ...actorData, level: config.level };
+      return new Game_Battler(newActorData);
+    }).filter(member => member !== null);
   }
 }
 

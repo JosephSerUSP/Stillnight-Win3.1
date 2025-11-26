@@ -46,6 +46,12 @@ export class DataManager {
   skills = null;
 
   /**
+   * The starting party data.
+   * @type {Object}
+   */
+  startingParty = null;
+
+  /**
    * Loads all the game data.
    */
   async loadData() {
@@ -61,6 +67,8 @@ export class DataManager {
     try {
       const { skills } = await import("./data/skills.js");
       this.skills = skills;
+      const { startingParty } = await import("./data/party.js");
+      this.startingParty = startingParty;
     } catch (error) {
       console.error("Failed to load skills.js:", error);
     }
