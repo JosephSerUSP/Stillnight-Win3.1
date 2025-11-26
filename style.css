@@ -682,7 +682,6 @@ body.night-theme {
 }
 
 /* Shop dialog */
-.dialog-shop { width: 420px; }
 .shop-body {
     background-color: #ffffff;
     border: 1px solid #808080;
@@ -701,7 +700,6 @@ body.night-theme {
 .shop-gold { font-weight: bold; }
 
 /* Formation dialog */
-.dialog-formation { width: 420px; }
 .formation-body {
     background-color: #ffffff;
     border: 1px solid #808080;
@@ -745,7 +743,6 @@ body.night-theme {
 }
 
 /* Event dialog */
-.dialog-event { width: 480px; }
 .event-body {
     background-color: #ffffff;
     border: 1px solid #808080;

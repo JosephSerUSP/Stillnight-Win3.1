@@ -147,4 +147,3 @@ Overall Roadmap Assessment:
 The overall roadmap remains a valid and effective plan for achieving a more scalable, data-driven, and object-oriented architecture. The successful completion of the core Phase 1 objectives is a major step in the right direction and provides a solid foundation for the subsequent phases.
 
 The next priority should be Phase 2 (Logic Extraction), as stated in the "Implementation Notes for Current Prototype." Moving the battle logic out of `Scene_Map` will be the next major milestone in reducing the complexity of the codebase and improving its maintainability.
---- END OF FILE documentation/design.md ---

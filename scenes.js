@@ -44,10 +44,23 @@ class Scene_Base {
 /**
  * @class Scene_Map
  * @description The main scene for map exploration. This class is currently a "God Class"
- * that handles exploration, battles, shops, and more. The long-term goal is to refactor
- * this class into a more specialized Scene_Map that only handles exploration, with other
- * systems (battle, shop, etc.) being moved into their own dedicated scenes and managers
- * as outlined in the design document.
+ * that handles exploration, battles, shops, and more.
+ *
+ * Future-forward architectural notes:
+ * - **God Class Refactoring (Phase 2 & 3):** This class is the primary target for refactoring.
+ *   The battle logic (`resolveBattleRound`, `openBattle`) should be extracted into a `BattleManager`
+ *   and a `Scene_Battle`. Similarly, shop and event logic should be moved to `Scene_Shop`
+ *   and `Scene_Event`. The `Scene_Map` should ultimately only be responsible for player
+ *   movement, tile interactions, and triggering scene changes.
+ * - **Input Handling:** The `onKeyDown` and `onTileClick` methods are direct DOM event listeners.
+ *   A more robust system would involve an `InputManager` that maps raw key presses to game
+ *   actions (e.g., 'w' -> 'move_up'). This would allow for customizable keybindings and
+ *   support for other input methods like gamepads.
+ * - **State Machine:** The `runActive` and `battleState` properties are a simple form of state
+ *   management. A formal Finite State Machine (FSM) should be implemented to manage the
+ *   scene's state (e.g., 'exploring', 'in_dialog', 'in_battle'), which would make the code
+ *   cleaner and less prone to bugs.
+ *
  * @extends Scene_Base
  */
 export class Scene_Map extends Scene_Base {

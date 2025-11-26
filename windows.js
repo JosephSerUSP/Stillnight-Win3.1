@@ -2,11 +2,22 @@ import { getPrimaryElements, Graphics } from "./core.js";
 
 /**
  * @class WindowLayer
- * @description A container that manages all game windows. This is a key component
- * for decoupling the UI from the main HTML file. The WindowLayer is appended to the
- * main game container, and all windows are appended to the WindowLayer. This ensures
- * that all windows are children of the game container and can be scaled and positioned
- * correctly. It also provides a single point of control for managing window z-indexing.
+ * @description A dedicated container for managing all game windows. This class is a cornerstone
+ * of the engine's decoupled architecture, serving as the single attachment point for all
+ * `Window_Base` instances.
+ *
+ * Future-forward architectural notes:
+ * - **Scene Graph Integration:** In a future ideal state, this `WindowLayer` will be a child
+ *   of the current `Scene` object (e.g., `Scene_Map`, `Scene_Battle`). The `SceneManager`
+ *   would be responsible for adding the active scene's `WindowLayer` to the main game
+ *   container. This will ensure that windows are automatically torn down and garbage
+ *   collected when a scene changes.
+ * - **Z-Indexing:** While currently simple, the `addChild` method could be expanded to
+ *   manage a sorted list of windows, allowing for more complex z-indexing logic
+ *   (e.g., ensuring a confirmation dialog always appears on top of other windows).
+ * - **Global Access:** For debugging purposes, a global accessor (e.g., `Graphics.windowLayer`)
+ *   could be implemented to allow developers to inspect the current window stack from
+ *   the browser console.
  */
 export class WindowLayer {
   constructor() {
@@ -32,18 +43,32 @@ export class WindowLayer {
 
 /**
  * @class Window_Base
- * @description The base class for all UI windows. Handles DOM creation, positioning,
- * and drag-and-drop functionality. Windows are rendered into a WindowLayer.
- * @property {HTMLElement} overlay - The semi-transparent overlay that covers the game screen.
- * @property {HTMLElement} element - The main window element.
+ * @description The foundational class for all UI windows in the game. It abstracts
+ * away the direct manipulation of the DOM by handling the creation of window elements,
+ * managing their position and dimensions, and providing core functionalities like
+ * opening, closing, and dragging. Each window is self-contained and generates its
+ * own HTML structure, which is then managed by the WindowLayer. This approach
+ * decouples the UI from the static index.html file, allowing for a fully dynamic
+ * and scalable interface.
+ *
+ * @property {HTMLElement} overlay - The parent container for the window, which includes
+ * the semi-transparent background overlay. This element is added to the WindowLayer.
+ * @property {HTMLElement} element - The main window element (`<div class="dialog">`)
+ * that contains the window's content and title bar.
  */
 export class Window_Base {
     /**
-     * Creates an instance of Window_Base.
-     * @param {number|string} x - The initial x coordinate, relative to the game container. Can be 'center'.
-     * @param {number|string} y - The initial y coordinate, relative to the game container. Can be 'center'.
-     * @param {number} width - The width of the window.
-     * @param {number|string} height - The height of the window. Can be 'auto'.
+     * Creates an instance of Window_Base. The coordinate system is relative to the
+     * main game container, and the class handles the calculation of the final
+     * on-screen position.
+     *
+     * @param {number|string} x - The initial x coordinate. Can be a number (pixels)
+     * or 'center' to automatically center the window horizontally.
+     * @param {number|string} y - The initial y coordinate. Can be a number (pixels)
+     * or 'center' to automatically center the window vertically.
+     * @param {number} width - The width of the window in pixels.
+     * @param {number|string} height - The height of the window. Can be a number (pixels)
+     * or 'auto' to allow the content to determine the height.
      */
     constructor(x, y, width, height) {
         this.overlay = document.createElement("div");
@@ -136,11 +161,23 @@ export class Window_Base {
 
 /**
  * @class Window_Battle
- * @description The window for battles. This window is designed to be a flexible,
- * terminal-style display that can be easily extended with new animations and UI
- * elements. The viewport and log are separate elements, allowing for independent
- * scrolling and content updates. This is a significant improvement over the
- * previous hardcoded HTML structure, which was difficult to modify and scale.
+ * @description This window handles the visual presentation of the battle scene. It is designed
+ * as a flexible, terminal-style display.
+ *
+ * Future-forward architectural notes:
+ * - **Component-Based Design:** The current `refresh` method monolithically redraws all battlers.
+ *   A future refactor should create a `Sprite_Battler` class for each actor and enemy. The
+ *   `Window_Battle` would then manage a collection of these sprites, updating them individually
+ *   when their corresponding game objects change. This is critical for implementing animations
+ *   (e.g., a sprite flashing when it takes damage) without redrawing the entire scene.
+ * - **Decoupling from BattleManager:** Currently, the Scene_Map class directly calls methods on this
+ *   window. In Phase 2, the `BattleManager` will take over this responsibility. `Window_Battle`
+ *   should not contain any game logic; it should only be responsible for displaying the state
+ *   provided by the `BattleManager`.
+ * - **ASCII Art & Theming:** The `elementToAscii` and `createHpGauge` methods are simple
+ *   placeholders. A more robust solution would involve a dedicated `AsciiArt_Renderer` class
+ *   that could be swapped out to support different visual themes or graphical tilesets.
+ *
  * @extends Window_Base
  */
 export class Window_Battle extends Window_Base {
