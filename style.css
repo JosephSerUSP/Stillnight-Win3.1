@@ -229,6 +229,33 @@ html, body {
     gap: 4px;
 }
 
+/* ===== Terminal Look for Battle Window ===== */
+.terminal {
+    background-color: #000000;
+    color: #00ff00;
+    font-family: "Fixedsys", "Lucida Console", "Courier New", monospace;
+    font-size: 11px;
+    border: 1px solid #808080;
+    box-shadow: 1px 1px 0 #ffffff inset, -1px -1px 0 #404040 inset;
+    padding: 4px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.terminal-viewport {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+.terminal-log {
+    height: 80px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    border-top: 1px solid #00ff00;
+    padding-top: 4px;
+}
+
 @keyframes blink {
     50% {
         opacity: 0;

@@ -546,7 +546,7 @@ export class Scene_Map extends Scene_Base {
    */
   animateBattler(battler, animationType) {
     const battlerId = `battler-${battler.name.replace(/\s/g, '-')}`;
-    const battlerElement = this.battleWindow.asciiEl.querySelector(`#${battlerId}`);
+    const battlerElement = this.battleWindow.viewportEl.querySelector(`#${battlerId}`);
 
     if (battlerElement) {
       let animationClass = '';
@@ -834,82 +834,58 @@ export class Scene_Map extends Scene_Base {
    * @param {string} msg - The message to append.
    */
   appendBattleLog(msg) {
-    this.battleWindow.logEl.textContent += msg + "\n";
+    const div = document.createElement("div");
+    div.textContent = msg;
+    this.battleWindow.logEl.appendChild(div);
     this.battleWindow.logEl.scrollTop = this.battleWindow.logEl.scrollHeight;
   }
 
   /**
    * @method renderBattleAscii
-   * @description Renders the battle screen.
+   * @description Renders the battle screen by creating and positioning DOM elements.
    * @param {string} animatingBattlerName - The name of the battler being animated.
    * @param {number} animatingHp - The current HP of the animating battler.
    */
   renderBattleAscii(animatingBattlerName = null, animatingHp = null) {
     if (!this.battleState) return;
     const { enemies } = this.battleState;
+    const battlerData = [];
 
-    const stripHtml = (html) => html.replace(/<[^>]*>/g, "");
-
-    const pad = (str, len) => {
-        const visibleLength = stripHtml(str).length;
-        const padding = " ".repeat(Math.max(0, len - visibleLength));
-        return str + padding;
-    }
-
-    // Helper: Names -> Spacer -> Gauges
-    const buildRowBlock = (rowItems) => {
-      if (!rowItems.length) return "";
-      const namesLine = rowItems.map(item => item.nameStr).join("");
-      const spacerLine = rowItems.map(item => item.spacerStr).join("");
-      const gaugesLine = rowItems.map(item => item.gaugeStr).join("");
-      return `${namesLine}\n${spacerLine}\n${gaugesLine}\n`;
-    };
-
-    let ascii = " ".repeat(14) + "== BATTLE ==\n\n";
-
-    // --- Enemies (top) ---
-    const enemyRows = [[], []];
+    // --- Enemies ---
     enemies.forEach((e, idx) => {
-        const row = idx % 2;
+        const top = 30 + (idx % 2) * 40;
+        const left = 20 + Math.floor(idx / 2) * 220;
+        const hp = e.name === animatingBattlerName ? animatingHp : e.hp;
+
         const primaryElements = getPrimaryElements(e.elements);
         const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
-        const hp = e.name === animatingBattlerName ? animatingHp : e.hp;
         const nameStr = `<span id="battler-${e.name.replace(/\s/g, '-')}">${e.name}</span>`;
         
-        enemyRows[row].push({ 
-            nameStr: pad(` ${elementAscii}${nameStr} (HP ${hp}/${e.maxHp}) `, 28),
-            // "Half line" simulation: A blank line to separate text from gauge
-            spacerStr: pad("", 28), 
-            // Alternative for a visible line: pad(" " + "-".repeat(26) + " ", 28),
-            gaugeStr: pad(` ${this.createHpGauge(hp, e.maxHp)} `, 28)
+        battlerData.push({
+            top: top,
+            left: left,
+            html: `${elementAscii}${nameStr} (HP ${hp}/${e.maxHp})\n${this.createHpGauge(hp, e.maxHp)}`
         });
     });
 
-    ascii += buildRowBlock(enemyRows[1]);
-    ascii += buildRowBlock(enemyRows[0]);
+    // --- Party ---
+    this.party.members.slice(0, 4).forEach((p, idx) => {
+        const top = 140 + (idx % 2) * 40;
+        const left = 20 + Math.floor(idx / 2) * 220;
+        const hp = p.name === animatingBattlerName ? animatingHp : p.hp;
 
-    ascii += "\n" + "-".repeat(56) + "\n\n";
-
-    // --- Party (bottom) ---
-    const partyRows = [[], []];
-    this.party.members.slice(0, 4).forEach((p, i) => {
-        const row = i < 2 ? 1 : 0;
         const primaryElements = getPrimaryElements(p.elements);
         const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
-        const hp = p.name === animatingBattlerName ? animatingHp : p.hp;
         const nameStr = `<span id="battler-${p.name.replace(/\s/g, '-')}">${p.name}</span>`;
         
-        partyRows[row].push({ 
-            nameStr: pad(` ${elementAscii}${nameStr} (HP ${hp}/${p.maxHp}) `, 28),
-            spacerStr: pad("", 28), // The blank separator line
-            gaugeStr: pad(` ${this.createHpGauge(hp, p.maxHp)} `, 28)
+        battlerData.push({
+            top: top,
+            left: left,
+            html: `${elementAscii}${nameStr} (HP ${hp}/${p.maxHp})\n${this.createHpGauge(hp, p.maxHp)}`
         });
     });
 
-    ascii += buildRowBlock(partyRows[1]);
-    ascii += buildRowBlock(partyRows[0]);
-
-    this.battleWindow.refresh(ascii);
+    this.battleWindow.refresh(battlerData);
   }
 
   /**
