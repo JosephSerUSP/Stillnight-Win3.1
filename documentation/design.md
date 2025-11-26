@@ -70,6 +70,7 @@ Convert from a wrapper to a class that generates the ASCII grid programmatically
 -   **Coordinate System:** `Window_Base` and its subclasses now operate on a relative coordinate system. The `(x, y)` coordinates passed to the constructor are relative to the main game container (`.win-window`). The `Window_Base` constructor is responsible for calculating the final, absolute on-screen position.
 -   **Drag and Drop:** A `makeDraggable` method has been added to `Window_Base`, allowing any window to be made draggable by its title bar.
 -   **DOM Structure:** `Window_Battle` has been refactored to use a flexible, terminal-style layout with a `.terminal-viewport` and `.terminal-log`, removing the dependency on a single `<pre>` tag and allowing for individual element animation.
+-   **Window-Game Attachment:** The `WindowLayer` is now appended to the main game container (`div.win-window`) instead of `document.body`. This makes the entire UI self-contained and ensures that all windows automatically scale and move with the game container, simplifying positioning logic and improving robustness.
 Phase 2: The Manager Layer (Logic Extraction)
 Objective: Remove game logic from Scene_Map.
 Create BattleManager:

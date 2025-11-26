@@ -1,3 +1,5 @@
+import { getPrimaryElements } from "./core.js";
+
 /**
  * @class WindowLayer
  * @description A container that manages the z-indexing of windows.
@@ -16,10 +18,11 @@ export class WindowLayer {
   }
 
   /**
-   * @description Appends the window layer to the document body.
+   * @description Appends the window layer to a given element.
+   * @param {HTMLElement} parent - The element to append the layer to.
    */
-  appendToBody() {
-    document.body.appendChild(this.element);
+  appendTo(parent) {
+    parent.appendChild(this.element);
   }
 }
 
@@ -78,11 +81,8 @@ export class Window_Base {
         this.element = document.createElement("div");
         this.element.className = "dialog";
         this.element.style.position = "absolute";
-
-        const gameContainer = document.querySelector(".win-window");
-        const rect = gameContainer.getBoundingClientRect();
-        this.element.style.left = `${rect.left + x}px`;
-        this.element.style.top = `${rect.top + y}px`;
+        this.element.style.left = `${x}px`;
+        this.element.style.top = `${y}px`;
         this.element.style.width = `${width}px`;
         this.element.style.height = `${height}px`;
         this.element.style.zIndex = "10";
@@ -226,9 +226,35 @@ export class Window_Battle extends Window_Base {
   }
 
   /**
+   * Appends a message to the battle log.
+   * @param {string} msg - The message to append.
+   */
+  appendLog(msg) {
+    const div = document.createElement("div");
+    div.textContent = msg;
+    this.logEl.appendChild(div);
+    this.logEl.scrollTop = this.logEl.scrollHeight;
+  }
+
+  /**
+   * Logs the initial enemy emergence messages.
+   * @param {Array<import("./objects.js").Game_Battler>} enemies - The enemies in the battle.
+   * @param {Object} terms - The battle terms from the data manager.
+   */
+  logEnemyEmergence(enemies, terms) {
+    this.logEl.textContent = ""; // Clear log
+    this.appendLog(terms.enemies_emerge);
+    enemies.forEach((e) => {
+        const primaryElements = getPrimaryElements(e.elements);
+        const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
+        this.appendLog(` - ${e.name} (${e.role}, ${elementAscii})`);
+    });
+  }
+
+  /**
    * @param {Array<Object>} battlers - The battler data to render.
    */
-  refresh(battlers) {
+  refresh(battlers, party) {
     this.viewportEl.innerHTML = ""; // Clear previous state
 
     const header = document.createElement("div");
@@ -237,15 +263,67 @@ export class Window_Battle extends Window_Base {
     header.style.padding = "5px 0";
     this.viewportEl.appendChild(header);
 
-    battlers.forEach(battlerData => {
-      const el = document.createElement("div");
-      el.style.position = "absolute";
-      el.style.top = `${battlerData.top}px`;
-      el.style.left = `${battlerData.left}px`;
-      el.style.whiteSpace = "pre";
-      el.innerHTML = battlerData.html;
-      this.viewportEl.appendChild(el);
+    battlers.forEach((e, idx) => {
+        const top = 30 + (idx % 2) * 40;
+        const left = 20 + Math.floor(idx / 2) * 220;
+        const hp = e.hp;
+
+        const primaryElements = getPrimaryElements(e.elements);
+        const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
+        const nameStr = `<span id="battler-${e.name.replace(/\s/g, '-')}">${e.name}</span>`;
+
+        const el = document.createElement("div");
+        el.className = 'battler-container';
+        el.style.position = "absolute";
+        el.style.top = `${top}px`;
+        el.style.left = `${left}px`;
+        el.style.whiteSpace = "pre";
+        el.innerHTML = `<div class="battler-name">${elementAscii}${nameStr} (HP ${hp}/${e.maxHp})</div><div class="battler-hp">${this.createHpGauge(hp, e.maxHp)}</div>`;
+        this.viewportEl.appendChild(el);
     });
+
+    party.forEach((p, idx) => {
+        const top = 140 + (idx % 2) * 40;
+        const left = 20 + Math.floor(idx / 2) * 220;
+        const hp = p.hp;
+
+        const primaryElements = getPrimaryElements(p.elements);
+        const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
+        const nameStr = `<span id="battler-${p.name.replace(/\s/g, '-')}">${p.name}</span>`;
+
+        const el = document.createElement("div");
+        el.className = 'battler-container';
+        el.style.position = "absolute";
+        el.style.top = `${top}px`;
+        el.style.left = `${left}px`;
+        el.style.whiteSpace = "pre";
+        el.innerHTML = `<div class="battler-name">${elementAscii}${nameStr} (HP ${hp}/${p.maxHp})</div><div class="battler-hp">${this.createHpGauge(hp, p.maxHp)}</div>`;
+        this.viewportEl.appendChild(el);
+    });
+  }
+
+  createHpGauge(hp, maxHp) {
+    const totalLength = 15;
+    let filledCount = Math.round((hp / maxHp) * totalLength);
+    if (hp > 0 && filledCount === 0) {
+      filledCount = 1;
+    }
+    if (filledCount < 0) {
+      filledCount = 0;
+    }
+    const emptyCount = totalLength - filledCount;
+    return `[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
+  }
+
+  elementToAscii(element) {
+    switch (element) {
+        case "Red": return "(R)";
+        case "Green": return "(G)";
+        case "Blue": return "(B)";
+        case "White": return "(W)";
+        case "Black": return "(K)";
+        default: return "";
+    }
   }
 }
 
@@ -364,13 +442,120 @@ export class Window_Formation extends Legacy_Window_Base {
  * @description The window for the inventory.
  * @extends Legacy_Window_Base
  */
-export class Window_Inventory extends Legacy_Window_Base {
+export class Window_Inventory extends Window_Base {
   constructor() {
-    super("inventory-overlay");
-    this.listEl = document.getElementById("inventory-list");
-    this.emptyMsgEl = document.getElementById("inventory-empty-message");
-    this.btnClose = document.getElementById("btn-inventory-close");
-    this.btnClose2 = document.getElementById("btn-inventory-close2");
+    super(100, 50, 400, 300); // x, y, width, height
+    this.element.id = "inventory-window";
+    this.element.style.display = 'flex';
+    this.element.style.flexDirection = 'column';
+
+    const titleBar = document.createElement("div");
+    titleBar.className = "dialog-titlebar";
+    this.element.appendChild(titleBar);
+    this.makeDraggable(titleBar);
+
+    const titleText = document.createElement("span");
+    titleText.textContent = "Inventory";
+    titleBar.appendChild(titleText);
+
+    this.btnClose = document.createElement("button");
+    this.btnClose.className = "win-btn";
+    this.btnClose.textContent = "X";
+    titleBar.appendChild(this.btnClose);
+
+    const content = document.createElement("div");
+    content.className = "dialog-content";
+    content.style.flexGrow = "1";
+    content.style.overflowY = "auto";
+    this.element.appendChild(content);
+
+    this.listEl = document.createElement("div");
+    content.appendChild(this.listEl);
+
+    this.emptyMsgEl = document.createElement("p");
+    this.emptyMsgEl.textContent = "Your inventory is empty.";
+    this.emptyMsgEl.style.textAlign = "center";
+    this.emptyMsgEl.style.display = "none";
+    content.appendChild(this.emptyMsgEl);
+
+    const buttons = document.createElement("div");
+    buttons.className = "dialog-buttons";
+    this.element.appendChild(buttons);
+
+    this.btnClose2 = document.createElement("button");
+    this.btnClose2.className = "win-btn";
+    this.btnClose2.textContent = "Close";
+    buttons.appendChild(this.btnClose2);
+  }
+
+  /**
+   * @param {Object[]} inventory - The party's inventory.
+   * @param {Function} useItemCallback - Callback for using an item.
+   * @param {Function} discardItemCallback - Callback for discarding an item.
+   */
+  refresh(inventory, useItemCallback, discardItemCallback) {
+    this.listEl.innerHTML = "";
+    if (inventory.length === 0) {
+      this.emptyMsgEl.style.display = "block";
+    } else {
+      this.emptyMsgEl.style.display = "none";
+      inventory.forEach((item, idx) => {
+        const row = document.createElement("div");
+        row.className = "shop-row";
+
+        const icon = document.createElement('div');
+        icon.className = "icon";
+        const iconId = item.icon || 6;
+        if (iconId > 0) {
+            const iconIndex = iconId - 1;
+            icon.style.backgroundPosition = `-${(iconIndex % 10) * 12}px -${Math.floor(iconIndex / 10) * 12}px`;
+        }
+        row.appendChild(icon);
+
+        const desc = document.createElement("span");
+        desc.textContent = `${item.name}: ${item.description}`;
+        desc.style.flexGrow = "1";
+        row.appendChild(desc);
+
+        const btns = document.createElement("div");
+        const useBtn = document.createElement("button");
+        useBtn.className = "win-btn";
+        useBtn.textContent = "Use";
+        useBtn.addEventListener("click", () => useItemCallback(item, idx));
+        const discardBtn = document.createElement("button");
+        discardBtn.className = "win-btn";
+        discardBtn.textContent = "Discard";
+        discardBtn.addEventListener("click", () => discardItemCallback(item, idx));
+        btns.appendChild(useBtn);
+        btns.appendChild(discardBtn);
+
+        row.appendChild(btns);
+        this.listEl.appendChild(row);
+      });
+    }
+  }
+
+  /**
+   * Renders a list of party members for target selection.
+   * @param {import("./objects.js").Game_Battler[]} members - The party members to display.
+   * @param {Function} onSelectCallback - Callback for when a member is selected.
+   */
+  showTargetSelection(members, onSelectCallback) {
+    this.listEl.innerHTML = "<div>Select a party member to use this on:</div>";
+    this.emptyMsgEl.style.display = "none";
+
+    members.forEach((m, idx) => {
+      const btn = document.createElement("button");
+      btn.className = "win-btn";
+      btn.style.display = 'block';
+      btn.style.width = '90%';
+      btn.style.margin = '5px auto';
+      btn.textContent = `${m.name} (HP ${m.hp}/${m.maxHp})`;
+      btn.addEventListener("click", () => {
+        onSelectCallback(idx);
+      });
+      this.listEl.appendChild(btn);
+    });
   }
 }
 
