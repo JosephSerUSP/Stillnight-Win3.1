@@ -133,14 +133,14 @@ Summary of Actions Taken:
 - The obsolete `Legacy_Window_Base` class was removed from `windows.js`.
 - All static HTML for modals was removed from `index.html`.
 - Obsolete CSS selectors targeting the old static HTML were removed from `style.css`.
-- JSDoc-compliant comments were added to `Window_Base`.
+- JSDoc-compliant comments were added to `Window_Base` and corrected across all `Window` classes to ensure accurate inheritance documentation.
 - Future-forward comments were added to `WindowLayer`, `Window_Battle`, and `Scene_Map` to provide context for future developers.
 
 Assessment of Phase 1:
 
-The project has made significant progress in implementing Phase 1 of the refactoring roadmap. The core components of the new windowing system (`Window_Base`, `WindowLayer`) are in place, and all windows now use this system. The dependency on static HTML for modals has been eliminated, which was the primary objective of this phase.
+The project has successfully implemented the foundational elements of Phase 1. All UI windows now inherit from a dynamic `Window_Base` class and are managed by a central `WindowLayer`, removing the dependency on static HTML for modals.
 
-However, the `index.html` file is not yet an empty container, as it still contains the main UI structure. `Scene_Map` also remains tightly coupled to this structure. While the most critical parts of Phase 1 are complete, there is still work to be done to fully realize the vision of a completely dynamic and decoupled UI.
+However, the core application layout (the main desktop, side panels, grid area, and status bar) was previously defined in `index.html`. This has now been accomplished by refactoring `Scene_Map` to programmatically generate this core UI, allowing `index.html` to become the simple, empty container envisioned in the roadmap. This fully decouples the view layer from the application logic.
 
 Overall Roadmap Assessment:
 

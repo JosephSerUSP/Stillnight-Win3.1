@@ -63,6 +63,7 @@ export class Scene_Map extends Scene_Base {
     this.battleBusy = false;
     this.draggedIndex = null;
 
+    this.createUI();
     this.getDomElements();
     this.addEventListeners();
 
@@ -130,6 +131,113 @@ export class Scene_Map extends Scene_Base {
       "click",
       this.closeShop.bind(this)
     );
+  }
+
+  createUI() {
+    const gameContainer = document.getElementById("game-container");
+    gameContainer.innerHTML = `
+      <div class="stack-nav panel">
+        <h1>Stillnight Stack</h1>
+        <div class="group-box">
+          <legend>Run</legend>
+          <div class="stack-nav-buttons">
+            <button class="win-btn" id="btn-new-run">New Run</button>
+            <button class="win-btn" id="btn-reveal-all">Reveal</button>
+          </div>
+          <div style="margin-top:4px;">
+            <div>Card: <span id="card-index-label">1 / 1</span></div>
+            <div>Floor depth: <span id="card-depth-label">1</span></div>
+          </div>
+        </div>
+        <div class="group-box">
+          <legend>Cards (Floors)</legend>
+          <div class="card-list" id="card-list"></div>
+        </div>
+        <div class="group-box">
+          <legend>Short Help</legend>
+          <div class="info-box">
+            • Each floor is a card.<br>
+            • ☺ is your party (highlighted).<br>
+            • Click adjacent tiles to move.<br>
+            • E triggers a battle.<br>
+            • R heals, S descends.<br>
+            • ¥ opens a shop.<br>
+            • Front row hits harder,<br>
+            &nbsp;&nbsp;back row is safer.<br>
+            • Floors are reachable only<br>
+            &nbsp;&nbsp;if you've reached their<br>
+            &nbsp;&nbsp;stairs at least once.<br>
+            • Shrines may offer<br>
+            &nbsp;&nbsp;mysterious events.<br>
+            • Boss awaits at the deepest floor.
+          </div>
+        </div>
+      </div>
+      <div class="right-side">
+        <div class="card-area">
+          <div class="card-main panel">
+            <div class="card-header">
+              <div>
+                <span class="card-header-title" id="card-title">Floor 1</span>
+              </div>
+              <div>
+                <span class="label">Mode:</span>
+                <span id="mode-label">Exploration</span>
+              </div>
+            </div>
+            <div class="exploration-frame panel">
+              <div class="exploration-grid" id="exploration-grid"></div>
+              <div class="legend">
+                <span>☺ = Party</span>
+                <span>█ = Wall</span>
+                <span>E = Enemy</span>
+                <span>R = Recovery</span>
+                <span>S = Stairs</span>
+                <span>♱ = Shrine</span>
+                <span>¥ = Shop</span>
+                <span>? = Unseen</span>
+                <span>U = Recruit</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-side-panels">
+            <div class="party-panel panel">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Party Status (click to inspect)</span>
+                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-formation">
+                  Formation...
+                </button>
+                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-inventory">
+                  Inventory...
+                </button>
+              </div>
+              <div class="party-grid" id="party-grid"></div>
+            </div>
+            <div class="log-panel panel">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Event Log</span>
+                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-clear-log">
+                  Clear
+                </button>
+              </div>
+              <div class="log-content" id="log-content"></div>
+            </div>
+          </div>
+        </div>
+        <div class="status-bar">
+          <div>
+            <span id="status-message">Ready.</span>
+          </div>
+          <div>
+            <span>Gold: <span id="status-gold">0</span></span>
+            <span>| Floor: <span id="status-floor">1</span></span>
+            <span>| Cards: <span id="status-cards">1</span></span>
+            <span>| Run: <span id="status-run">Active</span></span>
+            <span>| Items: <span id="status-items">0</span></span>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   /**
