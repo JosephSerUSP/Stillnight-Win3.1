@@ -971,14 +971,6 @@ renderBattleAscii() {
     }
   }
 
-  /**
-   * This is an example of a passive skill being triggered.
-   * It is called after a battle victory.
-   * It finds any living "Pixie" in the party and heals all living party members for a small amount.
-   * This is a hardcoded passive effect. A more robust system would involve a passive skill manager
-   * that would iterate through all party members and check for passive skills that should be triggered
-   * by the "onBattleVictory" event.
-   */
   applyPostBattlePassives() {
     this.party.members.forEach((member) => {
       if (member.hp > 0) {
