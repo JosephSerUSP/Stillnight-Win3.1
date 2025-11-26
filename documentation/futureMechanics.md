@@ -23,16 +23,21 @@ $$
 $$
 
 ### Reward Table (Draft)
-Rewards are semi-random. Upon sacrifice, the system checks the unit's **Effective Level** against the table below to determine the payout.
+Rewards are semi-random. Upon sacrifice, the system checks the unit's **Effective Level** against the table below (needs complete rebalancing, just an example table) to determine the payout. Optionally, units can be configured to partially or fully override the table. (But mostly, the table will look for unit type, level, element, id, etc to determine rewards.). Some Evolution items are locked behind this mechanic. 
 
 | Effective Level | Reward Category | Outcome / Condition |
 | :--- | :--- | :--- |
 | **Lv. 1** | Consumable | **Potion** |
-| **Lv. 1** | Currency | **25 Gold × Unit Level** *(Subject to penalty)* |
-| **Lv. 3** | Loot Pool | Selection from **Generic Item Pool #3** |
+| **Lv. 1** | Currency | **25 Gold × Effective Level** |
+| **Lv. 3** | Loot Pool | Selection from **Generic Item Pool 3** |
 | **Lv. 4** | Equipment / Item | **Potion** OR **Steel Blade** (Random chance) |
 | **Lv. 5** | Currency | **200 Gold** OR **Random(12–100 Gold)** |
 | **Lv. 9** | Conditional | If Party Gold ≥ 2000: **Midas Guard**<br>Else: **Potion** |
 | **Lv. 15** | Skill Item | **Skill Book: WindBlade** |
+
+## Mechanic #2: Skill Learning
+
+### Overview
+Units can learn new skills, often overwriting ones they already know.
 
 --- END OF FILE documents/futureMechanics.md ---
