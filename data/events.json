@@ -53,5 +53,22 @@
         "effect": { "type": "message", "value": "[Shrine] You refuse the deal." }
       }
     ]
+  },
+  {
+    "title": "Trial of Haste",
+    "description": "A spectral stopwatch hovers in the air, its ticking echoing in your mind. It offers a challenge: a trial of speed for a reward.",
+    "choices": [
+      {
+        "label": "Accept the trial (high risk, high reward)",
+        "effect": { "type": "random", "outcomes": [
+          { "chance": 0.4, "effect": { "type": "xp", "value": 15, "target": "all" } },
+          { "chance": 0.6, "effect": { "type": "hp", "value": -5, "target": "all" } }
+        ]}
+      },
+      {
+        "label": "Take a small reward instead",
+        "effect": { "type": "gold", "value": 10 }
+      }
+    ]
   }
 ]

@@ -673,7 +673,8 @@ export class Scene_Map {
         expGrowth: 10,
       }, depth, true));
     } else {
-      const enemyCount = randInt(1, 3);
+      const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
+      const enemyCount = randInt(1, maxEnemies);
       for (let i = 0; i < enemyCount; i++) {
         const tpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
         enemies.push(new Game_Battler(tpl, depth, true));
@@ -817,6 +818,26 @@ export class Scene_Map {
     // --- 1. Build Event Queue ---
     // (This part remains the same, generating the list of actions for the round)
     this.party.members.slice(0, 4).forEach((p, index) => {
+      if (p.hp > 0) {
+        const parasiteDrain = p.getPassiveValue("PARASITE");
+        if (parasiteDrain > 0) {
+          const targetIndex = index % 2 === 0 ? index + 1 : index - 1;
+          if (targetIndex >= 0 && targetIndex < 4) {
+            const target = this.party.members[targetIndex];
+            if (target && target.hp > 0) {
+              events.push({
+                msg: `[Passive] ${p.name} drains ${parasiteDrain} HP from ${target.name}.`,
+                apply: () => {
+                  const oldHp = target.hp;
+                  target.hp = Math.max(0, target.hp - parasiteDrain);
+                  p.hp = Math.min(p.maxHp, p.hp + parasiteDrain);
+                  return { battler: target, oldHp };
+                },
+              });
+            }
+          }
+        }
+      }
       if (p.hp <= 0) return;
       const target = enemies.find((e) => e.hp > 0);
       if (!target) return;
@@ -858,7 +879,9 @@ export class Scene_Map {
             if (skillDmg < 1) skillDmg = 1;
             events.push({
               msg: `  ${target.name} takes ${skillDmg} damage.`,
+              battler: p,
               apply: () => {
+                if(target.hp <= 0) return;
                 const oldHp = target.hp;
                 target.hp = Math.max(0, target.hp - skillDmg);
                 return { battler: target, oldHp };
@@ -878,7 +901,9 @@ export class Scene_Map {
       } else {
         events.push({
           msg: `${p.name} attacks ${target.name} for ${dmg}.`,
+          battler: p,
           apply: () => {
+            if(target.hp <= 0) return;
             const oldHp = target.hp;
             target.hp = Math.max(0, target.hp - dmg);
             return { battler: target, oldHp };
@@ -920,7 +945,9 @@ export class Scene_Map {
             if (skillDmg < 1) skillDmg = 1;
             events.push({
               msg: `  ${target.name} takes ${skillDmg} damage.`,
+              battler: e,
               apply: () => {
+                if(target.hp <= 0) return;
                 const oldHp = target.hp;
                 target.hp = Math.max(0, target.hp - skillDmg);
                 return { battler: target, oldHp };
@@ -941,7 +968,9 @@ export class Scene_Map {
         const dmg = Math.max(1, e.level + randInt(-1, 2));
         events.push({
           msg: `${e.name} attacks ${target.name} for ${dmg}.`,
+          battler: e,
           apply: () => {
+            if(target.hp <= 0) return;
             const oldHp = target.hp;
             target.hp = Math.max(0, target.hp - dmg);
             return { battler: target, oldHp };
@@ -953,6 +982,9 @@ export class Scene_Map {
 
     // --- 2. Process Events Sequentially ---
     for (const ev of events) {
+      if (ev.battler && ev.battler.hp <= 0) {
+        continue;
+      }
       if (ev.battler) {
         await this.animateBattlerName(ev.battler);
         await delay(300);
@@ -1107,10 +1139,17 @@ export class Scene_Map {
   onBattleVictoryClick() {
     if (!this.battleState || !this.battleState.victoryPending) return;
     const enemies = this.battleState.enemies;
-    const totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
-    const totalXp = enemies.reduce((sum, e) => sum + Math.floor(e.level * (e.expGrowth * 0.5) + 5), 0);
+    let totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
+    const totalXp = enemies.reduce((sum, e) => sum + Math.floor(e.level * (e.expGrowth * 0.5) + 8), 0);
 
     const living = this.party.members.slice(0, 4).filter((p) => p.hp > 0);
+    living.forEach((m) => {
+      const goldBonus = m.getPassiveValue("GOLD_DIGGER");
+      if (goldBonus > 0) {
+        totalGold += goldBonus;
+        this.logMessage(`[Passive] ${m.name} finds an extra ${goldBonus}G!`);
+      }
+    });
     const share =
       living.length > 0 ? Math.max(1, Math.floor(totalXp / living.length)) : 0;
     living.forEach((m) => this.gainXp(m, share));
@@ -1560,6 +1599,9 @@ renderElements(elements) {
     let filledCount = Math.round((hp / maxHp) * totalLength);
     if (hp > 0 && filledCount === 0) {
       filledCount = 1;
+    }
+    if (filledCount < 0) {
+      filledCount = 0;
     }
     const emptyCount = totalLength - filledCount;
     return `[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
