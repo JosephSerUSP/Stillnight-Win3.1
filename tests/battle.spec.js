@@ -4,7 +4,7 @@ test.describe('Battle Screen', () => {
   let scene;
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080');
+    await page.goto('http://localhost:8080?test=true');
     // Give the game a moment to initialize
     await page.waitForTimeout(500);
     scene = await page.evaluateHandle(() => window.scene);

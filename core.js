@@ -69,3 +69,31 @@ export function getPrimaryElements(elements) {
 
   return Object.keys(counts).filter((element) => counts[element] === maxCount);
 }
+
+/**
+ * @namespace Graphics
+ * @description A utility class for accessing screen dimensions.
+ */
+export const Graphics = {
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  _container: document.querySelector(".win-window"),
+
+  /**
+   * The width of the game container.
+   * @type {number}
+   */
+  get width() {
+    return this._container ? this._container.clientWidth : 0;
+  },
+
+  /**
+   * The height of the game container.
+   * @type {number}
+   */
+  get height() {
+    return this._container ? this._container.clientHeight : 0;
+  },
+};
