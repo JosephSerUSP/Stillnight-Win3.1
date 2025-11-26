@@ -734,7 +734,14 @@ export class Scene_Map {
   renderBattleAscii(animatingBattlerName = null, animatingHp = null) {
     if (!this.battleState) return;
     const { enemies, round } = this.battleState;
-    const pad = (str, len) => (str + " ".repeat(len)).slice(0, len);
+
+    const stripHtml = (html) => html.replace(/<[^>]*>/g, "");
+
+    const pad = (str, len) => {
+        const visibleLength = stripHtml(str).length;
+        const padding = " ".repeat(Math.max(0, len - visibleLength));
+        return str + padding;
+    }
 
     // Helper: Names -> Spacer -> Gauges
     const buildRowBlock = (rowItems) => {
