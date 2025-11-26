@@ -673,7 +673,8 @@ export class Scene_Map {
         expGrowth: 10,
       }, depth, true));
     } else {
-      const enemyCount = randInt(1, 3);
+      const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
+      const enemyCount = randInt(1, maxEnemies);
       for (let i = 0; i < enemyCount; i++) {
         const tpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
         enemies.push(new Game_Battler(tpl, depth, true));
@@ -1107,10 +1108,17 @@ export class Scene_Map {
   onBattleVictoryClick() {
     if (!this.battleState || !this.battleState.victoryPending) return;
     const enemies = this.battleState.enemies;
-    const totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
-    const totalXp = enemies.reduce((sum, e) => sum + Math.floor(e.level * (e.expGrowth * 0.5) + 5), 0);
+    let totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
+    const totalXp = enemies.reduce((sum, e) => sum + Math.floor(e.level * (e.expGrowth * 0.5) + 8), 0);
 
     const living = this.party.members.slice(0, 4).filter((p) => p.hp > 0);
+    living.forEach((m) => {
+      const goldBonus = m.getPassiveValue("GOLD_DIGGER");
+      if (goldBonus > 0) {
+        totalGold += goldBonus;
+        this.logMessage(`[Passive] ${m.name} finds an extra ${goldBonus}G!`);
+      }
+    });
     const share =
       living.length > 0 ? Math.max(1, Math.floor(totalXp / living.length)) : 0;
     living.forEach((m) => this.gainXp(m, share));
