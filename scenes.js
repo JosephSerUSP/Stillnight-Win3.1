@@ -1615,6 +1615,17 @@ export class Scene_Map extends Scene_Base {
    * @param {string} element - The element to convert.
    * @returns {string} The ASCII representation of the element.
    */
+    elementToAscii(element) {
+    switch (element) {
+        case "Red": return "(R)";
+        case "Green": return "(G)";
+        case "Blue": return "(B)";
+        case "White": return "(W)";
+        case "Black": return "(K)";
+        default: return "";
+    }
+  }
+  
   /**
    * @method elementToIcon
    * @description Converts an element to its icon ID.
