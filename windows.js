@@ -1,8 +1,8 @@
 /**
- * The base class for all windows.
- * @class
+ * @class Window_Base
+ * @description The base class for all windows.
  */
-class Window {
+class Window_Base {
   /**
    * @param {string} overlayId - The ID of the modal overlay element.
    */
@@ -11,26 +11,36 @@ class Window {
   }
 
   /**
-   * Opens the window.
+   * @method open
+   * @description Opens the window.
    */
   open() {
     this.overlay.classList.add("active");
   }
 
   /**
-   * Closes the window.
+   * @method close
+   * @description Closes the window.
    */
   close() {
     this.overlay.classList.remove("active");
   }
+
+  /**
+   * @method refresh
+   * @description Refreshes the window's content.
+   */
+  refresh() {
+    // To be implemented by subclasses
+  }
 }
 
 /**
- * The window for battles.
- * @class
- * @extends Window
+ * @class Window_Battle
+ * @description The window for battles.
+ * @extends Window_Base
  */
-export class Window_Battle extends Window {
+export class Window_Battle extends Window_Base {
   constructor() {
     super("battle-overlay");
     this.asciiEl = document.getElementById("battle-ascii");
@@ -43,11 +53,11 @@ export class Window_Battle extends Window {
 }
 
 /**
- * The window for inspecting creatures.
- * @class
- * @extends Window
+ * @class Window_Inspect
+ * @description The window for inspecting creatures.
+ * @extends Window_Base
  */
-export class Window_Inspect extends Window {
+export class Window_Inspect extends Window_Base {
   constructor() {
     super("inspect-overlay");
     this.spriteEl = document.getElementById("inspect-sprite");
@@ -71,30 +81,77 @@ export class Window_Inspect extends Window {
 }
 
 /**
- * The window for the shop.
- * @class
- * @extends Window
+ * @class Window_Shop
+ * @description The window for the shop.
+ * @extends Window_Base
  */
-export class Window_Shop extends Window {
+export class Window_Shop extends Window_Base {
   constructor() {
     super("shop-overlay");
     this.goldLabelEl = document.getElementById("shop-gold-label");
     this.messageEl = document.getElementById("shop-message");
+    this.listContainer = document.getElementById("shop-item-list");
     this.btnClose = document.getElementById("btn-shop-close");
     this.btnLeave = document.getElementById("btn-shop-leave");
   }
 
-  closeShop() {
-    this.close();
+  /**
+   * @method open
+   * @description Opens the shop window.
+   * @param {number} gold - The player's current gold.
+   * @param {string} message - The vendor's message.
+   * @param {Object[]} items - The items available for sale.
+   * @param {Function} buyCallback - The callback function to execute when an item is purchased.
+   */
+  open(gold, message, items, buyCallback) {
+    this.goldLabelEl.textContent = gold;
+    this.messageEl.textContent = message;
+    this.renderItems(items, buyCallback);
+    super.open();
+  }
+
+  /**
+   * @method renderItems
+   * @description Renders the list of items for sale.
+   * @param {Object[]} items - The items available for sale.
+   * @param {Function} buyCallback - The callback function to execute when an item is purchased.
+   */
+  renderItems(items, buyCallback) {
+    this.listContainer.innerHTML = "";
+    items.forEach((tpl) => {
+      const row = document.createElement("div");
+      row.className = "shop-row";
+
+      const icon = document.createElement('div');
+      icon.className = 'icon';
+      const iconId = tpl.icon || 6; // Use icon 6 as a placeholder
+      if (iconId > 0) {
+          const iconIndex = iconId - 1;
+          icon.style.backgroundPosition = `-${(iconIndex % 10) * 12}px -${Math.floor(iconIndex / 10) * 12}px`;
+      }
+      row.appendChild(icon);
+
+      const label = document.createElement("span");
+      label.textContent = `${tpl.name} (${tpl.cost}G): ${tpl.description}`;
+      const btn = document.createElement("button");
+      btn.className = "win-btn";
+      btn.textContent = "Buy";
+      btn.addEventListener("click", () => {
+        buyCallback(tpl.id);
+      });
+      row.appendChild(label);
+      row.appendChild(btn);
+      this.listContainer.appendChild(row);
+    });
   }
 }
 
 /**
- * The window for party formation.
- * @class
- * @extends Window
+ * @class Window_Formation
+ * @description The window for party formation.
+ * @extends Window_Base
  */
-export class Window_Formation extends Window {
+export class Window_Formation extends Window_Base {
   constructor() {
     super("formation-overlay");
     this.gridEl = document.getElementById("formation-grid");
@@ -106,11 +163,11 @@ export class Window_Formation extends Window {
 }
 
 /**
- * The window for the inventory.
- * @class
- * @extends Window
+ * @class Window_Inventory
+ * @description The window for the inventory.
+ * @extends Window_Base
  */
-export class Window_Inventory extends Window {
+export class Window_Inventory extends Window_Base {
   constructor() {
     super("inventory-overlay");
     this.listEl = document.getElementById("inventory-list");
@@ -121,11 +178,11 @@ export class Window_Inventory extends Window {
 }
 
 /**
- * The window for recruiting new members.
- * @class
- * @extends Window
+ * @class Window_Recruit
+ * @description The window for recruiting new members.
+ * @extends Window_Base
  */
-export class Window_Recruit extends Window {
+export class Window_Recruit extends Window_Base {
   constructor() {
     super("recruit-overlay");
     this.bodyEl = document.getElementById("recruit-body");
@@ -135,11 +192,11 @@ export class Window_Recruit extends Window {
 }
 
 /**
- * The window for events.
- * @class
- * @extends Window
+ * @class Window_Event
+ * @description The window for events.
+ * @extends Window_Base
  */
-export class Window_Event extends Window {
+export class Window_Event extends Window_Base {
   constructor() {
     super("event-overlay");
     this.titleEl = document.getElementById("event-title");
@@ -150,11 +207,11 @@ export class Window_Event extends Window {
 }
 
 /**
- * The window for generic confirmations.
- * @class
- * @extends Window
+ * @class Window_Confirm
+ * @description The window for generic confirmations.
+ * @extends Window_Base
  */
-export class Window_Confirm extends Window {
+export class Window_Confirm extends Window_Base {
   constructor() {
     super("confirm-overlay");
     this.titleEl = document.getElementById("confirm-title");

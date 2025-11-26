@@ -13,15 +13,45 @@ import {
 } from "./windows.js";
 
 /**
- * The main scene for the map exploration.
- * @class
+ * @class Scene_Base
+ * @description The base class for all scenes.
  */
-export class Scene_Map {
+class Scene_Base {
   /**
    * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
    */
   constructor(dataManager) {
     this.dataManager = dataManager;
+  }
+
+  /**
+   * @method start
+   * @description Starts the scene.
+   */
+  start() {
+    // To be implemented by subclasses
+  }
+
+  /**
+   * @method update
+   * @description Updates the scene.
+   */
+  update() {
+    // To be implemented by subclasses
+  }
+}
+
+/**
+ * @class Scene_Map
+ * @description The main scene for the map exploration.
+ * @extends Scene_Base
+ */
+export class Scene_Map extends Scene_Base {
+  /**
+   * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
+   */
+  constructor(dataManager) {
+    super(dataManager);
     this.map = new Game_Map();
     this.party = new Game_Party();
     this.runActive = true;
@@ -86,14 +116,16 @@ export class Scene_Map {
   }
 
   /**
-   * Starts the scene.
+   * @method start
+   * @description Starts the scene.
    */
   start() {
     this.startNewRun();
   }
 
   /**
-   * Starts a new game run.
+   * @method startNewRun
+   * @description Starts a new game run.
    */
   startNewRun() {
     this.map.initFloors(this.dataManager.floors);
@@ -118,7 +150,8 @@ export class Scene_Map {
   }
 
   /**
-   * Gets all the DOM elements needed for the scene.
+   * @method getDomElements
+   * @description Gets all the DOM elements needed for the scene.
    */
   getDomElements() {
     this.explorationGridEl = document.getElementById("exploration-grid");
@@ -143,7 +176,8 @@ export class Scene_Map {
   }
 
   /**
-   * Adds event listeners to the DOM elements.
+   * @method addEventListeners
+   * @description Adds event listeners to the DOM elements.
    */
   addEventListeners() {
     this.btnNewRun.addEventListener("click", this.startNewRun.bind(this));
@@ -158,6 +192,11 @@ export class Scene_Map {
     document.addEventListener("keydown", this.onKeyDown.bind(this));
   }
 
+  /**
+   * @method onKeyDown
+   * @description Handles keydown events.
+   * @param {KeyboardEvent} e - The keyboard event.
+   */
   onKeyDown(e) {
     if (!this.runActive) return;
 
@@ -191,6 +230,12 @@ export class Scene_Map {
     }
   }
 
+  /**
+   * @method movePlayer
+   * @description Moves the player on the map.
+   * @param {number} dx - The change in the x-coordinate.
+   * @param {number} dy - The change in the y-coordinate.
+   */
   movePlayer(dx, dy) {
     const newX = this.map.playerX + dx;
     const newY = this.map.playerY + dy;
@@ -211,7 +256,8 @@ export class Scene_Map {
   }
 
   /**
-   * Logs a message to the event log.
+   * @method logMessage
+   * @description Logs a message to the event log.
    * @param {string} msg - The message to log.
    */
   logMessage(msg) {
@@ -220,7 +266,8 @@ export class Scene_Map {
   }
 
   /**
-   * Sets the status message.
+   * @method setStatus
+   * @description Sets the status message.
    * @param {string} msg - The status message.
    */
   setStatus(msg) {
@@ -228,7 +275,8 @@ export class Scene_Map {
   }
 
   /**
-   * Updates all the UI elements.
+   * @method updateAll
+   * @description Updates all the UI elements.
    */
   updateAll() {
     this.updateGrid();
@@ -242,7 +290,8 @@ export class Scene_Map {
   }
 
   /**
-   * Updates the exploration grid.
+   * @method updateGrid
+   * @description Updates the exploration grid.
    */
   updateGrid() {
     const floor = this.map.floors[this.map.floorIndex];
@@ -312,7 +361,8 @@ export class Scene_Map {
   }
 
   /**
-   * Updates the card header.
+   * @method updateCardHeader
+   * @description Updates the card header.
    */
   updateCardHeader() {
     const floor = this.map.floors[this.map.floorIndex];
@@ -326,7 +376,8 @@ export class Scene_Map {
   }
 
   /**
-   * Updates the card list.
+   * @method updateCardList
+   * @description Updates the card list.
    */
   updateCardList() {
     this.cardListEl.innerHTML = "";
@@ -359,7 +410,8 @@ export class Scene_Map {
   }
 
   /**
-   * Updates the party display.
+   * @method updateParty
+   * @description Updates the party display.
    */
   updateParty() {
     this.partyGridEl.innerHTML = "";
@@ -420,6 +472,15 @@ export class Scene_Map {
     });
   }
 
+  /**
+   * @method animateHpGauge
+   * @description Animates the HP gauge.
+   * @param {HTMLElement} element - The HP gauge element.
+   * @param {number} startHp - The starting HP.
+   * @param {number} endHp - The ending HP.
+   * @param {number} maxHp - The maximum HP.
+   * @param {number} duration - The duration of the animation.
+   */
   animateHpGauge(element, startHp, endHp, maxHp, duration) {
     const startTime = performance.now();
     const startWidth = (startHp / maxHp) * 100;
@@ -439,6 +500,13 @@ export class Scene_Map {
     requestAnimationFrame(frame);
   }
 
+  /**
+   * @method animateBattleHpGauge
+   * @description Animates the battle HP gauge.
+   * @param {Game_Battler} battler - The battler whose HP gauge to animate.
+   * @param {number} oldHp - The old HP of the battler.
+   * @returns {Promise} A promise that resolves when the animation is complete.
+   */
   animateBattleHpGauge(battler, oldHp) {
     return new Promise((resolve) => {
       const duration = 500;
@@ -464,6 +532,11 @@ export class Scene_Map {
     });
   }
 
+  /**
+   * @method flashBattlerName
+   * @description Flashes the name of a battler.
+   * @param {string} battlerName - The name of the battler to flash.
+   */
   flashBattlerName(battlerName) {
     const battlerElement = this.battleWindow.asciiEl.querySelector(
       `#battler-${battlerName}`
@@ -474,8 +547,14 @@ export class Scene_Map {
         battlerElement.classList.remove("blink");
       }, 200);
     }
-}
+  }
 
+  /**
+   * @method animateBattlerName
+   * @description Animates the name of a battler.
+   * @param {Game_Battler} battler - The battler whose name to animate.
+   * @returns {Promise} A promise that resolves when the animation is complete.
+   */
   animateBattlerName(battler) {
     return new Promise((resolve) => {
       const originalName = battler.name;
@@ -512,7 +591,8 @@ export class Scene_Map {
   }
 
   /**
-   * Handles tile clicks.
+   * @method onTileClick
+   * @description Handles tile clicks.
    * @param {MouseEvent} e - The click event.
    */
   onTileClick(e) {
@@ -592,7 +672,8 @@ export class Scene_Map {
   }
 
   /**
-   * Descends to the next floor.
+   * @method descendStairs
+   * @description Descends to the next floor.
    */
   descendStairs() {
     if (this.map.floorIndex + 1 >= this.map.floors.length) {
@@ -621,7 +702,8 @@ export class Scene_Map {
   }
 
   /**
-   * Reveals all floors.
+   * @method revealAllFloors
+   * @description Reveals all floors.
    */
   revealAllFloors() {
     this.map.floors.forEach((f) => {
@@ -649,7 +731,8 @@ export class Scene_Map {
    */
 
   /**
-   * Opens the battle screen.
+   * @method openBattle
+   * @description Opens the battle screen.
    * @param {number} tileX - The x-coordinate of the tile the battle is on.
    * @param {number} tileY - The y-coordinate of the tile the battle is on.
    */
@@ -712,7 +795,8 @@ export class Scene_Map {
   }
 
   /**
-   * Closes the battle screen.
+   * @method closeBattle
+   * @description Closes the battle screen.
    */
   closeBattle() {
     this.battleWindow.close();
@@ -721,7 +805,8 @@ export class Scene_Map {
   }
 
   /**
-   * Appends a message to the battle log.
+   * @method appendBattleLog
+   * @description Appends a message to the battle log.
    * @param {string} msg - The message to append.
    */
   appendBattleLog(msg) {
@@ -730,7 +815,10 @@ export class Scene_Map {
   }
 
   /**
-   * Renders the battle screen.
+   * @method renderBattleAscii
+   * @description Renders the battle screen.
+   * @param {string} animatingBattlerName - The name of the battler being animated.
+   * @param {number} animatingHp - The current HP of the animating battler.
    */
   renderBattleAscii(animatingBattlerName = null, animatingHp = null) {
     if (!this.battleState) return;
@@ -801,7 +889,8 @@ export class Scene_Map {
   }
 
   /**
-   * Resolves a round of battle using async/await for cleaner animation sequencing.
+   * @method resolveBattleRound
+   * @description Resolves a round of battle using async/await for cleaner animation sequencing.
    */
   async resolveBattleRound() {
     if (!this.battleState || this.battleState.finished || this.battleBusy)
@@ -1039,6 +1128,12 @@ export class Scene_Map {
     this.updateAll();
   }
 
+  /**
+   * @method gainXp
+   * @description Gains experience for a party member.
+   * @param {Game_Battler} member - The party member to gain experience.
+   * @param {number} amount - The amount of experience to gain.
+   */
   gainXp(member, amount) {
     if (!member || amount <= 0) return;
     member.xp = (member.xp || 0) + amount;
@@ -1061,7 +1156,8 @@ export class Scene_Map {
   }
 
   /**
-   * This is an example of a passive skill being triggered.
+   * @method applyPostBattlePassives
+   * @description This is an example of a passive skill being triggered.
    * It is called after a battle victory.
    * It finds any living "Pixie" in the party and heals all living party members for a small amount.
    * This is a hardcoded passive effect. A more robust system would involve a passive skill manager
@@ -1087,6 +1183,10 @@ export class Scene_Map {
     this.updateParty();
   }
 
+  /**
+   * @method applyBattleStartPassives
+   * @description Applies passive skills that trigger at the start of battle.
+   */
   applyBattleStartPassives() {
     this.party.members.forEach((member) => {
       if (member.hp > 0) {
@@ -1104,6 +1204,10 @@ export class Scene_Map {
     });
   }
 
+  /**
+   * @method applyMovePassives
+   * @description Applies passive skills that trigger on movement.
+   */
   applyMovePassives() {
     this.party.members.forEach((member) => {
       if (member.hp > 0) {
@@ -1119,6 +1223,11 @@ export class Scene_Map {
     this.updateParty();
   }
 
+  /**
+   * @method getFleeChance
+   * @description Gets the chance to flee from battle.
+   * @returns {number} The chance to flee from battle.
+   */
   getFleeChance() {
     let baseChance = 0.5;
     this.party.members.forEach((member) => {
@@ -1127,6 +1236,10 @@ export class Scene_Map {
     return Math.max(0, Math.min(1, baseChance));
   }
 
+  /**
+   * @method attemptFlee
+   * @description Attempts to flee from battle.
+   */
   attemptFlee() {
     if (Math.random() < this.getFleeChance()) {
       this.logMessage("[Battle] You successfully fled!");
@@ -1136,6 +1249,10 @@ export class Scene_Map {
     }
   }
 
+  /**
+   * @method onBattleVictoryClick
+   * @description Handles the click of the victory button.
+   */
   onBattleVictoryClick() {
     if (!this.battleState || !this.battleState.victoryPending) return;
     const enemies = this.battleState.enemies;
@@ -1171,6 +1288,10 @@ export class Scene_Map {
     beep(900, 200);
   }
 
+  /**
+   * @method clearEnemyTileAfterBattle
+   * @description Clears the enemy tile after a battle.
+   */
   clearEnemyTileAfterBattle() {
     if (!this.battleState) return;
     const f = this.map.floors[this.battleState.floorIndex];
@@ -1182,54 +1303,36 @@ export class Scene_Map {
     this.updateGrid();
   }
 
-  // Shop methods
+  /**
+   * @method openShop
+   * @description Opens the shop.
+   */
   openShop() {
-    this.shopWindow.goldLabelEl.textContent = this.party.gold;
-    this.shopWindow.messageEl.textContent =
-      this.dataManager.terms.shop.vendor_message;
-    this.renderShopItems();
-    this.shopWindow.open();
+    this.shopWindow.open(
+      this.party.gold,
+      this.dataManager.terms.shop.vendor_message,
+      this.dataManager.items,
+      (itemId) => this.buyItem(itemId)
+    );
     this.modeLabelEl.textContent = "Shop";
     beep(650, 150);
   }
 
-  renderShopItems() {
-    const listContainer = document.getElementById("shop-item-list");
-    if (!listContainer) return;
-    listContainer.innerHTML = "";
-    this.dataManager.items.forEach((tpl) => {
-      const row = document.createElement("div");
-      row.className = "shop-row";
-
-      const icon = document.createElement('div');
-      icon.className = 'icon';
-      const iconId = tpl.icon || 6; // Use icon 6 as a placeholder
-      if (iconId > 0) {
-          const iconIndex = iconId - 1;
-          icon.style.backgroundPosition = `-${(iconIndex % 10) * 12}px -${Math.floor(iconIndex / 10) * 12}px`;
-      }
-      row.appendChild(icon);
-
-      const label = document.createElement("span");
-      label.textContent = `${tpl.name} (${tpl.cost}G): ${tpl.description}`;
-      const btn = document.createElement("button");
-      btn.className = "win-btn";
-      btn.textContent = "Buy";
-      btn.addEventListener("click", () => {
-        this.buyItem(tpl.id);
-      });
-      row.appendChild(label);
-      row.appendChild(btn);
-      listContainer.appendChild(row);
-    });
-  }
-
+  /**
+   * @method closeShop
+   * @description Closes the shop.
+   */
   closeShop() {
     this.shopWindow.close();
     this.modeLabelEl.textContent = "Exploration";
     this.updateAll();
   }
 
+  /**
+   * @method buyItem
+   * @description Buys an item from the shop.
+   * @param {string} itemId - The ID of the item to buy.
+   */
   buyItem(itemId) {
     const item = this.dataManager.items.find((i) => i.id === itemId);
     if (!item) return;
@@ -1253,7 +1356,10 @@ export class Scene_Map {
     beep(600, 80);
   }
 
-  // Shrine methods
+  /**
+   * @method openShrineEvent
+   * @description Opens a shrine event.
+   */
   openShrineEvent() {
     if (this.dataManager.events.length === 0) {
       this.logMessage(this.dataManager.terms.shrine.silent);
@@ -1279,6 +1385,11 @@ export class Scene_Map {
     beep(700, 150);
   }
 
+  /**
+   * @method applyEventEffect
+   * @description Applies the effect of an event.
+   * @param {Object} effect - The effect to apply.
+   */
   applyEventEffect(effect) {
     switch (effect.type) {
       case "hp":
@@ -1334,12 +1445,19 @@ export class Scene_Map {
     this.updateAll();
   }
 
+  /**
+   * @method closeEvent
+   * @description Closes the event window.
+   */
   closeEvent() {
     this.eventWindow.close();
     this.updateAll();
   }
 
-  // Recruit methods
+  /**
+   * @method openRecruitEvent
+   * @description Opens a recruit event.
+   */
   openRecruitEvent() {
     const availableCreatures = this.dataManager.actors.filter(creature => !creature.isEnemy);
     if (availableCreatures.length === 0) {
@@ -1442,11 +1560,20 @@ export class Scene_Map {
     beep(400, 100);
   }
 
+  /**
+   * @method closeRecruitEvent
+   * @description Closes the recruit event.
+   */
   closeRecruitEvent() {
     this.recruitWindow.close();
     this.setStatus("Exploration");
   }
 
+  /**
+   * @method clearEventTile
+   * @description Clears the event tile.
+   * @param {string} char - The character of the tile to clear.
+   */
   clearEventTile(char) {
     const f = this.map.floors[this.map.floorIndex];
     const { playerX, playerY } = this.map;
@@ -1456,6 +1583,11 @@ export class Scene_Map {
     this.updateGrid();
   }
 
+  /**
+   * @method attemptRecruit
+   * @description Attempts to recruit a new party member.
+   * @param {Object} recruit - The recruit to attempt to recruit.
+   */
   attemptRecruit(recruit) {
     if (this.party.members.length < this.party.MAX_MEMBERS) {
       this.party.members.push(new Game_Actor(recruit));
@@ -1490,6 +1622,12 @@ export class Scene_Map {
     this.recruitWindow.buttonsEl.appendChild(cancelBtn);
   }
 
+  /**
+   * @method replaceMemberWithRecruit
+   * @description Replaces a party member with a new recruit.
+   * @param {number} index - The index of the party member to replace.
+   * @param {Object} recruit - The new recruit.
+   */
   replaceMemberWithRecruit(index, recruit) {
     const replaced = this.party.members[index];
     this.logMessage(
@@ -1503,6 +1641,12 @@ export class Scene_Map {
     this.closeRecruitEvent();
   }
 
+  /**
+   * @method formatSkillName
+   * @description Formats the name of a skill.
+   * @param {string} skillId - The ID of the skill to format.
+   * @returns {string} The formatted skill name.
+   */
   formatSkillName(skillId) {
       const skill = this.dataManager.skills[skillId];
       if (!skill) return "";
@@ -1510,6 +1654,12 @@ export class Scene_Map {
       return `${elementIcon.innerHTML}${skill.name}`;
   }
 
+  /**
+   * @method elementToAscii
+   * @description Converts an element to its ASCII representation.
+   * @param {string} element - The element to convert.
+   * @returns {string} The ASCII representation of the element.
+   */
   elementToAscii(element) {
     switch (element) {
         case "Red": return "(R)";
@@ -1521,6 +1671,12 @@ export class Scene_Map {
     }
   }
 
+  /**
+   * @method elementToIcon
+   * @description Converts an element to its icon ID.
+   * @param {string} element - The element to convert.
+   * @returns {number} The icon ID of the element.
+   */
   elementToIcon(element) {
     switch (element) {
         case "Red": return 1;
@@ -1536,6 +1692,13 @@ export class Scene_Map {
         default: return 0;
     }
 }
+
+/**
+ * @method createElementIcon
+ * @description Creates an element icon.
+ * @param {string[]} elements - The elements to create an icon for.
+ * @returns {HTMLElement} The element icon.
+ */
 createElementIcon(elements) {
     const primaryElements = getPrimaryElements(elements);
     const container = document.createElement('div');
@@ -1578,6 +1741,12 @@ createElementIcon(elements) {
     return container;
 }
 
+/**
+ * @method renderElements
+ * @description Renders the elements.
+ * @param {string[]} elements - The elements to render.
+ * @returns {HTMLElement} The rendered elements.
+ */
 renderElements(elements) {
     const container = document.createElement('div');
     container.className = 'element-container';
@@ -1594,6 +1763,13 @@ renderElements(elements) {
     return container;
 }
 
+  /**
+   * @method createHpGauge
+   * @description Creates an HP gauge.
+   * @param {number} hp - The current HP.
+   * @param {number} maxHp - The maximum HP.
+   * @returns {string} The HP gauge.
+   */
   createHpGauge(hp, maxHp) {
     const totalLength = 15;
     let filledCount = Math.round((hp / maxHp) * totalLength);
@@ -1607,6 +1783,13 @@ renderElements(elements) {
     return `[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
   }
 
+  /**
+   * @method elementMultiplier
+   * @description Calculates the element multiplier.
+   * @param {string[]} attackerElements - The elements of the attacker.
+   * @param {string[]} defenderElements - The elements of the defender.
+   * @returns {number} The element multiplier.
+   */
   elementMultiplier(attackerElements, defenderElements) {
     let multiplier = 1;
     let advantageFound = false;
@@ -1637,20 +1820,38 @@ renderElements(elements) {
 
     return multiplier;
   }
+
+  /**
+   * @method partyRow
+   * @description Gets the row of a party member.
+   * @param {number} index - The index of the party member.
+   * @returns {string} The row of the party member.
+   */
   partyRow(index) {
     return index <= 1 ? "Front" : "Back";
   }
 
-  // Formation methods
+  /**
+   * @method openFormation
+   * @description Opens the formation window.
+   */
   openFormation() {
     this.formationWindow.open();
     this.renderFormationGrid();
   }
 
+  /**
+   * @method closeFormation
+   * @description Closes the formation window.
+   */
   closeFormation() {
     this.formationWindow.close();
   }
 
+  /**
+   * @method renderFormationGrid
+   * @description Renders the formation grid.
+   */
   renderFormationGrid() {
     const grid = this.formationWindow.gridEl;
     const reserveGrid = this.formationWindow.reserveGridEl;
@@ -1677,11 +1878,21 @@ renderElements(elements) {
     });
   }
 
+  /**
+   * @method onFormationDragStart
+   * @description Handles the drag start event for the formation grid.
+   * @param {DragEvent} e - The drag event.
+   */
   onFormationDragStart(e) {
     this.draggedIndex = parseInt(e.target.dataset.index, 10);
     e.target.classList.add("dragging");
   }
 
+  /**
+   * @method onFormationDragOver
+   * @description Handles the drag over event for the formation grid.
+   * @param {DragEvent} e - The drag event.
+   */
   onFormationDragOver(e) {
     e.preventDefault();
     const target = e.target.closest(".formation-slot");
@@ -1690,6 +1901,11 @@ renderElements(elements) {
     }
   }
 
+  /**
+   * @method onFormationDrop
+   * @description Handles the drop event for the formation grid.
+   * @param {DragEvent} e - The drag event.
+   */
   onFormationDrop(e) {
     e.preventDefault();
     const targetIndex = parseInt(e.target.dataset.index, 10);
@@ -1706,22 +1922,38 @@ renderElements(elements) {
     beep(500, 80);
   }
 
+  /**
+   * @method onFormationDragEnd
+   * @description Handles the drag end event for the formation grid.
+   * @param {DragEvent} e - The drag event.
+   */
   onFormationDragEnd(e) {
     document
       .querySelectorAll(".formation-slot")
       .forEach((s) => s.classList.remove("dragging", "drag-over"));
   }
 
-  // Inventory methods
+  /**
+   * @method openInventory
+   * @description Opens the inventory window.
+   */
   openInventory() {
     this.inventoryWindow.open();
     this.renderInventory();
   }
 
+  /**
+   * @method closeInventory
+   * @description Closes the inventory window.
+   */
   closeInventory() {
     this.inventoryWindow.close();
   }
 
+  /**
+   * @method renderInventory
+   * @description Renders the inventory.
+   */
   renderInventory() {
     this.inventoryWindow.listEl.innerHTML = "";
     if (this.party.inventory.length === 0) {
@@ -1764,6 +1996,12 @@ renderElements(elements) {
     }
   }
 
+  /**
+   * @method useItem
+   * @description Uses an item from the inventory.
+   * @param {Object} item - The item to use.
+   * @param {number} index - The index of the item in the inventory.
+   */
   useItem(item, index) {
     this.inventoryWindow.listEl.innerHTML =
       "Select a party member to use this on:";
@@ -1778,6 +2016,13 @@ renderElements(elements) {
     });
   }
 
+  /**
+   * @method applyItemToMember
+   * @description Applies an item to a party member.
+   * @param {Object} item - The item to apply.
+   * @param {number} itemIndex - The index of the item in the inventory.
+   * @param {number} memberIndex - The index of the party member.
+   */
   applyItemToMember(item, itemIndex, memberIndex) {
     const member = this.party.members[memberIndex];
     if (item.effects.hp) {
@@ -1798,6 +2043,12 @@ renderElements(elements) {
     beep(700, 100);
   }
 
+  /**
+   * @method discardItem
+   * @description Discards an item from the inventory.
+   * @param {Object} item - The item to discard.
+   * @param {number} index - The index of the item in the inventory.
+   */
   discardItem(item, index) {
     this.party.inventory.splice(index, 1);
     this.renderInventory();
@@ -1806,7 +2057,12 @@ renderElements(elements) {
     beep(300, 80);
   }
 
-  // Inspect methods
+  /**
+   * @method openInspect
+   * @description Opens the inspect window.
+   * @param {Game_Battler} member - The party member to inspect.
+   * @param {number} index - The index of the party member.
+   */
   openInspect(member, index) {
     this.inspectWindow.member = member;
     this.inspectWindow.memberIndex = index;
@@ -1862,6 +2118,10 @@ renderElements(elements) {
     this.inspectWindow.equipEl.onclick = () => this.openEquipmentScreen();
   }
 
+  /**
+   * @method closeInspect
+   * @description Closes the inspect window.
+   */
   closeInspect() {
     this.inspectWindow.equipmentListContainerEl.style.display = "none";
     this.inspectWindow.equipmentListEl.innerHTML = "";
@@ -1869,11 +2129,20 @@ renderElements(elements) {
     this.setStatus("Exploration");
   }
 
+  /**
+   * @method openEquipmentScreen
+   * @description Opens the equipment screen.
+   */
   openEquipmentScreen() {
     this.inspectWindow.equipmentListContainerEl.style.display = "block";
     this.renderEquipmentList("All");
   }
 
+  /**
+   * @method renderEquipmentList
+   * @description Renders the equipment list.
+   * @param {string} filter - The filter to apply to the equipment list.
+   */
   renderEquipmentList(filter) {
     const listEl = this.inspectWindow.equipmentListEl;
     const filterEl = this.inspectWindow.equipmentFilterEl;
@@ -1941,6 +2210,12 @@ renderElements(elements) {
     listEl.appendChild(closeBtn);
   }
 
+  /**
+   * @method equipItem
+   * @description Equips an item to a party member.
+   * @param {Game_Battler} member - The party member to equip the item to.
+   * @param {Object} item - The item to equip.
+   */
   equipItem(member, item) {
     const doEquip = () => {
       // Unequip current item if one exists
