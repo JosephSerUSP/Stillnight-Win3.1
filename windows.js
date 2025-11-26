@@ -1,8 +1,33 @@
 /**
- * @class Window_Base
- * @description The base class for all windows.
+ * @class WindowLayer
+ * @description A container that manages the z-indexing of windows.
  */
-class Window_Base {
+export class WindowLayer {
+  constructor() {
+    this.element = document.createElement("div");
+    this.element.id = "window-layer";
+  }
+
+  /**
+   * @param {Window_Base} window - The window to add to the layer.
+   */
+  addChild(window) {
+    this.element.appendChild(window.overlay);
+  }
+
+  /**
+   * @description Appends the window layer to the document body.
+   */
+  appendToBody() {
+    document.body.appendChild(this.element);
+  }
+}
+
+/**
+ * @class Legacy_Window_Base
+ * @description The base class for all legacy windows.
+ */
+class Legacy_Window_Base {
   /**
    * @param {string} overlayId - The ID of the modal overlay element.
    */
@@ -36,28 +61,132 @@ class Window_Base {
 }
 
 /**
+ * @class Window_Base
+ * @description The base class for all windows.
+ */
+export class Window_Base {
+    /**
+     * @param {number} x - The x coordinate on screen.
+     * @param {number} y - The y coordinate on screen.
+     * @param {number} width - The width of the window.
+     * @param {number} height - The height of the window.
+     */
+    constructor(x, y, width, height) {
+        this.overlay = document.createElement("div");
+        this.overlay.className = "modal-overlay";
+
+        this.element = document.createElement("div");
+        this.element.className = "dialog";
+        this.element.style.position = "absolute";
+        this.element.style.left = `${x}px`;
+        this.element.style.top = `${y}px`;
+        this.element.style.width = `${width}px`;
+        this.element.style.height = `${height}px`;
+        this.element.style.zIndex = "10";
+
+        this.overlay.appendChild(this.element);
+    }
+
+    /**
+     * @method open
+     * @description Opens the window.
+     */
+    open() {
+        this.overlay.classList.add("active");
+    }
+
+    /**
+     * @method close
+     * @description Closes the window.
+     */
+    close() {
+        this.overlay.classList.remove("active");
+    }
+
+    /**
+     * @method refresh
+     * @description Refreshes the window's content.
+     */
+    refresh() {
+        // To be implemented by subclasses
+    }
+}
+
+/**
  * @class Window_Battle
  * @description The window for battles.
  * @extends Window_Base
  */
 export class Window_Battle extends Window_Base {
   constructor() {
-    super("battle-overlay");
-    this.asciiEl = document.getElementById("battle-ascii");
-    this.logEl = document.getElementById("battle-log");
-    this.btnClose = document.getElementById("btn-battle-close");
-    this.btnRound = document.getElementById("btn-battle-round");
-    this.btnFlee = document.getElementById("btn-battle-flee");
-    this.btnVictory = document.getElementById("btn-battle-victory");
+    super(20, 20, 600, 400); // Example dimensions, adjust as needed
+
+    // Create title bar
+    const titleBar = document.createElement("div");
+    titleBar.className = "dialog-titlebar";
+    this.element.appendChild(titleBar);
+
+    const titleText = document.createElement("span");
+    titleText.textContent = "Battle – Stillnight";
+    titleBar.appendChild(titleText);
+
+    this.btnClose = document.createElement("button");
+    this.btnClose.className = "win-btn";
+    this.btnClose.textContent = "X";
+    this.btnClose.onclick = () => this.close();
+    titleBar.appendChild(this.btnClose);
+
+    // Create content area
+    const content = document.createElement("div");
+    content.className = "dialog-content";
+    this.element.appendChild(content);
+
+    // Create ASCII display area
+    this.asciiEl = document.createElement("pre");
+    this.asciiEl.className = "battle-ascii";
+    content.appendChild(this.asciiEl);
+
+    // Create log area
+    this.logEl = document.createElement("div");
+    this.logEl.className = "battle-log";
+    content.appendChild(this.logEl);
+
+    // Create buttons
+    const buttons = document.createElement("div");
+    buttons.className = "dialog-buttons";
+    this.element.appendChild(buttons);
+
+    this.btnRound = document.createElement("button");
+    this.btnRound.className = "win-btn";
+    this.btnRound.textContent = "Resolve Round";
+    buttons.appendChild(this.btnRound);
+
+    this.btnFlee = document.createElement("button");
+    this.btnFlee.className = "win-btn";
+    this.btnFlee.textContent = "Flee";
+    buttons.appendChild(this.btnFlee);
+
+    this.btnVictory = document.createElement("button");
+    this.btnVictory.className = "win-btn";
+    this.btnVictory.textContent = "Claim Spoils";
+    this.btnVictory.style.display = "none";
+    buttons.appendChild(this.btnVictory);
+  }
+
+  /**
+   * @param {string} asciiArt - The ASCII art to display.
+   */
+  refresh(asciiArt) {
+    this.asciiEl.innerHTML = asciiArt;
   }
 }
 
 /**
  * @class Window_Inspect
  * @description The window for inspecting creatures.
- * @extends Window_Base
+ * @extends Legacy_Window_Base
  */
-export class Window_Inspect extends Window_Base {
+export class Window_Inspect extends Legacy_Window_Base {
   constructor() {
     super("inspect-overlay");
     this.spriteEl = document.getElementById("inspect-sprite");
@@ -83,9 +212,9 @@ export class Window_Inspect extends Window_Base {
 /**
  * @class Window_Shop
  * @description The window for the shop.
- * @extends Window_Base
+ * @extends Legacy_Window_Base
  */
-export class Window_Shop extends Window_Base {
+export class Window_Shop extends Legacy_Window_Base {
   constructor() {
     super("shop-overlay");
     this.goldLabelEl = document.getElementById("shop-gold-label");
@@ -149,9 +278,9 @@ export class Window_Shop extends Window_Base {
 /**
  * @class Window_Formation
  * @description The window for party formation.
- * @extends Window_Base
+ * @extends Legacy_Window_Base
  */
-export class Window_Formation extends Window_Base {
+export class Window_Formation extends Legacy_Window_Base {
   constructor() {
     super("formation-overlay");
     this.gridEl = document.getElementById("formation-grid");
@@ -165,9 +294,9 @@ export class Window_Formation extends Window_Base {
 /**
  * @class Window_Inventory
  * @description The window for the inventory.
- * @extends Window_Base
+ * @extends Legacy_Window_Base
  */
-export class Window_Inventory extends Window_Base {
+export class Window_Inventory extends Legacy_Window_Base {
   constructor() {
     super("inventory-overlay");
     this.listEl = document.getElementById("inventory-list");
@@ -180,9 +309,9 @@ export class Window_Inventory extends Window_Base {
 /**
  * @class Window_Recruit
  * @description The window for recruiting new members.
- * @extends Window_Base
+ * @extends Legacy_Window_Base
  */
-export class Window_Recruit extends Window_Base {
+export class Window_Recruit extends Legacy_Window_Base {
   constructor() {
     super("recruit-overlay");
     this.bodyEl = document.getElementById("recruit-body");
@@ -194,9 +323,9 @@ export class Window_Recruit extends Window_Base {
 /**
  * @class Window_Event
  * @description The window for events.
- * @extends Window_Base
+ * @extends Legacy_Window_Base
  */
-export class Window_Event extends Window_Base {
+export class Window_Event extends Legacy_Window_Base {
   constructor() {
     super("event-overlay");
     this.titleEl = document.getElementById("event-title");
@@ -209,9 +338,9 @@ export class Window_Event extends Window_Base {
 /**
  * @class Window_Confirm
  * @description The window for generic confirmations.
- * @extends Window_Base
+ * @extends Legacy_Window_Base
  */
-export class Window_Confirm extends Window_Base {
+export class Window_Confirm extends Legacy_Window_Base {
   constructor() {
     super("confirm-overlay");
     this.titleEl = document.getElementById("confirm-title");
