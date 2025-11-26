@@ -40,4 +40,11 @@ Rewards are semi-random. Upon sacrifice, the system checks the unit's **Effectiv
 ### Overview
 Units can learn new skills, often overwriting ones they already know.
 
+
+## Mechanic #3: Party Creation
+
+## Overview
+When starting a new game, the game will ask the player a series of philosophical questions. It will then use the answers as input to generate the initial party.
+
+
 --- END OF FILE documents/futureMechanics.md ---
