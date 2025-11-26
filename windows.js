@@ -119,8 +119,7 @@ export class Window_Base {
  */
 export class Window_Battle extends Window_Base {
   constructor() {
-    super(20, 20, 600, 400); // Example dimensions, adjust as needed
-
+    super(96+453, 96+199, 528, 360); // 96 in relation to the canvas of the game. this should be positioned in relation to the canvas of the game.
     // Create title bar
     const titleBar = document.createElement("div");
     titleBar.className = "dialog-titlebar";
