@@ -223,155 +223,182 @@ export class BattleManager {
   }
 
   /**
-   * @method resolveRound
-   * @description Resolves a single round of combat, generating a sequence of events.
-   * This is a pure function that takes the current state and returns a list of
-   * events that should be animated by the scene.
-   * @returns {Array<Object>} An array of battle log events.
+   * @method startRound
+   * @description Initializes a new round of combat by creating a turn queue.
    */
-  resolveRound() {
-    if (this.isBattleFinished) return [];
-
+  startRound() {
+    if (this.isBattleFinished) return;
     this.round++;
+    // Create a turn order list: Party then Enemies
+    this.turnQueue = [
+        ...this.party.members.slice(0, 4).map((b, i) => ({ battler: b, index: i, isEnemy: false })),
+        ...this.enemies.map((b, i) => ({ battler: b, index: i, isEnemy: true }))
+    ];
+  }
+
+  /**
+   * @method processTurn
+   * @description Processes the turn of the next participant in the queue.
+   * @returns {Array<Object>|null} An array of events for the turn, or null if the round is over.
+   */
+  processTurn() {
+    if (this.isBattleFinished) return null;
+
+    // Find next living participant
+    let p = this.turnQueue.shift();
+    while (p && p.battler.hp <= 0) {
+         p = this.turnQueue.shift();
+    }
+
+    if (!p) return null; // Queue empty, round over
+
+    const { battler, index, isEnemy } = p;
     const events = [];
-    const partyMembers = this.party.members.slice(0, 4);
 
-    // --- 1. Build Event Queue ---
-    partyMembers.forEach((p, index) => {
-      if (p.hp > 0) {
-        const parasiteDrain = p.getPassiveValue("PARASITE");
-        if (parasiteDrain > 0) {
-          const targetIndex = index % 2 === 0 ? index + 1 : index - 1;
-          if (targetIndex >= 0 && targetIndex < 4) {
-            const target = this.party.members[targetIndex];
-            if (target && target.hp > 0) {
-              events.push({
-                type: 'passive_drain',
-                source: p,
-                target: target,
-                value: parasiteDrain,
-                msg: `[Passive] ${p.name} drains ${parasiteDrain} HP from ${target.name}.`,
-              });
-            }
-          }
+    // --- Passive Effects (e.g., Parasite) ---
+    if (!isEnemy) {
+         const parasiteDrain = battler.getPassiveValue("PARASITE");
+         if (parasiteDrain > 0) {
+             const targetIndex = index % 2 === 0 ? index + 1 : index - 1;
+             if (targetIndex >= 0 && targetIndex < 4) {
+                 const target = this.party.members[targetIndex];
+                 if (target && target.hp > 0) {
+                    const hpBeforeTarget = target.hp;
+                    const hpBeforeSource = battler.hp;
+
+                    target.hp = Math.max(0, target.hp - parasiteDrain);
+                    battler.hp = Math.min(battler.maxHp, battler.hp + parasiteDrain);
+
+                    events.push({
+                        type: 'passive_drain',
+                        source: battler,
+                        target: target,
+                        value: parasiteDrain,
+                        hpBeforeTarget: hpBeforeTarget,
+                        hpAfterTarget: target.hp,
+                        hpBeforeSource: hpBeforeSource,
+                        hpAfterSource: battler.hp,
+                        msg: `[Passive] ${battler.name} drains ${parasiteDrain} HP from ${target.name}.`,
+                    });
+                 }
+             }
+         }
+    }
+
+    // Re-check death after passives (though unlikely to die from drain source)
+    if (battler.hp <= 0) return events; // Return whatever passive events happened
+
+    // --- Select Target ---
+    let target = null;
+    if (isEnemy) {
+        // Enemies target random living party member
+        const possibleTargets = this.party.members.slice(0, 4).filter(m => m.hp > 0);
+        if (possibleTargets.length > 0) {
+            target = possibleTargets[randInt(0, possibleTargets.length - 1)];
         }
-      }
-      if (p.hp <= 0) return;
-      const target = this.enemies.find((e) => e.hp > 0);
-      if (!target) return;
+    } else {
+        // Party targets first living enemy
+        target = this.enemies.find(e => e.hp > 0);
+    }
 
-      const skillId = p.skills && p.skills.length ? p.skills[randInt(0, p.skills.length - 1)] : null;
-      const skill = skillId ? this.dataManager.skills[skillId] : null;
-
-      if (skill) {
-        let boost = 1;
-        if (skill.element) {
-          const matches = p.elements.filter((e) => e === skill.element).length;
-          boost += matches * 0.25;
+    if (!target) {
+        // No valid targets, maybe battle is over?
+        // Determine if victory/defeat has happened
+        if (isEnemy && this.party.members.slice(0, 4).every(m => m.hp <= 0)) {
+             // Battle will end below
+        } else if (!isEnemy && this.enemies.every(e => e.hp <= 0)) {
+             // Battle will end below
+        } else {
+             return events; // Nothing to do
         }
-        const skillName = `${elementToAscii(skill.element)}${skill.name}`;
-        events.push({ type: 'use_skill', battler: p, skillName, msg: `${p.name} uses ${skillName}!` });
+    } else {
+        // --- Execute Action ---
+        const skillId = battler.skills && battler.skills.length ? battler.skills[randInt(0, battler.skills.length - 1)] : null;
+        const skill = skillId ? this.dataManager.skills[skillId] : null;
 
-        skill.effects.forEach((effect) => {
-          if (effect.type === "hp_damage") {
-            const formula = effect.formula.replace("a.level", p.level);
-            let skillDmg = Math.round(eval(formula) * boost);
-            if (skillDmg < 1) skillDmg = 1;
-            events.push({ type: 'damage', target: target, value: skillDmg, msg: `  ${target.name} takes ${skillDmg} damage.` });
-          }
-          if (effect.type === "add_status") {
-            const chance = (effect.chance || 1) * boost;
-            if (Math.random() < chance) {
-              events.push({ type: 'status', target: target, status: effect.status, msg: `  ${target.name} is afflicted with ${effect.status}.` });
-            }
-          }
-        });
-      } else {
-        let base = randInt(2, 4) + Math.floor(p.level / 2);
-        if (p.equipmentItem && p.equipmentItem.damageBonus) {
-          base += p.equipmentItem.damageBonus;
+        if (skill) {
+             let boost = 1;
+             if (skill.element) {
+               const matches = battler.elements.filter((e) => e === skill.element).length;
+               boost += matches * 0.25;
+             }
+             const skillName = `${elementToAscii(skill.element)}${skill.name}`;
+             events.push({ type: 'use_skill', battler: battler, skillName, msg: `${battler.name} uses ${skillName}!` });
+
+             skill.effects.forEach((effect) => {
+               if (effect.type === "hp_damage") {
+                 const formula = effect.formula.replace("a.level", battler.level);
+                 let skillDmg = Math.round(eval(formula) * boost);
+                 if (skillDmg < 1) skillDmg = 1;
+
+                 // Apply damage immediately
+                 const hpBefore = target.hp;
+                 target.hp = Math.max(0, target.hp - skillDmg);
+
+                 events.push({
+                     type: 'damage',
+                     battler: battler,
+                     target: target,
+                     value: skillDmg,
+                     hpBefore: hpBefore,
+                     hpAfter: target.hp,
+                     msg: `  ${target.name} takes ${skillDmg} damage.`
+                 });
+               }
+               if (effect.type === "add_status") {
+                 const chance = (effect.chance || 1) * boost;
+                 if (Math.random() < chance) {
+                   events.push({ type: 'status', target: target, status: effect.status, msg: `  ${target.name} is afflicted with ${effect.status}.` });
+                 }
+               }
+             });
+        } else {
+             // Normal Attack
+             let base = 0;
+             if (isEnemy) {
+                 base = Math.max(1, battler.level + randInt(-1, 2));
+             } else {
+                 base = randInt(2, 4) + Math.floor(battler.level / 2);
+                 if (battler.equipmentItem && battler.equipmentItem.damageBonus) {
+                   base += battler.equipmentItem.damageBonus;
+                 }
+                 const row = this._partyRow(index);
+                 if (row === "Front") base += 1;
+                 else base -= 1;
+             }
+
+             const mult = this.elementMultiplier(battler.elements, target.elements);
+             let dmg = Math.round(base * mult);
+             dmg += battler.getPassiveValue("DEAL_DAMAGE_MOD");
+             if (dmg < 1) dmg = 1;
+
+             const hpBefore = target.hp;
+             target.hp = Math.max(0, target.hp - dmg);
+
+             events.push({
+               type: "damage",
+               battler: battler,
+               target: target,
+               value: dmg,
+               hpBefore: hpBefore,
+               hpAfter: target.hp,
+               msg: `${battler.name} attacks ${target.name} for ${dmg}.`,
+             });
         }
-        const row = this._partyRow(index);
-        if (row === "Front") base += 1;
-        else base -= 1;
-        const mult = this.elementMultiplier(p.elements, target.elements);
-        let dmg = Math.round(base * mult);
-        dmg += p.getPassiveValue("DEAL_DAMAGE_MOD");
-        if (dmg < 1) dmg = 1;
+    }
 
-        events.push({
-          type: "damage",
-          battler: p,
-          target: target,
-          value: dmg,
-          msg: `${p.name} attacks ${target.name} for ${dmg}.`,
-        });
-      }
-    });
-
-    this.enemies.forEach((e) => {
-      if (e.hp <= 0) return;
-      const possibleTargets = partyMembers.filter((p) => p.hp > 0);
-      if (possibleTargets.length === 0) return;
-      const target = possibleTargets[randInt(0, possibleTargets.length - 1)];
-
-      const skillId = e.skills && e.skills.length ? e.skills[randInt(0, e.skills.length - 1)] : null;
-      const skill = skillId ? this.dataManager.skills[skillId] : null;
-
-      if (skill) {
-        let boost = 1;
-        if (skill.element) {
-          const matches = e.elements.filter((el) => el === skill.element).length;
-          boost += matches * 0.25;
-        }
-        const skillName = `${elementToAscii(skill.element)}${skill.name}`;
-        events.push({ type: 'use_skill', battler: e, skillName, msg: `${e.name} uses ${skillName}!` });
-
-        skill.effects.forEach((effect) => {
-          if (effect.type === "hp_damage") {
-            const formula = effect.formula.replace("a.level", e.level);
-            let skillDmg = Math.round(eval(formula) * boost);
-            if (skillDmg < 1) skillDmg = 1;
-            events.push({ type: 'damage', target, value: skillDmg, msg: `  ${target.name} takes ${skillDmg} damage.` });
-          }
-          if (effect.type === "add_status") {
-            const chance = (effect.chance || 1) * boost;
-            if (Math.random() < chance) {
-              events.push({ type: 'status', target, status: effect.status, msg: `  ${target.name} is afflicted with ${effect.status}.` });
-            }
-          }
-        });
-      } else {
-        const dmg = Math.max(1, e.level + randInt(-1, 2));
-        events.push({
-          type: "damage",
-          battler: e,
-          target: target,
-          value: dmg,
-          msg: `${e.name} attacks ${target.name} for ${dmg}.`,
-        });
-      }
-    });
-
-    // --- 2. Apply Events and Check for Battle End ---
-    events.forEach(event => {
-      if (event.type === 'damage') {
-        event.target.hp = Math.max(0, event.target.hp - event.value);
-      } else if (event.type === 'passive_drain') {
-        event.target.hp = Math.max(0, event.target.hp - event.value);
-        event.source.hp = Math.min(event.source.maxHp, event.source.hp + event.value);
-      }
-    });
-
+    // --- Check Battle End ---
     const anyEnemyAlive = this.enemies.some((e) => e.hp > 0);
-    const anyPartyAlive = partyMembers.some((p) => p.hp > 0);
+    const anyPartyAlive = this.party.members.slice(0, 4).some((p) => p.hp > 0);
 
     if (!anyPartyAlive) {
       this.isBattleFinished = true;
+      this.turnQueue = []; // Stop further turns
       events.push({ type: "end", result: "defeat", msg: this.dataManager.terms.battle.your_party_collapses });
     } else if (!anyEnemyAlive) {
       this.isBattleFinished = true;
       this.isVictoryPending = true;
+      this.turnQueue = []; // Stop further turns
       events.push({ type: "end", result: "victory", msg: this.dataManager.terms.battle.victory });
     }
 
