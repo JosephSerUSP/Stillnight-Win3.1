@@ -44,6 +44,21 @@ Passives	Hardcoded if (code === "PARASITE") inside resolveBattleRound.	Observer 
 Skills	Hardcoded eval inside resolveBattleRound logic.	ActionManager: A class dedicated to executing Game_Action objects against Game_Battler targets.
 Battle	Logic exists inside Scene_Map methods.	BattleManager: A static singleton or instance to handle turn flow, independent of the Scene.
 Elements	Hardcoded multipliers inside elementMultiplier.	Trait System: Elements should be defined as rates on the Game_Battler.
+2.4. Window Management & Interaction Blocking (Newly Diagnosed Issue)
+**Problem:** The current window system relies on a simple flat list of windows within a `WindowLayer`. While visual stacking occurs due to DOM order, logical interaction blocking is inconsistent.
+-   **Symptom 1:** A child popup (e.g., "Confirm Swap") can be open on top of a parent window (e.g., "Inspect"), but the parent window remains interactable.
+-   **Symptom 2:** Even with modal overlays, they are siblings in the DOM. A "Confirm" window's overlay might not visually or logically block the "Inspect" window underneath if not managed correctly.
+-   **Symptom 3:** The core principle "Dimmed? Can't interact. At all." is not strictly enforced by the engine.
+
+**Proposed Solution: Window Stack Manager**
+To solve this, we need a `WindowManager` (part of `Scene_Base`) that maintains a stack of active windows.
+1.  **Stack Logic:** When a window is opened, it is pushed onto the stack.
+2.  **Input Focus:** Only the window at the top of the stack receives input.
+3.  **Visual Dimming:** All windows below the top of the stack should be visually dimmed or disabled.
+4.  **Event Propagation:** Closing the top window pops it from the stack, returning focus to the next window down.
+
+This will ensure that "Confirm" blocks "Inspect", and "Inspect" blocks "Map/HUD", enforcing a strict modal hierarchy.
+
 3. Scalability Assessment
 New Stats
 Current: Adding a "Defense" stat requires modifying Game_Battler, Window_Inspect, and the damage formula in Scene_Map.
