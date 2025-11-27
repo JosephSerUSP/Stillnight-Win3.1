@@ -386,9 +386,11 @@ export class BattleManager {
 export class SceneManager {
   /**
    * @param {HTMLElement} container - The container element for the game.
+   * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
    */
-  constructor(container) {
+  constructor(container, windowManager) {
     this.container = container;
+    this.windowManager = windowManager;
     this._stack = [];
     this._currentScene = null;
     this.requestUpdate();

@@ -23,11 +23,18 @@ test.describe('Game Logic', () => {
             window.sceneManager,
             sceneMap.party,
             sceneMap.battleManager,
-            sceneMap.windowLayer,
             sceneMap.map,
             0, 0
         );
         window.sceneManager.push(battleScene);
+        // Mock enemies for start() to work without map data if needed
+        // sceneMap.map might be initialized, but floorIndex might be 0.
+        // start() uses this.map.floors[this.map.floorIndex].
+        // Ensure map is ready.
+        if (!sceneMap.map.floors) {
+             // Initialize floors if not already (though new run should have done it)
+             sceneMap.map.initFloors(window.dataManager.floors);
+        }
         battleScene.start();
     });
 
@@ -78,7 +85,7 @@ test.describe('Game Logic', () => {
         await page.click('.inspect-value.win-btn', { hasText: '—' }); // Assuming no equipment initially or specific text
 
         // Find the equip button for the test sword
-        const equipBtn = page.locator('button.win-btn', { hasText: 'Equip' });
+        const equipBtn = page.locator('button.win-btn', { hasText: 'Equip' }).first();
         await expect(equipBtn).toBeVisible();
         await equipBtn.click();
 
@@ -100,13 +107,15 @@ test.describe('Game Logic', () => {
                  window.sceneManager,
                  sceneMap.party,
                  sceneMap.battleManager,
-                 sceneMap.windowLayer,
                  sceneMap.map,
                  0, 0
              );
              window.sceneManager.push(battleScene);
              // We don't necessarily need to start it fully, just push it.
              // But let's start it to be safe.
+             if (!sceneMap.map.floors) {
+                 sceneMap.map.initFloors(window.dataManager.floors);
+             }
              battleScene.start();
         });
 

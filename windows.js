@@ -1,12 +1,142 @@
 import { getPrimaryElements, Graphics, elementToAscii, getIconStyle } from "./core.js";
 
 /**
+ * @class WindowManager
+ * @description Manages the window stack and global overlay.
+ */
+export class WindowManager {
+  constructor() {
+    this.layer = new WindowLayer();
+    this.stack = []; // { window, modal }
+    this.overlay = document.createElement("div");
+    this.overlay.className = "modal-overlay";
+    this.layer.element.appendChild(this.overlay);
+  }
+
+  attachTo(parent) {
+    this.layer.appendTo(parent);
+  }
+
+  openWindow(window, options = {}) {
+    const { modal = false } = options;
+
+    // Check if already open
+    const existingIndex = this.stack.findIndex(entry => entry.window === window);
+    if (existingIndex !== -1) {
+        // Move to top
+        const entry = this.stack.splice(existingIndex, 1)[0];
+        entry.modal = modal; // Update modal status
+        this.stack.push(entry);
+    } else {
+        this.stack.push({ window, modal });
+        this.layer.addChild(window);
+    }
+
+    this.updateStackVisuals();
+  }
+
+  closeWindow(window) {
+    const index = this.stack.findIndex(e => e.window === window);
+    if (index === -1) return;
+
+    this.stack.splice(index, 1);
+    this.layer.removeChild(window);
+
+    this.updateStackVisuals();
+  }
+
+  closeTopWindow() {
+      const top = this.topWindow();
+      if (top) {
+          this.closeWindow(top);
+      }
+  }
+
+  topWindow() {
+    if (this.stack.length === 0) return null;
+    return this.stack[this.stack.length - 1].window;
+  }
+
+  isTopWindow(window) {
+      return this.topWindow() === window;
+  }
+
+  updateStackVisuals() {
+    const baseZ = 2000;
+    let modalIndex = -1;
+
+    // Find highest modal
+    for (let i = this.stack.length - 1; i >= 0; i--) {
+        if (this.stack[i].modal) {
+            modalIndex = i;
+            break;
+        }
+    }
+
+    // Show/Hide global overlay
+    if (modalIndex !== -1) {
+        this.overlay.classList.add("active");
+    } else {
+        this.overlay.classList.remove("active");
+    }
+
+    this.stack.forEach((entry, i) => {
+        const z = baseZ + (i * 10);
+        entry.window.element.style.zIndex = z;
+
+        const isTop = (i === this.stack.length - 1);
+        const modalExists = modalIndex !== -1;
+
+        if (modalExists && !isTop) {
+            entry.window.element.classList.add("window--dimmed");
+            entry.window.element.style.pointerEvents = "none";
+        } else {
+            entry.window.element.classList.remove("window--dimmed");
+            if (modalIndex !== -1 && i < modalIndex) {
+                 // Covered by overlay
+                 entry.window.element.style.pointerEvents = "none";
+            } else {
+                 entry.window.element.style.pointerEvents = "auto";
+            }
+        }
+
+        // Set overlay z-index just below the highest modal
+        if (i === modalIndex) {
+            this.overlay.style.zIndex = z - 1;
+        }
+    });
+  }
+
+  handleKeyDown(e) {
+      const top = this.topWindow();
+
+      // If there's a modal window, we MUST block input to the scene,
+      // even if the window itself doesn't handle this specific key.
+      const modalActive = this.stack.some(entry => entry.modal);
+
+      if (top && top.onKeyDown) {
+          top.onKeyDown(e);
+          // If modal is active, we always return true (handled/blocked) to prevent scene input.
+          // If not modal, we return true only if the window actually did something?
+          // Requirement: "Keyboard events ... should be routed only to the top window... If no window is open, keyboard input falls back to the active Scene"
+          // Requirement: "For windows opened with { modal: false }: Only the top window should respond to keyboard input."
+          return true;
+      }
+
+      // If top window didn't handle it (or has no handler), but a modal is active,
+      // we must still consume the event to prevent it reaching the scene.
+      if (modalActive) {
+          return true;
+      }
+
+      // If no modal, and top window didn't handle it, allow propagation (to Scene).
+      return false;
+  }
+}
+
+/**
  * @class WindowLayer
- * @description A container that manages all game windows. This is a key component
- * for decoupling the UI from the main HTML file. The WindowLayer is appended to the
- * main game container, and all windows are appended to the WindowLayer. This ensures
- * that all windows are children of the game container and can be scaled and positioned
- * correctly. It also provides a single point of control for managing window z-indexing.
+ * @description A container that manages all game windows.
  */
 export class WindowLayer {
   constructor() {
@@ -18,7 +148,13 @@ export class WindowLayer {
    * @param {Window_Base} window - The window to add to the layer.
    */
   addChild(window) {
-    this.element.appendChild(window.overlay);
+    this.element.appendChild(window.element);
+  }
+
+  removeChild(window) {
+      if (this.element.contains(window.element)) {
+          this.element.removeChild(window.element);
+      }
   }
 
   /**
@@ -32,23 +168,9 @@ export class WindowLayer {
 
 /**
  * @class Window_Base
- * @description The base class for all UI windows. Handles DOM creation, positioning,
- * and drag-and-drop functionality. Windows are rendered into a WindowLayer.
- * @property {HTMLElement} overlay - The semi-transparent overlay that covers the game screen.
- * @property {HTMLElement} element - The main window element.
  */
 export class Window_Base {
-    /**
-     * Creates an instance of Window_Base.
-     * @param {number|string} x - The initial x coordinate, relative to the game container. Can be 'center'.
-     * @param {number|string} y - The initial y coordinate, relative to the game container. Can be 'center'.
-     * @param {number} width - The width of the window.
-     * @param {number|string} height - The height of the window. Can be 'auto'.
-     */
     constructor(x, y, width, height) {
-        this.overlay = document.createElement("div");
-        this.overlay.className = "modal-overlay";
-
         this.element = document.createElement("div");
         this.element.className = "dialog";
         this.element.style.position = "absolute";
@@ -60,20 +182,12 @@ export class Window_Base {
         this.element.style.top = `${finalY}px`;
         this.element.style.width = `${width}px`;
         this.element.style.height = `${height}px`;
-        this.element.style.zIndex = "10";
-
-        this.overlay.appendChild(this.element);
 
         this._dragStart = null;
         this._onDragHandler = this._onDrag.bind(this);
         this._onDragEndHandler = this._onDragEnd.bind(this);
     }
 
-    /**
-     * @method makeDraggable
-     * @description Makes the window draggable.
-     * @param {HTMLElement} titleBar - The title bar element that triggers the drag.
-     */
     makeDraggable(titleBar) {
         titleBar.addEventListener("mousedown", (e) => {
             this._dragStart = {
@@ -85,12 +199,6 @@ export class Window_Base {
         });
     }
 
-    /**
-     * @method _onDrag
-     * @description Handles the drag movement.
-     * @param {MouseEvent} e - The mouse event.
-     * @private
-     */
     _onDrag(e) {
         if (this._dragStart) {
             this.element.style.left = `${e.clientX - this._dragStart.x}px`;
@@ -98,51 +206,17 @@ export class Window_Base {
         }
     }
 
-    /**
-     * @method _onDragEnd
-     * @description Ends the drag operation.
-     * @private
-     */
     _onDragEnd() {
         this._dragStart = null;
         document.removeEventListener("mousemove", this._onDragHandler);
         document.removeEventListener("mouseup", this._onDragEndHandler);
     }
 
-    /**
-     * @method open
-     * @description Opens the window.
-     */
-    open() {
-        this.overlay.classList.add("active");
-    }
-
-    /**
-     * @method close
-     * @description Closes the window.
-     */
-    close() {
-        this.overlay.classList.remove("active");
-    }
-
-    /**
-     * @method refresh
-     * @description Refreshes the window's content.
-     */
-    refresh() {
-        // To be implemented by subclasses
-    }
+    open() { }
+    close() { }
+    refresh() { }
 }
 
-/**
- * @class Window_Battle
- * @description The window for battles. This window is designed to be a flexible,
- * terminal-style display that can be easily extended with new animations and UI
- * elements. The viewport and log are separate elements, allowing for independent
- * scrolling and content updates. This is a significant improvement over the
- * previous hardcoded HTML structure, which was difficult to modify and scale.
- * @extends Window_Base
- */
 export class Window_Battle extends Window_Base {
   constructor() {
     super('center', 'center', 528, 360);
@@ -207,10 +281,6 @@ export class Window_Battle extends Window_Base {
     buttons.appendChild(this.btnVictory);
   }
 
-  /**
-   * Appends a message to the battle log.
-   * @param {string} msg - The message to append.
-   */
   appendLog(msg) {
     const div = document.createElement("div");
     div.textContent = msg;
@@ -218,13 +288,8 @@ export class Window_Battle extends Window_Base {
     this.logEl.scrollTop = this.logEl.scrollHeight;
   }
 
-  /**
-   * Logs the initial enemy emergence messages.
-   * @param {Array<import("./objects.js").Game_Battler>} enemies - The enemies in the battle.
-   * @param {Object} terms - The battle terms from the data manager.
-   */
   logEnemyEmergence(enemies, terms) {
-    this.logEl.textContent = ""; // Clear log
+    this.logEl.textContent = "";
     this.appendLog(terms.enemies_emerge);
     enemies.forEach((e) => {
         const primaryElements = getPrimaryElements(e.elements);
@@ -233,11 +298,8 @@ export class Window_Battle extends Window_Base {
     });
   }
 
-  /**
-   * @param {Array<Object>} battlers - The battler data to render.
-   */
   refresh(battlers, party) {
-    this.viewportEl.innerHTML = ""; // Clear previous state
+    this.viewportEl.innerHTML = "";
 
     const header = document.createElement("div");
     header.textContent = "== BATTLE ==";
@@ -298,11 +360,6 @@ export class Window_Battle extends Window_Base {
   }
 }
 
-/**
- * @class Window_Inspect
- * @description The window for inspecting creatures.
- * @extends Window_Base
- */
 export class Window_Inspect extends Window_Base {
   constructor() {
     super('center', 'center', 480, 320);
@@ -407,11 +464,6 @@ export class Window_Inspect extends Window_Base {
   }
 }
 
-/**
- * @class Window_Shop
- * @description The window for the shop.
- * @extends Window_Base
- */
 export class Window_Shop extends Window_Base {
   constructor() {
     super('center', 'center', 420, 320);
@@ -469,27 +521,12 @@ export class Window_Shop extends Window_Base {
     buttons.appendChild(this.btnLeave);
   }
 
-  /**
-   * @method open
-   * @description Opens the shop window.
-   * @param {number} gold - The player's current gold.
-   * @param {string} message - The vendor's message.
-   * @param {Object[]} items - The items available for sale.
-   * @param {Function} buyCallback - The callback function to execute when an item is purchased.
-   */
   open(gold, message, items, buyCallback) {
     this.goldLabelEl.textContent = `${gold}G`;
     this.messageEl.textContent = message;
     this.renderItems(items, buyCallback);
-    super.open();
   }
 
-  /**
-   * @method renderItems
-   * @description Renders the list of items for sale.
-   * @param {Object[]} items - The items available for sale.
-   * @param {Function} buyCallback - The callback function to execute when an item is purchased.
-   */
   renderItems(items, buyCallback) {
     this.listContainer.innerHTML = "";
     items.forEach((tpl) => {
@@ -498,7 +535,7 @@ export class Window_Shop extends Window_Base {
 
       const icon = document.createElement('div');
       icon.className = 'icon';
-      const iconId = tpl.icon || 6; // Use icon 6 as a placeholder
+      const iconId = tpl.icon || 6;
       if (iconId > 0) {
           icon.style.backgroundPosition = getIconStyle(iconId);
       }
@@ -519,11 +556,6 @@ export class Window_Shop extends Window_Base {
   }
 }
 
-/**
- * @class Window_Formation
- * @description The window for party formation.
- * @extends Window_Base
- */
 export class Window_Formation extends Window_Base {
   constructor() {
     super('center', 'center', 420, 320);
@@ -589,14 +621,9 @@ export class Window_Formation extends Window_Base {
   }
 }
 
-/**
- * @class Window_Inventory
- * @description The window for the inventory.
- * @extends Window_Base
- */
 export class Window_Inventory extends Window_Base {
   constructor() {
-    super('center', 'center', 400, 300); // x, y, width, height
+    super('center', 'center', 400, 300);
     this.element.id = "inventory-window";
     this.element.style.display = 'flex';
     this.element.style.flexDirection = 'column';
@@ -640,11 +667,6 @@ export class Window_Inventory extends Window_Base {
     buttons.appendChild(this.btnClose2);
   }
 
-  /**
-   * @param {Object[]} inventory - The party's inventory.
-   * @param {Function} useItemCallback - Callback for using an item.
-   * @param {Function} discardItemCallback - Callback for discarding an item.
-   */
   refresh(inventory, useItemCallback, discardItemCallback) {
     this.listEl.innerHTML = "";
     if (inventory.length === 0) {
@@ -686,11 +708,6 @@ export class Window_Inventory extends Window_Base {
     }
   }
 
-  /**
-   * Renders a list of party members for target selection.
-   * @param {import("./objects.js").Game_Battler[]} members - The party members to display.
-   * @param {Function} onSelectCallback - Callback for when a member is selected.
-   */
   showTargetSelection(members, onSelectCallback) {
     this.listEl.innerHTML = "<div>Select a party member to use this on:</div>";
     this.emptyMsgEl.style.display = "none";
@@ -710,11 +727,6 @@ export class Window_Inventory extends Window_Base {
   }
 }
 
-/**
- * @class Window_Recruit
- * @description The window for recruiting new members.
- * @extends Window_Base
- */
 export class Window_Recruit extends Window_Base {
   constructor() {
     super('center', 'center', 480, 320);
@@ -751,11 +763,6 @@ export class Window_Recruit extends Window_Base {
   }
 }
 
-/**
- * @class Window_Event
- * @description The window for events.
- * @extends Window_Base
- */
 export class Window_Event extends Window_Base {
   constructor() {
     super('center', 'center', 480, 'auto');
@@ -796,11 +803,6 @@ export class Window_Event extends Window_Base {
   }
 }
 
-/**
- * @class Window_Confirm
- * @description The window for generic confirmations.
- * @extends Window_Base
- */
 export class Window_Confirm extends Window_Base {
   constructor() {
     super('center', 'center', 320, 'auto');

@@ -82,24 +82,21 @@ export class Scene_Battle extends Scene_Base {
    * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
    * @param {import("./objects.js").Game_Party} party - The player's party.
    * @param {import("./managers.js").BattleManager} battleManager - The battle manager instance.
-   * @param {import("./windows.js").WindowLayer} windowLayer - The window layer instance.
    * @param {import("./objects.js").Game_Map} map - The game map instance.
    * @param {number} tileX - The x-coordinate of the tile the battle is on.
    * @param {number} tileY - The y-coordinate of the tile the battle is on.
    */
-  constructor(dataManager, sceneManager, party, battleManager, windowLayer, map, tileX, tileY) {
+  constructor(dataManager, sceneManager, party, battleManager, map, tileX, tileY) {
     super(dataManager);
     this.sceneManager = sceneManager;
     this.party = party;
     this.battleManager = battleManager;
-    this.windowLayer = windowLayer;
     this.map = map;
     this.tileX = tileX;
     this.tileY = tileY;
     this.battleBusy = false;
 
     this.battleWindow = new Window_Battle();
-    this.windowLayer.addChild(this.battleWindow);
 
     this.battleWindow.btnRound.addEventListener("click", this.resolveBattleRound.bind(this));
     this.battleWindow.btnFlee.addEventListener("click", this.attemptFlee.bind(this));
@@ -148,7 +145,10 @@ export class Scene_Battle extends Scene_Base {
 
     this.applyBattleStartPassives();
     this.renderBattleAscii();
-    this.battleWindow.open();
+    // Modal battle window? Requirements say: "Design Rule: The Battle Window is modal and uncloseable by the user"
+    // Wait, the context said "The Battle Window is modal and uncloseable by the user; clicking the close button triggers a visual 'shake' feedback"
+    // So yes, modal.
+    this.sceneManager.windowManager.openWindow(this.battleWindow, { modal: true });
     document.getElementById("mode-label").textContent = "Battle";
     SoundManager.beep(350, 200);
   }
@@ -158,7 +158,7 @@ export class Scene_Battle extends Scene_Base {
    * @description Stops the scene.
    */
   stop() {
-    this.battleWindow.close();
+    this.sceneManager.windowManager.closeWindow(this.battleWindow);
     document.getElementById("mode-label").textContent = "Exploration";
   }
 
@@ -471,16 +471,13 @@ export class Scene_Shop extends Scene_Base {
      * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
      * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
      * @param {import("./objects.js").Game_Party} party - The player's party.
-     * @param {import("./windows.js").WindowLayer} windowLayer - The window layer instance.
      */
-    constructor(dataManager, sceneManager, party, windowLayer) {
+    constructor(dataManager, sceneManager, party) {
         super(dataManager);
         this.sceneManager = sceneManager;
         this.party = party;
-        this.windowLayer = windowLayer;
 
         this.shopWindow = new Window_Shop();
-        this.windowLayer.addChild(this.shopWindow);
 
         this.shopWindow.btnClose.addEventListener("click", this.closeShop.bind(this));
         this.shopWindow.btnLeave.addEventListener("click", this.closeShop.bind(this));
@@ -497,6 +494,7 @@ export class Scene_Shop extends Scene_Base {
             this.dataManager.items,
             (itemId) => this.buyItem(itemId)
         );
+        this.sceneManager.windowManager.openWindow(this.shopWindow, { modal: true });
         document.getElementById("mode-label").textContent = "Shop";
         SoundManager.beep(650, 150);
     }
@@ -506,7 +504,7 @@ export class Scene_Shop extends Scene_Base {
      * @description Stops the scene.
      */
     stop() {
-        this.shopWindow.close();
+        this.sceneManager.windowManager.closeWindow(this.shopWindow);
         document.getElementById("mode-label").textContent = "Exploration";
     }
 
@@ -575,22 +573,14 @@ export class Scene_Map extends Scene_Base {
     this.getDomElements();
     this.addEventListeners();
 
-    this.windowLayer = new WindowLayer();
-    const gameContainer = document.querySelector(".right-side");
-    this.windowLayer.appendTo(gameContainer);
+    this.windowManager = this.sceneManager.windowManager;
 
     this.inventoryWindow = new Window_Inventory();
-    this.windowLayer.addChild(this.inventoryWindow);
     this.eventWindow = new Window_Event();
-    this.windowLayer.addChild(this.eventWindow);
     this.recruitWindow = new Window_Recruit();
-    this.windowLayer.addChild(this.recruitWindow)
     this.formationWindow = new Window_Formation();
-    this.windowLayer.addChild(this.formationWindow)
     this.inspectWindow = new Window_Inspect();
-    this.windowLayer.addChild(this.inspectWindow)
     this.confirmWindow = new Window_Confirm();
-    this.windowLayer.addChild(this.confirmWindow);
 
     this.recruitWindow.btnClose.addEventListener(
       "click",
@@ -604,7 +594,7 @@ export class Scene_Map extends Scene_Base {
 
     this.confirmWindow.btnClose.addEventListener(
       "click",
-      () => this.confirmWindow.close()
+      () => this.windowManager.closeWindow(this.confirmWindow)
     );
     this.formationWindow.btnOk.addEventListener(
       "click",
@@ -1186,10 +1176,10 @@ export class Scene_Map extends Scene_Base {
     } else if (ch === "E") {
       this.setStatus("Enemy encountered!");
       this.logMessage("[Battle] Shapes uncoil from the dark.");
-      this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.party, this.battleManager, this.windowLayer, this.map, x, y));
+      this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.party, this.battleManager, this.map, x, y));
       return;
     } else if (ch === "¥") {
-      this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.party, this.windowLayer));
+      this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.party));
       return;
     } else if (ch === "♱") {
       this.logMessage("[Shrine] You encounter a shrine.");
@@ -1327,7 +1317,7 @@ export class Scene_Map extends Scene_Base {
       });
       this.eventWindow.choicesEl.appendChild(btn);
     });
-    this.eventWindow.open();
+    this.windowManager.openWindow(this.eventWindow, { modal: true });
     this.setStatus("Shrine event.");
     SoundManager.beep(700, 150);
   }
@@ -1397,7 +1387,7 @@ export class Scene_Map extends Scene_Base {
    * @description Closes the event window.
    */
   closeEvent() {
-    this.eventWindow.close();
+    this.windowManager.closeWindow(this.eventWindow);
     this.updateAll();
   }
 
@@ -1502,7 +1492,7 @@ export class Scene_Map extends Scene_Base {
         elementIconContainer.textContent = "—";
     }
 
-    this.recruitWindow.open();
+    this.windowManager.openWindow(this.recruitWindow, { modal: true });
     this.setStatus("Recruit encountered.");
     SoundManager.beep(400, 100);
   }
@@ -1512,7 +1502,7 @@ export class Scene_Map extends Scene_Base {
    * @description Closes the recruit event.
    */
   closeRecruitEvent() {
-    this.recruitWindow.close();
+    this.windowManager.closeWindow(this.recruitWindow);
     this.setStatus("Exploration");
   }
 
@@ -1684,7 +1674,7 @@ renderElements(elements) {
    */
   openFormation() {
     if (this.sceneManager.currentScene() !== this) return;
-    this.formationWindow.open();
+    this.windowManager.openWindow(this.formationWindow, { modal: true });
     this.renderFormationGrid();
   }
 
@@ -1693,7 +1683,7 @@ renderElements(elements) {
    * @description Closes the formation window.
    */
   closeFormation() {
-    this.formationWindow.close();
+    this.windowManager.closeWindow(this.formationWindow);
   }
 
   /**
@@ -1787,7 +1777,7 @@ renderElements(elements) {
    */
   openInventory() {
     if (this.sceneManager.currentScene() !== this) return;
-    this.inventoryWindow.open();
+    this.windowManager.openWindow(this.inventoryWindow, { modal: false });
     this.refreshInventoryWindow();
   }
 
@@ -1796,7 +1786,7 @@ renderElements(elements) {
    * @description Closes the inventory window.
    */
   closeInventory() {
-    this.inventoryWindow.close();
+    this.windowManager.closeWindow(this.inventoryWindow);
   }
 
   /**
@@ -1907,7 +1897,7 @@ renderElements(elements) {
     this.inspectWindow.flavorEl.textContent = member.flavor || "—";
     this.inspectWindow.notesEl.textContent = "Row is determined by the 2×2 formation grid.";
 
-    this.inspectWindow.open();
+    this.windowManager.openWindow(this.inspectWindow, { modal: false });
     this.setStatus(`Inspecting ${member.name}`);
     this.logMessage(`[Inspect] ${member.name} – Lv${member.level}, ${this.partyRow(index)}, HP ${member.hp}/${member.maxHp}.`);
 
@@ -1923,7 +1913,7 @@ renderElements(elements) {
   closeInspect() {
     this.inspectWindow.equipmentListContainerEl.style.display = "none";
     this.inspectWindow.equipmentListEl.innerHTML = "";
-    this.inspectWindow.close();
+    this.windowManager.closeWindow(this.inspectWindow);
     this.setStatus("Exploration");
   }
 
@@ -2040,7 +2030,7 @@ renderElements(elements) {
       const otherMember = item.equippedMember;
       this.confirmWindow.titleEl.textContent = "Confirm Swap";
       this.confirmWindow.messageEl.textContent = `Swap ${item.name} from ${otherMember.name} to ${member.name}?`;
-      this.confirmWindow.open();
+      this.windowManager.openWindow(this.confirmWindow, { modal: true });
       this.confirmWindow.btnOk.onclick = () => {
         const currentItem = member.equipmentItem;
         otherMember.equipmentItem = currentItem;
@@ -2048,14 +2038,14 @@ renderElements(elements) {
         this.logMessage(
           `[Equip] ${member.name} swapped ${item.name} with ${otherMember.name}.`
         );
-        this.confirmWindow.close();
+        this.windowManager.closeWindow(this.confirmWindow);
         this.openInspect(member, this.party.members.indexOf(member)); // Refresh inspect window
         this.openEquipmentScreen(); // Re-open equipment list
         this.updateAll();
         SoundManager.beep(700, 150); // Swap sound
       };
       this.confirmWindow.btnCancel.onclick = () => {
-        this.confirmWindow.close();
+        this.windowManager.closeWindow(this.confirmWindow);
       };
     } else {
       doEquip();
