@@ -259,7 +259,9 @@ export class BattleManager {
     if (!isEnemy) {
          const parasiteDrain = battler.getPassiveValue("PARASITE");
          if (parasiteDrain > 0) {
-             const targetIndex = index % 2 === 0 ? index + 1 : index - 1;
+             // Target the ally in the same column (Front <-> Back swap)
+             // 0 <-> 2, 1 <-> 3
+             const targetIndex = (index + 2) % 4;
              if (targetIndex >= 0 && targetIndex < 4) {
                  const target = this.party.members[targetIndex];
                  if (target && target.hp > 0) {
@@ -331,6 +333,18 @@ export class BattleManager {
                  let skillDmg = Math.round(eval(formula) * boost);
                  if (skillDmg < 1) skillDmg = 1;
 
+                 // SHATTER PASSIVE LOGIC
+                 const shatterBonus = battler.getPassiveValue("SHATTER");
+                 if (shatterBonus > 0) {
+                     // Check if target is a Skeleton (by ID or some tag. Using ID includes for now)
+                     // If we want generic, we might need 'type' or 'race' in actor data.
+                     // For now, check if name contains Skeleton or Bone Knight
+                     if (target.name.toLowerCase().includes("skeleton") || target.name.toLowerCase().includes("bone knight")) {
+                         skillDmg *= shatterBonus;
+                         events.push({ type: 'info', msg: `[Passive] Shatter! Damage multiplied.` });
+                     }
+                 }
+
                  // Apply damage immediately
                  const hpBefore = target.hp;
                  target.hp = Math.max(0, target.hp - skillDmg);
@@ -344,7 +358,105 @@ export class BattleManager {
                      hpAfter: target.hp,
                      msg: `  ${target.name} takes ${skillDmg} damage.`
                  });
+               } else if (effect.type === "hp_drain") {
+                 const formula = effect.formula.replace("a.level", battler.level);
+                 let skillDmg = Math.round(eval(formula) * boost);
+                 if (skillDmg < 1) skillDmg = 1;
+
+                 const hpBeforeTarget = target.hp;
+                 target.hp = Math.max(0, target.hp - skillDmg);
+
+                 const drainAmt = Math.round(skillDmg * (effect.drainPct || 0.5));
+                 const hpBeforeSource = battler.hp;
+                 battler.hp = Math.min(battler.maxHp, battler.hp + drainAmt);
+
+                 events.push({
+                     type: 'damage',
+                     battler: battler,
+                     target: target,
+                     value: skillDmg,
+                     hpBefore: hpBeforeTarget,
+                     hpAfter: target.hp,
+                     msg: `  ${target.name} takes ${skillDmg} damage (Drain).`
+                 });
+
+                 events.push({
+                     type: 'heal',
+                     battler: battler,
+                     value: drainAmt,
+                     hpBefore: hpBeforeSource,
+                     hpAfter: battler.hp,
+                     msg: `  ${battler.name} drains ${drainAmt} HP.`
+                 });
+
+                 // BLOOD COURT PASSIVE (Overheal share)
+                 if (!isEnemy) {
+                    const bloodCourt = battler.getPassiveValue("BLOOD_COURT");
+                    if (bloodCourt > 0 && battler.hp === battler.maxHp) {
+                        // Just share a flat amount or the overflow?
+                        // Let's say if we are at max HP, we share the healing amount to others.
+                        // Or just "Excess healing flows to party".
+                        // Logic: calculate potential healing vs actual.
+                        // Actually, simpler: if at maxHP, heal teammates by 'value' or split drainAmt
+                        const shareAmount = Math.max(1, Math.floor(drainAmt / 2));
+                        const allies = this.party.members.slice(0, 4).filter(m => m !== battler && m.hp > 0);
+                        allies.forEach(ally => {
+                             ally.hp = Math.min(ally.maxHp, ally.hp + shareAmount);
+                        });
+                        if (allies.length > 0) {
+                             events.push({ type: 'info', msg: `[Passive] Blood Court shares ${shareAmount} HP to allies.` });
+                        }
+                    }
+                 }
+
+               } else if (effect.type === "hp_heal") {
+                    const formula = effect.formula.replace("a.level", battler.level).replace("a.maxHp", battler.maxHp);
+                    let heal = Math.round(eval(formula) * boost);
+                    if (heal < 0) heal = 0;
+
+                    // Healing targets (skill definition targets ally-any usually)
+                    // Wait, current logic only sets `target` to enemy or self implicitly above?
+                    // We need correct targeting for healing skills.
+                    // Existing logic: "Select Target" block selects enemy/party based on isEnemy.
+                    // This is a limitation of the current BattleManager. It assumes offense.
+                    // FIX: If skill is friendly, retarget.
+
+                    let realTarget = target;
+                    if (skill.target === 'ally-any' || skill.target === 'self') {
+                        if (skill.target === 'self') {
+                            realTarget = battler;
+                        } else {
+                            // Find lowest HP ally? Or random?
+                            const allies = isEnemy ? this.enemies : this.party.members.slice(0, 4);
+                            // Simple AI: lowest % HP
+                            let lowest = null;
+                            let minPct = 1.1;
+                            allies.forEach(a => {
+                                if (a.hp > 0) {
+                                    const pct = a.hp / a.maxHp;
+                                    if (pct < minPct) {
+                                        minPct = pct;
+                                        lowest = a;
+                                    }
+                                }
+                            });
+                            realTarget = lowest || battler;
+                        }
+                    }
+
+                    const hpBefore = realTarget.hp;
+                    realTarget.hp = Math.min(realTarget.maxHp, realTarget.hp + heal);
+
+                    events.push({
+                        type: 'heal',
+                        target: realTarget,
+                        value: heal,
+                        hpBefore: hpBefore,
+                        hpAfter: realTarget.hp,
+                        msg: `  ${realTarget.name} heals ${heal} HP.`
+                    });
                }
+
                if (effect.type === "add_status") {
                  const chance = (effect.chance || 1) * boost;
                  if (Math.random() < chance) {
@@ -370,6 +482,16 @@ export class BattleManager {
              const mult = this.elementMultiplier(battler.elements, target.elements);
              let dmg = Math.round(base * mult);
              dmg += battler.getPassiveValue("DEAL_DAMAGE_MOD");
+
+             // SHATTER PASSIVE CHECK FOR NORMAL ATTACK TOO
+             const shatterBonus = battler.getPassiveValue("SHATTER");
+             if (shatterBonus > 0) {
+                 if (target.name.toLowerCase().includes("skeleton") || target.name.toLowerCase().includes("bone knight")) {
+                     dmg *= shatterBonus;
+                     events.push({ type: 'info', msg: `[Passive] Shatter! Damage multiplied.` });
+                 }
+             }
+
              if (dmg < 1) dmg = 1;
 
              const hpBefore = target.hp;
@@ -481,4 +603,10 @@ export class SceneManager {
   previous() {
     return this._stack[this._stack.length - 1];
     }
+}
+
+if (typeof window !== 'undefined' && window.location.search.includes("test=true")) {
+    window.DataManager = DataManager;
+    window.BattleManager = BattleManager;
+    window.SceneManager = SceneManager;
 }

@@ -122,21 +122,50 @@ export class Scene_Battle extends Scene_Base {
     const actorTemplates = this.dataManager.actors;
 
     if (this.map.floorIndex === this.map.floors.length - 1) {
-      const bossHp = 40 + (depth - 3) * 5;
-      enemies.push(new Game_Battler({
+      const bossData = actorTemplates.find(a => a.id === "eternalWarden") || {
         name: "🌑 Eternal Warden",
         role: "Boss",
-        maxHp: bossHp,
-        elements: ["Black"],
-        skills: ["shadowClaw", "infernalPact"],
+        maxHp: 80,
+        elements: ["Black", "Red"],
+        skills: ["shadowClaw", "tornado"],
         gold: 100,
-        expGrowth: 10,
-      }, depth, true));
+        expGrowth: 10
+      };
+
+      enemies.push(new Game_Battler(bossData, depth, true));
     } else {
       const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
       const enemyCount = randInt(1, maxEnemies);
+
+      // Filter valid enemies for this depth
+      // Heuristic: Enemies with level <= depth + 1? Or specific lists?
+      // Let's use specific pools based on floor index (0-based)
+
+      let pool = [];
+      if (this.map.floorIndex === 0) { // Floor 1
+          pool = ["ooze", "bat"];
+      } else if (this.map.floorIndex === 1) { // Floor 2
+          pool = ["ooze", "bat", "wisp"];
+      } else if (this.map.floorIndex === 2) { // Floor 3
+          pool = ["wisp", "boneKnight", "bat"];
+      } else if (this.map.floorIndex === 3) { // Floor 4
+          pool = ["boneKnight", "wisp", "imp"]; // Imp as enemy too?
+      } else if (this.map.floorIndex === 4) { // Floor 5
+          pool = ["demon", "boneKnight", "crimsonLord"]; // Maybe rare crimson lord enemy?
+      } else {
+          pool = ["demon", "wisp", "boneKnight"];
+      }
+
+      // Filter out non-existent IDs and ensure they are valid templates
+      let validTemplates = actorTemplates.filter(a => pool.includes(a.id));
+
+      // Fallback if pool is empty or invalid
+      if (validTemplates.length === 0) {
+          validTemplates = actorTemplates.filter(a => ["ooze", "bat"].includes(a.id));
+      }
+
       for (let i = 0; i < enemyCount; i++) {
-        const tpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
+        const tpl = validTemplates[randInt(0, validTemplates.length - 1)];
         enemies.push(new Game_Battler(tpl, depth, true));
       }
     }
@@ -228,6 +257,9 @@ export class Scene_Battle extends Scene_Base {
                 if (event.source) {
                     await this.animateBattleHpGauge(event.source, event.hpBeforeSource, event.hpAfterSource);
                 }
+            } else if (event.type === 'heal' && event.target) {
+                // Animate heal
+                await this.animateBattleHpGauge(event.target, event.hpBefore, event.hpAfter);
 
             } else if (event.type === 'end') {
                 if (event.result === 'defeat') {
@@ -1343,8 +1375,58 @@ export class Scene_Map extends Scene_Base {
         `[Level] ${member.name} grows to Lv${result.newLevel}! HP +${result.hpGain}.`
       );
       SoundManager.beep(900, 150);
+
+      // EVOLUTION CHECK
+      if (member.evolutions && member.evolutions.length > 0) {
+          const evo = member.evolutions.find(e => member.level >= e.level);
+          if (evo) {
+              this.evolveBattler(member, evo.evolvesTo);
+          }
+      }
+
       this.updateParty();
     }
+  }
+
+  /**
+   * @method evolveBattler
+   * @description Evolves a battler into a new form.
+   * @param {Game_Battler} member - The member to evolve.
+   * @param {string} newId - The ID of the new actor form.
+   */
+  evolveBattler(member, newId) {
+      const newActorData = this.dataManager.actors.find(a => a.id === newId);
+      if (!newActorData) return;
+
+      const oldName = member.name;
+
+      // Preserve some state
+      const currentLevel = member.level;
+      const currentExp = member.xp;
+      const equipment = member.equipmentItem;
+      const index = this.party.members.indexOf(member);
+
+      if (index === -1) return;
+
+      // Create new battler
+      const newBattler = new Game_Battler(newActorData);
+      newBattler.level = currentLevel;
+      newBattler.xp = currentExp;
+      newBattler.equipmentItem = equipment;
+      // Adjust HP to new max HP but keep damage proportionate? Or full heal?
+      // Prompt says: "HP: Jumps from 15 to 35." implies max HP increase and likely full heal or proportional.
+      // Let's set HP to max for the "Evolution Moment".
+      newBattler.hp = newBattler.maxHp;
+
+      // Replace in party
+      this.party.members[index] = newBattler;
+
+      this.logMessage(`[EVOLUTION] ${oldName} is mutating into ${newBattler.name}!`);
+      this.logMessage(`[EVOLUTION] Stats increased significantly!`);
+
+      // Show confetti? (Visual only, maybe status message)
+      this.setStatus("EVOLUTION OCCURRED!");
+      SoundManager.beep(1000, 500); // Long beep
   }
 
   /**
@@ -1482,7 +1564,7 @@ export class Scene_Map extends Scene_Base {
    * @description Opens a recruit event.
    */
   openRecruitEvent() {
-    const availableCreatures = this.dataManager.actors.filter(creature => !creature.isEnemy);
+    const availableCreatures = this.dataManager.actors.filter(creature => !creature.isEnemy && creature.role !== 'Boss');
     if (availableCreatures.length === 0) {
       this.logMessage(this.dataManager.terms.recruit.no_one_here);
       return;

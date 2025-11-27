@@ -19,6 +19,15 @@ export const skills = {
             { type: 'hp_heal', formula: '4 + 1.5 * a.level' }
         ]
     },
+    tornado: {
+        id: 'tornado',
+        name: 'Tornado',
+        target: 'enemy-all',
+        element: 'Green',
+        effects: [
+            { type: 'hp_damage', formula: '10 + 1.5 * a.level' }
+        ]
+    },
 
     // Skeleton
     boneRush: {
@@ -51,7 +60,7 @@ export const skills = {
         ]
     },
 
-    // Demon
+    // Demon / Crimson Lord
     shadowClaw: {
         id: 'shadowClaw',
         name: 'Shadow Claw',
@@ -70,8 +79,33 @@ export const skills = {
             { type: 'add_status', status: 'berserk', chance: 1.0, duration: 3 }
         ]
     },
+    exsanguinate: {
+        id: 'exsanguinate',
+        name: 'Exsanguinate',
+        target: 'enemy-any',
+        element: 'Red',
+        effects: [
+            { type: 'hp_drain', formula: '8 + 1.5 * a.level', drainPct: 0.5 }
+        ]
+    },
 
-    // Example from prompt
+    // Other
+    wait: {
+        id: 'wait',
+        name: 'Wait',
+        target: 'self',
+        element: 'White',
+        effects: []
+    },
+    flameRebirth: {
+        id: 'flameRebirth',
+        name: 'Flame Rebirth',
+        target: 'self',
+        element: 'Red',
+        effects: [
+            { type: 'hp_heal', formula: 'a.maxHp' }
+        ]
+    },
     sleepMist: {
         id: 'sleepMist',
         name: 'Sleep Mist',

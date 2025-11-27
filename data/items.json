@@ -33,6 +33,28 @@
     }
   },
   {
+    "id": "rusted_iron_plate",
+    "name": "Rusted Iron Plate",
+    "type": "equipment",
+    "equipType": "Armor",
+    "maxHpBonus": 3,
+    "damageBonus": 0,
+    "cost": 15,
+    "icon": 6,
+    "description": "Heavy and corroded. +3 Max HP."
+  },
+  {
+    "id": "vampiric_dagger",
+    "name": "Vampiric Dagger",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "maxHpBonus": 0,
+    "damageBonus": 2,
+    "cost": 45,
+    "icon": 6,
+    "description": "Thirsty blade. +2 damage."
+  },
+  {
     "id": "silver_blade",
     "name": "Silver Blade",
     "type": "equipment",

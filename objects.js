@@ -374,3 +374,9 @@ export class Game_Map {
     }
   }
 }
+
+if (typeof window !== 'undefined' && window.location.search.includes("test=true")) {
+    window.Game_Battler = Game_Battler;
+    window.Game_Party = Game_Party;
+    window.Game_Map = Game_Map;
+}
