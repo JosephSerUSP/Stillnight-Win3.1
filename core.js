@@ -1,5 +1,5 @@
 /**
- * Generates a random integer within a given range.
+ * Generates a random integer within a given range (inclusive).
  * @param {number} min - The minimum value.
  * @param {number} max - The maximum value.
  * @returns {number} The random integer.
@@ -9,7 +9,7 @@ export function randInt(min, max) {
 }
 
 /**
- * Shuffles an array in place.
+ * Shuffles an array in place using the Fisher-Yates shuffle algorithm.
  * @param {Array} arr - The array to shuffle.
  * @returns {Array} The shuffled array.
  */
@@ -25,7 +25,7 @@ export function shuffleArray(arr) {
  * Determines the primary element(s) from an array of elements.
  * The primary element is the one that appears most frequently.
  * If there's a tie, all tied elements are returned.
- * @param {string[]} elements - The array of elements.
+ * @param {string[]} elements - The array of elements (e.g., ["Fire", "Water"]).
  * @returns {string[]} An array of the primary element(s).
  */
 export function getPrimaryElements(elements) {
@@ -44,9 +44,9 @@ export function getPrimaryElements(elements) {
 }
 
 /**
- * Converts an element to its ASCII representation.
- * @param {string} element - The element to convert.
- * @returns {string} The ASCII representation of the element.
+ * Converts an element name to its ASCII abbreviation representation.
+ * @param {string} element - The element name (e.g., "Red").
+ * @returns {string} The ASCII representation of the element (e.g., "(R)").
  */
 export function elementToAscii(element) {
   switch (element) {
@@ -60,8 +60,8 @@ export function elementToAscii(element) {
 }
 
 /**
- * Converts an element to its icon ID.
- * @param {string} element - The element to convert.
+ * Converts an element name to its corresponding icon ID.
+ * @param {string} element - The element name.
  * @returns {number} The icon ID of the element.
  */
 export function elementToIconId(element) {
@@ -81,7 +81,8 @@ export function elementToIconId(element) {
 }
 
 /**
- * Gets the background position style for an icon ID.
+ * Gets the background position style for a specific icon ID.
+ * Assumes a 10-column icon sheet with 12x12 icons.
  * @param {number} iconId - The icon ID (1-based).
  * @returns {string} The CSS background-position string.
  */
@@ -95,19 +96,20 @@ export function getIconStyle(iconId) {
 
 /**
  * @namespace Graphics
- * @description A utility class for accessing screen dimensions.
+ * @description A utility class for accessing global screen/container dimensions.
  */
 export const Graphics = {
   /**
+   * The container element where the game is rendered.
    * @type {HTMLElement}
    * @private
    */
   _container: null,
 
   /**
+   * Initializes the Graphics container by selecting the ".right-side" element.
    * @method _initialize
    * @private
-   * @description Initializes the Graphics container.
    */
   _initialize() {
     if (!this._container && typeof document !== 'undefined') {
@@ -116,7 +118,7 @@ export const Graphics = {
   },
 
   /**
-   * The width of the game container.
+   * Gets the width of the game container.
    * @type {number}
    */
   get width() {
@@ -125,7 +127,7 @@ export const Graphics = {
   },
 
   /**
-   * The height of the game container.
+   * Gets the height of the game container.
    * @type {number}
    */
   get height() {

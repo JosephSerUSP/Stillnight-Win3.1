@@ -1,66 +1,79 @@
 import { randInt, elementToAscii } from "./core.js";
 
 /**
- * The data manager for the game.
- * @class
+ * @class DataManager
+ * @description Central manager for loading and accessing game data.
+ * Loads static JSON data and dynamic JS data modules.
  */
 export class DataManager {
   /**
-   * The actor data.
-   * @type {Object}
+   * Creates a new DataManager instance.
    */
-  actors = null;
+  constructor() {
+    /**
+     * The actor data loaded from actors.json.
+     * @type {Object|null}
+     */
+    this.actors = null;
+
+    /**
+     * The element data loaded from elements.json.
+     * @type {Object|null}
+     */
+    this.elements = null;
+
+    /**
+     * The event data loaded from events.json.
+     * @type {Array|null}
+     */
+    this.events = null;
+
+    /**
+     * The floor data loaded from floors.json.
+     * @type {Array|null}
+     */
+    this.floors = null;
+
+    /**
+     * The item data loaded from items.json.
+     * @type {Array|null}
+     */
+    this.items = null;
+
+    /**
+     * The terms/strings data loaded from terms.json.
+     * @type {Object|null}
+     */
+    this.terms = null;
+
+    /**
+     * The skill data loaded from skills.js.
+     * @type {Object|null}
+     */
+    this.skills = null;
+
+    /**
+     * The passive data loaded from passives.js.
+     * @type {Object|null}
+     */
+    this.passives = null;
+
+    /**
+     * The starting party data loaded from party.js.
+     * @type {Object|null}
+     */
+    this.startingParty = null;
+
+    /**
+     * The animation data loaded from animations.js.
+     * @type {Object|null}
+     */
+    this.animations = null;
+  }
 
   /**
-   * The element data.
-   * @type {Object}
-   */
-  elements = null;
-
-  /**
-   * The event data.
-   * @type {Array}
-   */
-  events = null;
-
-  /**
-   * The floor data.
-   * @type {Array}
-   */
-  floors = null;
-
-  /**
-   * The item data.
-   * @type {Array}
-   */
-  items = null;
-
-  /**
-   * The terms data.
-   * @type {Object}
-   */
-  terms = null;
-
-  /**
-   * The skill data.
-   * @type {Object}
-   */
-  skills = null;
-
-  /**
-   * The passive data.
-   * @type {Object}
-   */
-  passives = null;
-
-  /**
-   * The starting party data.
-   * @type {Object}
-   */
-  startingParty = null;
-
-  /**
-   * Loads all the game data.
+   * Loads all game data from JSON and JS files.
+   * @async
    */
   async loadData() {
     const dataSources = {
@@ -111,15 +124,16 @@ export class DataManager {
  */
 export class SoundManager {
   /**
+   * The global AudioContext instance.
    * @private
    * @type {AudioContext}
    */
   static _audioCtx = null;
 
   /**
+   * Initializes the AudioContext if it hasn't been initialized yet.
    * @method _initialize
    * @private
-   * @description Initializes the AudioContext.
    */
   static _initialize() {
     if (!this._audioCtx && typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) {
@@ -128,8 +142,8 @@ export class SoundManager {
   }
 
   /**
+   * Plays a simple square wave beep sound.
    * @method beep
-   * @description Plays a simple square wave beep.
    * @param {number} [frequency=440] - The frequency of the beep in Hz.
    * @param {number} [duration=120] - The duration of the beep in ms.
    */
@@ -156,33 +170,70 @@ export class SoundManager {
 /**
  * @class BattleManager
  * @description Manages the state and flow of a single battle instance.
- * Refactored to support granular turn phases, enabling future player control.
- * The flow is now:
- * 1. startRound()
- * 2. getNextBattler()
- * 3. startTurn(battler) -> Events (Passives)
- * 4. getAIAction(battler) OR Player Input -> Action Object
- * 5. executeAction(action) -> Events (Damage, Status, Victory)
+ * Handles turn order, action execution, and victory/defeat conditions.
+ * The flow is:
+ * 1. startRound() - Initializes the turn queue.
+ * 2. getNextBattler() - Gets the next active battler.
+ * 3. startTurn(battler) - Processes start-of-turn effects (passives).
+ * 4. getAIAction(battler) - Generates an action for AI or auto-battle.
+ * 5. executeAction(action) - Resolves the action and returns events.
  */
 export class BattleManager {
   /**
+   * Creates a new BattleManager instance.
    * @param {import("./objects.js").Game_Party} party - The player's party.
-   * @param {import("./main.js").DataManager} dataManager - The game's data manager.
+   * @param {DataManager} dataManager - The game's data manager.
    */
   constructor(party, dataManager) {
+    /**
+     * The player's party.
+     * @type {import("./objects.js").Game_Party}
+     */
     this.party = party;
+
+    /**
+     * The global data manager.
+     * @type {DataManager}
+     */
     this.dataManager = dataManager;
+
+    /**
+     * The list of enemies in the current battle.
+     * @type {import("./objects.js").Game_Battler[]}
+     */
     this.enemies = [];
+
+    /**
+     * The current round number.
+     * @type {number}
+     */
     this.round = 0;
+
+    /**
+     * Whether the battle has finished.
+     * @type {boolean}
+     */
     this.isBattleFinished = false;
+
+    /**
+     * Whether victory has been achieved and is pending processing.
+     * @type {boolean}
+     */
     this.isVictoryPending = false;
+
+    /**
+     * The queue of battlers for the current turn.
+     * @type {Array}
+     */
     this.turnQueue = [];
   }
 
   /**
+   * Sets up a new battle with the given enemies.
    * @method setup
-   * @description Sets up a new battle.
    * @param {import("./objects.js").Game_Battler[]} enemies - The array of enemies for this battle.
+   * @param {number} tileX - The X coordinate on the map where the battle started.
+   * @param {number} tileY - The Y coordinate on the map where the battle started.
    */
   setup(enemies, tileX, tileY) {
     this.enemies = enemies;
@@ -195,11 +246,11 @@ export class BattleManager {
   }
 
   /**
+   * Calculates the damage multiplier based on elemental affinities.
    * @method elementMultiplier
-   * @description Calculates the damage multiplier based on elemental affinities.
    * @param {string[]} attackerElements - The elements of the attacker.
    * @param {string[]} defenderElements - The elements of the defender.
-   * @returns {number} The final damage multiplier.
+   * @returns {number} The final damage multiplier (e.g., 1.5 for weakness, 0.75 for resistance).
    */
   elementMultiplier(attackerElements, defenderElements) {
     let multiplier = 1;
@@ -233,19 +284,19 @@ export class BattleManager {
   }
 
   /**
+   * Gets the row name ("Front" or "Back") for a party member based on their index.
    * @method _partyRow
    * @private
-   * @description Gets the row of a party member.
    * @param {number} index - The index of the party member.
-   * @returns {string} The row of the party member.
+   * @returns {string} "Front" or "Back".
    */
   _partyRow(index) {
     return index <= 1 ? "Front" : "Back";
   }
 
   /**
+   * Initializes a new round of combat by creating a turn queue sorted by the default order.
    * @method startRound
-   * @description Initializes a new round of combat by creating a turn queue.
    */
   startRound() {
     if (this.isBattleFinished) return;
@@ -258,10 +309,10 @@ export class BattleManager {
   }
 
   /**
+   * Retrieves the next active participant from the turn queue.
+   * Skips units that are dead.
    * @method getNextBattler
-   * @description Retrieves the next active participant from the queue.
-   * Skips dead units.
-   * @returns {Object|null} The next battler context ({battler, index, isEnemy}) or null if round over.
+   * @returns {Object|null} The next battler context ({battler, index, isEnemy}) or null if the round is over.
    */
   getNextBattler() {
       if (this.isBattleFinished) return null;
@@ -274,8 +325,8 @@ export class BattleManager {
   }
 
   /**
+   * Processes start-of-turn effects for the battler (e.g., passive drains).
    * @method startTurn
-   * @description Processes start-of-turn effects for the battler.
    * @param {Object} battlerContext - The context returned by getNextBattler().
    * @returns {Array} List of events occurring at start of turn.
    */
@@ -320,10 +371,11 @@ export class BattleManager {
   }
 
   /**
+   * Returns a list of valid targets for the battler based on the specified scope.
    * @method getValidTargets
-   * @description Returns a list of valid targets for the battler.
    * @param {Object} battlerContext - The context of the battler.
-   * @returns {Array} List of valid targets (Game_Battler objects).
+   * @param {string} [scope='enemy'] - The target scope ('enemy', 'ally', 'self', etc.).
+   * @returns {import("./objects.js").Game_Battler[]} List of valid targets.
    */
   getValidTargets(battlerContext, scope = 'enemy') {
       const { isEnemy } = battlerContext;
@@ -354,11 +406,11 @@ export class BattleManager {
   }
 
   /**
+   * Factory method to create an action object.
    * @method createAction
-   * @description Factory method to create an action object.
    * @param {Object} battlerContext - The source of the action.
    * @param {string} type - The type of action ('attack', 'skill').
-   * @param {Game_Battler} target - The target of the action.
+   * @param {import("./objects.js").Game_Battler} target - The target of the action.
    * @param {Object} [options] - Additional options (e.g., skillId).
    * @returns {Object} The action object.
    */
@@ -372,10 +424,10 @@ export class BattleManager {
   }
 
   /**
+   * Determines the AI action for a battler (or auto-battle for player).
    * @method getAIAction
-   * @description Determines the AI action for a battler (or auto-battle for player).
    * @param {Object} battlerContext - The context of the battler.
-   * @returns {Object} An Action object.
+   * @returns {Object|null} An Action object, or null if no action can be taken.
    */
   getAIAction(battlerContext) {
       const { battler } = battlerContext;
@@ -415,10 +467,11 @@ export class BattleManager {
   }
 
   /**
+   * Executes the provided action and returns a list of resulting events.
+   * Handles damage calculation, status application, and event generation.
    * @method executeAction
-   * @description Executes the provided action and returns resulting events.
    * @param {Object} action - The action object {type, sourceContext, target, skillId}.
-   * @returns {Array} List of events.
+   * @returns {Array} List of events describing the outcome.
    */
   executeAction(action) {
       const events = [];
@@ -526,9 +579,9 @@ export class BattleManager {
   }
 
   /**
+   * Checks if the battle has ended (win or loss) and appends end events if so.
    * @method _checkBattleEnd
    * @private
-   * @description Checks if the battle has ended and appends end events.
    * @param {Array} events - The event list to append to.
    */
   _checkBattleEnd(events) {
@@ -551,21 +604,42 @@ export class BattleManager {
 /**
  * @class SceneManager
  * @description Manages the scene stack and the main game loop.
+ * Scenes are pushed onto a stack, and only the top scene is updated and rendered.
  */
 export class SceneManager {
   /**
+   * Creates a new SceneManager.
    * @param {HTMLElement} container - The container element for the game.
    */
   constructor(container) {
+    /**
+     * The DOM container for the game.
+     * @type {HTMLElement}
+     */
     this.container = container;
+
+    /**
+     * The stack of active scenes.
+     * @type {import("../scenes.js").Scene_Base[]}
+     * @private
+     */
     this._stack = [];
+
+    /**
+     * The currently active scene.
+     * @type {import("../scenes.js").Scene_Base|null}
+     * @private
+     */
     this._currentScene = null;
+
+    // Start the game loop
     this.requestUpdate();
   }
 
   /**
+   * The main game loop update function.
+   * Calls update() on the current scene and requests the next frame.
    * @method update
-   * @description The main game loop.
    */
   update() {
     if (this._currentScene) {
@@ -575,17 +649,18 @@ export class SceneManager {
   }
 
   /**
+   * Requests the next animation frame for the game loop.
    * @method requestUpdate
-   * @description Requests the next frame of the game loop.
    */
   requestUpdate() {
     requestAnimationFrame(this.update.bind(this));
   }
 
   /**
+   * Pushes a new scene onto the stack and starts it.
+   * Pauses the previous scene.
    * @method push
-   * @description Pushes a new scene onto the stack.
-   * @param {Scene_Base} scene - The scene to push.
+   * @param {import("../scenes.js").Scene_Base} scene - The scene to push.
    */
   push(scene) {
     if (this._currentScene) {
@@ -596,8 +671,9 @@ export class SceneManager {
   }
 
   /**
+   * Pops the current scene from the stack and stops it.
+   * Resumes the previous scene.
    * @method pop
-   * @description Pops the current scene from the stack.
    */
   pop() {
     if (this._currentScene) {
@@ -607,18 +683,18 @@ export class SceneManager {
   }
 
   /**
+   * Gets the currently active scene.
    * @method currentScene
-   * @description Gets the current scene.
-   * @returns {import("../scenes.js").Scene_Base} The current scene.
+   * @returns {import("../scenes.js").Scene_Base|null} The current scene.
    */
   currentScene() {
     return this._currentScene;
   }
 
   /**
+   * Gets the previous scene in the stack (the one below the current scene).
    * @method previous
-   * @description Gets the previous scene.
-   * @returns {import("../scenes.js").Scene_Base} The previous scene.
+   * @returns {import("../scenes.js").Scene_Base|undefined} The previous scene.
    */
   previous() {
     return this._stack[this._stack.length - 1];

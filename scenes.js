@@ -16,34 +16,49 @@ import { tooltip } from "./tooltip.js";
 
 /**
  * @class Scene_Base
- * @description The base class for all scenes.
+ * @description The abstract base class for all game scenes.
+ * Manages the data and window managers, and defines the lifecycle methods.
  */
 class Scene_Base {
   /**
+   * Creates a new Scene_Base.
    * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
    * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
    */
   constructor(dataManager, windowManager) {
+    /**
+     * The global data manager.
+     * @type {import("./managers.js").DataManager}
+     */
     this.dataManager = dataManager;
+
+    /**
+     * The global window manager.
+     * @type {import("./windows.js").WindowManager}
+     */
     this.windowManager = windowManager;
   }
 
   /**
+   * Starts the scene. Called when the scene is pushed onto the stack.
    * @method start
-   * @description Starts the scene.
    */
   start() {
     // To be implemented by subclasses
   }
 
   /**
+   * Updates the scene. Called every frame by the scene manager.
    * @method update
-   * @description Updates the scene.
    */
   update() {
     // To be implemented by subclasses
   }
 
+  /**
+   * Stops the scene. Called when the scene is popped from the stack.
+   * @method stop
+   */
   stop() {
     // To be implemented by subclasses
   }
@@ -51,11 +66,12 @@ class Scene_Base {
 
 /**
  * @class Scene_Boot
- * @description The scene class for the boot sequence.
+ * @description The initial scene that loads game data and transitions to the title or map scene.
  * @extends Scene_Base
  */
 export class Scene_Boot extends Scene_Base {
     /**
+     * Creates a new Scene_Boot.
      * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
      * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
      * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
@@ -66,8 +82,9 @@ export class Scene_Boot extends Scene_Base {
     }
 
     /**
+     * Loads all necessary data and then pushes the initial game scene (Scene_Map).
      * @method start
-     * @description Starts the scene.
+     * @async
      */
     async start() {
         await this.dataManager.loadData();
@@ -77,20 +94,22 @@ export class Scene_Boot extends Scene_Base {
 
 /**
  * @class Scene_Battle
- * @description The scene class for battles.
+ * @description Handles the battle logic and UI.
+ * Connects the BattleManager to the Window_Battle and manages user interaction during combat.
  * @extends Scene_Base
  */
 export class Scene_Battle extends Scene_Base {
   /**
-   * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
-   * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
-   * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
+   * Creates a new Scene_Battle.
+   * @param {import("./managers.js").DataManager} dataManager - The data manager.
+   * @param {import("./managers.js").SceneManager} sceneManager - The scene manager.
+   * @param {import("./windows.js").WindowManager} windowManager - The window manager.
    * @param {import("./objects.js").Game_Party} party - The player's party.
-   * @param {import("./managers.js").BattleManager} battleManager - The battle manager instance.
-   * @param {import("./windows.js").WindowLayer} windowLayer - The window layer instance.
-   * @param {import("./objects.js").Game_Map} map - The game map instance.
-   * @param {number} tileX - The x-coordinate of the tile the battle is on.
-   * @param {number} tileY - The y-coordinate of the tile the battle is on.
+   * @param {import("./managers.js").BattleManager} battleManager - The battle manager.
+   * @param {import("./windows.js").WindowLayer} windowLayer - The window layer to attach the battle window to.
+   * @param {import("./objects.js").Game_Map} map - The game map.
+   * @param {number} tileX - The X coordinate of the battle on the map.
+   * @param {number} tileY - The Y coordinate of the battle on the map.
    */
   constructor(dataManager, sceneManager, windowManager, party, battleManager, windowLayer, map, tileX, tileY) {
     super(dataManager, windowManager);
@@ -112,8 +131,8 @@ export class Scene_Battle extends Scene_Base {
   }
 
   /**
+   * Initializes the battle, spawns enemies, and shows the battle window.
    * @method start
-   * @description Starts the scene.
    */
   start() {
     const floor = this.map.floors[this.map.floorIndex];
@@ -159,8 +178,8 @@ export class Scene_Battle extends Scene_Base {
   }
 
   /**
+   * Closes the battle window and restores the previous mode label.
    * @method stop
-   * @description Stops the scene.
    */
   stop() {
     this.windowManager.close(this.battleWindow);
@@ -168,8 +187,8 @@ export class Scene_Battle extends Scene_Base {
   }
 
   /**
+   * Renders the battle interface using the BattleManager's state.
    * @method renderBattleAscii
-   * @description Renders the battle screen by creating and positioning DOM elements.
    */
   renderBattleAscii() {
     if (!this.battleManager) return;
@@ -178,10 +197,10 @@ export class Scene_Battle extends Scene_Base {
   }
 
   /**
+   * Resolves a full round of battle (turns for all participants).
+   * Orchestrates the turn flow: Next Battler -> Start Turn -> Action -> Execute -> Animate.
    * @method resolveBattleRound
-   * @description Resolves a round of battle.
-   * Refactored to use the granular BattleManager API (startRound -> getNextBattler -> startTurn -> executeAction).
-   * This structure supports future player input by isolating the "Plan Action" step.
+   * @async
    */
   async resolveBattleRound() {
     if (!this.battleManager || this.battleManager.isBattleFinished || this.battleBusy) return;
@@ -241,8 +260,9 @@ export class Scene_Battle extends Scene_Base {
   }
 
   /**
+   * Animates a sequence of battle events (damage, healing, messages).
    * @method animateEvents
-   * @description Helper to animate a list of battle events.
+   * @async
    * @param {Array} events - The list of events to animate.
    */
   async animateEvents(events) {
@@ -304,9 +324,8 @@ export class Scene_Battle extends Scene_Base {
   }
 
   /**
+   * Applies passive effects that trigger after a battle ends (e.g., healing).
    * @method applyPostBattlePassives
-   * @description This is an example of a passive skill being triggered.
-   * It is called after a battle victory.
    */
   applyPostBattlePassives() {
     this.party.members.forEach((member) => {
@@ -328,8 +347,8 @@ export class Scene_Battle extends Scene_Base {
   }
 
   /**
+   * Applies passive effects that trigger at the start of a battle.
    * @method applyBattleStartPassives
-   * @description Applies passive skills that trigger at the start of battle.
    */
   applyBattleStartPassives() {
     this.party.members.forEach((member) => {
@@ -349,8 +368,8 @@ export class Scene_Battle extends Scene_Base {
   }
 
   /**
+   * Attempts to flee from the battle based on party stats.
    * @method attemptFlee
-   * @description Attempts to flee from battle.
    */
   attemptFlee() {
     if (Math.random() < this.sceneManager.previous().getFleeChance()) {
@@ -362,8 +381,8 @@ export class Scene_Battle extends Scene_Base {
   }
 
   /**
+   * Handles the victory condition, awarding rewards and closing the battle.
    * @method onBattleVictoryClick
-   * @description Handles the click of the victory button.
    */
   onBattleVictoryClick() {
     if (!this.battleManager || !this.battleManager.isVictoryPending) return;
@@ -403,8 +422,8 @@ export class Scene_Battle extends Scene_Base {
   }
 
   /**
+   * Removes the enemy marker from the map after a victory.
    * @method clearEnemyTileAfterBattle
-   * @description Clears the enemy tile after a battle.
    */
   clearEnemyTileAfterBattle() {
     if (!this.battleManager) return;
@@ -418,10 +437,11 @@ export class Scene_Battle extends Scene_Base {
   }
 
   /**
+   * Animates a specific battler's HP gauge in the UI.
    * @method animateBattleHpGauge
-   * @description Animates the battle HP gauge.
-   * @param {Game_Battler} battler - The battler whose HP gauge to animate.
-   * @param {number} oldHp - The old HP of the battler.
+   * @param {import("./objects.js").Game_Battler} battler - The battler whose HP gauge to animate.
+   * @param {number} startHp - The starting HP value.
+   * @param {number} endHp - The ending HP value.
    * @returns {Promise} A promise that resolves when the animation is complete.
    */
   animateBattleHpGauge(battler, startHp, endHp) {
@@ -486,10 +506,10 @@ export class Scene_Battle extends Scene_Base {
   }
 
   /**
+   * Applies a visual animation effect (like flashing or shaking) to a battler.
    * @method animateBattler
-   * @description Applies a temporary animation to a battler's name element.
-   * @param {Game_Battler} battler - The battler to animate.
-   * @param {string} animationType - The type of animation ('flash', 'shake', etc.).
+   * @param {import("./objects.js").Game_Battler} battler - The battler to animate.
+   * @param {string} animationType - The type of animation ('flash', 'shake').
    */
   animateBattler(battler, animationType) {
     // Find unique ID
@@ -536,10 +556,10 @@ export class Scene_Battle extends Scene_Base {
   }
 
   /**
+   * Animates the battler's name (e.g., text wobble) to indicate activity or damage.
    * @method animateBattlerName
-   * @description Animates the name of a battler.
-   * @param {Game_Battler} battler - The battler whose name to animate.
-   * @returns {Promise} A promise that resolves when the animation is complete.
+   * @param {import("./objects.js").Game_Battler} battler - The battler.
+   * @returns {Promise} A promise resolving when the animation finishes.
    */
   animateBattlerName(battler) {
     return new Promise((resolve) => {
@@ -593,10 +613,11 @@ export class Scene_Battle extends Scene_Base {
   }
 
   /**
+   * Plays a complex, data-driven animation on a target battler.
    * @method playAnimation
-   * @description Plays a data-driven animation on a target.
-   * @param {Game_Battler} target - The target of the animation.
-   * @param {string} animationId - The ID of the animation to play.
+   * @param {import("./objects.js").Game_Battler} target - The target battler.
+   * @param {string} animationId - The ID of the animation in data/animations.js.
+   * @returns {Promise} A promise resolving when the animation finishes.
    */
   playAnimation(target, animationId) {
        return new Promise((resolve) => {
@@ -727,16 +748,17 @@ export class Scene_Battle extends Scene_Base {
 
 /**
  * @class Scene_Shop
- * @description The scene class for shops.
+ * @description Handles the shop interaction logic.
  * @extends Scene_Base
  */
 export class Scene_Shop extends Scene_Base {
     /**
-     * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
-     * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
-     * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
+     * Creates a new Scene_Shop.
+     * @param {import("./managers.js").DataManager} dataManager - The data manager.
+     * @param {import("./managers.js").SceneManager} sceneManager - The scene manager.
+     * @param {import("./windows.js").WindowManager} windowManager - The window manager.
      * @param {import("./objects.js").Game_Party} party - The player's party.
-     * @param {import("./windows.js").WindowLayer} windowLayer - The window layer instance.
+     * @param {import("./windows.js").WindowLayer} windowLayer - The window layer to attach the shop window to.
      */
     constructor(dataManager, sceneManager, windowManager, party, windowLayer) {
         super(dataManager, windowManager);
@@ -752,8 +774,8 @@ export class Scene_Shop extends Scene_Base {
     }
 
     /**
+     * Initializes the shop content and pushes the shop window.
      * @method start
-     * @description Starts the scene.
      */
     start() {
         this.shopWindow.setup(
@@ -768,8 +790,8 @@ export class Scene_Shop extends Scene_Base {
     }
 
     /**
+     * Closes the shop window.
      * @method stop
-     * @description Stops the scene.
      */
     stop() {
         this.windowManager.close(this.shopWindow);
@@ -777,8 +799,8 @@ export class Scene_Shop extends Scene_Base {
     }
 
     /**
+     * Handles closing the shop and returning to the previous scene.
      * @method closeShop
-     * @description Closes the shop.
      */
     closeShop() {
         this.sceneManager.pop();
@@ -788,8 +810,8 @@ export class Scene_Shop extends Scene_Base {
     }
 
     /**
+     * Logic for purchasing an item.
      * @method buyItem
-     * @description Buys an item from the shop.
      * @param {string} itemId - The ID of the item to buy.
      */
     buyItem(itemId) {
@@ -816,18 +838,16 @@ export class Scene_Shop extends Scene_Base {
 
 /**
  * @class Scene_Map
- * @description The main scene for map exploration. This class is currently a "God Class"
- * that handles exploration, battles, shops, and more. The long-term goal is to refactor
- * this class into a more specialized Scene_Map that only handles exploration, with other
- * systems (battle, shop, etc.) being moved into their own dedicated scenes and managers
- * as outlined in the design document.
+ * @description The main scene for exploration. Currently acts as a central hub
+ * handling map logic, UI creation, and delegation to sub-scenes like Battle and Shop.
  * @extends Scene_Base
  */
 export class Scene_Map extends Scene_Base {
   /**
-   * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
-   * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
-   * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
+   * Creates a new Scene_Map.
+   * @param {import("./managers.js").DataManager} dataManager - The data manager.
+   * @param {import("./managers.js").SceneManager} sceneManager - The scene manager.
+   * @param {import("./windows.js").WindowManager} windowManager - The window manager.
    */
   constructor(dataManager, sceneManager, windowManager) {
     super(dataManager, windowManager);
@@ -892,6 +912,11 @@ export class Scene_Map extends Scene_Base {
     );
   }
 
+  /**
+   * Generates the static HTML structure for the game UI.
+   * Note: This moves the core UI layout out of index.html.
+   * @method createUI
+   */
   createUI() {
     const gameContainer = document.getElementById("game-container");
     gameContainer.innerHTML = `
@@ -1000,16 +1025,16 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Starts the map scene by initiating a new run.
    * @method start
-   * @description Starts the scene.
    */
   start() {
     this.startNewRun();
   }
 
   /**
+   * Resets game state and starts a fresh dungeon run.
    * @method startNewRun
-   * @description Starts a new game run.
    */
   startNewRun() {
     if (this.sceneManager.currentScene() !== this) return;
@@ -1033,8 +1058,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Caches references to DOM elements created in createUI.
    * @method getDomElements
-   * @description Gets all the DOM elements needed for the scene.
    */
   getDomElements() {
     this.explorationGridEl = document.getElementById("exploration-grid");
@@ -1059,8 +1084,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Sets up global event listeners for the map scene.
    * @method addEventListeners
-   * @description Adds event listeners to the DOM elements.
    */
   addEventListeners() {
     this.btnNewRun.addEventListener("click", this.startNewRun.bind(this));
@@ -1076,8 +1101,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Handles keyboard input for player movement.
    * @method onKeyDown
-   * @description Handles keydown events.
    * @param {KeyboardEvent} e - The keyboard event.
    */
   onKeyDown(e) {
@@ -1115,10 +1140,10 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Attempts to move the player by the given delta.
    * @method movePlayer
-   * @description Moves the player on the map.
-   * @param {number} dx - The change in the x-coordinate.
-   * @param {number} dy - The change in the y-coordinate.
+   * @param {number} dx - X delta.
+   * @param {number} dy - Y delta.
    */
   movePlayer(dx, dy) {
     const newX = this.map.playerX + dx;
@@ -1140,8 +1165,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Appends a message to the event log.
    * @method logMessage
-   * @description Logs a message to the event log.
    * @param {string} msg - The message to log.
    */
   logMessage(msg) {
@@ -1150,8 +1175,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Updates the status bar message.
    * @method setStatus
-   * @description Sets the status message.
    * @param {string} msg - The status message.
    */
   setStatus(msg) {
@@ -1159,8 +1184,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Triggers a full update of all UI components.
    * @method updateAll
-   * @description Updates all the UI elements.
    */
   updateAll() {
     this.updateGrid();
@@ -1174,8 +1199,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Re-renders the map grid based on current state (fog, player pos, etc).
    * @method updateGrid
-   * @description Updates the exploration grid.
    */
   updateGrid() {
     const floor = this.map.floors[this.map.floorIndex];
@@ -1245,8 +1270,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Updates the floor title and depth labels.
    * @method updateCardHeader
-   * @description Updates the card header.
    */
   updateCardHeader() {
     const floor = this.map.floors[this.map.floorIndex];
@@ -1260,8 +1285,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Updates the side list of floor cards.
    * @method updateCardList
-   * @description Updates the card list.
    */
   updateCardList() {
     this.cardListEl.innerHTML = "";
@@ -1294,8 +1319,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Updates the party status panel.
    * @method updateParty
-   * @description Updates the party display.
    */
   updateParty() {
     this.partyGridEl.innerHTML = "";
@@ -1357,13 +1382,13 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Animates a smooth transition for the HP bar width.
    * @method animateHpGauge
-   * @description Animates the HP gauge.
-   * @param {HTMLElement} element - The HP gauge element.
-   * @param {number} startHp - The starting HP.
-   * @param {number} endHp - The ending HP.
-   * @param {number} maxHp - The maximum HP.
-   * @param {number} duration - The duration of the animation.
+   * @param {HTMLElement} element - The HP bar element.
+   * @param {number} startHp - Previous HP.
+   * @param {number} endHp - Current HP.
+   * @param {number} maxHp - Max HP.
+   * @param {number} duration - Animation duration in ms.
    */
   animateHpGauge(element, startHp, endHp, maxHp, duration) {
     const startTime = performance.now();
@@ -1385,15 +1410,9 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
-   * @method animateBattleHpGauge
-   * @description Animates the battle HP gauge.
-   * @param {Game_Battler} battler - The battler whose HP gauge to animate.
-   * @param {number} oldHp - The old HP of the battler.
-   * @returns {Promise} A promise that resolves when the animation is complete.
-   */
-  /**
+   * Handles interaction when clicking on a map tile.
+   * Manages movement, collisions, and triggering events (battles, shops, etc).
    * @method onTileClick
-   * @description Handles tile clicks.
    * @param {MouseEvent} e - The click event.
    */
   onTileClick(e) {
@@ -1474,8 +1493,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Descends to the next floor if available.
    * @method descendStairs
-   * @description Descends to the next floor.
    */
   descendStairs() {
     if (this.map.floorIndex + 1 >= this.map.floors.length) {
@@ -1504,8 +1523,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Debug command to reveal the entire map.
    * @method revealAllFloors
-   * @description Reveals all floors.
    */
   revealAllFloors() {
     if (this.sceneManager.currentScene() !== this) return;
@@ -1523,10 +1542,10 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
-   * @method openBattle
-   * @description Opens the battle screen.
-   * @param {number} tileX - The x-coordinate of the tile the battle is on.
-   * @param {number} tileY - The y-coordinate of the tile the battle is on.
+   * Adds XP to a member and handles level-up logging.
+   * @method gainXp
+   * @param {import("./objects.js").Game_Battler} member - The member to give XP to.
+   * @param {number} amount - The amount of XP.
    */
   gainXp(member, amount) {
     const result = member.gainXp(amount);
@@ -1540,8 +1559,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Applies passive effects triggered by movement (e.g., regeneration).
    * @method applyMovePassives
-   * @description Applies passive skills that trigger on movement.
    */
   applyMovePassives() {
     this.party.members.forEach((member) => {
@@ -1559,9 +1578,9 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Calculates the party's chance to flee from battle.
    * @method getFleeChance
-   * @description Gets the chance to flee from battle.
-   * @returns {number} The chance to flee from battle.
+   * @returns {number} The chance (0-1).
    */
   getFleeChance() {
     let baseChance = 0.5;
@@ -1572,8 +1591,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Opens the shrine event window.
    * @method openShrineEvent
-   * @description Opens a shrine event.
    */
   openShrineEvent() {
     if (this.dataManager.events.length === 0) {
@@ -1601,9 +1620,9 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Applies the outcome of a shrine event choice.
    * @method applyEventEffect
-   * @description Applies the effect of an event.
-   * @param {Object} effect - The effect to apply.
+   * @param {Object} effect - The effect object.
    */
   applyEventEffect(effect) {
     switch (effect.type) {
@@ -1661,8 +1680,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Closes the event window.
    * @method closeEvent
-   * @description Closes the event window.
    */
   closeEvent() {
     this.windowManager.close(this.eventWindow);
@@ -1670,8 +1689,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Opens the recruit event window.
    * @method openRecruitEvent
-   * @description Opens a recruit event.
    */
   openRecruitEvent() {
     const availableCreatures = this.dataManager.actors.filter(creature => !creature.isEnemy);
@@ -1776,8 +1795,8 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Closes the recruit event window.
    * @method closeRecruitEvent
-   * @description Closes the recruit event.
    */
   closeRecruitEvent() {
     this.windowManager.close(this.recruitWindow);
@@ -1785,9 +1804,9 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Clears a tile of a specific event character.
    * @method clearEventTile
-   * @description Clears the event tile.
-   * @param {string} char - The character of the tile to clear.
+   * @param {string} char - The map character to remove.
    */
   clearEventTile(char) {
     const f = this.map.floors[this.map.floorIndex];
@@ -1799,9 +1818,9 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Logic to recruit a member or offer replacement if party is full.
    * @method attemptRecruit
-   * @description Attempts to recruit a new party member.
-   * @param {Object} recruit - The recruit to attempt to recruit.
+   * @param {Object} recruit - The recruit data.
    */
   attemptRecruit(recruit) {
     if (this.party.members.length < this.party.MAX_MEMBERS) {
@@ -1838,10 +1857,10 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Replaces an existing party member with a new recruit.
    * @method replaceMemberWithRecruit
-   * @description Replaces a party member with a new recruit.
-   * @param {number} index - The index of the party member to replace.
-   * @param {Object} recruit - The new recruit.
+   * @param {number} index - Index of member to replace.
+   * @param {Object} recruit - The new recruit data.
    */
   replaceMemberWithRecruit(index, recruit) {
     const replaced = this.party.members[index];
@@ -1857,10 +1876,10 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Formats a skill name with its elemental icon.
    * @method formatSkillName
-   * @description Formats the name of a skill.
-   * @param {string} skillId - The ID of the skill to format.
-   * @returns {string} The formatted skill name.
+   * @param {string} skillId - The skill ID.
+   * @returns {string} The formatted HTML string.
    */
   formatSkillName(skillId) {
       const skill = this.dataManager.skills[skillId];
@@ -1870,10 +1889,10 @@ export class Scene_Map extends Scene_Base {
   }
 
 /**
+ * Creates a DOM element representing an icon for a set of elements.
  * @method createElementIcon
- * @description Creates an element icon.
- * @param {string[]} elements - The elements to create an icon for.
- * @returns {HTMLElement} The element icon.
+ * @param {string[]} elements - The elements.
+ * @returns {HTMLElement} The icon container element.
  */
 createElementIcon(elements) {
     const primaryElements = getPrimaryElements(elements);
@@ -1916,10 +1935,10 @@ createElementIcon(elements) {
 }
 
 /**
+ * Renders a row of element icons.
  * @method renderElements
- * @description Renders the elements.
- * @param {string[]} elements - The elements to render.
- * @returns {HTMLElement} The rendered elements.
+ * @param {string[]} elements - The elements.
+ * @returns {HTMLElement} The container element.
  */
 renderElements(elements) {
     const container = document.createElement('div');
@@ -1937,18 +1956,18 @@ renderElements(elements) {
 }
 
   /**
+   * Determines if a party member is in the "Front" or "Back" row.
    * @method partyRow
-   * @description Gets the row of a party member.
-   * @param {number} index - The index of the party member.
-   * @returns {string} The row of the party member.
+   * @param {number} index - Member index.
+   * @returns {string} "Front" or "Back".
    */
   partyRow(index) {
     return index <= 1 ? "Front" : "Back";
   }
 
   /**
+   * Opens the formation management window.
    * @method openFormation
-   * @description Opens the formation window.
    */
   openFormation() {
     if (this.sceneManager.currentScene() !== this) return;
@@ -1957,16 +1976,16 @@ renderElements(elements) {
   }
 
   /**
+   * Closes the formation window.
    * @method closeFormation
-   * @description Closes the formation window.
    */
   closeFormation() {
     this.windowManager.close(this.formationWindow);
   }
 
   /**
+   * Renders the interactive grid for formation dragging.
    * @method renderFormationGrid
-   * @description Renders the formation grid.
    */
   renderFormationGrid() {
     const grid = this.formationWindow.gridEl;
@@ -1995,9 +2014,9 @@ renderElements(elements) {
   }
 
   /**
+   * Handles start of dragging a formation slot.
    * @method onFormationDragStart
-   * @description Handles the drag start event for the formation grid.
-   * @param {DragEvent} e - The drag event.
+   * @param {DragEvent} e
    */
   onFormationDragStart(e) {
     this.draggedIndex = parseInt(e.target.dataset.index, 10);
@@ -2005,9 +2024,9 @@ renderElements(elements) {
   }
 
   /**
+   * Handles dragging over a formation slot.
    * @method onFormationDragOver
-   * @description Handles the drag over event for the formation grid.
-   * @param {DragEvent} e - The drag event.
+   * @param {DragEvent} e
    */
   onFormationDragOver(e) {
     e.preventDefault();
@@ -2018,9 +2037,9 @@ renderElements(elements) {
   }
 
   /**
+   * Handles dropping a formation slot.
    * @method onFormationDrop
-   * @description Handles the drop event for the formation grid.
-   * @param {DragEvent} e - The drag event.
+   * @param {DragEvent} e
    */
   onFormationDrop(e) {
     e.preventDefault();
@@ -2039,9 +2058,9 @@ renderElements(elements) {
   }
 
   /**
+   * Handles end of dragging a formation slot.
    * @method onFormationDragEnd
-   * @description Handles the drag end event for the formation grid.
-   * @param {DragEvent} e - The drag event.
+   * @param {DragEvent} e
    */
   onFormationDragEnd(e) {
     document
@@ -2050,8 +2069,8 @@ renderElements(elements) {
   }
 
   /**
+   * Opens the inventory window.
    * @method openInventory
-   * @description Opens the inventory window.
    */
   openInventory() {
     if (this.sceneManager.currentScene() !== this) return;
@@ -2060,16 +2079,16 @@ renderElements(elements) {
   }
 
   /**
+   * Closes the inventory window.
    * @method closeInventory
-   * @description Closes the inventory window.
    */
   closeInventory() {
     this.windowManager.close(this.inventoryWindow);
   }
 
   /**
+   * Refreshes the content of the inventory window.
    * @method refreshInventoryWindow
-   * @description Refreshes the inventory window.
    */
   refreshInventoryWindow() {
     this.inventoryWindow.refresh(
@@ -2080,10 +2099,10 @@ renderElements(elements) {
   }
 
   /**
+   * Initiates the use of an item from the inventory.
    * @method useItem
-   * @description Uses an item from the inventory.
-   * @param {Object} item - The item to use.
-   * @param {number} index - The index of the item in the inventory.
+   * @param {Object} item - The item.
+   * @param {number} index - Index in inventory.
    */
   useItem(item, index) {
     this.inventoryWindow.showTargetSelection(this.party.members, (memberIndex) => {
@@ -2092,11 +2111,11 @@ renderElements(elements) {
   }
 
   /**
+   * Applies an item's effect to a party member.
    * @method applyItemToMember
-   * @description Applies an item to a party member.
-   * @param {Object} item - The item to apply.
-   * @param {number} itemIndex - The index of the item in the inventory.
-   * @param {number} memberIndex - The index of the party member.
+   * @param {Object} item - The item.
+   * @param {number} itemIndex - Index in inventory.
+   * @param {number} memberIndex - Index of target member.
    */
   applyItemToMember(item, itemIndex, memberIndex) {
     const member = this.party.members[memberIndex];
@@ -2119,10 +2138,10 @@ renderElements(elements) {
   }
 
   /**
+   * Discards an item from the inventory.
    * @method discardItem
-   * @description Discards an item from the inventory.
-   * @param {Object} item - The item to discard.
-   * @param {number} index - The index of the item in the inventory.
+   * @param {Object} item - The item.
+   * @param {number} index - Index in inventory.
    */
   discardItem(item, index) {
     this.party.inventory.splice(index, 1);
@@ -2133,10 +2152,10 @@ renderElements(elements) {
   }
 
   /**
+   * Opens the inspection window for a specific party member.
    * @method openInspect
-   * @description Opens the inspect window.
-   * @param {Game_Battler} member - The party member to inspect.
-   * @param {number} index - The index of the party member.
+   * @param {import("./objects.js").Game_Battler} member - The member to inspect.
+   * @param {number} index - The member's index.
    */
   openInspect(member, index) {
     this.inspectWindow.member = member;
@@ -2307,8 +2326,8 @@ renderElements(elements) {
   }
 
   /**
+   * Closes the inspect window.
    * @method closeInspect
-   * @description Closes the inspect window.
    */
   closeInspect() {
     this.inspectWindow.equipmentListContainerEl.style.display = "none";
@@ -2318,8 +2337,8 @@ renderElements(elements) {
   }
 
   /**
+   * Opens the equipment selection screen within the inspect window.
    * @method openEquipmentScreen
-   * @description Opens the equipment screen.
    */
   openEquipmentScreen() {
     this.inspectWindow.equipmentListContainerEl.style.display = "block";
@@ -2327,9 +2346,9 @@ renderElements(elements) {
   }
 
   /**
+   * Renders the list of available equipment.
    * @method renderEquipmentList
-   * @description Renders the equipment list.
-   * @param {string} filter - The filter to apply to the equipment list.
+   * @param {string} filter - Filter by type ("All", "Weapon", etc).
    */
   renderEquipmentList(filter) {
     const listEl = this.inspectWindow.equipmentListEl;
@@ -2441,9 +2460,9 @@ renderElements(elements) {
   }
 
   /**
+   * Equips an item to a member, handling swaps if necessary.
    * @method equipItem
-   * @description Equips an item to a party member.
-   * @param {Game_Battler} member - The party member to equip the item to.
+   * @param {import("./objects.js").Game_Battler} member - The member.
    * @param {Object} item - The item to equip.
    */
   equipItem(member, item) {

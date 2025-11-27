@@ -1,4 +1,3 @@
-
 import { randInt, shuffleArray } from "./core.js";
 import { passives as passivesData } from "./data/passives.js";
 
@@ -8,33 +7,93 @@ import { passives as passivesData } from "./data/passives.js";
  */
 class Game_Base {
   /**
+   * Creates a new Game_Base instance.
    * @param {Object} unitData - The data for the unit.
+   * @param {string} unitData.name - The name of the unit.
+   * @param {number} unitData.maxHp - The maximum HP of the unit.
+   * @param {number} unitData.level - The level of the unit.
+   * @param {string[]} [unitData.elements] - The elemental affinities of the unit.
    */
   constructor(unitData) {
+    /**
+     * The name of the unit.
+     * @type {string}
+     */
     this.name = unitData.name;
+
+    /**
+     * The maximum HP of the unit.
+     * @type {number}
+     */
     this.maxHp = unitData.maxHp;
+
+    /**
+     * The current HP of the unit.
+     * @type {number}
+     */
     this.hp = unitData.maxHp;
+
+    /**
+     * The HP of the unit at the beginning of the last event.
+     * Used for calculating HP changes for UI animations.
+     * @type {number}
+     */
     this.prevHp = unitData.maxHp;
+
+    /**
+     * The level of the unit.
+     * @type {number}
+     */
     this.level = unitData.level;
+
+    /**
+     * The elemental affinities of the unit.
+     * @type {string[]}
+     */
     this.elements = unitData.elements || [];
   }
 }
 
 /**
  * @class Game_Battler
- * @description The class for game actors.
+ * @description The class representing a participant in a battle (actor or enemy).
+ * Handles stats, leveling, skills, and passives.
  * @extends Game_Base
  */
 export class Game_Battler extends Game_Base {
   /**
+   * Creates a new Game_Battler instance.
    * @param {Object} actorData - The data for the actor.
-   * @param {number} depth - The depth of the floor.
-   * @param {boolean} isEnemy - Whether the actor is an enemy.
+   * @param {string} actorData.name - The name of the actor.
+   * @param {number} actorData.maxHp - The base max HP.
+   * @param {number} actorData.level - The starting level.
+   * @param {string[]} [actorData.elements] - Elemental types.
+   * @param {string} [actorData.role] - The role or class of the actor.
+   * @param {Array<string|Object>} [actorData.passives] - List of passive IDs or objects.
+   * @param {string[]} [actorData.skills] - List of skill IDs.
+   * @param {string} [actorData.spriteKey] - The key for the actor's sprite/portrait.
+   * @param {string} [actorData.flavor] - Flavor text for the actor.
+   * @param {Object} [actorData.equipment] - Base equipment.
+   * @param {number} [actorData.expGrowth] - XP growth rate.
+   * @param {Array} [actorData.evolutions] - Evolution paths.
+   * @param {number} [actorData.gold] - Gold dropped (for enemies).
+   * @param {number} [depth=1] - The dungeon depth (scales enemy stats).
+   * @param {boolean} [isEnemy=false] - Whether this battler is an enemy.
    */
   constructor(actorData, depth = 1, isEnemy = false) {
     super(actorData);
+
+    /**
+     * The role or class of the battler (e.g., "Warrior").
+     * @type {string}
+     */
     this.role = actorData.role;
-    // Resolve passives from IDs to full objects using imported data
+
+    /**
+     * The list of active passives on this battler.
+     * Resolves string IDs to full passive objects.
+     * @type {Object[]}
+     */
     this.passives = (actorData.passives || []).map(pId => {
         // If it's already an object (legacy/test), try to use it, but prefer lookup if string
         if (typeof pId === 'string') {
@@ -42,15 +101,65 @@ export class Game_Battler extends Game_Base {
         }
         return pId;
     });
+
+    /**
+     * The list of skill IDs available to the battler.
+     * @type {string[]}
+     */
     this.skills = actorData.skills ? actorData.skills.slice() : [];
+
+    /**
+     * The key for the sprite image.
+     * @type {string}
+     */
     this.spriteKey = actorData.spriteKey;
+
+    /**
+     * Flavor text description.
+     * @type {string}
+     */
     this.flavor = actorData.flavor;
+
+    /**
+     * Current experience points.
+     * @type {number}
+     */
     this.xp = 0;
+
+    /**
+     * Base equipment configuration.
+     * @type {Object|null}
+     */
     this.baseEquipment = actorData.equipment || null;
+
+    /**
+     * Currently equipped item instance.
+     * @type {Object|null}
+     */
     this.equipmentItem = null;
+
+    /**
+     * Experience growth factor.
+     * @type {number}
+     */
     this.expGrowth = actorData.expGrowth || 5;
+
+    /**
+     * Possible evolutions for this unit.
+     * @type {Array}
+     */
     this.evolutions = actorData.evolutions || [];
+
+    /**
+     * Gold value (dropped by enemies).
+     * @type {number}
+     */
     this.gold = actorData.gold || 0;
+
+    /**
+     * Whether this battler is an enemy.
+     * @type {boolean}
+     */
     this.isEnemy = isEnemy;
 
     if (this.isEnemy) {
@@ -60,20 +169,21 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
+   * Calculates the experience points needed for the next level.
    * @method xpNeeded
-   * @description The experience needed to level up.
    * @param {number} level - The current level.
-   * @returns {number} The experience needed for the next level.
+   * @returns {number} The XP required for the next level.
    */
   xpNeeded(level) {
     return Math.floor(level * (this.expGrowth * 0.5) + 10);
   }
 
   /**
+   * Adds experience points to the battler and handles leveling up logic.
+   * Automatically increases HP and Level when thresholds are met.
    * @method gainXp
-   * @description Adds experience points to the battler and handles leveling up.
    * @param {number} amount - The amount of XP to gain.
-   * @returns {Object} An object containing information about the level up.
+   * @returns {Object} An object containing level-up details:
    *                   { leveledUp: boolean, hpGain: number, newLevel: number }
    */
   gainXp(amount) {
@@ -101,9 +211,9 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
+   * Gets the numeric value of a specific passive ability.
    * @method getPassiveValue
-   * @description Gets the value of a specific passive.
-   * @param {string} code - The code of the passive to get.
+   * @param {string} code - The code of the passive to lookup (e.g., "PARASITE").
    * @returns {number} The value of the passive, or 0 if not found.
    */
   getPassiveValue(code) {
@@ -112,10 +222,10 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
-   * @method executeAction
-   * @description Executes a given action against a target.
+   * Executes a given action against a target.
    * Future-forward: This is a placeholder for a more robust action system.
    * It will eventually take a Game_Action object and apply its effects.
+   * @method executeAction
    * @param {Object} action - The action to execute.
    * @param {Game_Battler} target - The target of the action.
    */
@@ -127,36 +237,41 @@ export class Game_Battler extends Game_Base {
 
 /**
  * @class Game_Party
- * @description The class for the game party.
+ * @description Manages the player's party members, inventory, and gold.
  */
 export class Game_Party {
   /**
-   * The maximum number of party members.
-   * @type {number}
+   * Creates a new Game_Party instance.
    */
-  MAX_MEMBERS = 24;
+  constructor() {
+    /**
+     * The maximum number of party members allowed.
+     * @type {number}
+     */
+    this.MAX_MEMBERS = 24;
+
+    /**
+     * The list of current party members.
+     * @type {Game_Battler[]}
+     */
+    this.members = [];
+
+    /**
+     * The current amount of gold held by the party.
+     * @type {number}
+     */
+    this.gold = 0;
+
+    /**
+     * The party's inventory.
+     * @type {Object[]}
+     */
+    this.inventory = [];
+  }
 
   /**
-   * The party members.
-   * @type {Game_Battler[]}
-   */
-  members = [];
-
-  /**
-   * The party's gold.
-   * @type {number}
-   */
-  gold = 0;
-
-  /**
-   * The party's inventory.
-   * @type {Object[]}
-   */
-  inventory = [];
-
-  /**
+   * Initializes the party with starting members, gold, and items defined in data.
    * @method createInitialMembers
-   * @description Creates the initial party members.
    * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
    */
   createInitialMembers(dataManager) {
@@ -180,55 +295,61 @@ export class Game_Party {
 
 /**
  * @class Game_Map
- * @description The class for the game map.
+ * @description Represents the game map, managing floors, tiles, and player position.
+ * Handles procedural generation of dungeon floors.
  */
 export class Game_Map {
   /**
-   * The width of the map.
-   * @type {number}
+   * Creates a new Game_Map instance.
    */
-  MAX_W = 16;
+  constructor() {
+    /**
+     * The width of the map grid.
+     * @type {number}
+     */
+    this.MAX_W = 16;
+
+    /**
+     * The height of the map grid.
+     * @type {number}
+     */
+    this.MAX_H = 16;
+
+    /**
+     * The array of generated floors.
+     * @type {Object[]}
+     */
+    this.floors = [];
+
+    /**
+     * The index of the current floor.
+     * @type {number}
+     */
+    this.floorIndex = 0;
+
+    /**
+     * The maximum floor index reached by the player.
+     * @type {number}
+     */
+    this.maxReachedFloorIndex = 0;
+
+    /**
+     * The player's X position on the current floor.
+     * @type {number}
+     */
+    this.playerX = 0;
+
+    /**
+     * The player's Y position on the current floor.
+     * @type {number}
+     */
+    this.playerY = 0;
+  }
 
   /**
-   * The height of the map.
-   * @type {number}
-   */
-  MAX_H = 16;
-
-  /**
-   * The array of floors.
-   * @type {Object[]}
-   */
-  floors = [];
-
-  /**
-   * The current floor index.
-   * @type {number}
-   */
-  floorIndex = 0;
-
-  /**
-   * The maximum reached floor index.
-   * @type {number}
-   */
-  maxReachedFloorIndex = 0;
-
-  /**
-   * The player's X position.
-   * @type {number}
-   */
-  playerX = 0;
-
-  /**
-   * The player's Y position.
-   * @type {number}
-   */
-  playerY = 0;
-
-  /**
+   * Initializes the map floors using provided floor metadata.
    * @method initFloors
-   * @description Initializes the floors.
-   * @param {Array} floorData - The floor data from the data manager.
+   * @param {Array} floorData - The array of floor metadata objects from data manager.
    */
   initFloors(floorData) {
     this.floors = floorData.map((meta, i) => this.generateFloor(meta, i));
@@ -237,11 +358,12 @@ export class Game_Map {
   }
 
   /**
+   * Procedurally generates a single floor layout.
+   * Places tiles, stairs, enemies, shrines, and shops.
    * @method generateFloor
-   * @description Generates a floor.
-   * @param {Object} meta - The metadata for the floor.
-   * @param {number} index - The index of the floor.
-   * @returns {Object} The generated floor object.
+   * @param {Object} meta - The metadata for the floor (title, depth, etc.).
+   * @param {number} index - The index of the floor in the dungeon.
+   * @returns {Object} The generated floor object containing layout and entity positions.
    */
   generateFloor(meta, index) {
     const tiles = Array.from({ length: this.MAX_H }, () =>
@@ -365,8 +487,8 @@ export class Game_Map {
   }
 
   /**
+   * Reveals the map tiles around the player (fog of war mechanic).
    * @method revealAroundPlayer
-   * @description Reveals the tiles around the player.
    */
   revealAroundPlayer() {
     const floor = this.floors[this.floorIndex];
@@ -383,7 +505,8 @@ export class Game_Map {
   }
 }
 
-if (window.location.search.includes("test=true")) {
+// Expose classes to the window object for testing if in test mode.
+if (typeof window !== 'undefined' && window.location.search.includes("test=true")) {
     window.Game_Battler = Game_Battler;
     window.Game_Party = Game_Party;
     window.Game_Map = Game_Map;

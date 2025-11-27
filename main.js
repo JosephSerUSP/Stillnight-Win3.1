@@ -3,7 +3,9 @@ import { Scene_Boot } from "./scenes.js";
 import { WindowManager } from "./windows.js";
 
 /**
- * The main entry point for the game.
+ * The main entry point for the game application.
+ * Initializes managers and pushes the initial scene.
+ * @async
  */
 async function main() {
   const gameContainer = document.getElementById("game-container");
@@ -13,6 +15,7 @@ async function main() {
   const initialScene = new Scene_Boot(dataManager, sceneManager, windowManager);
   sceneManager.push(initialScene);
 
+  // Expose managers to the window object for testing purposes if 'test=true' query param is present.
   if (window.location.search.includes("test=true")) {
     window.sceneManager = sceneManager;
     window.windowManager = windowManager;
@@ -20,11 +23,13 @@ async function main() {
   }
 }
 
-// Start the game when the DOM is ready
+// Start the game when the DOM is fully loaded.
 window.addEventListener("DOMContentLoaded", main);
 
-// Theme switcher
+// Theme switcher logic
 const themeBtn = document.getElementById("btn-theme");
-themeBtn.addEventListener("click", () => {
-  document.body.classList.toggle("night-theme");
-});
+if (themeBtn) {
+  themeBtn.addEventListener("click", () => {
+    document.body.classList.toggle("night-theme");
+  });
+}
