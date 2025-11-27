@@ -376,6 +376,11 @@ export class Window_Battle extends Window_Base {
       filledCount = 0;
     }
     const emptyCount = totalLength - filledCount;
+    if (emptyCount < 0) {
+        console.warn(`HP Gauge Overflow: HP=${hp}, MaxHP=${maxHp}, Filled=${filledCount}, Empty=${emptyCount}`);
+        // Clamping for safety
+        return `[${"#".repeat(totalLength)}]`;
+    }
     return `[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
   }
 }

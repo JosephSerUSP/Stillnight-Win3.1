@@ -83,6 +83,14 @@ export class DataManager {
         console.error(`Failed to load ${src}:`, error);
       }
     }
+
+    // Load Animations
+    try {
+        const { animations } = await import("./data/animations.js");
+        this.animations = animations;
+    } catch (error) {
+        console.error("Failed to load animations.js:", error);
+    }
   }
 }
 
@@ -406,6 +414,25 @@ export class BattleManager {
                        hpAfter: target.hp,
                        msg: `  ${target.name} takes ${skillDmg} damage.`
                    });
+                 }
+                 if (effect.type === "heal_hp") {
+                    const formula = effect.formula.replace("a.level", battler.level);
+                    let heal = Math.round(eval(formula) * boost);
+                    if (heal < 1) heal = 1;
+
+                    const hpBefore = target.hp;
+                    target.hp = Math.min(target.maxHp, target.hp + heal);
+
+                    events.push({
+                        type: 'heal',
+                        battler: battler,
+                        target: target,
+                        value: heal,
+                        hpBefore: hpBefore,
+                        hpAfter: target.hp,
+                        msg: `  ${target.name} heals ${heal} HP.`,
+                        animation: 'healing_sparkle'
+                    });
                  }
                  if (effect.type === "add_status") {
                    const chance = (effect.chance || 1) * boost;

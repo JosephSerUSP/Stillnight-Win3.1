@@ -274,6 +274,12 @@ export class Scene_Battle extends Scene_Base {
                 this.animateBattler(event.target, 'flash');
                 await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
 
+            } else if (event.type === 'heal' && event.target) {
+                if (event.animation) {
+                     await this.playAnimation(event.target, event.animation);
+                }
+                await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
+
             } else if (event.type === 'passive_drain') {
                 this.animateBattler(event.target, 'flash');
                 await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
@@ -541,10 +547,20 @@ export class Scene_Battle extends Scene_Base {
       const maxFrames = 15;
       const interval = 50;
 
+      // Find the element once
+      const enemyIndex = this.battleManager.enemies.indexOf(battler);
+      const partyIndex = this.party.members.indexOf(battler);
+      let elementId = null;
+      if (enemyIndex !== -1) elementId = `battler-enemy-${enemyIndex}`;
+      else if (partyIndex !== -1) elementId = `battler-party-${partyIndex}`;
+
+      const nameEl = elementId ? this.battleWindow.viewportEl.querySelector(`#${elementId}`) : null;
+
       const animator = () => {
         if (frame >= maxFrames) {
           battler.name = originalName;
-          this.renderBattleAscii();
+          if (nameEl) nameEl.textContent = originalName;
+          else this.renderBattleAscii(); // Fallback if element not found
           resolve();
           return;
         }
@@ -558,8 +574,14 @@ export class Scene_Battle extends Scene_Base {
             newName += char;
           }
         }
-        battler.name = newName;
-        this.renderBattleAscii();
+
+        // Update DOM directly to avoid full re-render which would snap HP to current state
+        if (nameEl) {
+            nameEl.textContent = newName;
+        } else {
+            battler.name = newName; // Only update object if we rely on renderBattleAscii
+            this.renderBattleAscii();
+        }
 
         frame++;
         setTimeout(animator, interval);
@@ -567,6 +589,96 @@ export class Scene_Battle extends Scene_Base {
 
       animator();
     });
+  }
+
+  /**
+   * @method playAnimation
+   * @description Plays a data-driven animation on a target.
+   * @param {Game_Battler} target - The target of the animation.
+   * @param {string} animationId - The ID of the animation to play.
+   */
+  playAnimation(target, animationId) {
+       return new Promise((resolve) => {
+           if (!this.dataManager.animations || !this.dataManager.animations[animationId]) {
+               resolve();
+               return;
+           }
+
+           const anim = this.dataManager.animations[animationId];
+
+           // Find target element
+           const enemyIndex = this.battleManager.enemies.indexOf(target);
+           const partyIndex = this.party.members.indexOf(target);
+           let battlerId = null;
+           if (enemyIndex !== -1) battlerId = `battler-enemy-${enemyIndex}`;
+           else if (partyIndex !== -1) battlerId = `battler-party-${partyIndex}`;
+
+           if (!battlerId) { resolve(); return; }
+
+           const battlerElement = this.battleWindow.viewportEl.querySelector(`#${battlerId}`);
+           if (!battlerElement) { resolve(); return; }
+
+           // Find sub-element if specified
+           let targetEl = battlerElement;
+           if (anim.targetPart === "hp_gauge") {
+                const container = battlerElement.closest('.battler-container');
+                if (container) {
+                    const hpEl = container.querySelector('.battler-hp');
+                    if (hpEl) targetEl = hpEl;
+                }
+           }
+
+           if (anim.type === "text_flow") {
+               const originalText = targetEl.textContent;
+               const duration = anim.duration || 1000;
+               const interval = anim.interval || 50;
+               const sequence = anim.sequence || "*";
+               const color = anim.color || "";
+
+               if (color) targetEl.style.color = color;
+
+               let startTime = Date.now();
+
+               const animator = () => {
+                   const now = Date.now();
+                   const elapsed = now - startTime;
+                   if (elapsed >= duration) {
+                       targetEl.textContent = originalText;
+                       targetEl.style.color = "";
+                       resolve();
+                       return;
+                   }
+
+                   // Generate flow string
+                   // e.g. "⋆｡°✩" moving through the bar
+                   // We want a string of fixed length (approx same as original?)
+                   // The original is "[#####     ]" (approx 12-15 chars)
+                   const len = originalText.length;
+                   let frameText = "";
+
+                   // Offset based on time to create movement
+                   const offset = Math.floor(elapsed / interval);
+
+                   // Build the string by repeating sequence and slicing
+                   // Make it look like it flows L->R or R->L
+                   // L->R:
+                   let s = "";
+                   while (s.length < len + sequence.length) s += sequence;
+
+                   // Wrap around
+                   const startIdx = (sequence.length - (offset % sequence.length)) % sequence.length;
+                   frameText = s.substring(startIdx, startIdx + len);
+
+                   targetEl.textContent = frameText;
+
+                   setTimeout(animator, interval);
+               };
+               animator();
+
+           } else {
+               resolve();
+           }
+       });
   }
 }
 
