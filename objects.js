@@ -71,6 +71,19 @@ export class Game_Battler extends Game_Base {
     const passive = this.passives.find((p) => p.code === code);
     return passive ? passive.value : 0;
   }
+
+  /**
+   * @method executeAction
+   * @description Executes a given action against a target.
+   * Future-forward: This is a placeholder for a more robust action system.
+   * It will eventually take a Game_Action object and apply its effects.
+   * @param {Object} action - The action to execute.
+   * @param {Game_Battler} target - The target of the action.
+   */
+  executeAction(action, target) {
+    // To be implemented in a future phase.
+    console.log(`${this.name} uses an action on ${target.name}.`);
+  }
 }
 
 /**
