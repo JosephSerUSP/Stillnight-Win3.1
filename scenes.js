@@ -55,10 +55,12 @@ export class Scene_Boot extends Scene_Base {
     /**
      * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
      * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
+     * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
      */
-    constructor(dataManager, sceneManager) {
+    constructor(dataManager, sceneManager, windowManager) {
         super(dataManager);
         this.sceneManager = sceneManager;
+        this.windowManager = windowManager;
     }
 
     /**
@@ -67,7 +69,7 @@ export class Scene_Boot extends Scene_Base {
      */
     async start() {
         await this.dataManager.loadData();
-        this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager));
+        this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager));
     }
 }
 
@@ -82,24 +84,47 @@ export class Scene_Battle extends Scene_Base {
    * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
    * @param {import("./objects.js").Game_Party} party - The player's party.
    * @param {import("./managers.js").BattleManager} battleManager - The battle manager instance.
-   * @param {import("./windows.js").WindowLayer} windowLayer - The window layer instance.
+   * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
    * @param {import("./objects.js").Game_Map} map - The game map instance.
    * @param {number} tileX - The x-coordinate of the tile the battle is on.
    * @param {number} tileY - The y-coordinate of the tile the battle is on.
    */
-  constructor(dataManager, sceneManager, party, battleManager, windowLayer, map, tileX, tileY) {
+  constructor(dataManager, sceneManager, party, battleManager, windowManager, map, tileX, tileY) {
     super(dataManager);
     this.sceneManager = sceneManager;
     this.party = party;
     this.battleManager = battleManager;
-    this.windowLayer = windowLayer;
+    this.windowManager = windowManager;
     this.map = map;
     this.tileX = tileX;
     this.tileY = tileY;
     this.battleBusy = false;
 
     this.battleWindow = new Window_Battle();
-    this.windowLayer.addChild(this.battleWindow);
+    this.windowManager.openWindow(this.battleWindow, { modal: false }); // Battle window is persistent but maybe not modal in the overlay sense?
+    // Actually, battle is usually modal. But it's a scene.
+    // In current design, battle scene is pushed.
+    // We should just open the window.
+    // If we want it to block clicks on map (which is behind), we might want modal=true?
+    // But Scene_Map is paused/hidden? No, SceneManager.push doesn't hide previous scene DOM.
+    // Wait, Scene_Map does not clear DOM when paused.
+    // So if we want to block Map interaction, Battle Window should be modal OR Scene_Map should disable inputs.
+    // Scene_Map checks "if (this.sceneManager.currentScene() !== this) return;".
+    // So input is blocked.
+    // Visual blocking?
+    // If we use modal=true, we get a dark overlay. That might be good for Battle.
+    // Let's try modal=true.
+    // But wait, the spec says "The overlay covers the whole game area".
+    // If we want to see the map behind the battle window, we might not want the full dark overlay, or maybe we do.
+    // Let's assume modal=false for the main battle window, because the battle scene takes over input anyway.
+    // However, if we want to support the "WindowManager" concept fully, we should probably just open it.
+
+    // Correction: Scene_Battle constructor adds window.
+    // The previous implementation added it to `windowLayer`.
+    // Now we use `windowManager.openWindow`.
+
+    // We shouldn't call openWindow in constructor, usually in start().
+    // But let's follow the pattern.
 
     this.battleWindow.btnRound.addEventListener("click", this.resolveBattleRound.bind(this));
     this.battleWindow.btnFlee.addEventListener("click", this.attemptFlee.bind(this));
@@ -148,7 +173,13 @@ export class Scene_Battle extends Scene_Base {
 
     this.applyBattleStartPassives();
     this.renderBattleAscii();
-    this.battleWindow.open();
+
+    // Open the window via manager
+    // Spec: "For windows opened with { modal: true }: The WindowManager shows a single fullscreen overlay behind the top window"
+    // If we want the map visible, we might not want modal=true unless we want to dim it.
+    // Let's use modal=true to dim the map, focusing on battle.
+    this.windowManager.openWindow(this.battleWindow, { modal: true });
+
     document.getElementById("mode-label").textContent = "Battle";
     SoundManager.beep(350, 200);
   }
@@ -158,7 +189,8 @@ export class Scene_Battle extends Scene_Base {
    * @description Stops the scene.
    */
   stop() {
-    this.battleWindow.close();
+    // Close via manager
+    this.windowManager.closeWindow(this.battleWindow);
     document.getElementById("mode-label").textContent = "Exploration";
   }
 
@@ -471,16 +503,16 @@ export class Scene_Shop extends Scene_Base {
      * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
      * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
      * @param {import("./objects.js").Game_Party} party - The player's party.
-     * @param {import("./windows.js").WindowLayer} windowLayer - The window layer instance.
+     * @param {import("./windows.js").WindowManager} windowManager - The window layer instance.
      */
-    constructor(dataManager, sceneManager, party, windowLayer) {
+    constructor(dataManager, sceneManager, party, windowManager) {
         super(dataManager);
         this.sceneManager = sceneManager;
         this.party = party;
-        this.windowLayer = windowLayer;
+        this.windowManager = windowManager;
 
         this.shopWindow = new Window_Shop();
-        this.windowLayer.addChild(this.shopWindow);
+        // this.windowLayer.addChild(this.shopWindow); // OLD
 
         this.shopWindow.btnClose.addEventListener("click", this.closeShop.bind(this));
         this.shopWindow.btnLeave.addEventListener("click", this.closeShop.bind(this));
@@ -497,6 +529,9 @@ export class Scene_Shop extends Scene_Base {
             this.dataManager.items,
             (itemId) => this.buyItem(itemId)
         );
+        // Use WindowManager to open
+        this.windowManager.openWindow(this.shopWindow, { modal: true });
+
         document.getElementById("mode-label").textContent = "Shop";
         SoundManager.beep(650, 150);
     }
@@ -506,7 +541,7 @@ export class Scene_Shop extends Scene_Base {
      * @description Stops the scene.
      */
     stop() {
-        this.shopWindow.close();
+        this.windowManager.closeWindow(this.shopWindow);
         document.getElementById("mode-label").textContent = "Exploration";
     }
 
@@ -561,10 +596,12 @@ export class Scene_Map extends Scene_Base {
   /**
    * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
    * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
+   * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
    */
-  constructor(dataManager, sceneManager) {
+  constructor(dataManager, sceneManager, windowManager) {
     super(dataManager);
     this.sceneManager = sceneManager;
+    this.windowManager = windowManager;
     this.map = new Game_Map();
     this.party = new Game_Party();
     this.battleManager = new BattleManager(this.party, this.dataManager);
@@ -575,22 +612,20 @@ export class Scene_Map extends Scene_Base {
     this.getDomElements();
     this.addEventListeners();
 
-    this.windowLayer = new WindowLayer();
-    const gameContainer = document.querySelector(".right-side");
-    this.windowLayer.appendTo(gameContainer);
+    // Scene_Map shouldn't create WindowLayer anymore
+    // this.windowLayer = new WindowLayer();
+
+    // Instead of adding children to layer, we just instantiate windows.
+    // They are added to the DOM when opened via WindowManager.
+    // OR we can add them to DOM now if we want them pre-loaded?
+    // WindowManager.openWindow adds them to DOM if needed.
 
     this.inventoryWindow = new Window_Inventory();
-    this.windowLayer.addChild(this.inventoryWindow);
     this.eventWindow = new Window_Event();
-    this.windowLayer.addChild(this.eventWindow);
     this.recruitWindow = new Window_Recruit();
-    this.windowLayer.addChild(this.recruitWindow)
     this.formationWindow = new Window_Formation();
-    this.windowLayer.addChild(this.formationWindow)
     this.inspectWindow = new Window_Inspect();
-    this.windowLayer.addChild(this.inspectWindow)
     this.confirmWindow = new Window_Confirm();
-    this.windowLayer.addChild(this.confirmWindow);
 
     this.recruitWindow.btnClose.addEventListener(
       "click",
@@ -604,7 +639,7 @@ export class Scene_Map extends Scene_Base {
 
     this.confirmWindow.btnClose.addEventListener(
       "click",
-      () => this.confirmWindow.close()
+      () => this.confirmWindow.close() // uses Window_Base.close which uses manager
     );
     this.formationWindow.btnOk.addEventListener(
       "click",
@@ -626,7 +661,7 @@ export class Scene_Map extends Scene_Base {
   }
 
   createUI() {
-    const gameContainer = document.getElementById("game-container");
+    const gameContainer = this.sceneManager.container;
     gameContainer.innerHTML = `
       <div class="stack-nav panel">
         <h1>Stillnight Stack</h1>
@@ -815,6 +850,29 @@ export class Scene_Map extends Scene_Base {
    */
   onKeyDown(e) {
     if (!this.runActive) return;
+
+    // Check if any modal is open using WindowManager
+    // But Scene_Map runs on global keydown.
+    // Spec says: "If no window is open, keyboard input falls back to the active Scene"
+    // So we should check if WindowManager has a top window.
+    if (this.windowManager.topWindow()) {
+        // If there is a top window, let it handle keydown (routed via main/manager)
+        // Or just prevent map movement.
+        // The Spec says: "Listen at a global level... Forward events to windowManager... If no window is open, keyboard input falls back to the active Scene"
+        // Since we are adding listener in Scene_Map, we should check:
+        // if (this.windowManager.handleKeyDown(e)) return;
+
+        // However, handleKeyDown is not set up globally yet.
+        // Let's implement the fallback logic here:
+        if (this.windowManager.handleKeyDown(e)) {
+            e.preventDefault();
+            return;
+        }
+
+        // If window manager has windows open, we should probably BLOCK map input?
+        // "Keyboard input falls back to the active Scene (e.g. for map movement)" implies if NO window is open.
+        if (this.windowManager.stack.length > 0) return;
+    }
 
     let dx = 0;
     let dy = 0;
@@ -1135,6 +1193,12 @@ export class Scene_Map extends Scene_Base {
     }
     if (this.sceneManager.currentScene() !== this) return;
 
+    // Check for modal blocking
+    if (this.windowManager.stack.length > 0) {
+        // Just return, do not allow map interaction
+        return;
+    }
+
     const tileEl = e.currentTarget;
     const x = parseInt(tileEl.dataset.x, 10);
     const y = parseInt(tileEl.dataset.y, 10);
@@ -1186,10 +1250,10 @@ export class Scene_Map extends Scene_Base {
     } else if (ch === "E") {
       this.setStatus("Enemy encountered!");
       this.logMessage("[Battle] Shapes uncoil from the dark.");
-      this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.party, this.battleManager, this.windowLayer, this.map, x, y));
+      this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.party, this.battleManager, this.windowManager, this.map, x, y));
       return;
     } else if (ch === "¥") {
-      this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.party, this.windowLayer));
+      this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.party, this.windowManager));
       return;
     } else if (ch === "♱") {
       this.logMessage("[Shrine] You encounter a shrine.");
@@ -1327,7 +1391,7 @@ export class Scene_Map extends Scene_Base {
       });
       this.eventWindow.choicesEl.appendChild(btn);
     });
-    this.eventWindow.open();
+    this.windowManager.openWindow(this.eventWindow, { modal: true });
     this.setStatus("Shrine event.");
     SoundManager.beep(700, 150);
   }
@@ -1502,7 +1566,7 @@ export class Scene_Map extends Scene_Base {
         elementIconContainer.textContent = "—";
     }
 
-    this.recruitWindow.open();
+    this.windowManager.openWindow(this.recruitWindow, { modal: true });
     this.setStatus("Recruit encountered.");
     SoundManager.beep(400, 100);
   }
@@ -1684,7 +1748,7 @@ renderElements(elements) {
    */
   openFormation() {
     if (this.sceneManager.currentScene() !== this) return;
-    this.formationWindow.open();
+    this.windowManager.openWindow(this.formationWindow, { modal: true });
     this.renderFormationGrid();
   }
 
@@ -1787,7 +1851,7 @@ renderElements(elements) {
    */
   openInventory() {
     if (this.sceneManager.currentScene() !== this) return;
-    this.inventoryWindow.open();
+    this.windowManager.openWindow(this.inventoryWindow, { modal: true });
     this.refreshInventoryWindow();
   }
 
@@ -1907,7 +1971,10 @@ renderElements(elements) {
     this.inspectWindow.flavorEl.textContent = member.flavor || "—";
     this.inspectWindow.notesEl.textContent = "Row is determined by the 2×2 formation grid.";
 
-    this.inspectWindow.open();
+    this.windowManager.openWindow(this.inspectWindow, { modal: false });
+    // Note: Inspect window is often used with Equipment/Swap.
+    // If Swap opens a confirmation, it should be modal.
+
     this.setStatus(`Inspecting ${member.name}`);
     this.logMessage(`[Inspect] ${member.name} – Lv${member.level}, ${this.partyRow(index)}, HP ${member.hp}/${member.maxHp}.`);
 
@@ -2040,7 +2107,8 @@ renderElements(elements) {
       const otherMember = item.equippedMember;
       this.confirmWindow.titleEl.textContent = "Confirm Swap";
       this.confirmWindow.messageEl.textContent = `Swap ${item.name} from ${otherMember.name} to ${member.name}?`;
-      this.confirmWindow.open();
+      this.windowManager.openWindow(this.confirmWindow, { modal: true }); // Modal confirm
+
       this.confirmWindow.btnOk.onclick = () => {
         const currentItem = member.equipmentItem;
         otherMember.equipmentItem = currentItem;

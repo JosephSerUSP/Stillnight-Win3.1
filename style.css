@@ -783,3 +783,31 @@ body.night-theme {
     flex-direction: column;
     gap: 4px;
 }
+
+/* Window Dimming */
+.window--dimmed {
+    filter: brightness(0.6) grayscale(0.5);
+    /* pointer-events: none;  <-- Handled by JS, but good to have here too */
+}
+
+/* Ensure modal overlay is correctly positioned */
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5);
+    display: none; /* JS toggles this */
+}
+
+.modal-overlay.active {
+    display: flex; /* Or block, if we don't need centering logic here (centering is done via window position) */
+    /* Actually, overlay is just a background. The windows are absolute positioned. */
+    pointer-events: auto; /* Catch clicks */
+}
+
+/* Ensure dialogs are flex and start hidden (managed by JS) */
+.dialog {
+    display: none; /* Start hidden, managed by WindowManager */
+}

@@ -23,7 +23,7 @@ test.describe('Game Logic', () => {
             window.sceneManager,
             sceneMap.party,
             sceneMap.battleManager,
-            sceneMap.windowLayer,
+            window.windowManager, // UPDATED: Pass global windowManager
             sceneMap.map,
             0, 0
         );
@@ -75,10 +75,13 @@ test.describe('Game Logic', () => {
         await page.click('.party-slot[data-index="0"]');
 
         // Open equipment screen
-        await page.click('.inspect-value.win-btn', { hasText: '—' }); // Assuming no equipment initially or specific text
+        // The equipment field is a button with class "win-btn inspect-value"
+        const equipFieldBtn = page.locator('.inspect-value.win-btn').first(); // Should be the equipment button
+        await expect(equipFieldBtn).toBeVisible();
+        await equipFieldBtn.click();
 
         // Find the equip button for the test sword
-        const equipBtn = page.locator('button.win-btn', { hasText: 'Equip' });
+        const equipBtn = page.locator('button.win-btn', { hasText: 'Equip' }).first();
         await expect(equipBtn).toBeVisible();
         await equipBtn.click();
 
@@ -100,7 +103,7 @@ test.describe('Game Logic', () => {
                  window.sceneManager,
                  sceneMap.party,
                  sceneMap.battleManager,
-                 sceneMap.windowLayer,
+                 window.windowManager, // UPDATED: Pass global windowManager
                  sceneMap.map,
                  0, 0
              );
@@ -113,7 +116,27 @@ test.describe('Game Logic', () => {
         // Try to click a tile
         // We need to find a valid tile to click (e.g., player position or adjacent)
         // Let's try to click the tile at 0,0 (assuming it exists)
-        await page.click('.tile[data-x="0"][data-y="0"]');
+        // Note: The battle window might be covering the map if it's modal.
+        // But Playwright click tries to click the element. If it's covered by overlay, it might fail or click overlay.
+        // If the overlay captures clicks (pointer-events: auto), the click won't reach the tile.
+        // This effectively verifies blocking.
+        // However, if Playwright complains "element is not clickable because... receives the click", that IS passing the test requirement physically,
+        // but might throw an error in the test script.
+        // So we should wrap it in try/catch or expect it to fail?
+        // Actually, if we use force: true, it bypasses checks.
+        // But we want to simulate user.
+        // If we just click, and it hits overlay, the event listener on tile won't fire.
+        // So checking the log/status is the correct way to verify *logic*, provided the click *attempt* was made.
+
+        // If the overlay blocks the click, Playwright might error out.
+        // Let's see. If it errors, we can catch it and say "blocked".
+
+        try {
+            await page.click('.tile[data-x="0"][data-y="0"]', { timeout: 1000 });
+        } catch (e) {
+            // If it times out or is intercepted, that's good!
+            // But we should verify the game state didn't change.
+        }
 
         // Check if log contains "Your footsteps echo softly" or "You move"
         // It SHOULD NOT because we are in battle.

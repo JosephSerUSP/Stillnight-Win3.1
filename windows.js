@@ -1,12 +1,169 @@
 import { getPrimaryElements, Graphics, elementToAscii, getIconStyle } from "./core.js";
 
 /**
+ * @class WindowManager
+ * @description Manages the window stack, z-indexing, and modal overlays.
+ */
+export class WindowManager {
+  constructor() {
+    this.stack = [];
+    this.windowLayer = new WindowLayer();
+    this.overlay = document.createElement("div");
+    this.overlay.className = "modal-overlay";
+    this.overlay.id = "global-modal-overlay";
+    this.windowLayer.element.appendChild(this.overlay);
+  }
+
+  /**
+   * @method setup
+   * @description Attaches the window layer to the game container.
+   * @param {HTMLElement} container - The game container.
+   */
+  setup(container) {
+    this.windowLayer.appendTo(container);
+  }
+
+  /**
+   * @method openWindow
+   * @description Opens a window and adds it to the stack.
+   * @param {Window_Base} window - The window to open.
+   * @param {Object} options - Options for opening the window.
+   * @param {boolean} [options.modal=false] - Whether the window is modal.
+   */
+  openWindow(window, options = { modal: false }) {
+    // Check if already open; if so, bring to front
+    const existingIndex = this.stack.findIndex((e) => e.window === window);
+    if (existingIndex > -1) {
+      // If it's already at the top, just return
+      if (existingIndex === this.stack.length - 1) return;
+
+      // Move to top
+      const entry = this.stack.splice(existingIndex, 1)[0];
+      // Update modal status if provided
+      if (options.modal !== undefined) {
+        entry.modal = options.modal;
+      }
+      this.stack.push(entry);
+    } else {
+      const entry = { window, modal: options.modal || false };
+      this.stack.push(entry);
+
+      // Add to DOM if not present
+      if (!window.element.parentNode) {
+        this.windowLayer.addChild(window.element);
+      }
+    }
+
+    window.element.style.display = "flex";
+    this.updateStack();
+  }
+
+  /**
+   * @method closeWindow
+   * @description Closes a window and removes it from the stack.
+   * @param {Window_Base} window - The window to close.
+   */
+  closeWindow(window) {
+    const index = this.stack.findIndex((e) => e.window === window);
+    if (index > -1) {
+      this.stack.splice(index, 1);
+      window.element.style.display = "none";
+      this.updateStack();
+    }
+  }
+
+  /**
+   * @method closeTopWindow
+   * @description Closes the top window on the stack.
+   */
+  closeTopWindow() {
+    const top = this.topWindow();
+    if (top) {
+      this.closeWindow(top.window);
+    }
+  }
+
+  /**
+   * @method topWindow
+   * @description Returns the top entry on the stack.
+   * @returns {Object|null} The top stack entry or null.
+   */
+  topWindow() {
+    return this.stack.length > 0 ? this.stack[this.stack.length - 1] : null;
+  }
+
+  /**
+   * @method isTopWindow
+   * @description Checks if the given window is the top window.
+   * @param {Window_Base} window - The window to check.
+   * @returns {boolean} True if the window is on top.
+   */
+  isTopWindow(window) {
+    const top = this.topWindow();
+    return top && top.window === window;
+  }
+
+  /**
+   * @method updateStack
+   * @description Updates z-indices and the modal overlay.
+   */
+  updateStack() {
+    const baseZ = 100;
+    let highestModalIndex = -1;
+
+    // Find index of highest modal
+    for (let i = this.stack.length - 1; i >= 0; i--) {
+      if (this.stack[i].modal) {
+        highestModalIndex = i;
+        break;
+      }
+    }
+
+    this.stack.forEach((entry, i) => {
+      const z = baseZ + i * 10;
+      entry.window.element.style.zIndex = z;
+
+      // Manage dimming
+      if (highestModalIndex > -1 && i < highestModalIndex) {
+        entry.window.element.classList.add("window--dimmed");
+        // Ensure dimmed windows don't capture pointer events
+        entry.window.element.style.pointerEvents = "none";
+      } else {
+        entry.window.element.classList.remove("window--dimmed");
+        entry.window.element.style.pointerEvents = "auto";
+      }
+    });
+
+    // Position and show/hide overlay
+    if (highestModalIndex > -1) {
+      this.overlay.classList.add("active");
+      // Overlay sits just behind the highest modal
+      // Modal z is baseZ + highestModalIndex * 10
+      // Overlay z should be slightly less
+      this.overlay.style.zIndex = baseZ + highestModalIndex * 10 - 5;
+    } else {
+      this.overlay.classList.remove("active");
+    }
+  }
+
+  /**
+   * @method handleKeyDown
+   * @description Routes keyboard events to the top window.
+   * @param {KeyboardEvent} event - The keydown event.
+   * @returns {boolean} True if the event was handled.
+   */
+  handleKeyDown(event) {
+    const top = this.topWindow();
+    if (top && top.window.onKeyDown) {
+      return top.window.onKeyDown(event);
+    }
+    return false;
+  }
+}
+
+/**
  * @class WindowLayer
- * @description A container that manages all game windows. This is a key component
- * for decoupling the UI from the main HTML file. The WindowLayer is appended to the
- * main game container, and all windows are appended to the WindowLayer. This ensures
- * that all windows are children of the game container and can be scaled and positioned
- * correctly. It also provides a single point of control for managing window z-indexing.
+ * @description A container that manages all game windows.
  */
 export class WindowLayer {
   constructor() {
@@ -15,10 +172,10 @@ export class WindowLayer {
   }
 
   /**
-   * @param {Window_Base} window - The window to add to the layer.
+   * @param {HTMLElement} element - The window element to add.
    */
-  addChild(window) {
-    this.element.appendChild(window.overlay);
+  addChild(element) {
+    this.element.appendChild(element);
   }
 
   /**
@@ -32,26 +189,22 @@ export class WindowLayer {
 
 /**
  * @class Window_Base
- * @description The base class for all UI windows. Handles DOM creation, positioning,
- * and drag-and-drop functionality. Windows are rendered into a WindowLayer.
- * @property {HTMLElement} overlay - The semi-transparent overlay that covers the game screen.
+ * @description The base class for all UI windows.
  * @property {HTMLElement} element - The main window element.
  */
 export class Window_Base {
     /**
      * Creates an instance of Window_Base.
-     * @param {number|string} x - The initial x coordinate, relative to the game container. Can be 'center'.
-     * @param {number|string} y - The initial y coordinate, relative to the game container. Can be 'center'.
+     * @param {number|string} x - The initial x coordinate.
+     * @param {number|string} y - The initial y coordinate.
      * @param {number} width - The width of the window.
-     * @param {number|string} height - The height of the window. Can be 'auto'.
+     * @param {number|string} height - The height of the window.
      */
     constructor(x, y, width, height) {
-        this.overlay = document.createElement("div");
-        this.overlay.className = "modal-overlay";
-
         this.element = document.createElement("div");
         this.element.className = "dialog";
         this.element.style.position = "absolute";
+        this.element.style.display = "none"; // Initially hidden
 
         const finalX = x === 'center' ? (Graphics.width - width) / 2 : x;
         const finalY = y === 'center' ? (Graphics.height - height) / 2 : y;
@@ -60,9 +213,7 @@ export class Window_Base {
         this.element.style.top = `${finalY}px`;
         this.element.style.width = `${width}px`;
         this.element.style.height = `${height}px`;
-        this.element.style.zIndex = "10";
-
-        this.overlay.appendChild(this.element);
+        // zIndex is managed by WindowManager
 
         this._dragStart = null;
         this._onDragHandler = this._onDrag.bind(this);
@@ -88,7 +239,6 @@ export class Window_Base {
     /**
      * @method _onDrag
      * @description Handles the drag movement.
-     * @param {MouseEvent} e - The mouse event.
      * @private
      */
     _onDrag(e) {
@@ -111,18 +261,28 @@ export class Window_Base {
 
     /**
      * @method open
-     * @description Opens the window.
+     * @description Opens the window via the WindowManager.
+     * @param {Object} options - Open options (e.g. { modal: true }).
      */
-    open() {
-        this.overlay.classList.add("active");
+    open(options = {}) {
+        if (window.windowManager) {
+            window.windowManager.openWindow(this, options);
+        } else {
+            console.warn("WindowManager not found on window object.");
+            this.element.style.display = "flex";
+        }
     }
 
     /**
      * @method close
-     * @description Closes the window.
+     * @description Closes the window via the WindowManager.
      */
     close() {
-        this.overlay.classList.remove("active");
+        if (window.windowManager) {
+            window.windowManager.closeWindow(this);
+        } else {
+            this.element.style.display = "none";
+        }
     }
 
     /**
@@ -136,17 +296,13 @@ export class Window_Base {
 
 /**
  * @class Window_Battle
- * @description The window for battles. This window is designed to be a flexible,
- * terminal-style display that can be easily extended with new animations and UI
- * elements. The viewport and log are separate elements, allowing for independent
- * scrolling and content updates. This is a significant improvement over the
- * previous hardcoded HTML structure, which was difficult to modify and scale.
+ * @description The window for battles.
  * @extends Window_Base
  */
 export class Window_Battle extends Window_Base {
   constructor() {
     super('center', 'center', 528, 360);
-    this.element.style.display = 'flex';
+    this.element.style.display = 'none'; // Ensure it starts hidden
     this.element.style.flexDirection = 'column';
 
     const titleBar = document.createElement("div");
@@ -307,7 +463,7 @@ export class Window_Inspect extends Window_Base {
   constructor() {
     super('center', 'center', 480, 320);
     this.element.id = "inspect-window";
-    this.element.style.display = 'flex';
+    this.element.style.display = 'none';
     this.element.style.flexDirection = 'column';
 
     const titleBar = document.createElement("div");
@@ -416,7 +572,7 @@ export class Window_Shop extends Window_Base {
   constructor() {
     super('center', 'center', 420, 320);
     this.element.id = "shop-window";
-    this.element.style.display = 'flex';
+    this.element.style.display = 'none';
     this.element.style.flexDirection = 'column';
 
     const titleBar = document.createElement("div");
@@ -528,7 +684,7 @@ export class Window_Formation extends Window_Base {
   constructor() {
     super('center', 'center', 420, 320);
     this.element.id = "formation-window";
-    this.element.style.display = 'flex';
+    this.element.style.display = 'none';
     this.element.style.flexDirection = 'column';
 
     const titleBar = document.createElement("div");
@@ -598,7 +754,7 @@ export class Window_Inventory extends Window_Base {
   constructor() {
     super('center', 'center', 400, 300); // x, y, width, height
     this.element.id = "inventory-window";
-    this.element.style.display = 'flex';
+    this.element.style.display = 'none';
     this.element.style.flexDirection = 'column';
 
     const titleBar = document.createElement("div");
@@ -719,7 +875,7 @@ export class Window_Recruit extends Window_Base {
   constructor() {
     super('center', 'center', 480, 320);
     this.element.id = "recruit-window";
-    this.element.style.display = 'flex';
+    this.element.style.display = 'none';
     this.element.style.flexDirection = 'column';
 
     const titleBar = document.createElement("div");
@@ -760,7 +916,7 @@ export class Window_Event extends Window_Base {
   constructor() {
     super('center', 'center', 480, 'auto');
     this.element.id = "event-window";
-    this.element.style.display = 'flex';
+    this.element.style.display = 'none';
     this.element.style.flexDirection = 'column';
     this.element.style.height = 'fit-content';
 
@@ -805,7 +961,7 @@ export class Window_Confirm extends Window_Base {
   constructor() {
     super('center', 'center', 320, 'auto');
     this.element.id = "confirm-window";
-    this.element.style.display = 'flex';
+    this.element.style.display = 'none';
     this.element.style.flexDirection = 'column';
     this.element.style.height = 'fit-content';
 
