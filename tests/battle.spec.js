@@ -21,8 +21,7 @@ test.describe('Battle Screen', () => {
     await expect(battleWindow).toBeVisible();
 
     // 3. Get the battler data from the game state
-    const battleState = await scene.evaluate(scene => scene.battleState, scene);
-    const enemies = battleState.enemies;
+    const enemies = await scene.evaluate(scene => scene.battleManager.enemies, scene);
     const party = await scene.evaluate(scene => scene.party.members.slice(0, 4), scene);
 
     // 4. Verify that the correct number of battler containers are rendered

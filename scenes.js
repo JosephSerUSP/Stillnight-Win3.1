@@ -1,5 +1,6 @@
 import { Game_Map, Game_Party, Game_Battler } from "./objects.js";
-import { beep, randInt, shuffleArray, getPrimaryElements } from "./core.js";
+import { randInt, shuffleArray, getPrimaryElements } from "./core.js";
+import { BattleManager, SoundManager } from "./managers.js";
 import {
   Window_Battle,
   Window_Shop,
@@ -58,8 +59,8 @@ export class Scene_Map extends Scene_Base {
     super(dataManager);
     this.map = new Game_Map();
     this.party = new Game_Party();
+    this.battleManager = new BattleManager(this.party, this.dataManager);
     this.runActive = true;
-    this.battleState = null;
     this.battleBusy = false;
     this.draggedIndex = null;
 
@@ -268,7 +269,7 @@ export class Scene_Map extends Scene_Base {
     this.setStatus(
       this.dataManager.terms.status.exploring_floor + (this.map.floorIndex + 1)
     );
-    beep(500, 200);
+    SoundManager.beep(500, 200);
     this.updateAll();
   }
 
@@ -308,7 +309,7 @@ export class Scene_Map extends Scene_Base {
     this.btnClearLog.addEventListener("click", () => {
       this.logEl.textContent = "";
       this.setStatus("Log cleared.");
-      beep(300, 80);
+      SoundManager.beep(300, 80);
     });
     this.btnFormation.addEventListener("click", this.openFormation.bind(this));
     this.btnInventory.addEventListener("click", this.openInventory.bind(this));
@@ -523,7 +524,7 @@ export class Scene_Map extends Scene_Base {
           this.logMessage(
             `[Navigate] You flip to card ${idx + 1} (${floor.title}).`
           );
-          beep(550, 120);
+          SoundManager.beep(550, 120);
           this.updateAll();
         });
       }
@@ -753,7 +754,7 @@ export class Scene_Map extends Scene_Base {
 
     if (!isAdjacent && !(x === this.map.playerX && y === this.map.playerY)) {
       this.setStatus(this.dataManager.terms.status.only_adjacent_tiles);
-      beep(200, 80);
+      SoundManager.beep(200, 80);
       return;
     }
 
@@ -761,7 +762,7 @@ export class Scene_Map extends Scene_Base {
 
     if (ch === "#") {
       this.setStatus(this.dataManager.terms.log.wall_blocks);
-      beep(180, 80);
+      SoundManager.beep(180, 80);
       return;
     }
 
@@ -788,7 +789,7 @@ export class Scene_Map extends Scene_Base {
       this.setStatus("Recovered HP.");
     } else if (ch === "S") {
       this.descendStairs();
-      beep(800, 150);
+      SoundManager.beep(800, 150);
       return;
     } else if (ch === "E") {
       this.setStatus("Enemy encountered!");
@@ -807,7 +808,7 @@ export class Scene_Map extends Scene_Base {
       return;
     }
 
-    beep(600, 80);
+    SoundManager.beep(600, 80);
     this.applyMovePassives();
     this.updateAll();
   }
@@ -838,7 +839,7 @@ export class Scene_Map extends Scene_Base {
     this.logMessage(`[Floor] You descend to: ${f.title}`);
     this.logMessage(`[Floor] ${f.intro}`);
     this.setStatus("Descending.");
-    beep(800, 150);
+    SoundManager.beep(800, 150);
     this.updateAll();
   }
 
@@ -857,19 +858,8 @@ export class Scene_Map extends Scene_Base {
     this.updateGrid();
     this.setStatus("All tiles revealed.");
     this.logMessage("[Debug] You peek behind the fog.");
-    beep(1000, 100);
+    SoundManager.beep(1000, 100);
   }
-
-  /**
-   * @typedef {object} BattleState
-   * @property {number} floorIndex - The index of the floor the battle is on.
-   * @property {number} tileX - The x-coordinate of the tile the battle is on.
-   * @property {number} tileY - The y-coordinate of the tile the battle is on.
-   * @property {Game_Enemy[]} enemies - The enemies in the battle.
-   * @property {number} round - The current round of the battle.
-   * @property {boolean} finished - Whether the battle is finished.
-   * @property {boolean} victoryPending - Whether the victory screen is pending.
-   */
 
   /**
    * @method openBattle
@@ -905,16 +895,7 @@ export class Scene_Map extends Scene_Base {
       }
     }
 
-    this.battleState = {
-      floorIndex: this.map.floorIndex,
-      tileX,
-      tileY,
-      enemies,
-      round: 0,
-      finished: false,
-      victoryPending: false,
-    };
-
+    this.battleManager.setup(enemies, tileX, tileY);
     this.battleBusy = false;
     this.battleWindow.logEl.textContent = "";
     this.battleWindow.btnVictory.style.display = "none";
@@ -927,7 +908,7 @@ export class Scene_Map extends Scene_Base {
     this.renderBattleAscii();
     this.battleWindow.open();
     this.modeLabelEl.textContent = "Battle";
-    beep(350, 200);
+    SoundManager.beep(350, 200);
   }
 
   /**
@@ -943,20 +924,10 @@ export class Scene_Map extends Scene_Base {
   /**
    * @method renderBattleAscii
    * @description Renders the battle screen by creating and positioning DOM elements.
-   * @param {string} animatingBattlerName - The name of the battler being animated.
-   * @param {number} animatingHp - The current HP of the animating battler.
    */
-  renderBattleAscii(animatingBattlerName = null, animatingHp = null) {
-    if (!this.battleState) return;
-    const { enemies } = this.battleState;
-
-    if(animatingBattlerName && animatingHp) {
-      const battler = [...enemies, ...this.party.members].find(b => b.name === animatingBattlerName);
-      if(battler) {
-        battler.hp = animatingHp;
-      }
-    }
-
+  renderBattleAscii() {
+    if (!this.battleManager) return;
+    const enemies = this.battleManager.enemies;
     this.battleWindow.refresh(enemies, this.party.members.slice(0, 4));
   }
 
@@ -965,237 +936,64 @@ export class Scene_Map extends Scene_Base {
    * @description Resolves a round of battle using async/await for cleaner animation sequencing.
    */
   async resolveBattleRound() {
-    if (!this.battleState || this.battleState.finished || this.battleBusy)
-      return;
+    if (!this.battleManager || this.battleManager.isBattleFinished || this.battleBusy) return;
+
     this.battleBusy = true;
     this.battleWindow.btnRound.disabled = true;
     this.battleWindow.btnFlee.disabled = true;
 
-    this.battleState.round++;
-    const enemies = this.battleState.enemies;
-    const events = [];
+    const events = this.battleManager.resolveRound();
     const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-    // --- 1. Build Event Queue ---
-    // (This part remains the same, generating the list of actions for the round)
-    this.party.members.slice(0, 4).forEach((p, index) => {
-      if (p.hp > 0) {
-        const parasiteDrain = p.getPassiveValue("PARASITE");
-        if (parasiteDrain > 0) {
-          const targetIndex = index % 2 === 0 ? index + 1 : index - 1;
-          if (targetIndex >= 0 && targetIndex < 4) {
-            const target = this.party.members[targetIndex];
-            if (target && target.hp > 0) {
-              events.push({
-                msg: `[Passive] ${p.name} drains ${parasiteDrain} HP from ${target.name}.`,
-                apply: () => {
-                  const oldHp = target.hp;
-                  target.hp = Math.max(0, target.hp - parasiteDrain);
-                  p.hp = Math.min(p.maxHp, p.hp + parasiteDrain);
-                  return { battler: target, oldHp };
-                },
-              });
-            }
-          }
+    SoundManager.beep(300, 80);
+
+    for (const event of events) {
+      if (event.battler && event.battler.hp <= 0) continue;
+
+      if (event.battler) {
+        await this.animateBattlerName(event.battler);
+      }
+
+      this.battleWindow.appendLog(event.msg);
+
+      let oldHp = 0;
+      if (event.target) {
+        oldHp = event.target.hp + (event.value || 0);
+      }
+
+      this.renderBattleAscii();
+
+      if (event.type === 'damage' && event.target) {
+        this.animateBattler(event.target, 'flash');
+        await this.animateBattleHpGauge(event.target, oldHp);
+      } else if (event.type === 'passive_drain') {
+        this.animateBattler(event.target, 'flash');
+        await this.animateBattleHpGauge(event.target, oldHp);
+        await this.animateBattleHpGauge(event.source, event.source.hp - event.value);
+      }
+       else if (event.type === 'end') {
+        if (event.result === 'defeat') {
+          this.logMessage(this.dataManager.terms.log.party_falls);
+          this.runActive = false;
         }
       }
-      if (p.hp <= 0) return;
-      const target = enemies.find((e) => e.hp > 0);
-      if (!target) return;
-      let base = randInt(2, 4) + Math.floor(p.level / 2);
-      if (p.equipmentItem && p.equipmentItem.damageBonus) {
-        base += p.equipmentItem.damageBonus;
-      }
-      const row = this.partyRow(index);
-      if (row === "Front") base += 1;
-      else base -= 1;
-      const mult = this.elementMultiplier(p.elements, target.elements);
-      let dmg = Math.round(base * mult);
-      dmg += p.getPassiveValue("DEAL_DAMAGE_MOD");
-      if (dmg < 1) dmg = 1;
-      const skillId =
-        p.skills && p.skills.length
-          ? p.skills[randInt(0, p.skills.length - 1)]
-          : null;
-      const skill = skillId ? this.dataManager.skills[skillId] : null;
 
-      if (skill) {
-        let boost = 1;
-        if (skill.element) {
-          const matches = p.elements.filter(
-            (e) => e === skill.element
-          ).length;
-          boost += matches * 0.25;
-        }
-        const skillName = `${this.elementToAscii(skill.element)}${skill.name}`;
-        events.push({
-          msg: `${p.name} uses ${skillName}!`,
-          battler: p,
-          apply: () => {},
-        });
-        skill.effects.forEach((effect) => {
-          if (effect.type === "hp_damage") {
-            const formula = effect.formula.replace("a.level", p.level);
-            let skillDmg = Math.round(eval(formula) * boost);
-            if (skillDmg < 1) skillDmg = 1;
-            events.push({
-              msg: `  ${target.name} takes ${skillDmg} damage.`,
-              battler: p,
-              apply: () => {
-                if(target.hp <= 0) return;
-                const oldHp = target.hp;
-                target.hp = Math.max(0, target.hp - skillDmg);
-                return { battler: target, oldHp };
-              },
-            });
-          }
-          if (effect.type === "add_status") {
-            const chance = (effect.chance || 1) * boost;
-            if (Math.random() < chance) {
-              events.push({
-                msg: `  ${target.name} is afflicted with ${effect.status}.`,
-                apply: () => {},
-              });
-            }
-          }
-        });
-      } else {
-        events.push({
-          msg: `${p.name} attacks ${target.name} for ${dmg}.`,
-          battler: p,
-          apply: () => {
-            if(target.hp <= 0) return;
-            const oldHp = target.hp;
-            target.hp = Math.max(0, target.hp - dmg);
-            return { battler: target, oldHp };
-          },
-        });
-      }
-    });
-    enemies.forEach((e) => {
-      if (e.hp <= 0) return;
-      const possibleTargets = this.party.members
-        .slice(0, 4)
-        .filter((p) => p.hp > 0);
-      if (possibleTargets.length === 0) return;
-      const target = possibleTargets[randInt(0, possibleTargets.length - 1)];
-      const skillId =
-        e.skills && e.skills.length
-          ? e.skills[randInt(0, e.skills.length - 1)]
-          : null;
-      const skill = skillId ? this.dataManager.skills[skillId] : null;
-
-      if (skill) {
-        let boost = 1;
-        if (skill.element) {
-          const matches = e.elements.filter(
-            (el) => el === skill.element
-          ).length;
-          boost += matches * 0.25;
-        }
-        const skillName = `${this.elementToAscii(skill.element)}${skill.name}`;
-        events.push({
-          msg: `${e.name} uses ${skillName}!`,
-          battler: e,
-          apply: () => {},
-        });
-        skill.effects.forEach((effect) => {
-          if (effect.type === "hp_damage") {
-            const formula = effect.formula.replace("a.level", e.level);
-            let skillDmg = Math.round(eval(formula) * boost);
-            if (skillDmg < 1) skillDmg = 1;
-            events.push({
-              msg: `  ${target.name} takes ${skillDmg} damage.`,
-              battler: e,
-              apply: () => {
-                if(target.hp <= 0) return;
-                const oldHp = target.hp;
-                target.hp = Math.max(0, target.hp - skillDmg);
-                return { battler: target, oldHp };
-              },
-            });
-          }
-          if (effect.type === "add_status") {
-            const chance = (effect.chance || 1) * boost;
-            if (Math.random() < chance) {
-              events.push({
-                msg: `  ${target.name} is afflicted with ${effect.status}.`,
-                apply: () => {},
-              });
-            }
-          }
-        });
-      } else {
-        const dmg = Math.max(1, e.level + randInt(-1, 2));
-        events.push({
-          msg: `${e.name} attacks ${target.name} for ${dmg}.`,
-          battler: e,
-          apply: () => {
-            if(target.hp <= 0) return;
-            const oldHp = target.hp;
-            target.hp = Math.max(0, target.hp - dmg);
-            return { battler: target, oldHp };
-          },
-        });
-      }
-    });
-    beep(300, 80);
-
-    // --- 2. Process Events Sequentially ---
-    for (const ev of events) {
-      if (ev.battler && ev.battler.hp <= 0) {
-        continue;
-      }
-      if (ev.battler) {
-        await this.animateBattlerName(ev.battler);
-        await delay(300);
-      }
-
-      this.battleWindow.appendLog(ev.msg);
-      const animInfo = ev.apply();
-
-      if (animInfo && animInfo.battler) {
-        this.animateBattler(animInfo.battler, 'flash');
-        await this.animateBattleHpGauge(animInfo.battler, animInfo.oldHp);
-      } else {
-        this.renderBattleAscii();
-      }
-      await delay(600);
-    }
-
-    // --- 3. Finalize Round ---
-    const anyEnemyAlive = enemies.some((e) => e.hp > 0);
-    const anyPartyAlive = this.party.members
-      .slice(0, 4)
-      .some((p) => p.hp > 0);
-
-    if (!anyPartyAlive) {
-      this.battleWindow.appendLog(this.dataManager.terms.battle.your_party_collapses);
-      this.logMessage(this.dataManager.terms.log.party_falls);
-      this.runActive = false;
-      this.battleState.finished = true;
-    } else if (!anyEnemyAlive) {
-      this.battleWindow.appendLog(this.dataManager.terms.battle.victory);
-      this.battleState.finished = true;
-      this.battleState.victoryPending = true;
+      await delay(300);
     }
 
     this.updateParty();
     this.renderBattleAscii();
 
-    if (this.battleState && this.battleState.victoryPending) {
+    if (this.battleManager.isVictoryPending) {
       this.battleWindow.btnVictory.style.display = "inline-block";
     }
-    if (
-      !this.battleState ||
-      (!this.battleState.finished || !this.battleState.victoryPending)
-    ) {
+
+    if (!this.battleManager.isBattleFinished) {
       this.battleWindow.btnRound.disabled = false;
       this.battleWindow.btnFlee.disabled = false;
-    }
-    if (!this.battleState.finished) {
       this.battleWindow.appendLog("Use Resolve Round or Flee.");
     }
+
     this.battleBusy = false;
     this.updateAll();
   }
@@ -1222,7 +1020,7 @@ export class Scene_Map extends Scene_Base {
       leveled = true;
     }
     if (leveled) {
-      beep(900, 150);
+      SoundManager.beep(900, 150);
       this.updateParty();
     }
   }
@@ -1264,7 +1062,7 @@ export class Scene_Map extends Scene_Base {
       if (member.hp > 0) {
         const damage = member.getPassiveValue("BATTLE_START_DAMAGE");
         if (damage > 0) {
-          const target = this.battleState.enemies.find((e) => e.hp > 0);
+          const target = this.battleManager.enemies.find((e) => e.hp > 0);
           if (target) {
             target.hp = Math.max(0, target.hp - damage);
             this.battleWindow.appendLog(
@@ -1326,8 +1124,8 @@ export class Scene_Map extends Scene_Base {
    * @description Handles the click of the victory button.
    */
   onBattleVictoryClick() {
-    if (!this.battleState || !this.battleState.victoryPending) return;
-    const enemies = this.battleState.enemies;
+    if (!this.battleManager || !this.battleManager.isVictoryPending) return;
+    const enemies = this.battleManager.enemies;
     let totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
     const totalXp = enemies.reduce((sum, e) => sum + Math.floor(e.level * (e.expGrowth * 0.5) + 8), 0);
 
@@ -1353,11 +1151,11 @@ export class Scene_Map extends Scene_Base {
 
     this.clearEnemyTileAfterBattle();
 
-    this.battleState.victoryPending = false;
+    this.battleManager.isVictoryPending = false;
     this.battleWindow.btnVictory.style.display = "none";
     this.closeBattle();
     this.setStatus("Victory.");
-    beep(900, 200);
+    SoundManager.beep(900, 200);
   }
 
   /**
@@ -1365,9 +1163,9 @@ export class Scene_Map extends Scene_Base {
    * @description Clears the enemy tile after a battle.
    */
   clearEnemyTileAfterBattle() {
-    if (!this.battleState) return;
-    const f = this.map.floors[this.battleState.floorIndex];
-    const { tileX, tileY } = this.battleState;
+    if (!this.battleManager) return;
+    const f = this.map.floors[this.map.floorIndex];
+    const { tileX, tileY } = this.battleManager;
     if (f.tiles[tileY][tileX] === "E") {
       f.tiles[tileY][tileX] = ".";
     }
@@ -1387,7 +1185,7 @@ export class Scene_Map extends Scene_Base {
       (itemId) => this.buyItem(itemId)
     );
     this.modeLabelEl.textContent = "Shop";
-    beep(650, 150);
+    SoundManager.beep(650, 150);
   }
 
   /**
@@ -1412,7 +1210,7 @@ export class Scene_Map extends Scene_Base {
     if (this.party.gold < item.cost) {
       this.shopWindow.messageEl.textContent =
         this.dataManager.terms.shop.not_enough_gold;
-      beep(180, 80);
+      SoundManager.beep(180, 80);
       return;
     }
 
@@ -1425,7 +1223,7 @@ export class Scene_Map extends Scene_Base {
       `[Shop] ${this.dataManager.terms.shop.purchased}${item.name}.`
     );
     this.updateAll();
-    beep(600, 80);
+    SoundManager.beep(600, 80);
   }
 
   /**
@@ -1454,7 +1252,7 @@ export class Scene_Map extends Scene_Base {
     });
     this.eventWindow.open();
     this.setStatus("Shrine event.");
-    beep(700, 150);
+    SoundManager.beep(700, 150);
   }
 
   /**
@@ -1629,7 +1427,7 @@ export class Scene_Map extends Scene_Base {
 
     this.recruitWindow.open();
     this.setStatus("Recruit encountered.");
-    beep(400, 100);
+    SoundManager.beep(400, 100);
   }
 
   /**
@@ -1836,44 +1634,6 @@ renderElements(elements) {
 }
 
   /**
-   * @method elementMultiplier
-   * @description Calculates the element multiplier.
-   * @param {string[]} attackerElements - The elements of the attacker.
-   * @param {string[]} defenderElements - The elements of the defender.
-   * @returns {number} The element multiplier.
-   */
-  elementMultiplier(attackerElements, defenderElements) {
-    let multiplier = 1;
-    let advantageFound = false;
-    let disadvantageFound = false;
-
-    for (const attackerEl of attackerElements) {
-      if (advantageFound || disadvantageFound) break;
-      for (const defenderEl of defenderElements) {
-        const row = this.dataManager.elements[attackerEl];
-        if (row) {
-          if (row.strong && row.strong.includes(defenderEl)) {
-            advantageFound = true;
-            break;
-          }
-          if (row.weak && row.weak.includes(defenderEl)) {
-            disadvantageFound = true;
-            break;
-          }
-        }
-      }
-    }
-
-    if (advantageFound) {
-      multiplier = 1.5;
-    } else if (disadvantageFound) {
-      multiplier = 0.75;
-    }
-
-    return multiplier;
-  }
-
-  /**
    * @method partyRow
    * @description Gets the row of a party member.
    * @param {number} index - The index of the party member.
@@ -1971,7 +1731,7 @@ renderElements(elements) {
     this.renderFormationGrid();
     this.updateParty();
     this.logMessage("[Formation] Party order changed.");
-    beep(500, 80);
+    SoundManager.beep(500, 80);
   }
 
   /**
@@ -2050,7 +1810,7 @@ renderElements(elements) {
     this.updateParty();
     this.refreshInventoryWindow();
     this.updateAll();
-    beep(700, 100);
+    SoundManager.beep(700, 100);
   }
 
   /**
@@ -2064,7 +1824,7 @@ renderElements(elements) {
     this.refreshInventoryWindow();
     this.updateAll();
     this.logMessage(`[Inventory] Discarded ${item.name}.`);
-    beep(300, 80);
+    SoundManager.beep(300, 80);
   }
 
   /**
@@ -2222,7 +1982,7 @@ renderElements(elements) {
       // Unequip current item if one exists
       if (member.equipmentItem) {
         this.party.inventory.push(member.equipmentItem);
-        beep(600, 80); // Unequip sound
+        SoundManager.beep(600, 80); // Unequip sound
       }
       // Equip the new item
       member.equipmentItem = item;
@@ -2234,7 +1994,7 @@ renderElements(elements) {
       this.logMessage(`[Equip] ${member.name} equipped ${item.name}.`);
       this.closeInspect();
       this.updateAll();
-      beep(800, 100); // Equip sound
+      SoundManager.beep(800, 100); // Equip sound
     };
 
     // If the item is equipped by another member, show confirmation
@@ -2253,7 +2013,7 @@ renderElements(elements) {
         this.confirmWindow.close();
         this.closeInspect();
         this.updateAll();
-        beep(700, 150); // Swap sound
+        SoundManager.beep(700, 150); // Swap sound
       };
       this.confirmWindow.btnCancel.onclick = () => {
         this.confirmWindow.close();
