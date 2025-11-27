@@ -274,6 +274,12 @@ export class Scene_Battle extends Scene_Base {
                 this.animateBattler(event.target, 'flash');
                 await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
 
+            } else if (event.type === 'heal' && event.target) {
+                if (event.animation) {
+                     await this.playAnimation(event.target, event.animation);
+                }
+                await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
+
             } else if (event.type === 'passive_drain') {
                 this.animateBattler(event.target, 'flash');
                 await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
@@ -541,10 +547,20 @@ export class Scene_Battle extends Scene_Base {
       const maxFrames = 15;
       const interval = 50;
 
+      // Find the element once
+      const enemyIndex = this.battleManager.enemies.indexOf(battler);
+      const partyIndex = this.party.members.indexOf(battler);
+      let elementId = null;
+      if (enemyIndex !== -1) elementId = `battler-enemy-${enemyIndex}`;
+      else if (partyIndex !== -1) elementId = `battler-party-${partyIndex}`;
+
+      const nameEl = elementId ? this.battleWindow.viewportEl.querySelector(`#${elementId}`) : null;
+
       const animator = () => {
         if (frame >= maxFrames) {
           battler.name = originalName;
-          this.renderBattleAscii();
+          if (nameEl) nameEl.textContent = originalName;
+          else this.renderBattleAscii(); // Fallback if element not found
           resolve();
           return;
         }
@@ -558,8 +574,14 @@ export class Scene_Battle extends Scene_Base {
             newName += char;
           }
         }
-        battler.name = newName;
-        this.renderBattleAscii();
+
+        // Update DOM directly to avoid full re-render which would snap HP to current state
+        if (nameEl) {
+            nameEl.textContent = newName;
+        } else {
+            battler.name = newName; // Only update object if we rely on renderBattleAscii
+            this.renderBattleAscii();
+        }
 
         frame++;
         setTimeout(animator, interval);
@@ -567,6 +589,138 @@ export class Scene_Battle extends Scene_Base {
 
       animator();
     });
+  }
+
+  /**
+   * @method playAnimation
+   * @description Plays a data-driven animation on a target.
+   * @param {Game_Battler} target - The target of the animation.
+   * @param {string} animationId - The ID of the animation to play.
+   */
+  playAnimation(target, animationId) {
+       return new Promise((resolve) => {
+           if (!this.dataManager.animations || !this.dataManager.animations[animationId]) {
+               resolve();
+               return;
+           }
+
+           const anim = this.dataManager.animations[animationId];
+
+           // Find target element
+           const enemyIndex = this.battleManager.enemies.indexOf(target);
+           const partyIndex = this.party.members.indexOf(target);
+           let battlerId = null;
+           if (enemyIndex !== -1) battlerId = `battler-enemy-${enemyIndex}`;
+           else if (partyIndex !== -1) battlerId = `battler-party-${partyIndex}`;
+
+           if (!battlerId) { resolve(); return; }
+
+           const battlerElement = this.battleWindow.viewportEl.querySelector(`#${battlerId}`);
+           if (!battlerElement) { resolve(); return; }
+
+           // Find sub-element if specified
+           let targetEl = battlerElement;
+           let preserveBrackets = false;
+           if (anim.targetPart === "hp_gauge") {
+                const container = battlerElement.closest('.battler-container');
+                if (container) {
+                    const hpEl = container.querySelector('.battler-hp');
+                    if (hpEl) {
+                        targetEl = hpEl;
+                        preserveBrackets = true;
+                    }
+                }
+           }
+
+           if (anim.type === "text_flow" || anim.type === "text_flow_liquid") {
+               const originalText = targetEl.textContent;
+               const duration = anim.duration || 1000;
+               const interval = anim.interval || 50;
+               const sequence = anim.sequence || "*";
+               const color = anim.color || "";
+
+               if (color) targetEl.style.color = color;
+
+               // Setup for fixed width preservation
+               let animationContainer = targetEl;
+               let contentLen = originalText.length;
+
+               if (preserveBrackets && originalText.startsWith("[") && originalText.endsWith("]")) {
+                   contentLen = originalText.length - 2;
+                   const innerContent = originalText.substring(1, originalText.length - 1);
+
+                   // Measure width of inner content
+                   const measureSpan = document.createElement("span");
+                   measureSpan.style.visibility = "hidden";
+                   measureSpan.style.position = "absolute";
+                   measureSpan.style.whiteSpace = "pre";
+                   measureSpan.textContent = innerContent;
+                   targetEl.appendChild(measureSpan);
+                   const width = measureSpan.getBoundingClientRect().width;
+                   targetEl.removeChild(measureSpan);
+
+                   // Create wrapper structure
+                   targetEl.innerHTML = "";
+                   targetEl.appendChild(document.createTextNode("["));
+                   animationContainer = document.createElement("span");
+                   animationContainer.style.display = "inline-block";
+                   animationContainer.style.width = `${width}px`;
+                   animationContainer.style.whiteSpace = "pre";
+                   animationContainer.style.overflow = "hidden";
+                   animationContainer.style.verticalAlign = "bottom";
+                   animationContainer.style.textAlign = "center";
+                   targetEl.appendChild(animationContainer);
+                   targetEl.appendChild(document.createTextNode("]"));
+               }
+
+               let startTime = Date.now();
+
+               const animator = () => {
+                   const now = Date.now();
+                   const elapsed = now - startTime;
+                   if (elapsed >= duration) {
+                       targetEl.textContent = originalText;
+                       targetEl.style.color = "";
+                       resolve();
+                       return;
+                   }
+
+                   let frameContent = "";
+
+                   if (anim.type === "text_flow_liquid") {
+                       // Liquid Flow: Characters move at different speeds (sine wave offset)
+                       for (let i = 0; i < contentLen; i++) {
+                           // Use sine wave to determine which char from sequence to pick
+                           // Speed factor depends on time
+                           const timeFactor = elapsed / 100;
+                           // Spatial frequency
+                           const wave = Math.sin(i * 0.5 + timeFactor);
+                           // Map wave (-1 to 1) to sequence index
+                           // We want a flowing effect, so index should increase with time
+                           const index = Math.floor(i + timeFactor * 2 + wave * 2) % sequence.length;
+                           // JS modulo of negative numbers behaves weirdly, ensure positive
+                           const safeIndex = (index + sequence.length * 100) % sequence.length;
+                           frameContent += sequence[safeIndex];
+                       }
+                   } else {
+                       // Standard Text Flow
+                       const offset = Math.floor(elapsed / interval);
+                       let s = "";
+                       while (s.length < contentLen + sequence.length) s += sequence;
+                       const startIdx = (sequence.length - (offset % sequence.length)) % sequence.length;
+                       frameContent = s.substring(startIdx, startIdx + contentLen);
+                   }
+
+                   animationContainer.textContent = frameContent;
+
+                   setTimeout(animator, interval);
+               };
+               animator();
+
+           } else {
+               resolve();
+           }
+       });
   }
 }
 
