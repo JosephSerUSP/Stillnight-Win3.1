@@ -1,4 +1,5 @@
 import { getPrimaryElements, Graphics, elementToAscii, getIconStyle } from "./core.js";
+import { tooltip } from "./tooltip.js";
 
 /**
  * @class WindowLayer
@@ -600,6 +601,20 @@ export class Window_Shop extends Window_Base {
       });
       row.appendChild(label);
       row.appendChild(btn);
+
+      // Tooltip
+      row.addEventListener("mouseenter", (e) => {
+        tooltip.show(e.clientX, e.clientY, tpl.name, tpl.description);
+      });
+      row.addEventListener("mouseleave", () => {
+        tooltip.hide();
+      });
+      row.addEventListener("mousemove", (e) => {
+         if (tooltip.visible) {
+             tooltip.show(e.clientX, e.clientY, tpl.name, tpl.description);
+         }
+      });
+
       this.listContainer.appendChild(row);
     });
   }
@@ -750,9 +765,22 @@ export class Window_Inventory extends Window_Base {
         row.appendChild(icon);
 
         const desc = document.createElement("span");
-        desc.textContent = `${item.name}: ${item.description}`;
+        desc.textContent = `${item.name}`;
         desc.style.flexGrow = "1";
         row.appendChild(desc);
+
+        // Tooltip
+        row.addEventListener("mouseenter", (e) => {
+            tooltip.show(e.clientX, e.clientY, item.name, item.description);
+        });
+        row.addEventListener("mouseleave", () => {
+            tooltip.hide();
+        });
+        row.addEventListener("mousemove", (e) => {
+            if (tooltip.visible) {
+                tooltip.show(e.clientX, e.clientY, item.name, item.description);
+            }
+        });
 
         const btns = document.createElement("div");
         const useBtn = document.createElement("button");
