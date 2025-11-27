@@ -332,7 +332,8 @@ export class Window_Battle extends Window_Base {
 
         const primaryElements = getPrimaryElements(e.elements);
         const elementAscii = primaryElements.map(el => elementToAscii(el)).join('');
-        const nameStr = `<span id="battler-${e.name.replace(/\s/g, '-')}">${e.name}</span>`;
+        // Unique ID based on index and type (enemy)
+        const nameStr = `<span id="battler-enemy-${idx}">${e.name}</span>`;
 
         const el = document.createElement("div");
         el.className = 'battler-container';
@@ -351,7 +352,8 @@ export class Window_Battle extends Window_Base {
 
         const primaryElements = getPrimaryElements(p.elements);
         const elementAscii = primaryElements.map(el => elementToAscii(el)).join('');
-        const nameStr = `<span id="battler-${p.name.replace(/\s/g, '-')}">${p.name}</span>`;
+        // Unique ID based on index and type (party)
+        const nameStr = `<span id="battler-party-${idx}">${p.name}</span>`;
 
         const el = document.createElement("div");
         el.className = 'battler-container';
