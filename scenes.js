@@ -1,5 +1,5 @@
 import { Game_Map, Game_Party, Game_Battler } from "./objects.js";
-import { randInt, shuffleArray, getPrimaryElements } from "./core.js";
+import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle } from "./core.js";
 import { BattleManager, SoundManager } from "./managers.js";
 import {
   Window_Battle,
@@ -1261,21 +1261,11 @@ export class Scene_Map extends Scene_Base {
    * @param {number} tileY - The y-coordinate of the tile the battle is on.
    */
   gainXp(member, amount) {
-    if (!member || amount <= 0) return;
-    member.xp = (member.xp || 0) + amount;
-    let leveled = false;
-    while (member.xp >= member.xpNeeded(member.level)) {
-      member.xp -= member.xpNeeded(member.level);
-      member.level++;
-      const hpGain = randInt(2, 4);
-      member.maxHp += hpGain;
-      member.hp = member.maxHp;
+    const result = member.gainXp(amount);
+    if (result.leveledUp) {
       this.logMessage(
-        `[Level] ${member.name} grows to Lv${member.level}! HP +${hpGain}.`
+        `[Level] ${member.name} grows to Lv${result.newLevel}! HP +${result.hpGain}.`
       );
-      leveled = true;
-    }
-    if (leveled) {
       SoundManager.beep(900, 150);
       this.updateParty();
     }
@@ -1611,45 +1601,6 @@ export class Scene_Map extends Scene_Base {
       return `${elementIcon.innerHTML}${skill.name}`;
   }
 
-  /**
-   * @method elementToAscii
-   * @description Converts an element to its ASCII representation.
-   * @param {string} element - The element to convert.
-   * @returns {string} The ASCII representation of the element.
-   */
-    elementToAscii(element) {
-    switch (element) {
-        case "Red": return "(R)";
-        case "Green": return "(G)";
-        case "Blue": return "(B)";
-        case "White": return "(W)";
-        case "Black": return "(K)";
-        default: return "";
-    }
-  }
-  
-  /**
-   * @method elementToIcon
-   * @description Converts an element to its icon ID.
-   * @param {string} element - The element to convert.
-   * @returns {number} The icon ID of the element.
-   */
-  elementToIcon(element) {
-    switch (element) {
-        case "Red": return 1;
-        case "Green": return 2;
-        case "Blue": return 3;
-        case "White": return 4;
-        case "Black": return 5;
-        case "l_Red": return 11;
-        case "l_Green": return 12;
-        case "l_Blue": return 13;
-        case "l_White": return 14;
-        case "l_Black": return 15;
-        default: return 0;
-    }
-}
-
 /**
  * @method createElementIcon
  * @description Creates an element icon.
@@ -1665,10 +1616,9 @@ createElementIcon(elements) {
         const icon = document.createElement('div');
         icon.className = 'icon';
         if (primaryElements.length === 1) {
-            const iconId = this.elementToIcon(primaryElements[0]);
+            const iconId = elementToIconId(primaryElements[0]);
             if (iconId > 0) {
-                const iconIndex = iconId - 1;
-                icon.style.backgroundPosition = `-${(iconIndex % 10) * 12}px -${Math.floor(iconIndex / 10) * 12}px`;
+                icon.style.backgroundPosition = getIconStyle(iconId);
             }
         }
         container.appendChild(icon);
@@ -1684,10 +1634,9 @@ createElementIcon(elements) {
             if (index < 4) {
                 const icon = document.createElement('div');
                 icon.className = 'element-icon';
-                const iconId = this.elementToIcon('l_' + element);
+                const iconId = elementToIconId('l_' + element);
                 if (iconId > 0) {
-                    const iconIndex = iconId - 1;
-                    icon.style.backgroundPosition = `-${(iconIndex % 10) * 12}px -${Math.floor(iconIndex / 10) * 12}px`;
+                    icon.style.backgroundPosition = getIconStyle(iconId);
                     icon.style.top = positions[index].top;
                     icon.style.left = positions[index].left;
                     container.appendChild(icon);
@@ -1710,10 +1659,9 @@ renderElements(elements) {
     elements.forEach(element => {
         const icon = document.createElement('div');
         icon.className = 'icon';
-        const iconId = this.elementToIcon(element);
+        const iconId = elementToIconId(element);
         if (iconId > 0) {
-            const iconIndex = iconId - 1;
-            icon.style.backgroundPosition = `-${(iconIndex % 10) * 12}px -${Math.floor(iconIndex / 10) * 12}px`;
+            icon.style.backgroundPosition = getIconStyle(iconId);
         }
         container.appendChild(icon);
     });
