@@ -98,7 +98,18 @@ export class SoundManager {
    * @private
    * @type {AudioContext}
    */
-  static _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  static _audioCtx = null;
+
+  /**
+   * @method _initialize
+   * @private
+   * @description Initializes the AudioContext.
+   */
+  static _initialize() {
+    if (!this._audioCtx && typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) {
+      this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+  }
 
   /**
    * @method beep
@@ -107,6 +118,9 @@ export class SoundManager {
    * @param {number} [duration=120] - The duration of the beep in ms.
    */
   static beep(frequency = 440, duration = 120) {
+    this._initialize();
+    if (!this._audioCtx) return;
+
     try {
       const oscillator = this._audioCtx.createOscillator();
       const gainNode = this._audioCtx.createGain();
@@ -381,4 +395,81 @@ export class BattleManager {
 
     return events;
   }
+}
+
+/**
+ * @class SceneManager
+ * @description Manages the scene stack and the main game loop.
+ */
+export class SceneManager {
+  /**
+   * @param {HTMLElement} container - The container element for the game.
+   */
+  constructor(container) {
+    this.container = container;
+    this._stack = [];
+    this._currentScene = null;
+    this.requestUpdate();
+  }
+
+  /**
+   * @method update
+   * @description The main game loop.
+   */
+  update() {
+    if (this._currentScene) {
+      this._currentScene.update();
+    }
+    this.requestUpdate();
+  }
+
+  /**
+   * @method requestUpdate
+   * @description Requests the next frame of the game loop.
+   */
+  requestUpdate() {
+    requestAnimationFrame(this.update.bind(this));
+  }
+
+  /**
+   * @method push
+   * @description Pushes a new scene onto the stack.
+   * @param {Scene_Base} scene - The scene to push.
+   */
+  push(scene) {
+    if (this._currentScene) {
+      this._stack.push(this._currentScene);
+    }
+    this._currentScene = scene;
+    scene.start();
+  }
+
+  /**
+   * @method pop
+   * @description Pops the current scene from the stack.
+   */
+  pop() {
+    if (this._currentScene) {
+      this._currentScene.stop();
+    }
+    this._currentScene = this._stack.pop();
+  }
+
+  /**
+   * @method currentScene
+   * @description Gets the current scene.
+   * @returns {import("../scenes.js").Scene_Base} The current scene.
+   */
+  currentScene() {
+    return this._currentScene;
+  }
+
+  /**
+   * @method previous
+   * @description Gets the previous scene.
+   * @returns {import("../scenes.js").Scene_Base} The previous scene.
+   */
+  previous() {
+    return this._stack[this._stack.length - 1];
+    }
 }

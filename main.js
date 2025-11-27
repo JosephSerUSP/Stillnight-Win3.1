@@ -1,18 +1,19 @@
-import { DataManager } from "./managers.js";
-import { Scene_Map } from "./scenes.js";
+import { DataManager, SceneManager } from "./managers.js";
+import { Scene_Boot } from "./scenes.js";
 
 /**
  * The main entry point for the game.
  */
 async function main() {
+  const gameContainer = document.getElementById("game-container");
+  const sceneManager = new SceneManager(gameContainer);
   const dataManager = new DataManager();
-  await dataManager.loadData();
+  const initialScene = new Scene_Boot(dataManager, sceneManager);
+  sceneManager.push(initialScene);
 
-  const scene = new Scene_Map(dataManager);
   if (window.location.search.includes("test=true")) {
-    window.scene = scene;
+    window.sceneManager = sceneManager;
   }
-  scene.start();
 }
 
 // Start the game when the DOM is ready
