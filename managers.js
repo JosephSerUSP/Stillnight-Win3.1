@@ -1,4 +1,4 @@
-import { randInt } from "./core.js";
+import { randInt, elementToAscii } from "./core.js";
 
 /**
  * The data manager for the game.
@@ -223,24 +223,6 @@ export class BattleManager {
   }
 
   /**
-   * @method _elementToAscii
-   * @private
-   * @description Converts an element to its ASCII representation.
-   * @param {string} element - The element to convert.
-   * @returns {string} The ASCII representation of the element.
-   */
-  _elementToAscii(element) {
-    switch (element) {
-      case "Red": return "(R)";
-      case "Green": return "(G)";
-      case "Blue": return "(B)";
-      case "White": return "(W)";
-      case "Black": return "(K)";
-      default: return "";
-    }
-  }
-
-  /**
    * @method resolveRound
    * @description Resolves a single round of combat, generating a sequence of events.
    * This is a pure function that takes the current state and returns a list of
@@ -287,7 +269,7 @@ export class BattleManager {
           const matches = p.elements.filter((e) => e === skill.element).length;
           boost += matches * 0.25;
         }
-        const skillName = `${this._elementToAscii(skill.element)}${skill.name}`;
+        const skillName = `${elementToAscii(skill.element)}${skill.name}`;
         events.push({ type: 'use_skill', battler: p, skillName, msg: `${p.name} uses ${skillName}!` });
 
         skill.effects.forEach((effect) => {
@@ -342,7 +324,7 @@ export class BattleManager {
           const matches = e.elements.filter((el) => el === skill.element).length;
           boost += matches * 0.25;
         }
-        const skillName = `${this._elementToAscii(skill.element)}${skill.name}`;
+        const skillName = `${elementToAscii(skill.element)}${skill.name}`;
         events.push({ type: 'use_skill', battler: e, skillName, msg: `${e.name} uses ${skillName}!` });
 
         skill.effects.forEach((effect) => {

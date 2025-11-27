@@ -172,4 +172,12 @@ The next priority should be Phase 2 (Logic Extraction), as stated in the "Implem
 
 With the completion of Phases II and III, the project is now in a much more scalable and maintainable state. The "God Class" `Scene_Map` has been successfully broken down, and a proper scene management flow is in place. The next logical step is to proceed with Phase IV, which will focus on implementing a data-driven trait system to remove hardcoded passive and skill effects.
 
+<br>
+
+**Maintenance & Cleanup (Current Step):**
+
+-   **Helper Function Consolidation:** Duplicate logic for `elementToAscii`, `elementToIcon`, and icon style calculations was found in `Scene_Map`, `BattleManager`, and various Window classes. These were centralized into `core.js` (`elementToAscii`, `elementToIconId`, `getIconStyle`), improving maintainability and adhering to DRY principles.
+-   **XP Logic Encapsulation:** The `gainXp` logic, which mixed calculation with UI updates in `Scene_Map`, was refactored. The core calculation and state update logic was moved to `Game_Battler.gainXp()`, which returns a result object. `Scene_Map` now consumes this result to handle the UI logging, separating concerns.
+-   **Test Fixes:** The existing Playwright tests in `tests/game_logic.spec.js` were broken due to architectural changes (accessing `sceneManager.stack[0]` instead of `sceneManager.currentScene()`). These tests were updated to use the correct API and now pass reliably.
+
 --- END OF FILE documentation/design.md ---

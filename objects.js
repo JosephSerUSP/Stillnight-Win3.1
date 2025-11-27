@@ -62,6 +62,37 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
+   * @method gainXp
+   * @description Adds experience points to the battler and handles leveling up.
+   * @param {number} amount - The amount of XP to gain.
+   * @returns {Object} An object containing information about the level up.
+   *                   { leveledUp: boolean, hpGain: number, newLevel: number }
+   */
+  gainXp(amount) {
+    if (amount <= 0) return { leveledUp: false, hpGain: 0, newLevel: this.level };
+
+    this.xp = (this.xp || 0) + amount;
+    let leveledUp = false;
+    let totalHpGain = 0;
+
+    while (this.xp >= this.xpNeeded(this.level)) {
+      this.xp -= this.xpNeeded(this.level);
+      this.level++;
+      const hpGain = randInt(2, 4);
+      this.maxHp += hpGain;
+      this.hp = this.maxHp;
+      totalHpGain += hpGain;
+      leveledUp = true;
+    }
+
+    return {
+      leveledUp,
+      hpGain: totalHpGain,
+      newLevel: this.level
+    };
+  }
+
+  /**
    * @method getPassiveValue
    * @description Gets the value of a specific passive.
    * @param {string} code - The code of the passive to get.

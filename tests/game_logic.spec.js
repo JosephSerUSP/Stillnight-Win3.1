@@ -14,12 +14,9 @@ test.describe('Game Logic', () => {
     // Start a new run
     await page.click('#btn-new-run');
 
-    // We need to trigger a battle. Since map generation is random,
-    // we can try to find an 'E' tile or inject a battle.
-    // Easier: Inject a battle scene directly via console since we have test=true
-
+    // Inject a battle scene directly via console
     await page.evaluate(() => {
-        const sceneMap = window.sceneManager.stack[0];
+        const sceneMap = window.sceneManager.currentScene();
         // Create a dummy battle
         const battleScene = new window.Scene_Battle(
             window.dataManager,
@@ -60,7 +57,7 @@ test.describe('Game Logic', () => {
 
         // Add a dummy item to inventory
         await page.evaluate(() => {
-            const sceneMap = window.sceneManager.stack[0];
+            const sceneMap = window.sceneManager.currentScene();
             const sword = {
                 id: "test_sword",
                 name: "Test Sword",
@@ -88,24 +85,6 @@ test.describe('Game Logic', () => {
         // Verify the inspect window is still open (Equipment list container)
         const equipList = page.locator('.group-box legend', { hasText: 'Change Equipment' });
         await expect(equipList).toBeVisible();
-
-        // Verify item is now equipped (button should say Swap or disappear if list refreshes)
-        // Since we refreshed, the item is now on the character.
-        // The list shows "All" by default. The item was in inventory, now it's equipped.
-        // It should still appear in the list but maybe with "Swap" if we implemented that logic for equipped items?
-        // Wait, the logic is:
-        // const otherMemberItems = ... (items on OTHER members)
-        // const inventoryItems = ...
-        // If I equip it, it's no longer in inventory, so it won't show up in the list unless it's on ANOTHER member.
-        // But the current member has it.
-        // Let's check if the list is empty or shows "No equipable items" if that was the only item.
-        // Or we can check the equipment slot text on the inspect window behind the list.
-
-        // Actually, if I equipped it, it should no longer be in the "available to equip" list for THIS member
-        // unless I have another one.
-        // So the list might be empty or show other items.
-        // Key verification is that the window is STILL VISIBLE.
-        await expect(equipList).toBeVisible();
     });
 
     test('Map interaction blocked during battle', async ({ page }) => {
@@ -114,7 +93,7 @@ test.describe('Game Logic', () => {
 
         // Inject battle
         await page.evaluate(() => {
-             const sceneMap = window.sceneManager.stack[0];
+             const sceneMap = window.sceneManager.currentScene();
              // Mock battle
              const battleScene = new window.Scene_Battle(
                  window.dataManager,

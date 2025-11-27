@@ -1,4 +1,4 @@
-import { getPrimaryElements, Graphics } from "./core.js";
+import { getPrimaryElements, Graphics, elementToAscii, getIconStyle } from "./core.js";
 
 /**
  * @class WindowLayer
@@ -228,7 +228,7 @@ export class Window_Battle extends Window_Base {
     this.appendLog(terms.enemies_emerge);
     enemies.forEach((e) => {
         const primaryElements = getPrimaryElements(e.elements);
-        const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
+        const elementAscii = primaryElements.map(el => elementToAscii(el)).join('');
         this.appendLog(` - ${e.name} (${e.role}, ${elementAscii})`);
     });
   }
@@ -251,7 +251,7 @@ export class Window_Battle extends Window_Base {
         const hp = e.hp;
 
         const primaryElements = getPrimaryElements(e.elements);
-        const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
+        const elementAscii = primaryElements.map(el => elementToAscii(el)).join('');
         const nameStr = `<span id="battler-${e.name.replace(/\s/g, '-')}">${e.name}</span>`;
 
         const el = document.createElement("div");
@@ -270,7 +270,7 @@ export class Window_Battle extends Window_Base {
         const hp = p.hp;
 
         const primaryElements = getPrimaryElements(p.elements);
-        const elementAscii = primaryElements.map(el => this.elementToAscii(el)).join('');
+        const elementAscii = primaryElements.map(el => elementToAscii(el)).join('');
         const nameStr = `<span id="battler-${p.name.replace(/\s/g, '-')}">${p.name}</span>`;
 
         const el = document.createElement("div");
@@ -295,17 +295,6 @@ export class Window_Battle extends Window_Base {
     }
     const emptyCount = totalLength - filledCount;
     return `[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
-  }
-
-  elementToAscii(element) {
-    switch (element) {
-        case "Red": return "(R)";
-        case "Green": return "(G)";
-        case "Blue": return "(B)";
-        case "White": return "(W)";
-        case "Black": return "(K)";
-        default: return "";
-    }
   }
 }
 
@@ -511,8 +500,7 @@ export class Window_Shop extends Window_Base {
       icon.className = 'icon';
       const iconId = tpl.icon || 6; // Use icon 6 as a placeholder
       if (iconId > 0) {
-          const iconIndex = iconId - 1;
-          icon.style.backgroundPosition = `-${(iconIndex % 10) * 12}px -${Math.floor(iconIndex / 10) * 12}px`;
+          icon.style.backgroundPosition = getIconStyle(iconId);
       }
       row.appendChild(icon);
 
@@ -671,8 +659,7 @@ export class Window_Inventory extends Window_Base {
         icon.className = "icon";
         const iconId = item.icon || 6;
         if (iconId > 0) {
-            const iconIndex = iconId - 1;
-            icon.style.backgroundPosition = `-${(iconIndex % 10) * 12}px -${Math.floor(iconIndex / 10) * 12}px`;
+            icon.style.backgroundPosition = getIconStyle(iconId);
         }
         row.appendChild(icon);
 
