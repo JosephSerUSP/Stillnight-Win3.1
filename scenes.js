@@ -178,7 +178,9 @@ export class Scene_Battle extends Scene_Base {
 
   /**
    * @method resolveBattleRound
-   * @description Resolves a round of battle using async/await for cleaner animation sequencing.
+   * @description Resolves a round of battle.
+   * Refactored to use the granular BattleManager API (startRound -> getNextBattler -> startTurn -> executeAction).
+   * This structure supports future player input by isolating the "Plan Action" step.
    */
   async resolveBattleRound() {
     if (!this.battleManager || this.battleManager.isBattleFinished || this.battleBusy) return;
@@ -195,52 +197,30 @@ export class Scene_Battle extends Scene_Base {
 
     // Loop through turns until the round is complete
     while (true) {
-        // Process a single turn
-        const events = this.battleManager.processTurn();
+        // 1. Get next battler
+        const battlerContext = this.battleManager.getNextBattler();
+        if (!battlerContext) break; // Round over
 
-        // If null, the round is over
-        if (!events) break;
+        // 2. Start Turn (Passives)
+        const startEvents = this.battleManager.startTurn(battlerContext);
+        await this.animateEvents(startEvents);
+        if (this.battleManager.isBattleFinished) break;
 
-        // Animate the events for this turn
-        for (const event of events) {
-            if (event.battler) {
-                await this.animateBattlerName(event.battler);
-            }
+        // 3. Plan Action (AI for now)
+        // Future-Forward: To implement player control, check !battlerContext.isEnemy here.
+        // If player, wait for UI input to generate the 'action' object.
+        const action = this.battleManager.getAIAction(battlerContext);
 
-            this.battleWindow.appendLog(event.msg);
-
-            // Determine HP values for animation
-            let targetOldHp = event.target ? event.target.hp : 0;
-            let targetNewHp = event.target ? event.target.hp : 0;
-
-            if (event.hpBefore !== undefined) {
-                targetOldHp = event.hpBefore;
-                targetNewHp = event.hpAfter;
-            }
-
-            if (event.type === 'damage' && event.target) {
-                this.animateBattler(event.target, 'flash');
-                await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
-
-            } else if (event.type === 'passive_drain') {
-                this.animateBattler(event.target, 'flash');
-                await this.animateBattleHpGauge(event.target, event.hpBeforeTarget, event.hpAfterTarget);
-                if (event.source) {
-                    await this.animateBattleHpGauge(event.source, event.hpBeforeSource, event.hpAfterSource);
-                }
-
-            } else if (event.type === 'end') {
-                if (event.result === 'defeat') {
-                    this.logMessage(this.dataManager.terms.log.party_falls);
-                    this.runActive = false;
-                }
-            }
-
-            await delay(300);
+        if (action) {
+             // 4. Execute Action
+             const actionEvents = this.battleManager.executeAction(action);
+             await this.animateEvents(actionEvents);
         }
 
         // If battle finished during this turn, break the loop
         if (this.battleManager.isBattleFinished) break;
+
+        await delay(100);
     }
 
     this.sceneManager.previous().updateParty();
@@ -257,6 +237,63 @@ export class Scene_Battle extends Scene_Base {
     }
 
     this.battleBusy = false;
+  }
+
+  /**
+   * @method animateEvents
+   * @description Helper to animate a list of battle events.
+   * @param {Array} events - The list of events to animate.
+   */
+  async animateEvents(events) {
+      const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+      for (const event of events) {
+            if (event.battler) {
+                await this.animateBattlerName(event.battler);
+            }
+
+            if (event.msg) {
+                this.battleWindow.appendLog(event.msg);
+            }
+
+            // Determine HP values for animation
+            let targetOldHp = event.target ? event.target.hp : 0;
+            let targetNewHp = event.target ? event.target.hp : 0;
+
+            if (event.hpBefore !== undefined) {
+                targetOldHp = event.hpBefore;
+                targetNewHp = event.hpAfter;
+            }
+            // For passive drain, we have explicit target/source keys
+            if (event.type === 'passive_drain') {
+                 targetOldHp = event.hpBeforeTarget;
+                 targetNewHp = event.hpAfterTarget;
+            }
+
+            if (event.type === 'damage' && event.target) {
+                this.animateBattler(event.target, 'flash');
+                await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
+
+            } else if (event.type === 'passive_drain') {
+                this.animateBattler(event.target, 'flash');
+                await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
+                if (event.source) {
+                    await this.animateBattleHpGauge(event.source, event.hpBeforeSource, event.hpAfterSource);
+                }
+
+            } else if (event.type === 'end') {
+                if (event.result === 'defeat') {
+                    if (this.sceneManager.previous().logMessage) {
+                         this.sceneManager.previous().logMessage(this.dataManager.terms.log.party_falls);
+                    }
+                    if (this.sceneManager.previous().runActive !== undefined) {
+                         this.sceneManager.previous().runActive = false;
+                    }
+                }
+            }
+
+            await delay(300);
+      }
   }
 
   /**
