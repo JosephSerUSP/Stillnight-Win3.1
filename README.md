@@ -53,12 +53,19 @@ python -m http.server 8080
 Then, open your browser and navigate to `http://localhost:8080`.
 
 ### Running Tests
-The project uses [Playwright](https://playwright.dev/) for end-to-end testing.
+The project uses [Playwright](https://playwright.dev/) for testing. The configuration (`playwright.config.js`) handles starting the web server automatically.
 
 To run all tests:
 ```bash
 npm test
 ```
+
+#### Testing Strategy & Philosophy
+The engine is currently undergoing a fundamental refactor. As such, the testing strategy prioritizes **logic verification** over **structural rigidity**.
+
+*   **Tests as Scaffolding**: Tests are designed to verify that core math (Damage, XP curves, Healing) and game rules (Elemental weakness, Turn order) remain correct. They are *not* intended to lock down the internal class structure.
+*   **Refactoring Priority**: If a test fails because a class was renamed or moved during a refactor—but the game logic remains sound—**update or discard the test**. Do not let test maintenance block architectural improvements.
+*   **Infrastructure**: To facilitate unit-testing of internal logic within the browser context, the application exposes core classes (`Game_Battler`, `BattleManager`, etc.) to the `window` object when the URL query parameter `?test=true` is present.
 
 ## Architecture
 

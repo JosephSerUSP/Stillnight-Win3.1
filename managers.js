@@ -700,3 +700,11 @@ export class SceneManager {
     return this._stack[this._stack.length - 1];
     }
 }
+
+// Expose classes to the window object for testing if in test mode.
+if (typeof window !== 'undefined' && window.location.search.includes("test=true")) {
+    window.DataManager = DataManager;
+    window.SoundManager = SoundManager;
+    window.BattleManager = BattleManager;
+    window.SceneManager = SceneManager;
+}
