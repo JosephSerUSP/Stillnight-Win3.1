@@ -41,6 +41,12 @@ export class DataManager {
     this.items = null;
 
     /**
+     * The NPC data loaded from npcs.json.
+     * @type {Array|null}
+     */
+    this.npcs = null;
+
+    /**
      * The terms/strings data loaded from terms.json.
      * @type {Object|null}
      */
@@ -82,6 +88,7 @@ export class DataManager {
       events: "data/events.json",
       floors: "data/floors.json",
       items: "data/items.json",
+      npcs: "data/npcs.json",
       terms: "data/terms.json",
     };
 
