@@ -40,6 +40,512 @@ class Scene_Base {
   update() {
     // To be implemented by subclasses
   }
+
+  stop() {
+    // To be implemented by subclasses
+  }
+}
+
+/**
+ * @class Scene_Boot
+ * @description The scene class for the boot sequence.
+ * @extends Scene_Base
+ */
+export class Scene_Boot extends Scene_Base {
+    /**
+     * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
+     * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
+     */
+    constructor(dataManager, sceneManager) {
+        super(dataManager);
+        this.sceneManager = sceneManager;
+    }
+
+    /**
+     * @method start
+     * @description Starts the scene.
+     */
+    async start() {
+        await this.dataManager.loadData();
+        this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager));
+    }
+}
+
+/**
+ * @class Scene_Battle
+ * @description The scene class for battles.
+ * @extends Scene_Base
+ */
+export class Scene_Battle extends Scene_Base {
+  /**
+   * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
+   * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
+   * @param {import("./objects.js").Game_Party} party - The player's party.
+   * @param {import("./managers.js").BattleManager} battleManager - The battle manager instance.
+   * @param {import("./windows.js").WindowLayer} windowLayer - The window layer instance.
+   * @param {import("./objects.js").Game_Map} map - The game map instance.
+   * @param {number} tileX - The x-coordinate of the tile the battle is on.
+   * @param {number} tileY - The y-coordinate of the tile the battle is on.
+   */
+  constructor(dataManager, sceneManager, party, battleManager, windowLayer, map, tileX, tileY) {
+    super(dataManager);
+    this.sceneManager = sceneManager;
+    this.party = party;
+    this.battleManager = battleManager;
+    this.windowLayer = windowLayer;
+    this.map = map;
+    this.tileX = tileX;
+    this.tileY = tileY;
+    this.battleBusy = false;
+
+    this.battleWindow = new Window_Battle();
+    this.windowLayer.addChild(this.battleWindow);
+
+    this.battleWindow.btnRound.addEventListener("click", this.resolveBattleRound.bind(this));
+    this.battleWindow.btnFlee.addEventListener("click", this.attemptFlee.bind(this));
+    this.battleWindow.btnVictory.addEventListener("click", this.onBattleVictoryClick.bind(this));
+  }
+
+  /**
+   * @method start
+   * @description Starts the scene.
+   */
+  start() {
+    const floor = this.map.floors[this.map.floorIndex];
+    const depth = floor.depth;
+
+    let enemies = [];
+    const actorTemplates = this.dataManager.actors;
+
+    if (this.map.floorIndex === this.map.floors.length - 1) {
+      const bossHp = 40 + (depth - 3) * 5;
+      enemies.push(new Game_Battler({
+        name: "🌑 Eternal Warden",
+        role: "Boss",
+        maxHp: bossHp,
+        elements: ["Black"],
+        skills: ["shadowClaw", "infernalPact"],
+        gold: 100,
+        expGrowth: 10,
+      }, depth, true));
+    } else {
+      const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
+      const enemyCount = randInt(1, maxEnemies);
+      for (let i = 0; i < enemyCount; i++) {
+        const tpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
+        enemies.push(new Game_Battler(tpl, depth, true));
+      }
+    }
+
+    this.battleManager.setup(enemies, this.tileX, this.tileY);
+    this.battleBusy = false;
+    this.battleWindow.logEl.textContent = "";
+    this.battleWindow.btnVictory.style.display = "none";
+    this.battleWindow.btnRound.disabled = false;
+    this.battleWindow.btnFlee.disabled = false;
+
+    this.battleWindow.logEnemyEmergence(enemies, this.dataManager.terms.battle);
+
+    this.applyBattleStartPassives();
+    this.renderBattleAscii();
+    this.battleWindow.open();
+    document.getElementById("mode-label").textContent = "Battle";
+    SoundManager.beep(350, 200);
+  }
+
+  /**
+   * @method stop
+   * @description Stops the scene.
+   */
+  stop() {
+    this.battleWindow.close();
+    document.getElementById("mode-label").textContent = "Exploration";
+  }
+
+  /**
+   * @method renderBattleAscii
+   * @description Renders the battle screen by creating and positioning DOM elements.
+   */
+  renderBattleAscii() {
+    if (!this.battleManager) return;
+    const enemies = this.battleManager.enemies;
+    this.battleWindow.refresh(enemies, this.party.members.slice(0, 4));
+  }
+
+  /**
+   * @method resolveBattleRound
+   * @description Resolves a round of battle using async/await for cleaner animation sequencing.
+   */
+  async resolveBattleRound() {
+    if (!this.battleManager || this.battleManager.isBattleFinished || this.battleBusy) return;
+
+    this.battleBusy = true;
+    this.battleWindow.btnRound.disabled = true;
+    this.battleWindow.btnFlee.disabled = true;
+
+    const events = this.battleManager.resolveRound();
+    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+    SoundManager.beep(300, 80);
+
+    for (const event of events) {
+      if (event.battler && event.battler.hp <= 0) continue;
+
+      if (event.battler) {
+        await this.animateBattlerName(event.battler);
+      }
+
+      this.battleWindow.appendLog(event.msg);
+
+      let oldHp = 0;
+      if (event.target) {
+        oldHp = event.target.hp + (event.value || 0);
+      }
+
+      this.renderBattleAscii();
+
+      if (event.type === 'damage' && event.target) {
+        this.animateBattler(event.target, 'flash');
+        await this.animateBattleHpGauge(event.target, oldHp);
+      } else if (event.type === 'passive_drain') {
+        this.animateBattler(event.target, 'flash');
+        await this.animateBattleHpGauge(event.target, oldHp);
+        await this.animateBattleHpGauge(event.source, event.source.hp - event.value);
+      }
+       else if (event.type === 'end') {
+        if (event.result === 'defeat') {
+          this.logMessage(this.dataManager.terms.log.party_falls);
+          this.runActive = false;
+        }
+      }
+
+      await delay(300);
+    }
+
+    this.sceneManager.previous().updateParty();
+    this.renderBattleAscii();
+
+    if (this.battleManager.isVictoryPending) {
+      this.battleWindow.btnVictory.style.display = "inline-block";
+    }
+
+    if (!this.battleManager.isBattleFinished) {
+      this.battleWindow.btnRound.disabled = false;
+      this.battleWindow.btnFlee.disabled = false;
+      this.battleWindow.appendLog("Use Resolve Round or Flee.");
+    }
+
+    this.battleBusy = false;
+  }
+
+  /**
+   * @method applyPostBattlePassives
+   * @description This is an example of a passive skill being triggered.
+   * It is called after a battle victory.
+   */
+  applyPostBattlePassives() {
+    this.party.members.forEach((member) => {
+      if (member.hp > 0) {
+        const heal = member.getPassiveValue("POST_BATTLE_HEAL");
+        if (heal > 0) {
+          this.party.members.forEach((m) => {
+            if (m.hp > 0) {
+              m.hp = Math.min(m.maxHp, m.hp + heal);
+            }
+          });
+          this.sceneManager.previous().logMessage(
+            `[Passive] ${member.name} heals the party for ${heal} HP.`
+          );
+        }
+      }
+    });
+    this.sceneManager.previous().updateParty();
+  }
+
+  /**
+   * @method applyBattleStartPassives
+   * @description Applies passive skills that trigger at the start of battle.
+   */
+  applyBattleStartPassives() {
+    this.party.members.forEach((member) => {
+      if (member.hp > 0) {
+        const damage = member.getPassiveValue("BATTLE_START_DAMAGE");
+        if (damage > 0) {
+          const target = this.battleManager.enemies.find((e) => e.hp > 0);
+          if (target) {
+            target.hp = Math.max(0, target.hp - damage);
+            this.battleWindow.appendLog(
+              `[Passive] ${member.name} hits ${target.name} for ${damage}.`
+            );
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * @method attemptFlee
+   * @description Attempts to flee from battle.
+   */
+  attemptFlee() {
+    if (Math.random() < this.sceneManager.previous().getFleeChance()) {
+      this.sceneManager.previous().logMessage("[Battle] You successfully fled!");
+      this.sceneManager.pop();
+    } else {
+      this.battleWindow.appendLog("You failed to flee!");
+    }
+  }
+
+  /**
+   * @method onBattleVictoryClick
+   * @description Handles the click of the victory button.
+   */
+  onBattleVictoryClick() {
+    if (!this.battleManager || !this.battleManager.isVictoryPending) return;
+    const enemies = this.battleManager.enemies;
+    let totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
+    const totalXp = enemies.reduce((sum, e) => sum + Math.floor(e.level * (e.expGrowth * 0.5) + 8), 0);
+
+    const living = this.party.members.slice(0, 4).filter((p) => p.hp > 0);
+    living.forEach((m) => {
+      const goldBonus = m.getPassiveValue("GOLD_DIGGER");
+      if (goldBonus > 0) {
+        totalGold += goldBonus;
+        this.sceneManager.previous().logMessage(`[Passive] ${m.name} finds an extra ${goldBonus}G!`);
+      }
+    });
+    const share =
+      living.length > 0 ? Math.max(1, Math.floor(totalXp / living.length)) : 0;
+    living.forEach((m) => this.sceneManager.previous().gainXp(m, share));
+
+    this.party.gold += totalGold;
+    this.sceneManager.previous().logMessage(
+      `[Battle] Victory! Gained ${totalGold}G and ${totalXp} XP (split).`
+    );
+    this.sceneManager.previous().updateAll();
+
+    this.applyPostBattlePassives();
+
+    this.clearEnemyTileAfterBattle();
+
+    this.battleManager.isVictoryPending = false;
+    this.battleWindow.btnVictory.style.display = "none";
+    this.sceneManager.pop();
+    if (this.sceneManager.currentScene() && this.sceneManager.currentScene().setStatus) {
+        this.sceneManager.currentScene().setStatus("Victory.");
+    }
+    SoundManager.beep(900, 200);
+  }
+
+  /**
+   * @method clearEnemyTileAfterBattle
+   * @description Clears the enemy tile after a battle.
+   */
+  clearEnemyTileAfterBattle() {
+    if (!this.battleManager) return;
+    const f = this.map.floors[this.map.floorIndex];
+    const { tileX, tileY } = this.battleManager;
+    if (f.tiles[tileY][tileX] === "E") {
+      f.tiles[tileY][tileX] = ".";
+    }
+    this.map.revealAroundPlayer(f);
+    this.sceneManager.previous().updateGrid();
+  }
+
+  /**
+   * @method animateBattleHpGauge
+   * @description Animates the battle HP gauge.
+   * @param {Game_Battler} battler - The battler whose HP gauge to animate.
+   * @param {number} oldHp - The old HP of the battler.
+   * @returns {Promise} A promise that resolves when the animation is complete.
+   */
+  animateBattleHpGauge(battler, oldHp) {
+    return new Promise((resolve) => {
+      const duration = 500;
+      const interval = 30;
+      let elapsed = 0;
+
+      const interpolator = () => {
+        elapsed += interval;
+        const progress = Math.min(elapsed / duration, 1);
+        const currentHp = Math.round(oldHp + (battler.hp - oldHp) * progress);
+
+        this.renderBattleAscii(battler.name, currentHp);
+
+        if (progress < 1) {
+          setTimeout(interpolator, interval);
+        } else {
+          this.renderBattleAscii(); // Final render with correct HP
+          resolve();
+        }
+      };
+
+      interpolator();
+    });
+  }
+
+  /**
+   * @method animateBattler
+   * @description Applies a temporary animation to a battler's name element.
+   * @param {Game_Battler} battler - The battler to animate.
+   * @param {string} animationType - The type of animation ('flash', 'shake', etc.).
+   */
+  animateBattler(battler, animationType) {
+    const battlerId = `battler-${battler.name.replace(/\s/g, '-')}`;
+    const battlerElement = this.battleWindow.viewportEl.querySelector(`#${battlerId}`);
+
+    if (battlerElement) {
+      let animationClass = '';
+      let duration = 0;
+
+      switch (animationType) {
+        case 'flash':
+          animationClass = 'blink';
+          duration = 200;
+          break;
+        case 'shake':
+          animationClass = 'shake';
+          duration = 500;
+          break;
+        // Add other animation cases here
+        default:
+          return; // No valid animation type provided
+      }
+
+      battlerElement.classList.add(animationClass);
+      setTimeout(() => {
+        battlerElement.classList.remove(animationClass);
+      }, duration);
+    }
+  }
+
+  /**
+   * @method animateBattlerName
+   * @description Animates the name of a battler.
+   * @param {Game_Battler} battler - The battler whose name to animate.
+   * @returns {Promise} A promise that resolves when the animation is complete.
+   */
+  animateBattlerName(battler) {
+    return new Promise((resolve) => {
+      const originalName = battler.name;
+      let frame = 0;
+      const maxFrames = 15;
+      const interval = 50;
+
+      const animator = () => {
+        if (frame >= maxFrames) {
+          battler.name = originalName;
+          this.renderBattleAscii();
+          resolve();
+          return;
+        }
+
+        let newName = "";
+        for (let i = 0; i < originalName.length; i++) {
+          const char = originalName[i];
+          if (i === frame % originalName.length) {
+            newName += char === char.toUpperCase() ? char.toLowerCase() : char.toUpperCase();
+          } else {
+            newName += char;
+          }
+        }
+        battler.name = newName;
+        this.renderBattleAscii();
+
+        frame++;
+        setTimeout(animator, interval);
+      };
+
+      animator();
+    });
+  }
+}
+
+/**
+ * @class Scene_Shop
+ * @description The scene class for shops.
+ * @extends Scene_Base
+ */
+export class Scene_Shop extends Scene_Base {
+    /**
+     * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
+     * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
+     * @param {import("./objects.js").Game_Party} party - The player's party.
+     * @param {import("./windows.js").WindowLayer} windowLayer - The window layer instance.
+     */
+    constructor(dataManager, sceneManager, party, windowLayer) {
+        super(dataManager);
+        this.sceneManager = sceneManager;
+        this.party = party;
+        this.windowLayer = windowLayer;
+
+        this.shopWindow = new Window_Shop();
+        this.windowLayer.addChild(this.shopWindow);
+
+        this.shopWindow.btnClose.addEventListener("click", this.closeShop.bind(this));
+        this.shopWindow.btnLeave.addEventListener("click", this.closeShop.bind(this));
+    }
+
+    /**
+     * @method start
+     * @description Starts the scene.
+     */
+    start() {
+        this.shopWindow.open(
+            this.party.gold,
+            this.dataManager.terms.shop.vendor_message,
+            this.dataManager.items,
+            (itemId) => this.buyItem(itemId)
+        );
+        document.getElementById("mode-label").textContent = "Shop";
+        SoundManager.beep(650, 150);
+    }
+
+    /**
+     * @method stop
+     * @description Stops the scene.
+     */
+    stop() {
+        this.shopWindow.close();
+        document.getElementById("mode-label").textContent = "Exploration";
+    }
+
+    /**
+     * @method closeShop
+     * @description Closes the shop.
+     */
+    closeShop() {
+        this.sceneManager.pop();
+        if (this.sceneManager.currentScene() && this.sceneManager.currentScene().updateAll) {
+            this.sceneManager.currentScene().updateAll();
+        }
+    }
+
+    /**
+     * @method buyItem
+     * @description Buys an item from the shop.
+     * @param {string} itemId - The ID of the item to buy.
+     */
+    buyItem(itemId) {
+        const item = this.dataManager.items.find((i) => i.id === itemId);
+        if (!item) return;
+
+        if (this.party.gold < item.cost) {
+            this.shopWindow.messageEl.textContent = this.dataManager.terms.shop.not_enough_gold;
+            SoundManager.beep(180, 80);
+            return;
+        }
+
+        this.party.gold -= item.cost;
+        this.party.inventory.push(item);
+        this.shopWindow.goldLabelEl.textContent = this.party.gold;
+        this.shopWindow.messageEl.textContent = this.dataManager.terms.shop.purchased + item.name + ".";
+    this.sceneManager.previous().logMessage(
+            `[Shop] ${this.dataManager.terms.shop.purchased}${item.name}.`
+        );
+    this.sceneManager.previous().updateAll();
+        SoundManager.beep(600, 80);
+    }
 }
 
 /**
@@ -54,14 +560,15 @@ class Scene_Base {
 export class Scene_Map extends Scene_Base {
   /**
    * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
+   * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
    */
-  constructor(dataManager) {
+  constructor(dataManager, sceneManager) {
     super(dataManager);
+    this.sceneManager = sceneManager;
     this.map = new Game_Map();
     this.party = new Game_Party();
     this.battleManager = new BattleManager(this.party, this.dataManager);
     this.runActive = true;
-    this.battleBusy = false;
     this.draggedIndex = null;
 
     this.createUI();
@@ -69,16 +576,11 @@ export class Scene_Map extends Scene_Base {
     this.addEventListeners();
 
     this.windowLayer = new WindowLayer();
-    const gameContainer = document.querySelector(".win-window");
+    const gameContainer = document.querySelector(".right-side");
     this.windowLayer.appendTo(gameContainer);
 
-    this.battleWindow = new Window_Battle();
-    this.windowLayer.addChild(this.battleWindow);
     this.inventoryWindow = new Window_Inventory();
     this.windowLayer.addChild(this.inventoryWindow);
-
-    this.shopWindow = new Window_Shop();
-    this.windowLayer.addChild(this.shopWindow);
     this.eventWindow = new Window_Event();
     this.windowLayer.addChild(this.eventWindow);
     this.recruitWindow = new Window_Recruit();
@@ -89,19 +591,6 @@ export class Scene_Map extends Scene_Base {
     this.windowLayer.addChild(this.inspectWindow)
     this.confirmWindow = new Window_Confirm();
     this.windowLayer.addChild(this.confirmWindow);
-
-    this.battleWindow.btnRound.addEventListener(
-      "click",
-      this.resolveBattleRound.bind(this)
-    );
-    this.battleWindow.btnFlee.addEventListener(
-      "click",
-      this.attemptFlee.bind(this)
-    );
-    this.battleWindow.btnVictory.addEventListener(
-      "click",
-      this.onBattleVictoryClick.bind(this)
-    );
 
     this.formationWindow.btnClose.addEventListener(
       "click",
@@ -123,14 +612,6 @@ export class Scene_Map extends Scene_Base {
     this.inventoryWindow.btnClose2.addEventListener(
       "click",
       this.closeInventory.bind(this)
-    );
-    this.shopWindow.btnClose.addEventListener(
-      "click",
-      this.closeShop.bind(this)
-    );
-    this.shopWindow.btnLeave.addEventListener(
-      "click",
-      this.closeShop.bind(this)
     );
   }
 
@@ -631,107 +1112,6 @@ export class Scene_Map extends Scene_Base {
    * @param {number} oldHp - The old HP of the battler.
    * @returns {Promise} A promise that resolves when the animation is complete.
    */
-  animateBattleHpGauge(battler, oldHp) {
-    return new Promise((resolve) => {
-      const duration = 500;
-      const interval = 30;
-      let elapsed = 0;
-
-      const interpolator = () => {
-        elapsed += interval;
-        const progress = Math.min(elapsed / duration, 1);
-        const currentHp = Math.round(oldHp + (battler.hp - oldHp) * progress);
-
-        this.renderBattleAscii(battler.name, currentHp);
-
-        if (progress < 1) {
-          setTimeout(interpolator, interval);
-        } else {
-          this.renderBattleAscii(); // Final render with correct HP
-          resolve();
-        }
-      };
-
-      interpolator();
-    });
-  }
-
-  /**
-   * @method animateBattler
-   * @description Applies a temporary animation to a battler's name element.
-   * @param {Game_Battler} battler - The battler to animate.
-   * @param {string} animationType - The type of animation ('flash', 'shake', etc.).
-   */
-  animateBattler(battler, animationType) {
-    const battlerId = `battler-${battler.name.replace(/\s/g, '-')}`;
-    const battlerElement = this.battleWindow.viewportEl.querySelector(`#${battlerId}`);
-
-    if (battlerElement) {
-      let animationClass = '';
-      let duration = 0;
-
-      switch (animationType) {
-        case 'flash':
-          animationClass = 'blink';
-          duration = 200;
-          break;
-        case 'shake':
-          animationClass = 'shake';
-          duration = 500;
-          break;
-        // Add other animation cases here
-        default:
-          return; // No valid animation type provided
-      }
-
-      battlerElement.classList.add(animationClass);
-      setTimeout(() => {
-        battlerElement.classList.remove(animationClass);
-      }, duration);
-    }
-  }
-
-  /**
-   * @method animateBattlerName
-   * @description Animates the name of a battler.
-   * @param {Game_Battler} battler - The battler whose name to animate.
-   * @returns {Promise} A promise that resolves when the animation is complete.
-   */
-  animateBattlerName(battler) {
-    return new Promise((resolve) => {
-      const originalName = battler.name;
-      let frame = 0;
-      const maxFrames = 15;
-      const interval = 50;
-
-      const animator = () => {
-        if (frame >= maxFrames) {
-          battler.name = originalName;
-          this.renderBattleAscii();
-          resolve();
-          return;
-        }
-
-        let newName = "";
-        for (let i = 0; i < originalName.length; i++) {
-          const char = originalName[i];
-          if (i === frame % originalName.length) {
-            newName += char === char.toUpperCase() ? char.toLowerCase() : char.toUpperCase();
-          } else {
-            newName += char;
-          }
-        }
-        battler.name = newName;
-        this.renderBattleAscii();
-
-        frame++;
-        setTimeout(animator, interval);
-      };
-
-      animator();
-    });
-  }
-
   /**
    * @method onTileClick
    * @description Handles tile clicks.
@@ -794,10 +1174,10 @@ export class Scene_Map extends Scene_Base {
     } else if (ch === "E") {
       this.setStatus("Enemy encountered!");
       this.logMessage("[Battle] Shapes uncoil from the dark.");
-      this.openBattle(x, y);
+      this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.party, this.battleManager, this.windowLayer, this.map, x, y));
       return;
     } else if (ch === "¥") {
-      this.openShop();
+      this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.party, this.windowLayer));
       return;
     } else if (ch === "♱") {
       this.logMessage("[Shrine] You encounter a shrine.");
@@ -867,143 +1247,6 @@ export class Scene_Map extends Scene_Base {
    * @param {number} tileX - The x-coordinate of the tile the battle is on.
    * @param {number} tileY - The y-coordinate of the tile the battle is on.
    */
-  openBattle(tileX, tileY) {
-    const floor = this.map.floors[this.map.floorIndex];
-    const depth = floor.depth;
-
-    let enemies = [];
-    const actorTemplates = this.dataManager.actors;
-
-    if (this.map.floorIndex === this.map.floors.length - 1) {
-      // Boss
-      const bossHp = 40 + (depth - 3) * 5;
-      enemies.push(new Game_Battler({
-        name: "🌑 Eternal Warden",
-        role: "Boss",
-        maxHp: bossHp,
-        elements: ["Black"],
-        skills: ["shadowClaw", "infernalPact"],
-        gold: 100,
-        expGrowth: 10,
-      }, depth, true));
-    } else {
-      const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
-      const enemyCount = randInt(1, maxEnemies);
-      for (let i = 0; i < enemyCount; i++) {
-        const tpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
-        enemies.push(new Game_Battler(tpl, depth, true));
-      }
-    }
-
-    this.battleManager.setup(enemies, tileX, tileY);
-    this.battleBusy = false;
-    this.battleWindow.logEl.textContent = "";
-    this.battleWindow.btnVictory.style.display = "none";
-    this.battleWindow.btnRound.disabled = false;
-    this.battleWindow.btnFlee.disabled = false;
-
-    this.battleWindow.logEnemyEmergence(enemies, this.dataManager.terms.battle);
-
-    this.applyBattleStartPassives();
-    this.renderBattleAscii();
-    this.battleWindow.open();
-    this.modeLabelEl.textContent = "Battle";
-    SoundManager.beep(350, 200);
-  }
-
-  /**
-   * @method closeBattle
-   * @description Closes the battle screen.
-   */
-  closeBattle() {
-    this.battleWindow.close();
-    this.modeLabelEl.textContent = "Exploration";
-    this.updateAll();
-  }
-
-  /**
-   * @method renderBattleAscii
-   * @description Renders the battle screen by creating and positioning DOM elements.
-   */
-  renderBattleAscii() {
-    if (!this.battleManager) return;
-    const enemies = this.battleManager.enemies;
-    this.battleWindow.refresh(enemies, this.party.members.slice(0, 4));
-  }
-
-  /**
-   * @method resolveBattleRound
-   * @description Resolves a round of battle using async/await for cleaner animation sequencing.
-   */
-  async resolveBattleRound() {
-    if (!this.battleManager || this.battleManager.isBattleFinished || this.battleBusy) return;
-
-    this.battleBusy = true;
-    this.battleWindow.btnRound.disabled = true;
-    this.battleWindow.btnFlee.disabled = true;
-
-    const events = this.battleManager.resolveRound();
-    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-
-    SoundManager.beep(300, 80);
-
-    for (const event of events) {
-      if (event.battler && event.battler.hp <= 0) continue;
-
-      if (event.battler) {
-        await this.animateBattlerName(event.battler);
-      }
-
-      this.battleWindow.appendLog(event.msg);
-
-      let oldHp = 0;
-      if (event.target) {
-        oldHp = event.target.hp + (event.value || 0);
-      }
-
-      this.renderBattleAscii();
-
-      if (event.type === 'damage' && event.target) {
-        this.animateBattler(event.target, 'flash');
-        await this.animateBattleHpGauge(event.target, oldHp);
-      } else if (event.type === 'passive_drain') {
-        this.animateBattler(event.target, 'flash');
-        await this.animateBattleHpGauge(event.target, oldHp);
-        await this.animateBattleHpGauge(event.source, event.source.hp - event.value);
-      }
-       else if (event.type === 'end') {
-        if (event.result === 'defeat') {
-          this.logMessage(this.dataManager.terms.log.party_falls);
-          this.runActive = false;
-        }
-      }
-
-      await delay(300);
-    }
-
-    this.updateParty();
-    this.renderBattleAscii();
-
-    if (this.battleManager.isVictoryPending) {
-      this.battleWindow.btnVictory.style.display = "inline-block";
-    }
-
-    if (!this.battleManager.isBattleFinished) {
-      this.battleWindow.btnRound.disabled = false;
-      this.battleWindow.btnFlee.disabled = false;
-      this.battleWindow.appendLog("Use Resolve Round or Flee.");
-    }
-
-    this.battleBusy = false;
-    this.updateAll();
-  }
-
-  /**
-   * @method gainXp
-   * @description Gains experience for a party member.
-   * @param {Game_Battler} member - The party member to gain experience.
-   * @param {number} amount - The amount of experience to gain.
-   */
   gainXp(member, amount) {
     if (!member || amount <= 0) return;
     member.xp = (member.xp || 0) + amount;
@@ -1023,55 +1266,6 @@ export class Scene_Map extends Scene_Base {
       SoundManager.beep(900, 150);
       this.updateParty();
     }
-  }
-
-  /**
-   * @method applyPostBattlePassives
-   * @description This is an example of a passive skill being triggered.
-   * It is called after a battle victory.
-   * It finds any living "Pixie" in the party and heals all living party members for a small amount.
-   * This is a hardcoded passive effect. A more robust system would involve a passive skill manager
-   * that would iterate through all party members and check for passive skills that should be triggered
-   * by the "onBattleVictory" event.
-   */
-  applyPostBattlePassives() {
-    this.party.members.forEach((member) => {
-      if (member.hp > 0) {
-        const heal = member.getPassiveValue("POST_BATTLE_HEAL");
-        if (heal > 0) {
-          this.party.members.forEach((m) => {
-            if (m.hp > 0) {
-              m.hp = Math.min(m.maxHp, m.hp + heal);
-            }
-          });
-          this.logMessage(
-            `[Passive] ${member.name} heals the party for ${heal} HP.`
-          );
-        }
-      }
-    });
-    this.updateParty();
-  }
-
-  /**
-   * @method applyBattleStartPassives
-   * @description Applies passive skills that trigger at the start of battle.
-   */
-  applyBattleStartPassives() {
-    this.party.members.forEach((member) => {
-      if (member.hp > 0) {
-        const damage = member.getPassiveValue("BATTLE_START_DAMAGE");
-        if (damage > 0) {
-          const target = this.battleManager.enemies.find((e) => e.hp > 0);
-          if (target) {
-            target.hp = Math.max(0, target.hp - damage);
-            this.battleWindow.appendLog(
-              `[Passive] ${member.name} hits ${target.name} for ${damage}.`
-            );
-          }
-        }
-      }
-    });
   }
 
   /**
@@ -1104,126 +1298,6 @@ export class Scene_Map extends Scene_Base {
       baseChance += member.getPassiveValue("FLEE_CHANCE_BONUS");
     });
     return Math.max(0, Math.min(1, baseChance));
-  }
-
-  /**
-   * @method attemptFlee
-   * @description Attempts to flee from battle.
-   */
-  attemptFlee() {
-    if (Math.random() < this.getFleeChance()) {
-      this.logMessage("[Battle] You successfully fled!");
-      this.closeBattle();
-    } else {
-      this.battleWindow.appendLog("You failed to flee!");
-    }
-  }
-
-  /**
-   * @method onBattleVictoryClick
-   * @description Handles the click of the victory button.
-   */
-  onBattleVictoryClick() {
-    if (!this.battleManager || !this.battleManager.isVictoryPending) return;
-    const enemies = this.battleManager.enemies;
-    let totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
-    const totalXp = enemies.reduce((sum, e) => sum + Math.floor(e.level * (e.expGrowth * 0.5) + 8), 0);
-
-    const living = this.party.members.slice(0, 4).filter((p) => p.hp > 0);
-    living.forEach((m) => {
-      const goldBonus = m.getPassiveValue("GOLD_DIGGER");
-      if (goldBonus > 0) {
-        totalGold += goldBonus;
-        this.logMessage(`[Passive] ${m.name} finds an extra ${goldBonus}G!`);
-      }
-    });
-    const share =
-      living.length > 0 ? Math.max(1, Math.floor(totalXp / living.length)) : 0;
-    living.forEach((m) => this.gainXp(m, share));
-
-    this.party.gold += totalGold;
-    this.logMessage(
-      `[Battle] Victory! Gained ${totalGold}G and ${totalXp} XP (split).`
-    );
-    this.statusGoldEl.textContent = this.party.gold;
-
-    this.applyPostBattlePassives();
-
-    this.clearEnemyTileAfterBattle();
-
-    this.battleManager.isVictoryPending = false;
-    this.battleWindow.btnVictory.style.display = "none";
-    this.closeBattle();
-    this.setStatus("Victory.");
-    SoundManager.beep(900, 200);
-  }
-
-  /**
-   * @method clearEnemyTileAfterBattle
-   * @description Clears the enemy tile after a battle.
-   */
-  clearEnemyTileAfterBattle() {
-    if (!this.battleManager) return;
-    const f = this.map.floors[this.map.floorIndex];
-    const { tileX, tileY } = this.battleManager;
-    if (f.tiles[tileY][tileX] === "E") {
-      f.tiles[tileY][tileX] = ".";
-    }
-    this.map.revealAroundPlayer(f);
-    this.updateGrid();
-  }
-
-  /**
-   * @method openShop
-   * @description Opens the shop.
-   */
-  openShop() {
-    this.shopWindow.open(
-      this.party.gold,
-      this.dataManager.terms.shop.vendor_message,
-      this.dataManager.items,
-      (itemId) => this.buyItem(itemId)
-    );
-    this.modeLabelEl.textContent = "Shop";
-    SoundManager.beep(650, 150);
-  }
-
-  /**
-   * @method closeShop
-   * @description Closes the shop.
-   */
-  closeShop() {
-    this.shopWindow.close();
-    this.modeLabelEl.textContent = "Exploration";
-    this.updateAll();
-  }
-
-  /**
-   * @method buyItem
-   * @description Buys an item from the shop.
-   * @param {string} itemId - The ID of the item to buy.
-   */
-  buyItem(itemId) {
-    const item = this.dataManager.items.find((i) => i.id === itemId);
-    if (!item) return;
-
-    if (this.party.gold < item.cost) {
-      this.shopWindow.messageEl.textContent =
-        this.dataManager.terms.shop.not_enough_gold;
-      SoundManager.beep(180, 80);
-      return;
-    }
-
-    this.party.gold -= item.cost;
-    this.party.inventory.push(item);
-    this.shopWindow.goldLabelEl.textContent = this.party.gold;
-    this.shopWindow.messageEl.textContent =
-      this.dataManager.terms.shop.purchased + item.name + ".";
-    this.logMessage(
-      `[Shop] ${this.dataManager.terms.shop.purchased}${item.name}.`
-    );
-    this.updateAll();
-    SoundManager.beep(600, 80);
   }
 
   /**
@@ -1370,7 +1444,7 @@ export class Scene_Map extends Scene_Base {
           </div>
           <div class="inspect-row">
             <span class="inspect-label">Passive</span>
-            <span class="inspect-value">${recruit.passives.map(p => p.description).join(', ') || "—"}</span>
+            <span class="inspect-value">${(recruit.passives || []).map(p => p.description).join(', ') || "—"}</span>
           </div>
           <div class="inspect-row">
             <span class="inspect-label">Skills</span>
@@ -1460,7 +1534,7 @@ export class Scene_Map extends Scene_Base {
    */
   attemptRecruit(recruit) {
     if (this.party.members.length < this.party.MAX_MEMBERS) {
-      this.party.members.push(new Game_Actor(recruit));
+      this.party.members.push(new Game_Battler(recruit));
       this.logMessage(`[Recruit] ${recruit.name} joins your party.`);
       this.setStatus(
         this.dataManager.terms.recruit.recruited.replace("{0}", recruit.name)
@@ -1505,7 +1579,7 @@ export class Scene_Map extends Scene_Base {
         .replace("{0}", replaced.name)
         .replace("{1}", recruit.name)
     );
-    this.party.members[index] = new Game_Actor(recruit);
+    this.party.members[index] = new Game_Battler(recruit);
     this.clearEventTile("U");
     this.updateParty();
     this.closeRecruitEvent();
@@ -2022,4 +2096,11 @@ renderElements(elements) {
       doEquip();
     }
   }
+}
+
+if (window.location.search.includes("test=true")) {
+    window.Scene_Battle = Scene_Battle;
+    window.Scene_Shop = Scene_Shop;
+    window.Scene_Map = Scene_Map;
+    window.Scene_Boot = Scene_Boot;
 }

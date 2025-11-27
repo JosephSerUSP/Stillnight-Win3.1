@@ -52,13 +52,25 @@ export const Graphics = {
    * @type {HTMLElement}
    * @private
    */
-  _container: document.querySelector(".win-window"),
+  _container: null,
+
+  /**
+   * @method _initialize
+   * @private
+   * @description Initializes the Graphics container.
+   */
+  _initialize() {
+    if (!this._container && typeof document !== 'undefined') {
+      this._container = document.querySelector(".right-side");
+    }
+  },
 
   /**
    * The width of the game container.
    * @type {number}
    */
   get width() {
+    this._initialize();
     return this._container ? this._container.clientWidth : 0;
   },
 
@@ -67,6 +79,7 @@ export const Graphics = {
    * @type {number}
    */
   get height() {
+    this._initialize();
     return this._container ? this._container.clientHeight : 0;
   },
 };
