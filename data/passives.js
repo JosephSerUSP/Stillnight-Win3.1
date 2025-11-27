@@ -1,3 +1,23 @@
+/**
+ * @file data/passives.js
+ * @description Defines the passive abilities available in the game.
+ * Passives provide static bonuses or triggered effects.
+ */
+
+/**
+ * @typedef {Object} Passive
+ * @property {string} id - Key used for lookup/referencing.
+ * @property {string} name - Display name.
+ * @property {string} description - Flavor text (Line 1 of tooltip).
+ * @property {string} effect - Functional description (Line 2 of tooltip).
+ * @property {number} icon - Icon ID (from spritesheet).
+ * @property {string} code - Logic code used in engine.
+ * @property {number} value - Numerical value used by logic.
+ */
+
+/**
+ * @type {Object.<string, Passive>}
+ */
 export const passives = {
     // Standardized Passive Data
     // id: Key used for lookup/referencing

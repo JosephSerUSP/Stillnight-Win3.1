@@ -1,8 +1,13 @@
-
 import { randInt, shuffleArray } from "../core.js";
+
+/**
+ * @file data/party.js
+ * @description Defines logic for generating the starting party configuration.
+ */
 
 export const startingParty = {
   /**
+   * Generates a random amount of starting gold.
    * @returns {number} The starting gold.
    */
   getGold: () => {
@@ -10,6 +15,7 @@ export const startingParty = {
   },
 
   /**
+   * Generates a random starting inventory.
    * @param {Object[]} allItems - All available items from items.json.
    * @returns {Object[]} The starting inventory.
    */
@@ -39,6 +45,7 @@ export const startingParty = {
   },
 
   /**
+   * Generates the starting party members.
    * @param {Object[]} allActors - All available actors from actors.json.
    * @returns {Object[]} The starting party members configuration.
    */

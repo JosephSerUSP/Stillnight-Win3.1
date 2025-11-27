@@ -10,12 +10,20 @@ import { tooltip } from "./tooltip.js";
  * correctly. It also provides a single point of control for managing window z-indexing.
  */
 export class WindowLayer {
+  /**
+   * Creates a new WindowLayer instance.
+   */
   constructor() {
+    /**
+     * The main container element for the window layer.
+     * @type {HTMLElement}
+     */
     this.element = document.createElement("div");
     this.element.id = "window-layer";
   }
 
   /**
+   * Adds a window to the layer.
    * @param {Window_Base} window - The window to add to the layer.
    */
   addChild(window) {
@@ -23,7 +31,7 @@ export class WindowLayer {
   }
 
   /**
-   * @description Appends the window layer to a given element.
+   * Appends the window layer to a given parent element.
    * @param {HTMLElement} parent - The element to append the layer to.
    */
   appendTo(parent) {
@@ -38,13 +46,21 @@ export class WindowLayer {
  * while others are dimmed.
  */
 export class WindowManager {
+  /**
+   * Creates a new WindowManager instance.
+   */
   constructor() {
+    /**
+     * The stack of active windows.
+     * @type {Window_Base[]}
+     */
     this.stack = [];
   }
 
   /**
+   * Pushes a window onto the stack and opens it.
+   * If the window is already in the stack, it's moved to the top.
    * @method push
-   * @description Pushes a window onto the stack and opens it.
    * @param {Window_Base} window - The window to open.
    */
   push(window) {
@@ -59,8 +75,8 @@ export class WindowManager {
   }
 
   /**
+   * Pops the top window from the stack and closes it.
    * @method pop
-   * @description Pops the top window from the stack and closes it.
    * @returns {Window_Base|null} The closed window, or null if stack was empty.
    */
   pop() {
@@ -72,8 +88,8 @@ export class WindowManager {
   }
 
   /**
+   * Closes a specific window. If it's not the top window, it's removed from the stack.
    * @method close
-   * @description Closes a specific window. If it's not the top window, it's removed from the stack.
    * @param {Window_Base} window - The window to close.
    */
   close(window) {
@@ -90,8 +106,9 @@ export class WindowManager {
   }
 
   /**
+   * Updates the visual state of all managed windows (z-index, dimming).
+   * Ensures the top window is active and others are dimmed.
    * @method updateState
-   * @description Updates the visual state of all managed windows (z-index, dimming).
    */
   updateState() {
     this.stack.forEach((win, index) => {
@@ -115,8 +132,6 @@ export class WindowManager {
  * @class Window_Base
  * @description The base class for all UI windows. Handles DOM creation, positioning,
  * and drag-and-drop functionality. Windows are rendered into a WindowLayer.
- * @property {HTMLElement} overlay - The semi-transparent overlay that covers the game screen.
- * @property {HTMLElement} element - The main window element.
  */
 export class Window_Base {
     /**
@@ -127,9 +142,17 @@ export class Window_Base {
      * @param {number|string} height - The height of the window. Can be 'auto'.
      */
     constructor(x, y, width, height) {
+        /**
+         * The semi-transparent overlay that covers the game screen.
+         * @type {HTMLElement}
+         */
         this.overlay = document.createElement("div");
         this.overlay.className = "modal-overlay";
 
+        /**
+         * The main window element.
+         * @type {HTMLElement}
+         */
         this.element = document.createElement("div");
         this.element.className = "dialog";
         this.element.style.position = "absolute";
@@ -151,8 +174,8 @@ export class Window_Base {
     }
 
     /**
+     * Makes the window draggable by a specific element (usually the title bar).
      * @method makeDraggable
-     * @description Makes the window draggable.
      * @param {HTMLElement} titleBar - The title bar element that triggers the drag.
      */
     makeDraggable(titleBar) {
@@ -167,10 +190,10 @@ export class Window_Base {
     }
 
     /**
+     * Handles the drag movement.
      * @method _onDrag
-     * @description Handles the drag movement.
-     * @param {MouseEvent} e - The mouse event.
      * @private
+     * @param {MouseEvent} e - The mouse event.
      */
     _onDrag(e) {
         if (this._dragStart) {
@@ -180,8 +203,8 @@ export class Window_Base {
     }
 
     /**
+     * Ends the drag operation.
      * @method _onDragEnd
-     * @description Ends the drag operation.
      * @private
      */
     _onDragEnd() {
@@ -191,24 +214,24 @@ export class Window_Base {
     }
 
     /**
+     * Opens the window by adding the 'active' class to the overlay.
      * @method open
-     * @description Opens the window.
      */
     open() {
         this.overlay.classList.add("active");
     }
 
     /**
+     * Closes the window by removing the 'active' class from the overlay.
      * @method close
-     * @description Closes the window.
      */
     close() {
         this.overlay.classList.remove("active");
     }
 
     /**
+     * Refreshes the window's content. Should be overridden by subclasses.
      * @method refresh
-     * @description Refreshes the window's content.
      */
     refresh() {
         // To be implemented by subclasses
@@ -220,11 +243,13 @@ export class Window_Base {
  * @description The window for battles. This window is designed to be a flexible,
  * terminal-style display that can be easily extended with new animations and UI
  * elements. The viewport and log are separate elements, allowing for independent
- * scrolling and content updates. This is a significant improvement over the
- * previous hardcoded HTML structure, which was difficult to modify and scale.
+ * scrolling and content updates.
  * @extends Window_Base
  */
 export class Window_Battle extends Window_Base {
+  /**
+   * Creates a new Window_Battle instance.
+   */
   constructor() {
     super('center', 'center', 528, 360);
     this.element.style.display = 'flex';
@@ -289,7 +314,8 @@ export class Window_Battle extends Window_Base {
   }
 
   /**
-   * Appends a message to the battle log.
+   * Appends a message to the battle log and auto-scrolls to the bottom.
+   * @method appendLog
    * @param {string} msg - The message to append.
    */
   appendLog(msg) {
@@ -301,6 +327,7 @@ export class Window_Battle extends Window_Base {
 
   /**
    * Logs the initial enemy emergence messages.
+   * @method logEnemyEmergence
    * @param {Array<import("./objects.js").Game_Battler>} enemies - The enemies in the battle.
    * @param {Object} terms - The battle terms from the data manager.
    */
@@ -315,7 +342,10 @@ export class Window_Battle extends Window_Base {
   }
 
   /**
-   * @param {Array<Object>} battlers - The battler data to render.
+   * Refreshes the battle view, including battler positions and HP gauges.
+   * @method refresh
+   * @param {Array<import("./objects.js").Game_Battler>} battlers - The enemies to render.
+   * @param {Array<import("./objects.js").Game_Battler>} party - The party members to render.
    */
   refresh(battlers, party) {
     this.viewportEl.innerHTML = ""; // Clear previous state
@@ -367,6 +397,13 @@ export class Window_Battle extends Window_Base {
     });
   }
 
+  /**
+   * Creates an ASCII representation of an HP gauge.
+   * @method createHpGauge
+   * @param {number} hp - The current HP.
+   * @param {number} maxHp - The maximum HP.
+   * @returns {string} The ASCII HP gauge.
+   */
   createHpGauge(hp, maxHp) {
     const totalLength = 15;
     let filledCount = Math.round((hp / maxHp) * totalLength);
@@ -388,10 +425,14 @@ export class Window_Battle extends Window_Base {
 
 /**
  * @class Window_Inspect
- * @description The window for inspecting creatures.
+ * @description The window for inspecting creatures (actors or enemies).
+ * Displays stats, equipment, and other details.
  * @extends Window_Base
  */
 export class Window_Inspect extends Window_Base {
+  /**
+   * Creates a new Window_Inspect instance.
+   */
   constructor() {
     super('center', 'center', 480, 320);
     this.element.id = "inspect-window";
@@ -478,6 +519,15 @@ export class Window_Inspect extends Window_Base {
     buttons.appendChild(this.btnOk);
   }
 
+  /**
+   * Helper to create a labeled field in the inspect window.
+   * @method _createField
+   * @private
+   * @param {HTMLElement} parent - The parent element.
+   * @param {string} label - The label text.
+   * @param {boolean} [isButton=false] - Whether the value element should be a button.
+   * @returns {HTMLElement} The value element (span or button).
+   */
   _createField(parent, label, isButton = false) {
     const row = document.createElement('div');
     row.className = 'inspect-row';
@@ -497,10 +547,13 @@ export class Window_Inspect extends Window_Base {
 
 /**
  * @class Window_Shop
- * @description The window for the shop.
+ * @description The window for buying items in the shop.
  * @extends Window_Base
  */
 export class Window_Shop extends Window_Base {
+  /**
+   * Creates a new Window_Shop instance.
+   */
   constructor() {
     super('center', 'center', 420, 320);
     this.element.id = "shop-window";
@@ -558,8 +611,8 @@ export class Window_Shop extends Window_Base {
   }
 
   /**
+   * Prepares the shop window with data.
    * @method setup
-   * @description Prepares the shop window with data.
    * @param {number} gold - The player's current gold.
    * @param {string} message - The vendor's message.
    * @param {Object[]} items - The items available for sale.
@@ -572,8 +625,8 @@ export class Window_Shop extends Window_Base {
   }
 
   /**
+   * Renders the list of items for sale.
    * @method renderItems
-   * @description Renders the list of items for sale.
    * @param {Object[]} items - The items available for sale.
    * @param {Function} buyCallback - The callback function to execute when an item is purchased.
    */
@@ -622,10 +675,14 @@ export class Window_Shop extends Window_Base {
 
 /**
  * @class Window_Formation
- * @description The window for party formation.
+ * @description The window for managing party formation.
+ * Allows reordering of party members.
  * @extends Window_Base
  */
 export class Window_Formation extends Window_Base {
+  /**
+   * Creates a new Window_Formation instance.
+   */
   constructor() {
     super('center', 'center', 420, 320);
     this.element.id = "formation-window";
@@ -692,10 +749,14 @@ export class Window_Formation extends Window_Base {
 
 /**
  * @class Window_Inventory
- * @description The window for the inventory.
+ * @description The window for viewing and managing the inventory.
+ * Supports using and discarding items.
  * @extends Window_Base
  */
 export class Window_Inventory extends Window_Base {
+  /**
+   * Creates a new Window_Inventory instance.
+   */
   constructor() {
     super('center', 'center', 400, 300); // x, y, width, height
     this.element.id = "inventory-window";
@@ -742,6 +803,8 @@ export class Window_Inventory extends Window_Base {
   }
 
   /**
+   * Refreshes the inventory list.
+   * @method refresh
    * @param {Object[]} inventory - The party's inventory.
    * @param {Function} useItemCallback - Callback for using an item.
    * @param {Function} discardItemCallback - Callback for discarding an item.
@@ -821,7 +884,8 @@ export class Window_Inventory extends Window_Base {
   }
 
   /**
-   * Renders a list of party members for target selection.
+   * Renders a list of party members for target selection when using an item.
+   * @method showTargetSelection
    * @param {import("./objects.js").Game_Battler[]} members - The party members to display.
    * @param {Function} onSelectCallback - Callback for when a member is selected.
    */
@@ -846,10 +910,13 @@ export class Window_Inventory extends Window_Base {
 
 /**
  * @class Window_Recruit
- * @description The window for recruiting new members.
+ * @description The window for recruiting new party members.
  * @extends Window_Base
  */
 export class Window_Recruit extends Window_Base {
+  /**
+   * Creates a new Window_Recruit instance.
+   */
   constructor() {
     super('center', 'center', 480, 320);
     this.element.id = "recruit-window";
@@ -887,10 +954,13 @@ export class Window_Recruit extends Window_Base {
 
 /**
  * @class Window_Event
- * @description The window for events.
+ * @description The window for displaying event text and choices.
  * @extends Window_Base
  */
 export class Window_Event extends Window_Base {
+  /**
+   * Creates a new Window_Event instance.
+   */
   constructor() {
     super('center', 'center', 480, 'auto');
     this.element.id = "event-window";
@@ -932,10 +1002,13 @@ export class Window_Event extends Window_Base {
 
 /**
  * @class Window_Confirm
- * @description The window for generic confirmations.
+ * @description The window for generic confirmation dialogs (OK/Cancel).
  * @extends Window_Base
  */
 export class Window_Confirm extends Window_Base {
+  /**
+   * Creates a new Window_Confirm instance.
+   */
   constructor() {
     super('center', 'center', 320, 'auto');
     this.element.id = "confirm-window";

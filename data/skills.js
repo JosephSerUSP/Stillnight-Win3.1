@@ -1,4 +1,31 @@
+/**
+ * @file data/skills.js
+ * @description Defines the skills available in the game.
+ * Skills are used by battlers in combat to deal damage, heal, or apply status effects.
+ */
 
+/**
+ * @typedef {Object} SkillEffect
+ * @property {string} type - The type of effect (e.g., 'hp_damage', 'hp_heal', 'add_status').
+ * @property {string} [formula] - The formula for calculating the effect value (e.g., '5 + 1.2 * a.level').
+ * @property {string} [status] - The status ID to apply (if type is 'add_status').
+ * @property {number} [chance] - The chance to apply the effect (0-1).
+ * @property {number} [duration] - The duration of the effect in turns.
+ */
+
+/**
+ * @typedef {Object} Skill
+ * @property {string} id - The unique ID of the skill.
+ * @property {string} name - The display name of the skill.
+ * @property {string} target - The target scope (e.g., 'enemy-any', 'ally-any', 'self').
+ * @property {string} element - The elemental affinity of the skill.
+ * @property {string} description - The flavor text description.
+ * @property {SkillEffect[]} effects - The list of effects produced by the skill.
+ */
+
+/**
+ * @type {Object.<string, Skill>}
+ */
 export const skills = {
     // Pixie
     windBlade: {
