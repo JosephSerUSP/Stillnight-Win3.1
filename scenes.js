@@ -46,13 +46,6 @@ class Scene_Base {
   }
 }
 
-if (window.location.search.includes("test=true")) {
-    window.Scene_Battle = Scene_Battle;
-    window.Scene_Shop = Scene_Shop;
-    window.Scene_Map = Scene_Map;
-    window.Scene_Boot = Scene_Boot;
-}
-
 /**
  * @class Scene_Boot
  * @description The scene class for the boot sequence.
@@ -338,7 +331,9 @@ export class Scene_Battle extends Scene_Base {
     this.battleManager.isVictoryPending = false;
     this.battleWindow.btnVictory.style.display = "none";
     this.sceneManager.pop();
-    this.sceneManager.previous().setStatus("Victory.");
+    if (this.sceneManager.currentScene() && this.sceneManager.currentScene().setStatus) {
+        this.sceneManager.currentScene().setStatus("Victory.");
+    }
     SoundManager.beep(900, 200);
   }
 
@@ -521,7 +516,9 @@ export class Scene_Shop extends Scene_Base {
      */
     closeShop() {
         this.sceneManager.pop();
-        this.sceneManager.previous().updateAll();
+        if (this.sceneManager.currentScene() && this.sceneManager.currentScene().updateAll) {
+            this.sceneManager.currentScene().updateAll();
+        }
     }
 
     /**
@@ -584,8 +581,6 @@ export class Scene_Map extends Scene_Base {
 
     this.inventoryWindow = new Window_Inventory();
     this.windowLayer.addChild(this.inventoryWindow);
-    this.shopWindow = new Window_Shop();
-    this.windowLayer.addChild(this.shopWindow);
     this.eventWindow = new Window_Event();
     this.windowLayer.addChild(this.eventWindow);
     this.recruitWindow = new Window_Recruit();
@@ -617,14 +612,6 @@ export class Scene_Map extends Scene_Base {
     this.inventoryWindow.btnClose2.addEventListener(
       "click",
       this.closeInventory.bind(this)
-    );
-    this.shopWindow.btnClose.addEventListener(
-      "click",
-      this.closeShop.bind(this)
-    );
-    this.shopWindow.btnLeave.addEventListener(
-      "click",
-      this.closeShop.bind(this)
     );
   }
 
@@ -1457,7 +1444,7 @@ export class Scene_Map extends Scene_Base {
           </div>
           <div class="inspect-row">
             <span class="inspect-label">Passive</span>
-            <span class="inspect-value">${recruit.passives.map(p => p.description).join(', ') || "—"}</span>
+            <span class="inspect-value">${(recruit.passives || []).map(p => p.description).join(', ') || "—"}</span>
           </div>
           <div class="inspect-row">
             <span class="inspect-label">Skills</span>
@@ -1547,7 +1534,7 @@ export class Scene_Map extends Scene_Base {
    */
   attemptRecruit(recruit) {
     if (this.party.members.length < this.party.MAX_MEMBERS) {
-      this.party.members.push(new Game_Actor(recruit));
+      this.party.members.push(new Game_Battler(recruit));
       this.logMessage(`[Recruit] ${recruit.name} joins your party.`);
       this.setStatus(
         this.dataManager.terms.recruit.recruited.replace("{0}", recruit.name)
@@ -1592,7 +1579,7 @@ export class Scene_Map extends Scene_Base {
         .replace("{0}", replaced.name)
         .replace("{1}", recruit.name)
     );
-    this.party.members[index] = new Game_Actor(recruit);
+    this.party.members[index] = new Game_Battler(recruit);
     this.clearEventTile("U");
     this.updateParty();
     this.closeRecruitEvent();
@@ -2109,4 +2096,11 @@ renderElements(elements) {
       doEquip();
     }
   }
+}
+
+if (window.location.search.includes("test=true")) {
+    window.Scene_Battle = Scene_Battle;
+    window.Scene_Shop = Scene_Shop;
+    window.Scene_Map = Scene_Map;
+    window.Scene_Boot = Scene_Boot;
 }
