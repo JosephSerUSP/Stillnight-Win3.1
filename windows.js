@@ -490,6 +490,133 @@ export class Window_Inspect extends Window_Base {
 }
 
 /**
+ * @class Window_ItemInspect
+ * @description The window for inspecting items.
+ * @extends Window_Base
+ */
+export class Window_ItemInspect extends Window_Base {
+  constructor() {
+    super('center', 'center', 400, 320);
+    this.element.classList.add("item-inspect-window");
+    this.element.style.display = 'flex';
+    this.element.style.flexDirection = 'column';
+
+    const titleBar = document.createElement("div");
+    titleBar.className = "dialog-titlebar";
+    this.element.appendChild(titleBar);
+    this.makeDraggable(titleBar);
+
+    const titleText = document.createElement("span");
+    titleText.textContent = "Item Inspect";
+    titleBar.appendChild(titleText);
+
+    this.btnClose = document.createElement("button");
+    this.btnClose.className = "win-btn";
+    this.btnClose.textContent = "X";
+    titleBar.appendChild(this.btnClose);
+
+    const content = document.createElement("div");
+    content.className = "dialog-content";
+    content.style.flexGrow = "1";
+    this.element.appendChild(content);
+
+    const inspectBody = document.createElement('div');
+    inspectBody.className = 'inspect-body';
+    content.appendChild(inspectBody);
+
+    const layout = document.createElement('div');
+    layout.className = 'inspect-layout';
+    inspectBody.appendChild(layout);
+
+    // Icon Container
+    const iconContainer = document.createElement('div');
+    iconContainer.style.width = '64px';
+    iconContainer.style.height = '64px';
+    iconContainer.style.display = 'flex';
+    iconContainer.style.alignItems = 'center';
+    iconContainer.style.justifyContent = 'center';
+    iconContainer.style.border = '1px solid #808080';
+    iconContainer.style.backgroundColor = '#000';
+    layout.appendChild(iconContainer);
+
+    this.iconEl = document.createElement('div');
+    this.iconEl.className = 'icon';
+    this.iconEl.style.transform = 'scale(4)'; // 12x12 * 4 = 48x48
+    this.iconEl.style.imageRendering = 'pixelated';
+    iconContainer.appendChild(this.iconEl);
+
+    const fields = document.createElement('div');
+    fields.className = 'inspect-fields';
+    layout.appendChild(fields);
+
+    this.nameEl = this._createField(fields, "Name");
+    this.typeEl = this._createField(fields, "Type");
+    this.costEl = this._createField(fields, "Cost");
+    this.descEl = this._createField(fields, "Description");
+
+    // Container for dynamic fields (stats/effects)
+    this.dynamicFieldsEl = document.createElement('div');
+    fields.appendChild(this.dynamicFieldsEl);
+
+    const buttons = document.createElement("div");
+    buttons.className = "dialog-buttons";
+    this.element.appendChild(buttons);
+
+    this.btnOk = document.createElement("button");
+    this.btnOk.className = "win-btn";
+    this.btnOk.textContent = "OK";
+    buttons.appendChild(this.btnOk);
+  }
+
+  _createField(parent, label) {
+    const row = document.createElement('div');
+    row.className = 'inspect-row';
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'inspect-label';
+    labelSpan.textContent = label;
+    row.appendChild(labelSpan);
+
+    const valueEl = document.createElement('span');
+    valueEl.className = 'inspect-value';
+    row.appendChild(valueEl);
+
+    parent.appendChild(row);
+    return valueEl;
+  }
+
+  setup(item) {
+    this.nameEl.textContent = item.name;
+    this.typeEl.textContent = item.type;
+    this.costEl.textContent = item.cost ? `${item.cost}G` : "N/A";
+    this.descEl.textContent = item.description;
+
+    // Icon
+    const iconId = item.icon || 6;
+    if (iconId > 0) {
+      this.iconEl.style.backgroundPosition = getIconStyle(iconId);
+    }
+
+    // Clear dynamic fields
+    this.dynamicFieldsEl.innerHTML = "";
+
+    if (item.type === "consumable" && item.effects) {
+        for (const [key, value] of Object.entries(item.effects)) {
+             let niceKey = key;
+             if (key === 'maxHp') niceKey = 'Max HP';
+             if (key === 'hp') niceKey = 'HP Recover';
+             if (key === 'xp') niceKey = 'XP Grant';
+
+             this._createField(this.dynamicFieldsEl, niceKey).textContent = value;
+        }
+    } else if (item.type === "equipment") {
+        this._createField(this.dynamicFieldsEl, "Slot").textContent = item.equipType;
+        if (item.maxHpBonus) this._createField(this.dynamicFieldsEl, "Max HP").textContent = `+${item.maxHpBonus}`;
+        if (item.damageBonus) this._createField(this.dynamicFieldsEl, "Damage").textContent = `+${item.damageBonus}`;
+    }
+  }
+}
+
+/**
  * @class Window_Shop
  * @description The window for the shop.
  * @extends Window_Base
@@ -559,10 +686,10 @@ export class Window_Shop extends Window_Base {
    * @param {Object[]} items - The items available for sale.
    * @param {Function} buyCallback - The callback function to execute when an item is purchased.
    */
-  setup(gold, message, items, buyCallback) {
+  setup(gold, message, items, buyCallback, inspectCallback) {
     this.goldLabelEl.textContent = `${gold}G`;
     this.messageEl.textContent = message;
-    this.renderItems(items, buyCallback);
+    this.renderItems(items, buyCallback, inspectCallback);
   }
 
   /**
@@ -570,8 +697,9 @@ export class Window_Shop extends Window_Base {
    * @description Renders the list of items for sale.
    * @param {Object[]} items - The items available for sale.
    * @param {Function} buyCallback - The callback function to execute when an item is purchased.
+   * @param {Function} inspectCallback - The callback function to inspect an item.
    */
-  renderItems(items, buyCallback) {
+  renderItems(items, buyCallback, inspectCallback) {
     this.listContainer.innerHTML = "";
     items.forEach((tpl) => {
       const row = document.createElement("div");
@@ -583,10 +711,23 @@ export class Window_Shop extends Window_Base {
       if (iconId > 0) {
           icon.style.backgroundPosition = getIconStyle(iconId);
       }
+      // Make icon clickable for inspect
+      icon.style.cursor = "pointer";
+      icon.addEventListener("click", () => {
+         if (inspectCallback) inspectCallback(tpl);
+      });
       row.appendChild(icon);
 
       const label = document.createElement("span");
+      // Make name clickable for inspect too, why not
+      label.style.cursor = "pointer";
       label.textContent = `${tpl.name} (${tpl.cost}G): ${tpl.description}`;
+      label.addEventListener("click", () => {
+         if (inspectCallback) inspectCallback(tpl);
+      });
+      label.addEventListener("mouseover", () => { label.style.textDecoration = "underline"; });
+      label.addEventListener("mouseout", () => { label.style.textDecoration = "none"; });
+
       const btn = document.createElement("button");
       btn.className = "win-btn";
       btn.textContent = "Buy";
@@ -725,8 +866,9 @@ export class Window_Inventory extends Window_Base {
    * @param {Object[]} inventory - The party's inventory.
    * @param {Function} useItemCallback - Callback for using an item.
    * @param {Function} discardItemCallback - Callback for discarding an item.
+   * @param {Function} inspectCallback - Callback for inspecting an item.
    */
-  refresh(inventory, useItemCallback, discardItemCallback) {
+  refresh(inventory, useItemCallback, discardItemCallback, inspectCallback) {
     this.listEl.innerHTML = "";
     if (inventory.length === 0) {
       this.emptyMsgEl.style.display = "block";
@@ -742,11 +884,22 @@ export class Window_Inventory extends Window_Base {
         if (iconId > 0) {
             icon.style.backgroundPosition = getIconStyle(iconId);
         }
+        icon.style.cursor = "pointer";
+        icon.addEventListener("click", () => {
+             if (inspectCallback) inspectCallback(item);
+        });
         row.appendChild(icon);
 
         const desc = document.createElement("span");
         desc.textContent = `${item.name}: ${item.description}`;
         desc.style.flexGrow = "1";
+        desc.style.cursor = "pointer";
+        desc.addEventListener("click", () => {
+             if (inspectCallback) inspectCallback(item);
+        });
+        desc.addEventListener("mouseover", () => { desc.style.textDecoration = "underline"; });
+        desc.addEventListener("mouseout", () => { desc.style.textDecoration = "none"; });
+
         row.appendChild(desc);
 
         const btns = document.createElement("div");

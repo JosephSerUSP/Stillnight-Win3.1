@@ -9,6 +9,7 @@ import {
   Window_Formation,
   Window_Inventory,
   Window_Inspect,
+  Window_ItemInspect,
   Window_Confirm,
   WindowLayer,
 } from "./windows.js";
@@ -555,8 +556,18 @@ export class Scene_Shop extends Scene_Base {
         this.shopWindow = new Window_Shop();
         this.windowLayer.addChild(this.shopWindow);
 
+        this.itemInspectWindow = new Window_ItemInspect();
+        this.windowLayer.addChild(this.itemInspectWindow);
+
         this.shopWindow.btnClose.addEventListener("click", this.closeShop.bind(this));
         this.shopWindow.btnLeave.addEventListener("click", this.closeShop.bind(this));
+
+        this.itemInspectWindow.btnClose.addEventListener("click", () => {
+             this.windowManager.close(this.itemInspectWindow);
+        });
+        this.itemInspectWindow.btnOk.addEventListener("click", () => {
+             this.windowManager.close(this.itemInspectWindow);
+        });
     }
 
     /**
@@ -568,11 +579,22 @@ export class Scene_Shop extends Scene_Base {
             this.party.gold,
             this.dataManager.terms.shop.vendor_message,
             this.dataManager.items,
-            (itemId) => this.buyItem(itemId)
+            (itemId) => this.buyItem(itemId),
+            (item) => this.openItemInspect(item)
         );
         this.windowManager.push(this.shopWindow);
         document.getElementById("mode-label").textContent = "Shop";
         SoundManager.beep(650, 150);
+    }
+
+    /**
+     * @method openItemInspect
+     * @description Opens the item inspect window.
+     * @param {Object} item - The item to inspect.
+     */
+    openItemInspect(item) {
+        this.itemInspectWindow.setup(item);
+        this.windowManager.push(this.itemInspectWindow);
     }
 
     /**
@@ -664,8 +686,19 @@ export class Scene_Map extends Scene_Base {
     this.windowLayer.addChild(this.formationWindow)
     this.inspectWindow = new Window_Inspect();
     this.windowLayer.addChild(this.inspectWindow)
+    this.itemInspectWindow = new Window_ItemInspect();
+    this.windowLayer.addChild(this.itemInspectWindow);
     this.confirmWindow = new Window_Confirm();
     this.windowLayer.addChild(this.confirmWindow);
+
+    this.itemInspectWindow.btnClose.addEventListener(
+      "click",
+      () => this.windowManager.close(this.itemInspectWindow)
+    );
+    this.itemInspectWindow.btnOk.addEventListener(
+      "click",
+      () => this.windowManager.close(this.itemInspectWindow)
+    );
 
     this.recruitWindow.btnClose.addEventListener(
       "click",
@@ -1883,8 +1916,19 @@ renderElements(elements) {
     this.inventoryWindow.refresh(
       this.party.inventory,
       this.useItem.bind(this),
-      this.discardItem.bind(this)
+      this.discardItem.bind(this),
+      this.openItemInspect.bind(this)
     );
+  }
+
+  /**
+   * @method openItemInspect
+   * @description Opens the item inspect window.
+   * @param {Object} item - The item to inspect.
+   */
+  openItemInspect(item) {
+      this.itemInspectWindow.setup(item);
+      this.windowManager.push(this.itemInspectWindow);
   }
 
   /**
