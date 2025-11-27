@@ -1979,6 +1979,7 @@ renderElements(elements) {
    * @param {string} filter - The filter to apply to the equipment list.
    */
   renderEquipmentList(filter) {
+    this.currentEquipmentFilter = filter;
     const listEl = this.inspectWindow.equipmentListEl;
     const filterEl = this.inspectWindow.equipmentFilterEl;
     listEl.innerHTML = "";
@@ -2066,8 +2067,11 @@ renderElements(elements) {
         this.party.inventory.splice(invIndex, 1);
       }
       this.logMessage(`[Equip] ${member.name} equipped ${item.name}.`);
-      this.closeInspect();
+
       this.updateAll();
+      this.populateInspectWindow(member, this.party.members.indexOf(member));
+      this.renderEquipmentList(this.currentEquipmentFilter || "All");
+
       SoundManager.beep(800, 100); // Equip sound
     };
 
@@ -2085,8 +2089,11 @@ renderElements(elements) {
           `[Equip] ${member.name} swapped ${item.name} with ${otherMember.name}.`
         );
         this.confirmWindow.close();
-        this.closeInspect();
+
         this.updateAll();
+        this.populateInspectWindow(member, this.party.members.indexOf(member));
+        this.renderEquipmentList(this.currentEquipmentFilter || "All");
+
         SoundManager.beep(700, 150); // Swap sound
       };
       this.confirmWindow.btnCancel.onclick = () => {
