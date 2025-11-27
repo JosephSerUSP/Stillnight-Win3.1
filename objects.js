@@ -1,5 +1,6 @@
 
 import { randInt, shuffleArray } from "./core.js";
+import { passives as passivesData } from "./data/passives.js";
 
 /**
  * @class Game_Base
@@ -33,7 +34,14 @@ export class Game_Battler extends Game_Base {
   constructor(actorData, depth = 1, isEnemy = false) {
     super(actorData);
     this.role = actorData.role;
-    this.passives = actorData.passives || [];
+    // Resolve passives from IDs to full objects using imported data
+    this.passives = (actorData.passives || []).map(pId => {
+        // If it's already an object (legacy/test), try to use it, but prefer lookup if string
+        if (typeof pId === 'string') {
+            return passivesData[pId] || { id: pId, code: pId, value: 0, name: pId };
+        }
+        return pId;
+    });
     this.skills = actorData.skills ? actorData.skills.slice() : [];
     this.spriteKey = actorData.spriteKey;
     this.flavor = actorData.flavor;
@@ -100,7 +108,7 @@ export class Game_Battler extends Game_Base {
    */
   getPassiveValue(code) {
     const passive = this.passives.find((p) => p.code === code);
-    return passive ? passive.value : 0;
+    return passive ? (passive.value !== undefined ? passive.value : 0) : 0;
   }
 
   /**

@@ -2173,20 +2173,53 @@ renderElements(elements) {
     // Passives
     this.inspectWindow.passiveEl.innerHTML = "";
     if (member.passives && member.passives.length > 0) {
-        member.passives.forEach((p, i) => {
+        member.passives.forEach((pData, i) => {
+            // Resolve passive data
+            let passive = pData;
+            // If pData is just { code: '...' } or { id: '...' }, look it up in dataManager
+            // Or if it's already an object, use it.
+            // But we prefer using dataManager definitions.
+            const code = pData.code || pData.id;
+            let def = null;
+            if (this.dataManager.passives) {
+                // Find by ID or Code in passives object
+                def = Object.values(this.dataManager.passives).find(p => p.id === code || p.code === code);
+            }
+            if (!def) def = pData; // Fallback to inline data if not found
+
             const span = document.createElement("span");
-            span.textContent = p.name || `Passive ${i+1}`; // Fallback if name is missing
+
+            // Icon handling
+            if (def.icon) {
+                const iconId = def.icon;
+                const icon = document.createElement("span");
+                icon.className = "icon";
+                if (iconId > 0) {
+                    icon.style.backgroundPosition = getIconStyle(iconId);
+                }
+                icon.style.verticalAlign = "text-bottom";
+                icon.style.marginRight = "2px";
+                span.appendChild(icon);
+            }
+
+            span.appendChild(document.createTextNode(def.name || `Passive ${i+1}`));
             span.className = "interactive-text";
             span.style.marginRight = "5px";
             span.style.textDecoration = "underline";
             span.style.cursor = "help";
 
+            let tooltipText = def.description;
+            // If the passive has an explicit 'effect' field, display it on the second line
+            if (def.effect) {
+                tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${def.effect}</span>`;
+            }
+
             span.addEventListener("mouseenter", (e) => {
-                tooltip.show(e.clientX, e.clientY, null, p.description);
+                tooltip.show(e.clientX, e.clientY, null, tooltipText);
             });
             span.addEventListener("mouseleave", () => tooltip.hide());
             span.addEventListener("mousemove", (e) => {
-                 if (tooltip.visible) tooltip.show(e.clientX, e.clientY, null, p.description);
+                 if (tooltip.visible) tooltip.show(e.clientX, e.clientY, null, tooltipText);
             });
 
             this.inspectWindow.passiveEl.appendChild(span);
@@ -2212,21 +2245,35 @@ renderElements(elements) {
 
             if (skill) {
                 let tooltipText = skill.description;
-                if (skill.effects) {
-                    const formulaEffect = skill.effects.find(eff => eff.type === 'hp_damage' || eff.type === 'hp_heal');
-                    if (formulaEffect) {
-                        try {
-                            // Helper calculation
-                            const a = { level: member.level }; // Context for formula
-                            // Simple formula evaluator based on standard structure
-                            // formulas are like '5 + 1.2 * a.level'
-                            const val = Math.round(eval(formulaEffect.formula.replace(/a\.level/g, a.level)));
-                            const label = formulaEffect.type === 'hp_damage' ? 'Damage' : 'Heal';
-                            tooltipText += `<br/>Expected: ${val} ${label}`;
-                        } catch (err) {
-                            console.error("Error calculating tooltip formula", err);
-                        }
+                // Build second line with all effects
+                let effectsText = "";
+                if (skill.effects && skill.effects.length > 0) {
+                    const descriptions = [];
+                    skill.effects.forEach(eff => {
+                         if (eff.type === 'hp_damage') {
+                             try {
+                                 const a = { level: member.level };
+                                 const val = Math.round(eval(eff.formula.replace(/a\.level/g, a.level)));
+                                 descriptions.push(`Deals ~${val} Damage`);
+                             } catch(e) { descriptions.push("Deals Damage"); }
+                         } else if (eff.type === 'hp_heal') {
+                             try {
+                                 const a = { level: member.level };
+                                 const val = Math.round(eval(eff.formula.replace(/a\.level/g, a.level)));
+                                 descriptions.push(`Heals ~${val} HP`);
+                             } catch(e) { descriptions.push("Heals HP"); }
+                         } else if (eff.type === 'add_status') {
+                             const chance = Math.round((eff.chance || 1) * 100);
+                             descriptions.push(`${chance}% chance to add ${eff.status}`);
+                         }
+                    });
+                    if (descriptions.length > 0) {
+                        effectsText = descriptions.join(", ");
                     }
+                }
+
+                if (effectsText) {
+                    tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
                 }
 
                 span.addEventListener("mouseenter", (e) => {
@@ -2320,20 +2367,52 @@ renderElements(elements) {
       allEquipable.forEach((item) => {
         const row = document.createElement("div");
         row.className = "shop-row";
+
+        const icon = document.createElement("div");
+        icon.className = "icon";
+        const iconId = item.icon || 6;
+        if (iconId > 0) {
+            icon.style.backgroundPosition = getIconStyle(iconId);
+        }
+        row.appendChild(icon);
+
         const label = document.createElement("span");
-        let text = `${item.name} (+${item.damageBonus} DMG)`;
+        let text = `${item.name}`;
+        if (item.damageBonus) {
+             text += ` (+${item.damageBonus} DMG)`;
+        }
         if (item.equippedBy) {
           text += ` (on ${item.equippedBy})`;
         }
         label.textContent = text;
 
+        let tooltipText = item.description;
+        // Add item effects to tooltip
+        let effectsText = "";
+        const effects = [];
+        if (item.effects) {
+             if (item.effects.hp) effects.push(`Restores ${item.effects.hp} HP`);
+             if (item.effects.maxHp) effects.push(`Max HP +${item.effects.maxHp}`);
+             if (item.effects.xp) effects.push(`Grants ${item.effects.xp} XP`);
+        }
+        // Equipment stats
+        if (item.damageBonus) effects.push(`Damage +${item.damageBonus}`);
+
+        if (effects.length > 0) {
+            effectsText = effects.join(", ");
+        }
+
+        if (effectsText) {
+             tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
+        }
+
         // Tooltip for equipment list
         row.addEventListener("mouseenter", (e) => {
-            tooltip.show(e.clientX, e.clientY, null, item.description);
+            tooltip.show(e.clientX, e.clientY, null, tooltipText);
         });
         row.addEventListener("mouseleave", () => tooltip.hide());
         row.addEventListener("mousemove", (e) => {
-             if (tooltip.visible) tooltip.show(e.clientX, e.clientY, null, item.description);
+             if (tooltip.visible) tooltip.show(e.clientX, e.clientY, null, tooltipText);
         });
 
         const btn = document.createElement("button");
