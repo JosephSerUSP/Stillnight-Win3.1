@@ -1,0 +1,14 @@
+[
+  {
+    "id": "old_man",
+    "name": "Old Man",
+    "char": "N",
+    "dialogue": "It's dangerous to go alone! Take care of yourself."
+  },
+  {
+    "id": "merchant_gossip",
+    "name": "Gossip Merchant",
+    "char": "M",
+    "dialogue": "I heard the boss on the bottom floor hates light."
+  }
+]

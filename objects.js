@@ -350,9 +350,10 @@ export class Game_Map {
    * Initializes the map floors using provided floor metadata.
    * @method initFloors
    * @param {Array} floorData - The array of floor metadata objects from data manager.
+   * @param {Array} [npcData] - Optional array of NPC definitions.
    */
-  initFloors(floorData) {
-    this.floors = floorData.map((meta, i) => this.generateFloor(meta, i));
+  initFloors(floorData, npcData = []) {
+    this.floors = floorData.map((meta, i) => this.generateFloor(meta, i, npcData));
     this.floors[0].discovered = true;
     this.maxReachedFloorIndex = 0;
   }
@@ -363,12 +364,14 @@ export class Game_Map {
    * @method generateFloor
    * @param {Object} meta - The metadata for the floor (title, depth, etc.).
    * @param {number} index - The index of the floor in the dungeon.
+   * @param {Array} [npcData] - Optional array of NPC definitions.
    * @returns {Object} The generated floor object containing layout and entity positions.
    */
-  generateFloor(meta, index) {
+  generateFloor(meta, index, npcData = []) {
     const tiles = Array.from({ length: this.MAX_H }, () =>
       Array.from({ length: this.MAX_W }, () => "#")
     );
+    const events = [];
     const visited = Array.from({ length: this.MAX_H }, () =>
       Array.from({ length: this.MAX_W }, () => false)
     );
@@ -446,21 +449,21 @@ export class Game_Map {
     for (let i = 0; i < enemyCount; i++) {
       const ePos = pickCell(used);
       if (!ePos) break;
-      tiles[ePos[1]][ePos[0]] = "E";
+      events.push({ type: 'enemy', x: ePos[0], y: ePos[1] });
       used.push(ePos);
     }
 
     if (meta.depth >= 1 && index >= 1) {
       const shrinePos = pickCell(used);
       if (shrinePos) {
-        tiles[shrinePos[1]][shrinePos[0]] = "♱";
+        events.push({ type: 'shrine', x: shrinePos[0], y: shrinePos[1] });
         used.push(shrinePos);
       }
     }
     if (meta.depth >= 2 || index === 0) { // Always on first floor for testing
       const shopPos = pickCell(used);
       if (shopPos) {
-        tiles[shopPos[1]][shopPos[0]] = "¥";
+        events.push({ type: 'shop', x: shopPos[0], y: shopPos[1] });
         used.push(shopPos);
       }
     }
@@ -468,8 +471,18 @@ export class Game_Map {
     if (meta.depth >= 1) {
       const recruitPos = pickCell(used);
       if (recruitPos) {
-        tiles[recruitPos[1]][recruitPos[0]] = "U";
+        events.push({ type: 'recruit', x: recruitPos[0], y: recruitPos[1] });
         used.push(recruitPos);
+      }
+    }
+
+    // Place random NPC (small chance)
+    if (npcData.length > 0 && Math.random() < 0.3) {
+      const npcPos = pickCell(used);
+      if (npcPos) {
+        const npcDef = npcData[randInt(0, npcData.length - 1)];
+        events.push({ type: 'npc', x: npcPos[0], y: npcPos[1], id: npcDef.id });
+        used.push(npcPos);
       }
     }
 
@@ -479,11 +492,28 @@ export class Game_Map {
       depth: meta.depth,
       intro: meta.intro,
       tiles,
+      events,
       visited,
       startX,
       startY,
       discovered: false,
     };
+  }
+
+  /**
+   * Removes an event from the map at the specified coordinates.
+   * @method removeEvent
+   * @param {number} floorIndex - The floor index.
+   * @param {number} x - The x coordinate.
+   * @param {number} y - The y coordinate.
+   */
+  removeEvent(floorIndex, x, y) {
+    if (floorIndex < 0 || floorIndex >= this.floors.length) return;
+    const floor = this.floors[floorIndex];
+    const idx = floor.events.findIndex(e => e.x === x && e.y === y);
+    if (idx !== -1) {
+      floor.events.splice(idx, 1);
+    }
   }
 
   /**

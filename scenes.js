@@ -427,12 +427,9 @@ export class Scene_Battle extends Scene_Base {
    */
   clearEnemyTileAfterBattle() {
     if (!this.battleManager) return;
-    const f = this.map.floors[this.map.floorIndex];
     const { tileX, tileY } = this.battleManager;
-    if (f.tiles[tileY][tileX] === "E") {
-      f.tiles[tileY][tileX] = ".";
-    }
-    this.map.revealAroundPlayer(f);
+    this.map.removeEvent(this.map.floorIndex, tileX, tileY);
+    this.map.revealAroundPlayer();
     this.sceneManager.previous().updateGrid();
   }
 
@@ -857,6 +854,7 @@ export class Scene_Map extends Scene_Base {
     this.battleManager = new BattleManager(this.party, this.dataManager);
     this.runActive = true;
     this.draggedIndex = null;
+    this.currentInteractionEvent = null;
 
     this.createUI();
     this.getDomElements();
@@ -1038,7 +1036,7 @@ export class Scene_Map extends Scene_Base {
    */
   startNewRun() {
     if (this.sceneManager.currentScene() !== this) return;
-    this.map.initFloors(this.dataManager.floors);
+    this.map.initFloors(this.dataManager.floors, this.dataManager.npcs);
     this.party.createInitialMembers(this.dataManager);
     this.runActive = true;
     this.map.floorIndex = 0;
@@ -1215,47 +1213,62 @@ export class Scene_Map extends Scene_Base {
         const isPlayer = x === this.map.playerX && y === this.map.playerY;
         const visited = floor.visited[y][x];
         const ch = floor.tiles[y][x];
+        const event = floor.events ? floor.events.find(e => e.x === x && e.y === y) : null;
 
         if (!visited && !isPlayer) {
           tileEl.classList.add("tile-fog");
           tileEl.textContent = "?";
         } else {
           let symbol = " ";
-          switch (ch) {
-            case "#":
-              symbol = "█";
-              break;
-            case ".":
-              symbol = " ";
-              break;
-            case "E":
-              symbol = "E";
-              tileEl.classList.add("tile-enemy");
-              break;
-            case "S":
-              symbol = "S";
-              tileEl.classList.add("tile-stairs");
-              break;
-            case "R":
-              symbol = "R";
-              tileEl.classList.add("tile-recovery");
-              break;
-            case "♱":
-              symbol = "♱";
-              tileEl.classList.add("tile-shrine");
-              break;
-            case "¥":
-              symbol = "¥";
-              tileEl.classList.add("tile-shop");
-              break;
-            case "U":
-              symbol = "U";
-              tileEl.classList.add("tile-recruit");
-              break;
-            default:
-              symbol = " ";
-              break;
+
+          if (event) {
+            switch (event.type) {
+              case 'enemy':
+                symbol = "E";
+                tileEl.classList.add("tile-enemy");
+                break;
+              case 'shop':
+                symbol = "¥";
+                tileEl.classList.add("tile-shop");
+                break;
+              case 'recruit':
+                symbol = "U";
+                tileEl.classList.add("tile-recruit");
+                break;
+              case 'shrine':
+                symbol = "♱";
+                tileEl.classList.add("tile-shrine");
+                break;
+              case 'npc':
+                const npcDef = this.dataManager.npcs ? this.dataManager.npcs.find(n => n.id === event.id) : null;
+                symbol = npcDef ? npcDef.char : "N";
+                tileEl.classList.add("tile-npc");
+                break;
+            }
           }
+
+          if (symbol === " ") {
+            switch (ch) {
+              case "#":
+                symbol = "█";
+                break;
+              case ".":
+                symbol = " ";
+                break;
+              case "S":
+                symbol = "S";
+                tileEl.classList.add("tile-stairs");
+                break;
+              case "R":
+                symbol = "R";
+                tileEl.classList.add("tile-recovery");
+                break;
+              default:
+                symbol = " ";
+                break;
+            }
+          }
+
           if (isPlayer) {
             symbol = "☺";
             tileEl.classList.add("tile-player");
@@ -1438,6 +1451,7 @@ export class Scene_Map extends Scene_Base {
     }
 
     const ch = floor.tiles[y][x];
+    const event = floor.events ? floor.events.find(e => e.x === x && e.y === y) : null;
 
     if (ch === "#") {
       this.setStatus(this.dataManager.terms.log.wall_blocks);
@@ -1449,6 +1463,29 @@ export class Scene_Map extends Scene_Base {
     this.map.playerY = y;
     this.map.revealAroundPlayer();
     this.updateGrid();
+
+    if (event) {
+       this.currentInteractionEvent = event;
+       if (event.type === "enemy") {
+          this.setStatus("Enemy encountered!");
+          this.logMessage("[Battle] Shapes uncoil from the dark.");
+          this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.battleManager, this.windowLayer, this.map, x, y));
+          return;
+       } else if (event.type === "shop") {
+          this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.windowManager, this.party, this.windowLayer));
+          return;
+       } else if (event.type === "shrine") {
+          this.logMessage("[Shrine] You encounter a shrine.");
+          this.openShrineEvent();
+          return;
+       } else if (event.type === "recruit") {
+          this.openRecruitEvent();
+          return;
+       } else if (event.type === "npc") {
+          this.openNpcEvent(event);
+          return;
+       }
+    }
 
     if (ch === ".") {
       this.logMessage("[Step] Your footsteps echo softly.");
@@ -1469,21 +1506,6 @@ export class Scene_Map extends Scene_Base {
     } else if (ch === "S") {
       this.descendStairs();
       SoundManager.beep(800, 150);
-      return;
-    } else if (ch === "E") {
-      this.setStatus("Enemy encountered!");
-      this.logMessage("[Battle] Shapes uncoil from the dark.");
-      this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.battleManager, this.windowLayer, this.map, x, y));
-      return;
-    } else if (ch === "¥") {
-      this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.windowManager, this.party, this.windowLayer));
-      return;
-    } else if (ch === "♱") {
-      this.logMessage("[Shrine] You encounter a shrine.");
-      this.openShrineEvent();
-      return;
-    } else if (ch === "U") {
-      this.openRecruitEvent();
       return;
     }
 
@@ -1804,15 +1826,32 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Opens an interaction with an NPC.
+   * @method openNpcEvent
+   * @param {Object} event - The NPC event object.
+   */
+  openNpcEvent(event) {
+    const npc = this.dataManager.npcs.find(n => n.id === event.id);
+    if (!npc) return;
+
+    let text = "";
+    if (typeof npc.dialogue === 'string') {
+        text = npc.dialogue;
+    }
+
+    this.logMessage(`[${npc.name}] "${text}"`);
+    this.setStatus(`Talking to ${npc.name}.`);
+    SoundManager.beep(400, 100);
+  }
+
+  /**
    * Clears a tile of a specific event character.
    * @method clearEventTile
-   * @param {string} char - The map character to remove.
    */
-  clearEventTile(char) {
-    const f = this.map.floors[this.map.floorIndex];
-    const { playerX, playerY } = this.map;
-    if (f.tiles[playerY][playerX] === char) {
-      f.tiles[playerY][playerX] = ".";
+  clearEventTile() {
+    if (this.currentInteractionEvent) {
+      this.map.removeEvent(this.map.floorIndex, this.currentInteractionEvent.x, this.currentInteractionEvent.y);
+      this.currentInteractionEvent = null;
     }
     this.updateGrid();
   }
@@ -1829,7 +1868,7 @@ export class Scene_Map extends Scene_Base {
       this.setStatus(
         this.dataManager.terms.recruit.recruited.replace("{0}", recruit.name)
       );
-      this.clearEventTile("U");
+      this.clearEventTile();
       this.closeRecruitEvent();
       this.updateParty();
       return;
@@ -1870,7 +1909,7 @@ export class Scene_Map extends Scene_Base {
         .replace("{1}", recruit.name)
     );
     this.party.members[index] = new Game_Battler(recruit);
-    this.clearEventTile("U");
+    this.clearEventTile();
     this.updateParty();
     this.closeRecruitEvent();
   }
