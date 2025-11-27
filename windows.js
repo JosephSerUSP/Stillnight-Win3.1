@@ -326,6 +326,8 @@ export class Window_Battle extends Window_Base {
     this.viewportEl.appendChild(header);
 
     battlers.forEach((e, idx) => {
+        if (e.hp <= 0) return; // Don't render dead enemies
+
         const top = 30 + (idx % 2) * 40;
         const left = 20 + Math.floor(idx / 2) * 220;
         const hp = e.hp;
@@ -346,6 +348,8 @@ export class Window_Battle extends Window_Base {
     });
 
     party.forEach((p, idx) => {
+        if (p.hp <= 0) return; // Don't render dead party members
+
         const top = 140 + (idx % 2) * 40;
         const left = 20 + Math.floor(idx / 2) * 220;
         const hp = p.hp;
@@ -376,6 +380,11 @@ export class Window_Battle extends Window_Base {
       filledCount = 0;
     }
     const emptyCount = totalLength - filledCount;
+    if (emptyCount < 0) {
+        console.warn(`HP Gauge Overflow: HP=${hp}, MaxHP=${maxHp}, Filled=${filledCount}, Empty=${emptyCount}`);
+        // Clamping for safety
+        return `[${"#".repeat(totalLength)}]`;
+    }
     return `[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
   }
 }
