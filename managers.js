@@ -1,3 +1,5 @@
+import { randInt } from "./core.js";
+
 /**
  * The data manager for the game.
  * @class
