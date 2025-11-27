@@ -769,16 +769,36 @@ export class Window_Inventory extends Window_Base {
         desc.style.flexGrow = "1";
         row.appendChild(desc);
 
+        let tooltipText = item.description;
+        // Add item effects to tooltip
+        let effectsText = "";
+        const effects = [];
+        if (item.effects) {
+             if (item.effects.hp) effects.push(`Restores ${item.effects.hp} HP`);
+             if (item.effects.maxHp) effects.push(`Max HP +${item.effects.maxHp}`);
+             if (item.effects.xp) effects.push(`Grants ${item.effects.xp} XP`);
+        }
+        // Equipment stats
+        if (item.damageBonus) effects.push(`Damage +${item.damageBonus}`);
+
+        if (effects.length > 0) {
+            effectsText = effects.join(", ");
+        }
+
+        if (effectsText) {
+             tooltipText += `<br/><span style="color:#aaa; font-size: 0.9em;">${effectsText}</span>`;
+        }
+
         // Tooltip
         row.addEventListener("mouseenter", (e) => {
-            tooltip.show(e.clientX, e.clientY, null, item.description);
+            tooltip.show(e.clientX, e.clientY, null, tooltipText);
         });
         row.addEventListener("mouseleave", () => {
             tooltip.hide();
         });
         row.addEventListener("mousemove", (e) => {
             if (tooltip.visible) {
-                tooltip.show(e.clientX, e.clientY, null, item.description);
+                tooltip.show(e.clientX, e.clientY, null, tooltipText);
             }
         });
 

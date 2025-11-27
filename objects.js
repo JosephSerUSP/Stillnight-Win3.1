@@ -33,6 +33,24 @@ export class Game_Battler extends Game_Base {
   constructor(actorData, depth = 1, isEnemy = false) {
     super(actorData);
     this.role = actorData.role;
+    // Map passive IDs/Codes to actual passive objects from DataManager if needed,
+    // but actorData might still have the old format or just IDs.
+    // For now, we assume actorData might contain full objects OR just IDs.
+    // Ideally, we want to resolve them to the standard format.
+    // However, Game_Battler doesn't have direct access to DataManager easily unless passed or global.
+    // The DataManager is usually passed to Scenes.
+    // We'll trust that the 'passives' array contains objects that at least have a 'code' or 'id'
+    // matching what we expect.
+    //
+    // If we want to use the new data/passives.js, we should probably look them up.
+    // But Game_Battler constructor doesn't take DataManager.
+    // We can rely on 'window.dataManager' if it exists (global) or just store what is given.
+    //
+    // UPDATE: We should standardize 'passives' to be a list of objects with { id, value } or just strings.
+    // If it is strings, we can't look them up easily here without DataManager.
+    // Let's store what is passed for now, but assume 'actorData.passives' might be updated
+    // by the caller (Factory) to include full data, OR we update getPassiveValue to handle lookup.
+
     this.passives = actorData.passives || [];
     this.skills = actorData.skills ? actorData.skills.slice() : [];
     this.spriteKey = actorData.spriteKey;
@@ -99,8 +117,26 @@ export class Game_Battler extends Game_Base {
    * @returns {number} The value of the passive, or 0 if not found.
    */
   getPassiveValue(code) {
-    const passive = this.passives.find((p) => p.code === code);
-    return passive ? passive.value : 0;
+    // Check if passives are stored as objects with 'code' (legacy/mixed) or just IDs?
+    // The new system should probably use IDs.
+    // If 'passives' contains strings (IDs), we can't get the 'value' unless we look up the default
+    // or the 'value' is stored alongside the ID in an object: { id: 'parasite', value: 2 }
+
+    const passive = this.passives.find((p) => {
+        // Handle object format (legacy or new {id, value})
+        if (typeof p === 'object') {
+             return p.code === code || p.id === code;
+        }
+        // Handle string format (if we move to that) - we can't really get 'value' from just string
+        // unless we access DataManager.passives. But we don't have access here easily.
+        // So we assume passives are objects { id: 'parasite', value: 2, ... }
+        return false;
+    });
+
+    if (passive) {
+        return passive.value !== undefined ? passive.value : 0;
+    }
+    return 0;
   }
 
   /**
