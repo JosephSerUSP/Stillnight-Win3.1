@@ -4,7 +4,7 @@ test.describe('Game Logic', () => {
   test.beforeEach(async ({ page }) => {
     // Start the local server before running tests if not already running
     // In this environment, we assume the server is running on port 8080
-    await page.goto('http://localhost:8080/?test=true');
+    await page.goto('/?test=true');
   });
 
   test('Battle window shake on close attempt', async ({ page }) => {
