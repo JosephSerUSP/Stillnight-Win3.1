@@ -789,3 +789,25 @@ body.night-theme {
     flex-direction: column;
     gap: 4px;
 }
+
+/* ===== Tooltip ================================================== */
+#tooltip {
+    position: absolute;
+    background-color: #ffffe1;
+    border: 1px solid #000000;
+    padding: 4px;
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+    font-size: 11px;
+    z-index: 9999;
+    pointer-events: none;
+    max-width: 250px;
+    display: none;
+    color: #000000;
+}
+.tooltip-title {
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+.tooltip-text {
+    font-size: 10px;
+}

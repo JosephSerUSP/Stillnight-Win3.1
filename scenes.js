@@ -12,6 +12,7 @@ import {
   Window_Confirm,
   WindowLayer,
 } from "./windows.js";
+import { tooltip } from "./tooltip.js";
 
 /**
  * @class Scene_Base
@@ -2169,8 +2170,83 @@ renderElements(elements) {
       this.inspectWindow.equipEl.textContent = "—";
     }
 
-    this.inspectWindow.passiveEl.textContent = member.passives.map((p) => p.description).join(", ") || "—";
-    this.inspectWindow.skillsEl.innerHTML = (member.skills && member.skills.length) ? member.skills.map((s) => this.formatSkillName(s)).join(", ") : "—";
+    // Passives
+    this.inspectWindow.passiveEl.innerHTML = "";
+    if (member.passives && member.passives.length > 0) {
+        member.passives.forEach((p, i) => {
+            const span = document.createElement("span");
+            span.textContent = p.name || `Passive ${i+1}`; // Fallback if name is missing
+            span.className = "interactive-text";
+            span.style.marginRight = "5px";
+            span.style.textDecoration = "underline";
+            span.style.cursor = "help";
+
+            span.addEventListener("mouseenter", (e) => {
+                tooltip.show(e.clientX, e.clientY, null, p.description);
+            });
+            span.addEventListener("mouseleave", () => tooltip.hide());
+            span.addEventListener("mousemove", (e) => {
+                 if (tooltip.visible) tooltip.show(e.clientX, e.clientY, null, p.description);
+            });
+
+            this.inspectWindow.passiveEl.appendChild(span);
+            if (i < member.passives.length - 1) {
+                this.inspectWindow.passiveEl.appendChild(document.createTextNode(", "));
+            }
+        });
+    } else {
+        this.inspectWindow.passiveEl.textContent = "—";
+    }
+
+    // Skills
+    this.inspectWindow.skillsEl.innerHTML = "";
+    if (member.skills && member.skills.length > 0) {
+        member.skills.forEach((sId, i) => {
+            const skill = this.dataManager.skills[sId];
+            const span = document.createElement("span");
+            span.innerHTML = this.formatSkillName(sId);
+            span.className = "interactive-text";
+            span.style.marginRight = "5px";
+            span.style.cursor = "help";
+            span.style.borderBottom = "1px dotted #000";
+
+            if (skill) {
+                let tooltipText = skill.description;
+                if (skill.effects) {
+                    const formulaEffect = skill.effects.find(eff => eff.type === 'hp_damage' || eff.type === 'hp_heal');
+                    if (formulaEffect) {
+                        try {
+                            // Helper calculation
+                            const a = { level: member.level }; // Context for formula
+                            // Simple formula evaluator based on standard structure
+                            // formulas are like '5 + 1.2 * a.level'
+                            const val = Math.round(eval(formulaEffect.formula.replace(/a\.level/g, a.level)));
+                            const label = formulaEffect.type === 'hp_damage' ? 'Damage' : 'Heal';
+                            tooltipText += `<br/>Expected: ${val} ${label}`;
+                        } catch (err) {
+                            console.error("Error calculating tooltip formula", err);
+                        }
+                    }
+                }
+
+                span.addEventListener("mouseenter", (e) => {
+                    tooltip.show(e.clientX, e.clientY, null, tooltipText);
+                });
+                span.addEventListener("mouseleave", () => tooltip.hide());
+                span.addEventListener("mousemove", (e) => {
+                    if (tooltip.visible) tooltip.show(e.clientX, e.clientY, null, tooltipText);
+                });
+            }
+
+            this.inspectWindow.skillsEl.appendChild(span);
+            if (i < member.skills.length - 1) {
+                this.inspectWindow.skillsEl.appendChild(document.createTextNode(", "));
+            }
+        });
+    } else {
+        this.inspectWindow.skillsEl.textContent = "—";
+    }
+
     this.inspectWindow.flavorEl.textContent = member.flavor || "—";
     this.inspectWindow.notesEl.textContent = "Row is determined by the 2×2 formation grid.";
 
@@ -2250,6 +2326,16 @@ renderElements(elements) {
           text += ` (on ${item.equippedBy})`;
         }
         label.textContent = text;
+
+        // Tooltip for equipment list
+        row.addEventListener("mouseenter", (e) => {
+            tooltip.show(e.clientX, e.clientY, null, item.description);
+        });
+        row.addEventListener("mouseleave", () => tooltip.hide());
+        row.addEventListener("mousemove", (e) => {
+             if (tooltip.visible) tooltip.show(e.clientX, e.clientY, null, item.description);
+        });
+
         const btn = document.createElement("button");
         btn.className = "win-btn";
         btn.textContent = item.equippedBy ? "Swap" : "Equip";
