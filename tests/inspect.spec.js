@@ -5,7 +5,7 @@ test.describe('Creature Inspect Window', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:8080?test=true');
-    await page.waitForTimeout(500); // Allow game to initialize
+    await page.evaluate(() => window.startGame());
     scene = await page.evaluateHandle(() => window.scene);
   });
 
@@ -21,11 +21,11 @@ test.describe('Creature Inspect Window', () => {
         damageBonus: 5,
         icon: 1,
       });
-    }, scene);
+    });
 
     // 2. Open the inspect window for the first party member
-    const firstPartyMember = await scene.evaluate(scene => scene.party.members[0], scene);
-    await scene.evaluate(scene => scene.openInspect(scene.party.members[0], 0), scene);
+    const firstPartyMember = await scene.evaluate(scene => scene.party.members[0]);
+    await scene.evaluate(scene => scene.openInspect(scene.party.members[0], 0));
 
     // 3. Verify the inspect window is visible and shows the correct data
     const inspectWindow = page.locator('#inspect-window');
@@ -38,6 +38,7 @@ test.describe('Creature Inspect Window', () => {
 
     // 5. Verify the equipment list is now visible
     const equipmentList = inspectWindow.locator('.group-box');
+    await equipmentList.waitFor({ state: 'visible' });
     await expect(equipmentList).toBeVisible();
     await expect(equipmentList).toContainText('Test Sword');
 
@@ -49,12 +50,12 @@ test.describe('Creature Inspect Window', () => {
     await expect(inspectWindow).not.toBeVisible();
 
     // 8. Re-open the inspect window to verify the change
-    await scene.evaluate(scene => scene.openInspect(scene.party.members[0], 0), scene);
+    await scene.evaluate(scene => scene.openInspect(scene.party.members[0], 0));
     const updatedEquipmentButton = page.locator('#inspect-window button.inspect-value');
     await expect(updatedEquipmentButton).toContainText('Test Sword');
 
     // 9. Close the window for cleanup
-    await scene.evaluate(scene => scene.closeInspect(), scene);
+    await scene.evaluate(scene => scene.inspectWindow.close());
     await expect(inspectWindow).not.toBeVisible();
   });
 });

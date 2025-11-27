@@ -413,6 +413,30 @@ export class Window_Inspect extends Window_Base {
     parent.appendChild(row);
     return valueEl;
   }
+
+  refresh(member, scene) {
+    const need = member.xpNeeded(member.level);
+    const spriteKey = member.spriteKey || 'pixie';
+    this.spriteEl.style.backgroundImage = `url('assets/portraits/${spriteKey}.png')`;
+    this.nameEl.innerHTML = "";
+    this.nameEl.appendChild(scene.createElementIcon(member.elements));
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = member.name;
+    this.nameEl.appendChild(nameSpan);
+    this.levelEl.textContent = member.level;
+    this.hpEl.textContent = `${member.hp} / ${member.maxHp}`;
+    this.xpEl.textContent = `${member.xp || 0} / ${need}`;
+    this.elementEl.innerHTML = "";
+    if (member.elements && member.elements.length > 0) {
+        this.elementEl.appendChild(scene.renderElements(member.elements));
+    } else {
+        this.elementEl.textContent = "—";
+    }
+    this.equipEl.textContent = member.equipmentItem ? member.equipmentItem.name : (member.baseEquipment || "—");
+    this.passiveEl.textContent = member.passives.map((p) => p.description).join(", ") || "—";
+    this.skillsEl.textContent = (member.skills && member.skills.length) ? member.skills.join(", ") : "—";
+    this.flavorEl.textContent = member.flavor || "—";
+  }
 }
 
 /**
