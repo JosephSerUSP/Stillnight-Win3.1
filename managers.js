@@ -48,6 +48,12 @@ export class DataManager {
   skills = null;
 
   /**
+   * The passive data.
+   * @type {Object}
+   */
+  passives = null;
+
+  /**
    * The starting party data.
    * @type {Object}
    */
@@ -69,10 +75,12 @@ export class DataManager {
     try {
       const { skills } = await import("./data/skills.js");
       this.skills = skills;
+      const { passives } = await import("./data/passives.js");
+      this.passives = passives;
       const { startingParty } = await import("./data/party.js");
       this.startingParty = startingParty;
     } catch (error) {
-      console.error("Failed to load skills.js:", error);
+      console.error("Failed to load skills.js or passives.js:", error);
     }
 
     for (const [key, src] of Object.entries(dataSources)) {
