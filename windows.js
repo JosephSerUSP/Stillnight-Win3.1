@@ -161,7 +161,10 @@ export class Window_Battle extends Window_Base {
     this.btnClose = document.createElement("button");
     this.btnClose.className = "win-btn";
     this.btnClose.textContent = "X";
-    this.btnClose.onclick = () => this.close();
+    this.btnClose.onclick = () => {
+        this.element.classList.add("shake");
+        setTimeout(() => this.element.classList.remove("shake"), 500);
+    };
     titleBar.appendChild(this.btnClose);
 
     const content = document.createElement("div");

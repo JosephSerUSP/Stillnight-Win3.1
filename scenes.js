@@ -735,6 +735,7 @@ export class Scene_Map extends Scene_Base {
    * @description Starts a new game run.
    */
   startNewRun() {
+    if (this.sceneManager.currentScene() !== this) return;
     this.map.initFloors(this.dataManager.floors);
     this.party.createInitialMembers(this.dataManager);
     this.runActive = true;
@@ -1122,6 +1123,7 @@ export class Scene_Map extends Scene_Base {
       this.setStatus("The run has ended. Start a new run.");
       return;
     }
+    if (this.sceneManager.currentScene() !== this) return;
 
     const tileEl = e.currentTarget;
     const x = parseInt(tileEl.dataset.x, 10);
@@ -1228,6 +1230,7 @@ export class Scene_Map extends Scene_Base {
    * @description Reveals all floors.
    */
   revealAllFloors() {
+    if (this.sceneManager.currentScene() !== this) return;
     this.map.floors.forEach((f) => {
       for (let y = 0; y < this.map.MAX_H; y++) {
         for (let x = 0; x < this.map.MAX_W; x++) {
@@ -1722,6 +1725,7 @@ renderElements(elements) {
    * @description Opens the formation window.
    */
   openFormation() {
+    if (this.sceneManager.currentScene() !== this) return;
     this.formationWindow.open();
     this.renderFormationGrid();
   }
@@ -1824,6 +1828,7 @@ renderElements(elements) {
    * @description Opens the inventory window.
    */
   openInventory() {
+    if (this.sceneManager.currentScene() !== this) return;
     this.inventoryWindow.open();
     this.refreshInventoryWindow();
   }
@@ -2066,7 +2071,8 @@ renderElements(elements) {
         this.party.inventory.splice(invIndex, 1);
       }
       this.logMessage(`[Equip] ${member.name} equipped ${item.name}.`);
-      this.closeInspect();
+      this.openInspect(member, this.party.members.indexOf(member)); // Refresh inspect window
+      this.openEquipmentScreen(); // Re-open equipment list
       this.updateAll();
       SoundManager.beep(800, 100); // Equip sound
     };
@@ -2085,7 +2091,8 @@ renderElements(elements) {
           `[Equip] ${member.name} swapped ${item.name} with ${otherMember.name}.`
         );
         this.confirmWindow.close();
-        this.closeInspect();
+        this.openInspect(member, this.party.members.indexOf(member)); // Refresh inspect window
+        this.openEquipmentScreen(); // Re-open equipment list
         this.updateAll();
         SoundManager.beep(700, 150); // Swap sound
       };
