@@ -48,6 +48,12 @@ export class DataManager {
   skills = null;
 
   /**
+   * The passive data.
+   * @type {Object}
+   */
+  passives = null;
+
+  /**
    * The starting party data.
    * @type {Object}
    */
@@ -69,10 +75,12 @@ export class DataManager {
     try {
       const { skills } = await import("./data/skills.js");
       this.skills = skills;
+      const { passives } = await import("./data/passives.js");
+      this.passives = passives;
       const { startingParty } = await import("./data/party.js");
       this.startingParty = startingParty;
     } catch (error) {
-      console.error("Failed to load skills.js:", error);
+      console.error("Failed to load JS data modules:", error);
     }
 
     for (const [key, src] of Object.entries(dataSources)) {
@@ -143,6 +151,126 @@ export class SoundManager {
       // Fail silently if audio context fails.
     }
   }
+}
+
+/**
+ * @class TooltipManager
+ * @description Manages global tooltips for items, skills, and passives.
+ */
+export class TooltipManager {
+    /**
+     * @param {DataManager} dataManager
+     */
+    constructor(dataManager) {
+        this.dataManager = dataManager;
+        this.tooltipEl = null;
+        this.init();
+    }
+
+    init() {
+        this.tooltipEl = document.createElement("div");
+        this.tooltipEl.className = "tooltip-box";
+        document.body.appendChild(this.tooltipEl);
+
+        document.addEventListener("mouseover", this.onMouseOver.bind(this));
+        document.addEventListener("mousemove", this.onMouseMove.bind(this));
+        document.addEventListener("mouseout", this.onMouseOut.bind(this));
+    }
+
+    onMouseOver(e) {
+        const target = e.target.closest("[data-tooltip-type]");
+        if (!target) return;
+
+        const type = target.dataset.tooltipType;
+        const id = target.dataset.tooltipId;
+
+        let title = "";
+        let desc = "";
+        let extra = "";
+
+        if (type === "item") {
+            const item = this.dataManager.items.find(i => i.id === id);
+            if (item) {
+                title = item.name;
+                desc = item.description;
+                if (item.effects) {
+                    const effects = [];
+                    if (item.effects.hp) effects.push(`Heals ${item.effects.hp} HP`);
+                    if (item.effects.maxHp) effects.push(`+${item.effects.maxHp} Max HP`);
+                    if (item.effects.xp) effects.push(`+${item.effects.xp} XP`);
+                    if (effects.length) extra = effects.join(", ");
+                }
+                if (item.type === 'equipment') {
+                    const stats = [];
+                    if (item.damageBonus) stats.push(`+${item.damageBonus} DMG`);
+                    if (item.maxHpBonus) stats.push(`+${item.maxHpBonus} Max HP`);
+                    if (stats.length) extra = stats.join(", ");
+                }
+            }
+        } else if (type === "skill") {
+            const skill = this.dataManager.skills[id];
+            if (skill) {
+                title = skill.name;
+                desc = skill.description || "";
+                if (skill.effects) {
+                     const effects = skill.effects.map(e => {
+                         if (e.type === 'hp_damage') return `Damage: ${e.formula}`;
+                         if (e.type === 'hp_heal') return `Heal: ${e.formula}`;
+                         if (e.type === 'add_status') return `Status: ${e.status}`;
+                         return '';
+                     }).filter(Boolean);
+                     if (effects.length) extra = effects.join(", ");
+                }
+            }
+        } else if (type === "passive") {
+            const passive = this.dataManager.passives[id];
+            if (passive) {
+                title = passive.name;
+                desc = passive.description;
+            } else {
+                // Fallback if data is missing but key exists
+                title = id;
+            }
+        }
+
+        if (title) {
+            this.tooltipEl.innerHTML = `<div class="tooltip-title">${title}</div><div class="tooltip-desc">${desc}</div>${extra ? `<div class="tooltip-extra">${extra}</div>` : ''}`;
+            this.tooltipEl.style.display = "block";
+            this.positionTooltip(e);
+        }
+    }
+
+    onMouseMove(e) {
+        if (this.tooltipEl.style.display === "block") {
+            this.positionTooltip(e);
+        }
+    }
+
+    onMouseOut(e) {
+        // Only hide if we left the tooltip-triggering element
+        const target = e.target.closest("[data-tooltip-type]");
+        if (target) {
+            this.tooltipEl.style.display = "none";
+        }
+    }
+
+    positionTooltip(e) {
+        // Bottom-left of cursor
+        const x = e.clientX;
+        const y = e.clientY;
+        // Offset
+        this.tooltipEl.style.left = `${x + 12}px`;
+        this.tooltipEl.style.top = `${y + 12}px`;
+
+        // Check bounds (basic)
+        const rect = this.tooltipEl.getBoundingClientRect();
+        if (rect.right > window.innerWidth) {
+             this.tooltipEl.style.left = `${x - rect.width - 4}px`;
+        }
+        if (rect.bottom > window.innerHeight) {
+             this.tooltipEl.style.top = `${y - rect.height - 4}px`;
+        }
+    }
 }
 
 /**
@@ -430,7 +558,7 @@ export class BattleManager {
                  const matches = battler.elements.filter((e) => e === skill.element).length;
                  boost += matches * 0.25;
                }
-               const skillName = `${elementToAscii(skill.element)}${skill.name}`;
+               const skillName = `<span style="border-bottom:1px dotted #888" data-tooltip-type="skill" data-tooltip-id="${action.skillId}">${elementToAscii(skill.element)}${skill.name}</span>`;
                events.push({ type: 'use_skill', battler: battler, skillName, msg: `${battler.name} uses ${skillName}!` });
 
                skill.effects.forEach((effect) => {

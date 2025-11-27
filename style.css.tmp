@@ -789,38 +789,3 @@ body.night-theme {
     flex-direction: column;
     gap: 4px;
 }
-
-/* ===== Tooltips ============================================= */
-.tooltip-box {
-    position: fixed;
-    display: none;
-    z-index: 10000;
-    background-color: #ffffe0;
-    border: 1px solid #000000;
-    padding: 3px 5px;
-    box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
-    font-size: 11px;
-    color: #000000;
-    pointer-events: none;
-    max-width: 200px;
-}
-.tooltip-title {
-    font-weight: bold;
-    margin-bottom: 2px;
-}
-.tooltip-desc {
-    margin-bottom: 2px;
-}
-.tooltip-extra {
-    font-style: italic;
-    color: #404040;
-}
-
-.night-theme .tooltip-box {
-    background-color: #333333;
-    color: #e0e0e0;
-    border-color: #888888;
-}
-.night-theme .tooltip-extra {
-    color: #bbbbbb;
-}

@@ -12,7 +12,6 @@ import {
   Window_Confirm,
   WindowLayer,
 } from "./windows.js";
-import { tooltip } from "./tooltip.js";
 
 /**
  * @class Scene_Base
@@ -1715,17 +1714,11 @@ export class Scene_Map extends Scene_Base {
           </div>
           <div class="inspect-row">
             <span class="inspect-label">Passive</span>
-            <span class="inspect-value">${(recruit.passives || []).map(p => p.description).join(', ') || "—"}</span>
+            <span id="recruit-passive" class="inspect-value"></span>
           </div>
           <div class="inspect-row">
             <span class="inspect-label">Skills</span>
-            <span class="inspect-value">${
-              (recruit.skills && recruit.skills.length)
-                ? recruit.skills
-                    .map((s) => this.formatSkillName(s))
-                    .join(", ")
-                : "—"
-            }</span>
+            <span id="recruit-skills" class="inspect-value"></span>
           </div>
           <div class="inspect-row">
             <span class="inspect-label">Flavor</span>
@@ -1768,6 +1761,42 @@ export class Scene_Map extends Scene_Base {
         elementIconContainer.appendChild(this.renderElements(recruit.elements));
     } else {
         elementIconContainer.textContent = "—";
+    }
+
+    // Passives
+    const passiveContainer = this.recruitWindow.bodyEl.querySelector('#recruit-passive');
+    passiveContainer.innerHTML = "";
+    if (recruit.passives && recruit.passives.length > 0) {
+        recruit.passives.forEach((p, i) => {
+            if (i > 0) passiveContainer.appendChild(document.createTextNode(", "));
+            const span = document.createElement("span");
+            const code = p.code || p;
+            const passiveDef = this.dataManager.passives ? this.dataManager.passives[code] : null;
+            span.textContent = passiveDef ? passiveDef.name : code;
+            span.dataset.tooltipType = "passive";
+            span.dataset.tooltipId = code;
+            span.style.borderBottom = "1px dotted #000";
+            passiveContainer.appendChild(span);
+        });
+    } else {
+        passiveContainer.textContent = "—";
+    }
+
+    // Skills
+    const skillContainer = this.recruitWindow.bodyEl.querySelector('#recruit-skills');
+    skillContainer.innerHTML = "";
+    if (recruit.skills && recruit.skills.length > 0) {
+        recruit.skills.forEach((s, i) => {
+            if (i > 0) skillContainer.appendChild(document.createTextNode(", "));
+            const span = document.createElement("span");
+            span.innerHTML = this.formatSkillName(s);
+            span.dataset.tooltipType = "skill";
+            span.dataset.tooltipId = s;
+            span.style.borderBottom = "1px dotted #000";
+            skillContainer.appendChild(span);
+        });
+    } else {
+        skillContainer.textContent = "—";
     }
 
     this.windowManager.push(this.recruitWindow);
@@ -2162,37 +2191,45 @@ renderElements(elements) {
         this.inspectWindow.elementEl.textContent = "—";
     }
 
+    // Equipment
+    this.inspectWindow.equipEl.innerHTML = ""; // Clear
     if (member.equipmentItem) {
       this.inspectWindow.equipEl.textContent = member.equipmentItem.name;
+      this.inspectWindow.equipEl.dataset.tooltipType = "item";
+      this.inspectWindow.equipEl.dataset.tooltipId = member.equipmentItem.id;
     } else if (member.baseEquipment) {
-      this.inspectWindow.equipEl.textContent = member.baseEquipment;
+       // baseEquipment is currently just a string in some cases or not fully defined as item ID
+       // If it maps to an item ID, we can tooltip it.
+       // Assuming baseEquipment is item ID:
+       const item = this.dataManager.items.find(i => i.id === member.baseEquipment);
+       if (item) {
+           this.inspectWindow.equipEl.textContent = item.name;
+           this.inspectWindow.equipEl.dataset.tooltipType = "item";
+           this.inspectWindow.equipEl.dataset.tooltipId = item.id;
+       } else {
+           this.inspectWindow.equipEl.textContent = member.baseEquipment;
+           delete this.inspectWindow.equipEl.dataset.tooltipType;
+       }
     } else {
       this.inspectWindow.equipEl.textContent = "—";
+      delete this.inspectWindow.equipEl.dataset.tooltipType;
     }
 
     // Passives
     this.inspectWindow.passiveEl.innerHTML = "";
     if (member.passives && member.passives.length > 0) {
         member.passives.forEach((p, i) => {
+            if (i > 0) this.inspectWindow.passiveEl.appendChild(document.createTextNode(", "));
             const span = document.createElement("span");
-            span.textContent = p.name || `Passive ${i+1}`; // Fallback if name is missing
-            span.className = "interactive-text";
-            span.style.marginRight = "5px";
-            span.style.textDecoration = "underline";
-            span.style.cursor = "help";
-
-            span.addEventListener("mouseenter", (e) => {
-                tooltip.show(e.clientX, e.clientY, p.name || "Passive", p.description);
-            });
-            span.addEventListener("mouseleave", () => tooltip.hide());
-            span.addEventListener("mousemove", (e) => {
-                 if (tooltip.visible) tooltip.show(e.clientX, e.clientY, p.name || "Passive", p.description);
-            });
-
+            // If p is object {code, value}, use code.
+            const code = p.code || p;
+            // Lookup name from passives data
+            const passiveDef = this.dataManager.passives ? this.dataManager.passives[code] : null;
+            span.textContent = passiveDef ? passiveDef.name : code;
+            span.dataset.tooltipType = "passive";
+            span.dataset.tooltipId = code;
+            span.style.borderBottom = "1px dotted #000"; // Visual hint
             this.inspectWindow.passiveEl.appendChild(span);
-            if (i < member.passives.length - 1) {
-                this.inspectWindow.passiveEl.appendChild(document.createTextNode(", "));
-            }
         });
     } else {
         this.inspectWindow.passiveEl.textContent = "—";
@@ -2201,29 +2238,14 @@ renderElements(elements) {
     // Skills
     this.inspectWindow.skillsEl.innerHTML = "";
     if (member.skills && member.skills.length > 0) {
-        member.skills.forEach((sId, i) => {
-            const skill = this.dataManager.skills[sId];
+        member.skills.forEach((s, i) => {
+            if (i > 0) this.inspectWindow.skillsEl.appendChild(document.createTextNode(", "));
             const span = document.createElement("span");
-            span.innerHTML = this.formatSkillName(sId);
-            span.className = "interactive-text";
-            span.style.marginRight = "5px";
-            span.style.cursor = "help";
-            span.style.borderBottom = "1px dotted #000";
-
-            if (skill) {
-                span.addEventListener("mouseenter", (e) => {
-                    tooltip.show(e.clientX, e.clientY, skill.name, skill.description);
-                });
-                span.addEventListener("mouseleave", () => tooltip.hide());
-                span.addEventListener("mousemove", (e) => {
-                    if (tooltip.visible) tooltip.show(e.clientX, e.clientY, skill.name, skill.description);
-                });
-            }
-
+            span.innerHTML = this.formatSkillName(s);
+            span.dataset.tooltipType = "skill";
+            span.dataset.tooltipId = s;
+            span.style.borderBottom = "1px dotted #000"; // Visual hint
             this.inspectWindow.skillsEl.appendChild(span);
-            if (i < member.skills.length - 1) {
-                this.inspectWindow.skillsEl.appendChild(document.createTextNode(", "));
-            }
         });
     } else {
         this.inspectWindow.skillsEl.textContent = "—";
@@ -2308,16 +2330,6 @@ renderElements(elements) {
           text += ` (on ${item.equippedBy})`;
         }
         label.textContent = text;
-
-        // Tooltip for equipment list
-        row.addEventListener("mouseenter", (e) => {
-            tooltip.show(e.clientX, e.clientY, item.name, item.description);
-        });
-        row.addEventListener("mouseleave", () => tooltip.hide());
-        row.addEventListener("mousemove", (e) => {
-             if (tooltip.visible) tooltip.show(e.clientX, e.clientY, item.name, item.description);
-        });
-
         const btn = document.createElement("button");
         btn.className = "win-btn";
         btn.textContent = item.equippedBy ? "Swap" : "Equip";

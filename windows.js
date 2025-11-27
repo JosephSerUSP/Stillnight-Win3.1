@@ -1,5 +1,4 @@
 import { getPrimaryElements, Graphics, elementToAscii, getIconStyle } from "./core.js";
-import { tooltip } from "./tooltip.js";
 
 /**
  * @class WindowLayer
@@ -294,7 +293,7 @@ export class Window_Battle extends Window_Base {
    */
   appendLog(msg) {
     const div = document.createElement("div");
-    div.textContent = msg;
+    div.innerHTML = msg;
     this.logEl.appendChild(div);
     this.logEl.scrollTop = this.logEl.scrollHeight;
   }
@@ -583,6 +582,10 @@ export class Window_Shop extends Window_Base {
       const row = document.createElement("div");
       row.className = "shop-row";
 
+      // Tooltip attributes
+      row.dataset.tooltipType = "item";
+      row.dataset.tooltipId = tpl.id;
+
       const icon = document.createElement('div');
       icon.className = 'icon';
       const iconId = tpl.icon || 6; // Use icon 6 as a placeholder
@@ -596,25 +599,12 @@ export class Window_Shop extends Window_Base {
       const btn = document.createElement("button");
       btn.className = "win-btn";
       btn.textContent = "Buy";
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
         buyCallback(tpl.id);
       });
       row.appendChild(label);
       row.appendChild(btn);
-
-      // Tooltip
-      row.addEventListener("mouseenter", (e) => {
-        tooltip.show(e.clientX, e.clientY, tpl.name, tpl.description);
-      });
-      row.addEventListener("mouseleave", () => {
-        tooltip.hide();
-      });
-      row.addEventListener("mousemove", (e) => {
-         if (tooltip.visible) {
-             tooltip.show(e.clientX, e.clientY, tpl.name, tpl.description);
-         }
-      });
-
       this.listContainer.appendChild(row);
     });
   }
@@ -756,6 +746,10 @@ export class Window_Inventory extends Window_Base {
         const row = document.createElement("div");
         row.className = "shop-row";
 
+        // Tooltip attributes
+        row.dataset.tooltipType = "item";
+        row.dataset.tooltipId = item.id;
+
         const icon = document.createElement('div');
         icon.className = "icon";
         const iconId = item.icon || 6;
@@ -765,32 +759,25 @@ export class Window_Inventory extends Window_Base {
         row.appendChild(icon);
 
         const desc = document.createElement("span");
-        desc.textContent = `${item.name}`;
+        desc.textContent = `${item.name}: ${item.description}`;
         desc.style.flexGrow = "1";
         row.appendChild(desc);
-
-        // Tooltip
-        row.addEventListener("mouseenter", (e) => {
-            tooltip.show(e.clientX, e.clientY, item.name, item.description);
-        });
-        row.addEventListener("mouseleave", () => {
-            tooltip.hide();
-        });
-        row.addEventListener("mousemove", (e) => {
-            if (tooltip.visible) {
-                tooltip.show(e.clientX, e.clientY, item.name, item.description);
-            }
-        });
 
         const btns = document.createElement("div");
         const useBtn = document.createElement("button");
         useBtn.className = "win-btn";
         useBtn.textContent = "Use";
-        useBtn.addEventListener("click", () => useItemCallback(item, idx));
+        useBtn.addEventListener("click", (e) => {
+             e.stopPropagation();
+             useItemCallback(item, idx);
+        });
         const discardBtn = document.createElement("button");
         discardBtn.className = "win-btn";
         discardBtn.textContent = "Discard";
-        discardBtn.addEventListener("click", () => discardItemCallback(item, idx));
+        discardBtn.addEventListener("click", (e) => {
+             e.stopPropagation();
+             discardItemCallback(item, idx);
+        });
         btns.appendChild(useBtn);
         btns.appendChild(discardBtn);
 

@@ -1,4 +1,4 @@
-import { DataManager, SceneManager } from "./managers.js";
+import { DataManager, SceneManager, TooltipManager } from "./managers.js";
 import { Scene_Boot } from "./scenes.js";
 import { WindowManager } from "./windows.js";
 
@@ -10,6 +10,7 @@ async function main() {
   const sceneManager = new SceneManager(gameContainer);
   const dataManager = new DataManager();
   const windowManager = new WindowManager();
+  const tooltipManager = new TooltipManager(dataManager);
   const initialScene = new Scene_Boot(dataManager, sceneManager, windowManager);
   sceneManager.push(initialScene);
 
