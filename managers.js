@@ -236,48 +236,87 @@ export class BattleManager {
     const events = [];
     const partyMembers = this.party.members.slice(0, 4);
 
-    // --- 1. Build Event Queue ---
-    partyMembers.forEach((p, index) => {
-      if (p.hp > 0) {
-        const parasiteDrain = p.getPassiveValue("PARASITE");
+    // Combine all potential combatants into one list
+    // Order: Party members then Enemies
+    const combatants = [...partyMembers, ...this.enemies];
+
+    combatants.forEach((actor, index) => {
+      // 1. Check if actor is alive (crucial: they might have died in this same round)
+      if (actor.hp <= 0) return;
+
+      const isParty = partyMembers.includes(actor);
+
+      // Handle Passives (only implemented for party for now, similar to old code)
+      if (isParty) {
+        const parasiteDrain = actor.getPassiveValue("PARASITE");
         if (parasiteDrain > 0) {
           const targetIndex = index % 2 === 0 ? index + 1 : index - 1;
           if (targetIndex >= 0 && targetIndex < 4) {
             const target = this.party.members[targetIndex];
             if (target && target.hp > 0) {
+              const drain = Math.min(target.hp, parasiteDrain); // Can't drain more than HP
+              target.hp = Math.max(0, target.hp - drain);
+              actor.hp = Math.min(actor.maxHp, actor.hp + drain);
               events.push({
                 type: 'passive_drain',
-                source: p,
+                source: actor,
                 target: target,
-                value: parasiteDrain,
-                msg: `[Passive] ${p.name} drains ${parasiteDrain} HP from ${target.name}.`,
+                value: drain,
+                targetHp: target.hp, // Current HP state
+                sourceHp: actor.hp,   // Current HP state
+                msg: `[Passive] ${actor.name} drains ${drain} HP from ${target.name}.`,
               });
             }
           }
         }
       }
-      if (p.hp <= 0) return;
-      const target = this.enemies.find((e) => e.hp > 0);
-      if (!target) return;
 
-      const skillId = p.skills && p.skills.length ? p.skills[randInt(0, p.skills.length - 1)] : null;
+      // Re-check life after passives (unlikely to die from own parasite but good practice)
+      if (actor.hp <= 0) return;
+
+      // 2. Select Target
+      let target = null;
+      if (isParty) {
+        // Party targets first living enemy
+        target = this.enemies.find((e) => e.hp > 0);
+      } else {
+        // Enemy targets random living party member
+        const possibleTargets = partyMembers.filter((p) => p.hp > 0);
+        if (possibleTargets.length > 0) {
+          target = possibleTargets[randInt(0, possibleTargets.length - 1)];
+        }
+      }
+
+      if (!target) return; // No targets available
+
+      // 3. Determine Action
+      const skillId = actor.skills && actor.skills.length ? actor.skills[randInt(0, actor.skills.length - 1)] : null;
       const skill = skillId ? this.dataManager.skills[skillId] : null;
 
       if (skill) {
         let boost = 1;
         if (skill.element) {
-          const matches = p.elements.filter((e) => e === skill.element).length;
+          const matches = actor.elements.filter((e) => e === skill.element).length;
           boost += matches * 0.25;
         }
         const skillName = `${elementToAscii(skill.element)}${skill.name}`;
-        events.push({ type: 'use_skill', battler: p, skillName, msg: `${p.name} uses ${skillName}!` });
+        events.push({ type: 'use_skill', battler: actor, skillName, msg: `${actor.name} uses ${skillName}!` });
 
         skill.effects.forEach((effect) => {
           if (effect.type === "hp_damage") {
-            const formula = effect.formula.replace("a.level", p.level);
+            const formula = effect.formula.replace("a.level", actor.level);
             let skillDmg = Math.round(eval(formula) * boost);
             if (skillDmg < 1) skillDmg = 1;
-            events.push({ type: 'damage', target: target, value: skillDmg, msg: `  ${target.name} takes ${skillDmg} damage.` });
+
+            target.hp = Math.max(0, target.hp - skillDmg);
+            events.push({
+              type: 'damage',
+              battler: actor, // Included for reference
+              target: target,
+              value: skillDmg,
+              targetHp: target.hp, // Capture state immediately
+              msg: `  ${target.name} takes ${skillDmg} damage.`
+            });
           }
           if (effect.type === "add_status") {
             const chance = (effect.chance || 1) * boost;
@@ -287,79 +326,42 @@ export class BattleManager {
           }
         });
       } else {
-        let base = randInt(2, 4) + Math.floor(p.level / 2);
-        if (p.equipmentItem && p.equipmentItem.damageBonus) {
-          base += p.equipmentItem.damageBonus;
+        // Basic Attack
+        let base;
+        if (isParty) {
+            base = randInt(2, 4) + Math.floor(actor.level / 2);
+            if (actor.equipmentItem && actor.equipmentItem.damageBonus) {
+              base += actor.equipmentItem.damageBonus;
+            }
+            const row = this._partyRow(partyMembers.indexOf(actor));
+            if (row === "Front") base += 1;
+            else base -= 1;
+        } else {
+             base = Math.max(1, actor.level + randInt(-1, 2));
         }
-        const row = this._partyRow(index);
-        if (row === "Front") base += 1;
-        else base -= 1;
-        const mult = this.elementMultiplier(p.elements, target.elements);
+
+        let mult = 1;
+        if (isParty) {
+            mult = this.elementMultiplier(actor.elements, target.elements);
+        }
+
         let dmg = Math.round(base * mult);
-        dmg += p.getPassiveValue("DEAL_DAMAGE_MOD");
+        if (isParty) {
+            dmg += actor.getPassiveValue("DEAL_DAMAGE_MOD");
+        }
         if (dmg < 1) dmg = 1;
 
+        // APPLY DAMAGE IMMEDIATELY
+        target.hp = Math.max(0, target.hp - dmg);
+
         events.push({
           type: "damage",
-          battler: p,
+          battler: actor,
           target: target,
           value: dmg,
-          msg: `${p.name} attacks ${target.name} for ${dmg}.`,
+          targetHp: target.hp, // Capture state immediately
+          msg: `${actor.name} attacks ${target.name} for ${dmg}.`,
         });
-      }
-    });
-
-    this.enemies.forEach((e) => {
-      if (e.hp <= 0) return;
-      const possibleTargets = partyMembers.filter((p) => p.hp > 0);
-      if (possibleTargets.length === 0) return;
-      const target = possibleTargets[randInt(0, possibleTargets.length - 1)];
-
-      const skillId = e.skills && e.skills.length ? e.skills[randInt(0, e.skills.length - 1)] : null;
-      const skill = skillId ? this.dataManager.skills[skillId] : null;
-
-      if (skill) {
-        let boost = 1;
-        if (skill.element) {
-          const matches = e.elements.filter((el) => el === skill.element).length;
-          boost += matches * 0.25;
-        }
-        const skillName = `${elementToAscii(skill.element)}${skill.name}`;
-        events.push({ type: 'use_skill', battler: e, skillName, msg: `${e.name} uses ${skillName}!` });
-
-        skill.effects.forEach((effect) => {
-          if (effect.type === "hp_damage") {
-            const formula = effect.formula.replace("a.level", e.level);
-            let skillDmg = Math.round(eval(formula) * boost);
-            if (skillDmg < 1) skillDmg = 1;
-            events.push({ type: 'damage', target, value: skillDmg, msg: `  ${target.name} takes ${skillDmg} damage.` });
-          }
-          if (effect.type === "add_status") {
-            const chance = (effect.chance || 1) * boost;
-            if (Math.random() < chance) {
-              events.push({ type: 'status', target, status: effect.status, msg: `  ${target.name} is afflicted with ${effect.status}.` });
-            }
-          }
-        });
-      } else {
-        const dmg = Math.max(1, e.level + randInt(-1, 2));
-        events.push({
-          type: "damage",
-          battler: e,
-          target: target,
-          value: dmg,
-          msg: `${e.name} attacks ${target.name} for ${dmg}.`,
-        });
-      }
-    });
-
-    // --- 2. Apply Events and Check for Battle End ---
-    events.forEach(event => {
-      if (event.type === 'damage') {
-        event.target.hp = Math.max(0, event.target.hp - event.value);
-      } else if (event.type === 'passive_drain') {
-        event.target.hp = Math.max(0, event.target.hp - event.value);
-        event.source.hp = Math.min(event.source.maxHp, event.source.hp + event.value);
       }
     });
 

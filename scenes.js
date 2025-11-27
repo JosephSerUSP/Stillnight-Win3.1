@@ -203,18 +203,29 @@ export class Scene_Battle extends Scene_Base {
 
       let oldHp = 0;
       if (event.target) {
-        oldHp = event.target.hp + (event.value || 0);
+        // Use targetHp from event if available (state at the time of event)
+        // Otherwise fall back to current object state (mostly for backward compat or non-damage events)
+        const currentEventHp = (event.targetHp !== undefined) ? event.targetHp : event.target.hp;
+        oldHp = currentEventHp + (event.value || 0);
       }
 
       this.renderBattleAscii();
 
       if (event.type === 'damage' && event.target) {
         this.animateBattler(event.target, 'flash');
-        await this.animateBattleHpGauge(event.target, oldHp);
+        // Animate from oldHp to the new state defined in the event
+        const targetEventHp = (event.targetHp !== undefined) ? event.targetHp : event.target.hp;
+        await this.animateBattleHpGauge(event.target, oldHp, targetEventHp);
       } else if (event.type === 'passive_drain') {
         this.animateBattler(event.target, 'flash');
-        await this.animateBattleHpGauge(event.target, oldHp);
-        await this.animateBattleHpGauge(event.source, event.source.hp - event.value);
+        const targetEventHp = (event.targetHp !== undefined) ? event.targetHp : event.target.hp;
+        const sourceEventHp = (event.sourceHp !== undefined) ? event.sourceHp : event.source.hp;
+
+        await this.animateBattleHpGauge(event.target, oldHp, targetEventHp);
+        // For source, we need to calculate oldHp too.
+        // sourceEventHp is the result after drain. value is amount drained (added).
+        // So old source HP = sourceEventHp - value.
+        await this.animateBattleHpGauge(event.source, sourceEventHp - event.value, sourceEventHp);
       }
        else if (event.type === 'end') {
         if (event.result === 'defeat') {
@@ -361,9 +372,11 @@ export class Scene_Battle extends Scene_Base {
    * @description Animates the battle HP gauge.
    * @param {Game_Battler} battler - The battler whose HP gauge to animate.
    * @param {number} oldHp - The old HP of the battler.
+   * @param {number} [targetHp] - The target HP to animate to. Defaults to battler.hp.
    * @returns {Promise} A promise that resolves when the animation is complete.
    */
-  animateBattleHpGauge(battler, oldHp) {
+  animateBattleHpGauge(battler, oldHp, targetHp) {
+    const finalHp = (targetHp !== undefined) ? targetHp : battler.hp;
     return new Promise((resolve) => {
       const duration = 500;
       const interval = 30;
@@ -372,14 +385,14 @@ export class Scene_Battle extends Scene_Base {
       const interpolator = () => {
         elapsed += interval;
         const progress = Math.min(elapsed / duration, 1);
-        const currentHp = Math.round(oldHp + (battler.hp - oldHp) * progress);
+        const currentHp = Math.round(oldHp + (finalHp - oldHp) * progress);
 
         this.renderBattleAscii(battler.name, currentHp);
 
         if (progress < 1) {
           setTimeout(interpolator, interval);
         } else {
-          this.renderBattleAscii(); // Final render with correct HP
+          this.renderBattleAscii(); // Final render
           resolve();
         }
       };
