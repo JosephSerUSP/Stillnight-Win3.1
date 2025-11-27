@@ -193,7 +193,11 @@ export class Scene_Battle extends Scene_Base {
     SoundManager.beep(300, 80);
 
     for (const event of events) {
-      if (event.battler && event.battler.hp <= 0) continue;
+      // NOTE: We do not check if battler is dead here because resolveRound
+      // only generates events for living battlers at the time of action.
+      // If a battler dies during the round, subsequent events from them won't exist.
+      // However, we might want to skip animation if something weird happens?
+      // No, trust the event log order.
 
       if (event.battler) {
         await this.animateBattlerName(event.battler);
@@ -201,22 +205,45 @@ export class Scene_Battle extends Scene_Base {
 
       this.battleWindow.appendLog(event.msg);
 
-      let oldHp = 0;
-      if (event.target) {
-        oldHp = event.target.hp + (event.value || 0);
+      // Use explicit hpBefore/hpAfter if available, otherwise fallback (though fallback shouldn't happen with new logic)
+      let targetOldHp = event.target ? event.target.hp : 0;
+      let targetNewHp = event.target ? event.target.hp : 0;
+
+      if (event.hpBefore !== undefined) {
+          targetOldHp = event.hpBefore;
+          targetNewHp = event.hpAfter;
       }
 
-      this.renderBattleAscii();
+      // We need to temporarily force the display to show "Old HP" before animating to "New HP"
+      // But renderBattleAscii pulls from .hp property.
+      // So we have to "lie" to the renderer or pass an override.
+      // animateBattleHpGauge handles the transition.
 
       if (event.type === 'damage' && event.target) {
+        this.renderBattleAscii(); // Ensure current state is drawn (which might be messed up if we don't manage it carefully)
+        // Wait! The battler object ALREADY has the *final* HP for this specific step because resolveRound updated it sequentially?
+        // Yes, resolveRound updates state immediately.
+        // So event.target.hp is the HP *after* this event (and potentially after subsequent events if we processed them all at once?
+        // Wait. resolveRound runs completely BEFORE this loop.
+        // So event.target.hp is the HP at the END OF THE ROUND (or after all calculation).
+        // This is why we need hpBefore/hpAfter in the event.
+
+        // We need to animate from hpBefore to hpAfter.
         this.animateBattler(event.target, 'flash');
-        await this.animateBattleHpGauge(event.target, oldHp);
+        await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
+
       } else if (event.type === 'passive_drain') {
         this.animateBattler(event.target, 'flash');
-        await this.animateBattleHpGauge(event.target, oldHp);
-        await this.animateBattleHpGauge(event.source, event.source.hp - event.value);
-      }
-       else if (event.type === 'end') {
+
+        // Target loses HP
+        await this.animateBattleHpGauge(event.target, event.hpBeforeTarget, event.hpAfterTarget);
+
+        // Source gains HP
+        if (event.source) {
+             await this.animateBattleHpGauge(event.source, event.hpBeforeSource, event.hpAfterSource);
+        }
+
+      } else if (event.type === 'end') {
         if (event.result === 'defeat') {
           this.logMessage(this.dataManager.terms.log.party_falls);
           this.runActive = false;
@@ -363,23 +390,59 @@ export class Scene_Battle extends Scene_Base {
    * @param {number} oldHp - The old HP of the battler.
    * @returns {Promise} A promise that resolves when the animation is complete.
    */
-  animateBattleHpGauge(battler, oldHp) {
+  animateBattleHpGauge(battler, startHp, endHp) {
     return new Promise((resolve) => {
       const duration = 500;
       const interval = 30;
       let elapsed = 0;
 
+      // Determine ID to target specific element for override
+      const enemyIndex = this.battleManager.enemies.indexOf(battler);
+      const partyIndex = this.party.members.indexOf(battler);
+      let overrideId = null;
+      if (enemyIndex !== -1) overrideId = `battler-enemy-${enemyIndex}`;
+      else if (partyIndex !== -1) overrideId = `battler-party-${partyIndex}`;
+
       const interpolator = () => {
         elapsed += interval;
         const progress = Math.min(elapsed / duration, 1);
-        const currentHp = Math.round(oldHp + (battler.hp - oldHp) * progress);
+        const currentHp = Math.round(startHp + (endHp - startHp) * progress);
 
-        this.renderBattleAscii(battler.name, currentHp);
+        // We only want to update the specific battler's display, not the whole window
+        // But renderBattleAscii refreshes everything.
+        // Let's modify renderBattleAscii to accept overrides?
+        // Or just manipulate the DOM directly here since we have unique IDs now.
+
+        if (overrideId) {
+             const element = this.battleWindow.viewportEl.querySelector(`#${overrideId}`);
+             if (element) {
+                 // We need to find the HP gauge container next to or inside the battler container
+                 // In Window_Battle.refresh:
+                 // <div class="battler-container" ...>
+                 //    <div class="battler-name">...<span id="battler-X">Name</span>...</div>
+                 //    <div class="battler-hp">[#####     ]</div>
+                 // </div>
+
+                 const container = element.closest('.battler-container');
+                 if (container) {
+                     const hpEl = container.querySelector('.battler-hp');
+                     if (hpEl) {
+                         hpEl.textContent = this.battleWindow.createHpGauge(currentHp, battler.maxHp);
+                     }
+                     // Update text as well? "HP X/Y"
+                     // The text is inside battler-name.
+                     // <div class="battler-name">...(HP X/Y)</div>
+                     // It's a bit hard to parse out without structured HTML.
+                     // But visual gauge is most important.
+                 }
+             }
+        }
 
         if (progress < 1) {
           setTimeout(interpolator, interval);
         } else {
-          this.renderBattleAscii(); // Final render with correct HP
+          // Final sync
+          this.renderBattleAscii();
           resolve();
         }
       };
@@ -395,7 +458,22 @@ export class Scene_Battle extends Scene_Base {
    * @param {string} animationType - The type of animation ('flash', 'shake', etc.).
    */
   animateBattler(battler, animationType) {
-    const battlerId = `battler-${battler.name.replace(/\s/g, '-')}`;
+    // Find unique ID
+    const enemyIndex = this.battleManager.enemies.indexOf(battler);
+    const partyIndex = this.party.members.indexOf(battler);
+    let battlerId = null;
+
+    if (enemyIndex !== -1) {
+        battlerId = `battler-enemy-${enemyIndex}`;
+    } else if (partyIndex !== -1) {
+        battlerId = `battler-party-${partyIndex}`;
+    }
+
+    // Fallback (should not happen if consistent)
+    if (!battlerId) {
+        battlerId = `battler-${battler.name.replace(/\s/g, '-')}`;
+    }
+
     const battlerElement = this.battleWindow.viewportEl.querySelector(`#${battlerId}`);
 
     if (battlerElement) {
