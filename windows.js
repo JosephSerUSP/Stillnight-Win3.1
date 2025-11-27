@@ -309,7 +309,7 @@ export class Window_Battle extends Window_Base {
 /**
  * @class Window_Inspect
  * @description The window for inspecting creatures.
- * @extends Legacy_Window_Base
+ * @extends Window_Base
  */
 export class Window_Inspect extends Window_Base {
   constructor() {
@@ -723,7 +723,7 @@ export class Window_Inventory extends Window_Base {
 /**
  * @class Window_Recruit
  * @description The window for recruiting new members.
- * @extends Legacy_Window_Base
+ * @extends Window_Base
  */
 export class Window_Recruit extends Window_Base {
   constructor() {
