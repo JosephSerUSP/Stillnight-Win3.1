@@ -20,9 +20,11 @@ import {
 class Scene_Base {
   /**
    * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
+   * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
    */
-  constructor(dataManager) {
+  constructor(dataManager, windowManager) {
     this.dataManager = dataManager;
+    this.windowManager = windowManager;
   }
 
   /**
@@ -55,9 +57,10 @@ export class Scene_Boot extends Scene_Base {
     /**
      * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
      * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
+     * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
      */
-    constructor(dataManager, sceneManager) {
-        super(dataManager);
+    constructor(dataManager, sceneManager, windowManager) {
+        super(dataManager, windowManager);
         this.sceneManager = sceneManager;
     }
 
@@ -67,7 +70,7 @@ export class Scene_Boot extends Scene_Base {
      */
     async start() {
         await this.dataManager.loadData();
-        this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager));
+        this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager));
     }
 }
 
@@ -80,6 +83,7 @@ export class Scene_Battle extends Scene_Base {
   /**
    * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
    * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
+   * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
    * @param {import("./objects.js").Game_Party} party - The player's party.
    * @param {import("./managers.js").BattleManager} battleManager - The battle manager instance.
    * @param {import("./windows.js").WindowLayer} windowLayer - The window layer instance.
@@ -87,8 +91,8 @@ export class Scene_Battle extends Scene_Base {
    * @param {number} tileX - The x-coordinate of the tile the battle is on.
    * @param {number} tileY - The y-coordinate of the tile the battle is on.
    */
-  constructor(dataManager, sceneManager, party, battleManager, windowLayer, map, tileX, tileY) {
-    super(dataManager);
+  constructor(dataManager, sceneManager, windowManager, party, battleManager, windowLayer, map, tileX, tileY) {
+    super(dataManager, windowManager);
     this.sceneManager = sceneManager;
     this.party = party;
     this.battleManager = battleManager;
@@ -148,7 +152,7 @@ export class Scene_Battle extends Scene_Base {
 
     this.applyBattleStartPassives();
     this.renderBattleAscii();
-    this.battleWindow.open();
+    this.windowManager.push(this.battleWindow);
     document.getElementById("mode-label").textContent = "Battle";
     SoundManager.beep(350, 200);
   }
@@ -158,7 +162,7 @@ export class Scene_Battle extends Scene_Base {
    * @description Stops the scene.
    */
   stop() {
-    this.battleWindow.close();
+    this.windowManager.close(this.battleWindow);
     document.getElementById("mode-label").textContent = "Exploration";
   }
 
@@ -470,11 +474,12 @@ export class Scene_Shop extends Scene_Base {
     /**
      * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
      * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
+     * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
      * @param {import("./objects.js").Game_Party} party - The player's party.
      * @param {import("./windows.js").WindowLayer} windowLayer - The window layer instance.
      */
-    constructor(dataManager, sceneManager, party, windowLayer) {
-        super(dataManager);
+    constructor(dataManager, sceneManager, windowManager, party, windowLayer) {
+        super(dataManager, windowManager);
         this.sceneManager = sceneManager;
         this.party = party;
         this.windowLayer = windowLayer;
@@ -491,12 +496,13 @@ export class Scene_Shop extends Scene_Base {
      * @description Starts the scene.
      */
     start() {
-        this.shopWindow.open(
+        this.shopWindow.setup(
             this.party.gold,
             this.dataManager.terms.shop.vendor_message,
             this.dataManager.items,
             (itemId) => this.buyItem(itemId)
         );
+        this.windowManager.push(this.shopWindow);
         document.getElementById("mode-label").textContent = "Shop";
         SoundManager.beep(650, 150);
     }
@@ -506,7 +512,7 @@ export class Scene_Shop extends Scene_Base {
      * @description Stops the scene.
      */
     stop() {
-        this.shopWindow.close();
+        this.windowManager.close(this.shopWindow);
         document.getElementById("mode-label").textContent = "Exploration";
     }
 
@@ -561,9 +567,10 @@ export class Scene_Map extends Scene_Base {
   /**
    * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
    * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
+   * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
    */
-  constructor(dataManager, sceneManager) {
-    super(dataManager);
+  constructor(dataManager, sceneManager, windowManager) {
+    super(dataManager, windowManager);
     this.sceneManager = sceneManager;
     this.map = new Game_Map();
     this.party = new Game_Party();
@@ -604,7 +611,7 @@ export class Scene_Map extends Scene_Base {
 
     this.confirmWindow.btnClose.addEventListener(
       "click",
-      () => this.confirmWindow.close()
+      () => this.windowManager.close(this.confirmWindow)
     );
     this.formationWindow.btnOk.addEventListener(
       "click",
@@ -815,6 +822,7 @@ export class Scene_Map extends Scene_Base {
    */
   onKeyDown(e) {
     if (!this.runActive) return;
+    if (this.windowManager.stack.length > 0) return;
 
     let dx = 0;
     let dy = 0;
@@ -1186,10 +1194,10 @@ export class Scene_Map extends Scene_Base {
     } else if (ch === "E") {
       this.setStatus("Enemy encountered!");
       this.logMessage("[Battle] Shapes uncoil from the dark.");
-      this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.party, this.battleManager, this.windowLayer, this.map, x, y));
+      this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.battleManager, this.windowLayer, this.map, x, y));
       return;
     } else if (ch === "¥") {
-      this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.party, this.windowLayer));
+      this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.windowManager, this.party, this.windowLayer));
       return;
     } else if (ch === "♱") {
       this.logMessage("[Shrine] You encounter a shrine.");
@@ -1327,7 +1335,7 @@ export class Scene_Map extends Scene_Base {
       });
       this.eventWindow.choicesEl.appendChild(btn);
     });
-    this.eventWindow.open();
+    this.windowManager.push(this.eventWindow);
     this.setStatus("Shrine event.");
     SoundManager.beep(700, 150);
   }
@@ -1397,7 +1405,7 @@ export class Scene_Map extends Scene_Base {
    * @description Closes the event window.
    */
   closeEvent() {
-    this.eventWindow.close();
+    this.windowManager.close(this.eventWindow);
     this.updateAll();
   }
 
@@ -1502,7 +1510,7 @@ export class Scene_Map extends Scene_Base {
         elementIconContainer.textContent = "—";
     }
 
-    this.recruitWindow.open();
+    this.windowManager.push(this.recruitWindow);
     this.setStatus("Recruit encountered.");
     SoundManager.beep(400, 100);
   }
@@ -1512,7 +1520,7 @@ export class Scene_Map extends Scene_Base {
    * @description Closes the recruit event.
    */
   closeRecruitEvent() {
-    this.recruitWindow.close();
+    this.windowManager.close(this.recruitWindow);
     this.setStatus("Exploration");
   }
 
@@ -1684,7 +1692,7 @@ renderElements(elements) {
    */
   openFormation() {
     if (this.sceneManager.currentScene() !== this) return;
-    this.formationWindow.open();
+    this.windowManager.push(this.formationWindow);
     this.renderFormationGrid();
   }
 
@@ -1693,7 +1701,7 @@ renderElements(elements) {
    * @description Closes the formation window.
    */
   closeFormation() {
-    this.formationWindow.close();
+    this.windowManager.close(this.formationWindow);
   }
 
   /**
@@ -1787,7 +1795,7 @@ renderElements(elements) {
    */
   openInventory() {
     if (this.sceneManager.currentScene() !== this) return;
-    this.inventoryWindow.open();
+    this.windowManager.push(this.inventoryWindow);
     this.refreshInventoryWindow();
   }
 
@@ -1796,7 +1804,7 @@ renderElements(elements) {
    * @description Closes the inventory window.
    */
   closeInventory() {
-    this.inventoryWindow.close();
+    this.windowManager.close(this.inventoryWindow);
   }
 
   /**
@@ -1907,7 +1915,7 @@ renderElements(elements) {
     this.inspectWindow.flavorEl.textContent = member.flavor || "—";
     this.inspectWindow.notesEl.textContent = "Row is determined by the 2×2 formation grid.";
 
-    this.inspectWindow.open();
+    this.windowManager.push(this.inspectWindow);
     this.setStatus(`Inspecting ${member.name}`);
     this.logMessage(`[Inspect] ${member.name} – Lv${member.level}, ${this.partyRow(index)}, HP ${member.hp}/${member.maxHp}.`);
 
@@ -1923,7 +1931,7 @@ renderElements(elements) {
   closeInspect() {
     this.inspectWindow.equipmentListContainerEl.style.display = "none";
     this.inspectWindow.equipmentListEl.innerHTML = "";
-    this.inspectWindow.close();
+    this.windowManager.close(this.inspectWindow);
     this.setStatus("Exploration");
   }
 
@@ -2040,7 +2048,7 @@ renderElements(elements) {
       const otherMember = item.equippedMember;
       this.confirmWindow.titleEl.textContent = "Confirm Swap";
       this.confirmWindow.messageEl.textContent = `Swap ${item.name} from ${otherMember.name} to ${member.name}?`;
-      this.confirmWindow.open();
+      this.windowManager.push(this.confirmWindow);
       this.confirmWindow.btnOk.onclick = () => {
         const currentItem = member.equipmentItem;
         otherMember.equipmentItem = currentItem;
@@ -2048,14 +2056,14 @@ renderElements(elements) {
         this.logMessage(
           `[Equip] ${member.name} swapped ${item.name} with ${otherMember.name}.`
         );
-        this.confirmWindow.close();
+        this.windowManager.close(this.confirmWindow);
         this.openInspect(member, this.party.members.indexOf(member)); // Refresh inspect window
         this.openEquipmentScreen(); // Re-open equipment list
         this.updateAll();
         SoundManager.beep(700, 150); // Swap sound
       };
       this.confirmWindow.btnCancel.onclick = () => {
-        this.confirmWindow.close();
+        this.windowManager.close(this.confirmWindow);
       };
     } else {
       doEquip();

@@ -622,6 +622,12 @@ body.night-theme {
 .modal-overlay.active {
     display: flex;
 }
+.window--dimmed {
+    pointer-events: none;
+}
+.window--dimmed .dialog {
+    filter: brightness(0.7);
+}
 .dialog {
     width: 520px;
     background-color: #c0c0c0;

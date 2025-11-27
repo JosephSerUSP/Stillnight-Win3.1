@@ -21,6 +21,7 @@ test.describe('Game Logic', () => {
         const battleScene = new window.Scene_Battle(
             window.dataManager,
             window.sceneManager,
+            window.windowManager,
             sceneMap.party,
             sceneMap.battleManager,
             sceneMap.windowLayer,
@@ -78,7 +79,8 @@ test.describe('Game Logic', () => {
         await page.click('.inspect-value.win-btn', { hasText: '—' }); // Assuming no equipment initially or specific text
 
         // Find the equip button for the test sword
-        const equipBtn = page.locator('button.win-btn', { hasText: 'Equip' });
+        // Use .first() to handle potential multiple matches if inventory has duplicates or previous renders
+        const equipBtn = page.locator('button.win-btn', { hasText: 'Equip' }).first();
         await expect(equipBtn).toBeVisible();
         await equipBtn.click();
 
@@ -98,6 +100,7 @@ test.describe('Game Logic', () => {
              const battleScene = new window.Scene_Battle(
                  window.dataManager,
                  window.sceneManager,
+                 window.windowManager,
                  sceneMap.party,
                  sceneMap.battleManager,
                  sceneMap.windowLayer,
@@ -113,7 +116,9 @@ test.describe('Game Logic', () => {
         // Try to click a tile
         // We need to find a valid tile to click (e.g., player position or adjacent)
         // Let's try to click the tile at 0,0 (assuming it exists)
-        await page.click('.tile[data-x="0"][data-y="0"]');
+        // Use force=true because the Battle Window overlay covers the map, blocking normal clicks.
+        // We want to verify that even if the click passes (or if we could click), the logic prevents movement.
+        await page.click('.tile[data-x="0"][data-y="0"]', { force: true });
 
         // Check if log contains "Your footsteps echo softly" or "You move"
         // It SHOULD NOT because we are in battle.

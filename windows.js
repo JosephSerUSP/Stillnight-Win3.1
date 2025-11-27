@@ -31,6 +31,86 @@ export class WindowLayer {
 }
 
 /**
+ * @class WindowManager
+ * @description Manages a stack of active windows to ensure proper input focus
+ * and visual hierarchy. Only the top window in the stack receives input,
+ * while others are dimmed.
+ */
+export class WindowManager {
+  constructor() {
+    this.stack = [];
+  }
+
+  /**
+   * @method push
+   * @description Pushes a window onto the stack and opens it.
+   * @param {Window_Base} window - The window to open.
+   */
+  push(window) {
+    // If the window is already in the stack, move it to the top
+    const index = this.stack.indexOf(window);
+    if (index > -1) {
+      this.stack.splice(index, 1);
+    }
+    this.stack.push(window);
+    window.open();
+    this.updateState();
+  }
+
+  /**
+   * @method pop
+   * @description Pops the top window from the stack and closes it.
+   * @returns {Window_Base|null} The closed window, or null if stack was empty.
+   */
+  pop() {
+    if (this.stack.length === 0) return null;
+    const window = this.stack.pop();
+    window.close();
+    this.updateState();
+    return window;
+  }
+
+  /**
+   * @method close
+   * @description Closes a specific window. If it's not the top window, it's removed from the stack.
+   * @param {Window_Base} window - The window to close.
+   */
+  close(window) {
+    const index = this.stack.indexOf(window);
+    if (index === -1) return;
+
+    if (index === this.stack.length - 1) {
+      this.pop();
+    } else {
+      this.stack.splice(index, 1);
+      window.close();
+      this.updateState();
+    }
+  }
+
+  /**
+   * @method updateState
+   * @description Updates the visual state of all managed windows (z-index, dimming).
+   */
+  updateState() {
+    this.stack.forEach((win, index) => {
+      const isTop = index === this.stack.length - 1;
+
+      // Update z-index to ensure correct stacking order
+      // Base z-index is 10, increment by 10 for each level
+      win.element.style.zIndex = 10 + index * 10;
+      win.overlay.style.zIndex = 10 + index * 10;
+
+      if (isTop) {
+        win.overlay.classList.remove("window--dimmed");
+      } else {
+        win.overlay.classList.add("window--dimmed");
+      }
+    });
+  }
+}
+
+/**
  * @class Window_Base
  * @description The base class for all UI windows. Handles DOM creation, positioning,
  * and drag-and-drop functionality. Windows are rendered into a WindowLayer.
@@ -470,18 +550,17 @@ export class Window_Shop extends Window_Base {
   }
 
   /**
-   * @method open
-   * @description Opens the shop window.
+   * @method setup
+   * @description Prepares the shop window with data.
    * @param {number} gold - The player's current gold.
    * @param {string} message - The vendor's message.
    * @param {Object[]} items - The items available for sale.
    * @param {Function} buyCallback - The callback function to execute when an item is purchased.
    */
-  open(gold, message, items, buyCallback) {
+  setup(gold, message, items, buyCallback) {
     this.goldLabelEl.textContent = `${gold}G`;
     this.messageEl.textContent = message;
     this.renderItems(items, buyCallback);
-    super.open();
   }
 
   /**
