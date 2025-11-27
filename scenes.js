@@ -46,13 +46,6 @@ class Scene_Base {
   }
 }
 
-if (window.location.search.includes("test=true")) {
-    window.Scene_Battle = Scene_Battle;
-    window.Scene_Shop = Scene_Shop;
-    window.Scene_Map = Scene_Map;
-    window.Scene_Boot = Scene_Boot;
-}
-
 /**
  * @class Scene_Boot
  * @description The scene class for the boot sequence.
@@ -521,7 +514,9 @@ export class Scene_Shop extends Scene_Base {
      */
     closeShop() {
         this.sceneManager.pop();
-        this.sceneManager.previous().updateAll();
+        if (this.sceneManager.currentScene() && this.sceneManager.currentScene().updateAll) {
+            this.sceneManager.currentScene().updateAll();
+        }
     }
 
     /**
@@ -584,8 +579,6 @@ export class Scene_Map extends Scene_Base {
 
     this.inventoryWindow = new Window_Inventory();
     this.windowLayer.addChild(this.inventoryWindow);
-    this.shopWindow = new Window_Shop();
-    this.windowLayer.addChild(this.shopWindow);
     this.eventWindow = new Window_Event();
     this.windowLayer.addChild(this.eventWindow);
     this.recruitWindow = new Window_Recruit();
@@ -617,14 +610,6 @@ export class Scene_Map extends Scene_Base {
     this.inventoryWindow.btnClose2.addEventListener(
       "click",
       this.closeInventory.bind(this)
-    );
-    this.shopWindow.btnClose.addEventListener(
-      "click",
-      this.closeShop.bind(this)
-    );
-    this.shopWindow.btnLeave.addEventListener(
-      "click",
-      this.closeShop.bind(this)
     );
   }
 
@@ -2109,4 +2094,11 @@ renderElements(elements) {
       doEquip();
     }
   }
+}
+
+if (window.location.search.includes("test=true")) {
+    window.Scene_Battle = Scene_Battle;
+    window.Scene_Shop = Scene_Shop;
+    window.Scene_Map = Scene_Map;
+    window.Scene_Boot = Scene_Boot;
 }
