@@ -83,6 +83,14 @@ export class DataManager {
         console.error(`Failed to load ${src}:`, error);
       }
     }
+
+    // Load Animations
+    try {
+        const { animations } = await import("./data/animations.js");
+        this.animations = animations;
+    } catch (error) {
+        console.error("Failed to load animations.js:", error);
+    }
   }
 }
 
@@ -309,13 +317,32 @@ export class BattleManager {
    * @param {Object} battlerContext - The context of the battler.
    * @returns {Array} List of valid targets (Game_Battler objects).
    */
-  getValidTargets(battlerContext) {
+  getValidTargets(battlerContext, scope = 'enemy') {
       const { isEnemy } = battlerContext;
-      if (isEnemy) {
-          return this.party.members.slice(0, 4).filter(m => m.hp > 0);
-      } else {
-          return this.enemies.filter(e => e.hp > 0);
+
+      // Determine logical side
+      // if scope is 'enemy', we want the Opposing side.
+      // if scope is 'ally', we want the Same side.
+
+      let targetSide = [];
+
+      if (scope.includes('self')) {
+          return [battlerContext.battler];
       }
+
+      // "Enemy" means "The opposing team"
+      // "Ally" means "My team"
+
+      const myTeam = isEnemy ? this.enemies : this.party.members.slice(0, 4);
+      const opposingTeam = isEnemy ? this.party.members.slice(0, 4) : this.enemies;
+
+      if (scope.includes('ally')) {
+          targetSide = myTeam;
+      } else {
+          targetSide = opposingTeam;
+      }
+
+      return targetSide.filter(b => b.hp > 0);
   }
 
   /**
@@ -345,18 +372,36 @@ export class BattleManager {
   getAIAction(battlerContext) {
       const { battler } = battlerContext;
 
-      // 1. Select Target
-      const targets = this.getValidTargets(battlerContext);
-      if (targets.length === 0) return null;
-
-      const target = targets[randInt(0, targets.length - 1)];
-
-      // 2. Decide Skill vs Attack
-      const skillId = battler.skills && battler.skills.length ? battler.skills[randInt(0, battler.skills.length - 1)] : null;
+      // 1. Decide Action Type (Skill or Attack)
+      // Simple logic: 60% chance to use skill if available
+      const skillId = (battler.skills && battler.skills.length && Math.random() < 0.6)
+          ? battler.skills[randInt(0, battler.skills.length - 1)]
+          : null;
 
       if (skillId) {
+          const skill = this.dataManager.skills[skillId];
+          const scope = skill ? skill.target : 'enemy';
+          const targets = this.getValidTargets(battlerContext, scope);
+
+          if (targets.length === 0) return null; // No valid targets for this skill, maybe fallback to attack?
+
+          // Smart targeting for healing: prefer lowest HP
+          let target;
+          if (scope.includes('ally') && (skill.effects.some(e => e.type === 'hp_heal'))) {
+              // Find ally with lowest HP percentage
+              target = targets.reduce((prev, curr) => {
+                  return (curr.hp / curr.maxHp) < (prev.hp / prev.maxHp) ? curr : prev;
+              });
+          } else {
+              target = targets[randInt(0, targets.length - 1)];
+          }
+
           return this.createAction(battlerContext, 'skill', target, { skillId });
       } else {
+          // Attack (Scope: enemy)
+          const targets = this.getValidTargets(battlerContext, 'enemy');
+          if (targets.length === 0) return null;
+          const target = targets[randInt(0, targets.length - 1)];
           return this.createAction(battlerContext, 'attack', target);
       }
   }
@@ -406,6 +451,25 @@ export class BattleManager {
                        hpAfter: target.hp,
                        msg: `  ${target.name} takes ${skillDmg} damage.`
                    });
+                 }
+                 if (effect.type === "hp_heal") {
+                    const formula = effect.formula.replace("a.level", battler.level);
+                    let heal = Math.round(eval(formula) * boost);
+                    if (heal < 1) heal = 1;
+
+                    const hpBefore = target.hp;
+                    target.hp = Math.min(target.maxHp, target.hp + heal);
+
+                    events.push({
+                        type: 'heal',
+                        battler: battler,
+                        target: target,
+                        value: heal,
+                        hpBefore: hpBefore,
+                        hpAfter: target.hp,
+                        msg: `  ${target.name} heals ${heal} HP.`,
+                        animation: 'healing_sparkle'
+                    });
                  }
                  if (effect.type === "add_status") {
                    const chance = (effect.chance || 1) * boost;
