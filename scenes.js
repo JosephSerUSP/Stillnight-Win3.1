@@ -434,17 +434,7 @@ export class Scene_Battle extends Scene_Base {
     this.applyPostBattlePassives();
 
     // Permadeath check
-    const deadMembers = this.party.members.filter(m => m.hp <= 0);
-    if (deadMembers.length > 0) {
-        deadMembers.forEach(m => {
-            const idx = this.party.members.indexOf(m);
-            if (idx > -1) {
-                this.party.members.splice(idx, 1);
-                this.sceneManager.previous().logMessage(`[Death] ${m.name} has fallen and is lost forever.`);
-            }
-        });
-        this.sceneManager.previous().updateAll();
-    }
+    this.sceneManager.previous().checkPermadeath();
 
     this.clearEnemyTileAfterBattle();
 
@@ -1215,6 +1205,57 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Checks for party members with 0 HP and handles permadeath or rebirth traits.
+   * @method checkPermadeath
+   */
+  checkPermadeath() {
+    let deadFound = false;
+    // Iterate backwards to safely splice
+    for (let i = this.party.members.length - 1; i >= 0; i--) {
+        const member = this.party.members[i];
+        if (member.hp <= 0) {
+            deadFound = true;
+            // Check for ON_PERMADEATH traits
+            const permadeathTraits = member.traits.filter(t => t.code === 'ON_PERMADEATH');
+
+            if (permadeathTraits.length > 0) {
+                 this.logMessage(`[Passive] ${member.name}'s Rebirth activates!`);
+
+                 // Restore 20% HP based on current max (before level loss)
+                 const heal = Math.floor(member.maxHp * 0.2) || 1;
+                 member.hp = heal;
+
+                 // Lose 2 levels
+                 const oldLevel = member.level;
+                 const levelsLost = 2;
+                 member.level = Math.max(1, member.level - levelsLost);
+
+                 // Reduce max HP roughly if level dropped
+                 if (member.level < oldLevel) {
+                     const lost = oldLevel - member.level;
+                     // Approximate HP loss (3 per level)
+                     member._baseMaxHp = Math.max(1, member._baseMaxHp - (lost * 3));
+                     // Reset XP for new level
+                     member.xp = 0;
+                 }
+
+                 // Ensure HP is valid against new MaxHP
+                 if (member.hp > member.maxHp) member.hp = member.maxHp;
+
+                 this.logMessage(`${member.name} returned at Lv${member.level}.`);
+            } else {
+                this.party.members.splice(i, 1);
+                this.logMessage(`[Death] ${member.name} has fallen and is lost forever.`);
+            }
+        }
+    }
+
+    if (deadFound) {
+        this.updateAll();
+    }
+  }
+
+  /**
    * Triggers a full update of all UI components.
    * @method updateAll
    */
@@ -1816,6 +1857,7 @@ export class Scene_Map extends Scene_Base {
           });
 
           this.logMessage(`The party takes ${dmg} damage.`);
+          this.checkPermadeath();
           SoundManager.beep(150, 300);
           this.updateAll();
 
