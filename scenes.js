@@ -433,6 +433,19 @@ export class Scene_Battle extends Scene_Base {
 
     this.applyPostBattlePassives();
 
+    // Permadeath check
+    const deadMembers = this.party.members.filter(m => m.hp <= 0);
+    if (deadMembers.length > 0) {
+        deadMembers.forEach(m => {
+            const idx = this.party.members.indexOf(m);
+            if (idx > -1) {
+                this.party.members.splice(idx, 1);
+                this.sceneManager.previous().logMessage(`[Death] ${m.name} has fallen and is lost forever.`);
+            }
+        });
+        this.sceneManager.previous().updateAll();
+    }
+
     this.clearEnemyTileAfterBattle();
 
     this.battleManager.isVictoryPending = false;
@@ -2528,9 +2541,41 @@ renderElements(elements) {
     this.setStatus(`Inspecting ${member.name}`);
     this.logMessage(`[Inspect] ${member.name} – Lv${member.level}, ${this.partyRow(index)}, HP ${member.hp}/${member.maxHp}.`);
 
+    // Sacrifice Setup
+    const sacrificeValue = member.level * (member.hp + member.maxHp);
+    this.inspectWindow.btnSacrifice.textContent = `Sacrifice (${sacrificeValue}G)`;
+    this.inspectWindow.btnSacrifice.style.display = "block";
+    this.inspectWindow.btnSacrifice.onclick = () => {
+        this.confirmWindow.titleEl.textContent = "Sacrifice Unit";
+        this.confirmWindow.messageEl.textContent = `Sacrifice ${member.name} for ${sacrificeValue} Gold? This cannot be undone.`;
+        this.windowManager.push(this.confirmWindow);
+        this.confirmWindow.btnOk.onclick = () => {
+            this.windowManager.close(this.confirmWindow);
+            this.sacrificeMember(member, sacrificeValue);
+        };
+    };
+
     this.inspectWindow.onUserClose = () => this.closeInspect();
     this.inspectWindow.btnOk.onclick = () => this.closeInspect();
     this.inspectWindow.equipEl.onclick = () => this.openEquipmentScreen();
+  }
+
+  /**
+   * Sacrifices a party member for gold.
+   * @method sacrificeMember
+   * @param {import("./objects.js").Game_Battler} member - The member to sacrifice.
+   * @param {number} value - The gold value.
+   */
+  sacrificeMember(member, value) {
+      const index = this.party.members.indexOf(member);
+      if (index > -1) {
+          this.party.members.splice(index, 1);
+          this.party.gold += value;
+          this.logMessage(`[Sacrifice] ${member.name} was sacrificed for ${value}G.`);
+          SoundManager.beep(150, 400);
+          this.closeInspect();
+          this.updateAll();
+      }
   }
 
   /**
@@ -2538,6 +2583,7 @@ renderElements(elements) {
    * @method closeInspect
    */
   closeInspect() {
+    this.inspectWindow.btnSacrifice.style.display = "none";
     this.inspectWindow.equipmentListContainerEl.style.display = "none";
     this.inspectWindow.equipmentListEl.innerHTML = "";
     this.windowManager.close(this.inspectWindow);

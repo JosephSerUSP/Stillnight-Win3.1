@@ -690,6 +690,13 @@ export class Window_Inspect extends Window_Base {
     buttons.className = "dialog-buttons";
     this.element.appendChild(buttons);
 
+    this.btnSacrifice = document.createElement("button");
+    this.btnSacrifice.className = "win-btn";
+    this.btnSacrifice.style.marginRight = "auto";
+    this.btnSacrifice.textContent = "Sacrifice";
+    this.btnSacrifice.style.display = "none";
+    buttons.appendChild(this.btnSacrifice);
+
     this.btnOk = document.createElement("button");
     this.btnOk.className = "win-btn";
     this.btnOk.textContent = "OK";
