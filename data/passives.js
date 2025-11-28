@@ -78,5 +78,13 @@ export const passives = {
         effect: 'Increases damage dealt.',
         icon: 1,
         traits: [{ code: 'PARAM_PLUS', dataId: 'atk', value: 1 }]
+    },
+    rebirth: {
+        id: 'rebirth',
+        name: 'Rebirth',
+        description: 'Rising from the ashes.',
+        effect: 'On death: Restore 20% HP, lose 2 levels.',
+        icon: 1,
+        traits: [{ code: 'ON_PERMADEATH', value: 1 }]
     }
 };
