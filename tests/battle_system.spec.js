@@ -170,11 +170,17 @@ test.describe('Battle System', () => {
             // If PARASITE isn't in passives.js, value will be 0.
             // Let's force it for the test if needed, but better to trust the data.
             // We can inject it into the battler instance if needed.
-            const pObj = hero.passives.find(p => p.code === parasiteCode);
-            if (!pObj || !pObj.value) {
-                 // Manually add/update for test reliability if data is missing
-                 hero.passives = hero.passives.filter(p => p.code !== parasiteCode);
-                 hero.passives.push({ code: parasiteCode, value: 5, name: 'Parasite' });
+            // Check if passive is loaded and has traits, or force it for test
+            const hasTrait = hero.traits.some(t => t.code === parasiteCode);
+
+            if (!hasTrait) {
+                 // Manually add/update for test reliability
+                 // Note: Logic now requires 'traits' array in passive object
+                 hero.passives.push({
+                     id: 'testParasite',
+                     name: 'Parasite',
+                     traits: [{ code: parasiteCode, value: 5 }]
+                 });
             }
 
             hero.hp = 50;

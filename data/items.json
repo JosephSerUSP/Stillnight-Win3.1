@@ -37,43 +37,48 @@
     "name": "Silver Blade",
     "type": "equipment",
     "equipType": "Weapon",
-    "maxHpBonus": 0,
-    "damageBonus": 1,
     "cost": 25,
     "icon": 6,
-    "description": "Sharpened steel blade. +1 damage."
+    "description": "Sharpened steel blade. +1 damage.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 }
+    ]
   },
   {
     "id": "bone_plate",
     "name": "Bone Plate",
     "type": "equipment",
     "equipType": "Armor",
-    "maxHpBonus": 3,
-    "damageBonus": 0,
     "cost": 25,
     "icon": 6,
-    "description": "Sturdy bone harness. +3 max HP."
+    "description": "Sturdy bone harness. +3 max HP.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 3 }
+    ]
   },
   {
     "id": "wind_charm",
     "name": "Wind Charm",
     "type": "equipment",
     "equipType": "Accessory",
-    "maxHpBonus": 1,
-    "damageBonus": 1,
     "cost": 35,
     "icon": 6,
-    "description": "A charm of rushing air. +1 damage, +1 max HP."
+    "description": "A charm of rushing air. +1 damage, +1 max HP.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 },
+      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 1 }
+    ]
   },
   {
     "id": "light_amulet",
     "name": "Light Amulet",
     "type": "equipment",
     "equipType": "Accessory",
-    "maxHpBonus": 2,
-    "damageBonus": 0,
     "cost": 30,
     "icon": 6,
-    "description": "Glowing amulet. +2 max HP, faintly warms your hands."
+    "description": "Glowing amulet. +2 max HP, faintly warms your hands.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 2 }
+    ]
   }
 ]

@@ -2453,7 +2453,10 @@ renderElements(elements) {
 
         const label = document.createElement("span");
         let text = `${item.name}`;
-        if (item.damageBonus) {
+        if (item.traits) {
+             const dmg = item.traits.find(t => t.code === 'PARAM_PLUS' && t.dataId === 'atk');
+             if (dmg) text += ` (+${dmg.value} DMG)`;
+        } else if (item.damageBonus) {
              text += ` (+${item.damageBonus} DMG)`;
         }
         if (item.equippedBy) {
@@ -2471,6 +2474,14 @@ renderElements(elements) {
              if (item.effects.xp) effects.push(`Grants ${item.effects.xp} XP`);
         }
         // Equipment stats
+        if (item.traits) {
+             item.traits.forEach(t => {
+                 if (t.code === 'PARAM_PLUS') {
+                     if (t.dataId === 'atk') effects.push(`Damage +${t.value}`);
+                     if (t.dataId === 'maxHp') effects.push(`Max HP +${t.value}`);
+                 }
+             });
+        }
         if (item.damageBonus) effects.push(`Damage +${item.damageBonus}`);
 
         if (effects.length > 0) {

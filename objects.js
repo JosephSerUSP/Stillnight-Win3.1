@@ -1,5 +1,6 @@
 import { randInt, shuffleArray } from "./core.js";
 import { passives as passivesData } from "./data/passives.js";
+import { states as statesData } from "./data/states.js";
 
 /**
  * @class Game_Base
@@ -22,10 +23,11 @@ class Game_Base {
     this.name = unitData.name;
 
     /**
-     * The maximum HP of the unit.
+     * The base maximum HP of the unit.
      * @type {number}
+     * @protected
      */
-    this.maxHp = unitData.maxHp;
+    this._baseMaxHp = unitData.maxHp;
 
     /**
      * The current HP of the unit.
@@ -52,6 +54,14 @@ class Game_Base {
      */
     this.elements = unitData.elements || [];
   }
+
+  /**
+   * Gets the effective maximum HP, including traits.
+   * @type {number}
+   */
+  get maxHp() {
+      return this._baseMaxHp;
+  }
 }
 
 /**
@@ -77,115 +87,114 @@ export class Game_Battler extends Game_Base {
    * @param {number} [actorData.expGrowth] - XP growth rate.
    * @param {Array} [actorData.evolutions] - Evolution paths.
    * @param {number} [actorData.gold] - Gold dropped (for enemies).
+   * @param {Array} [actorData.traits] - Innate traits.
    * @param {number} [depth=1] - The dungeon depth (scales enemy stats).
    * @param {boolean} [isEnemy=false] - Whether this battler is an enemy.
    */
   constructor(actorData, depth = 1, isEnemy = false) {
     super(actorData);
 
-    /**
-     * The role or class of the battler (e.g., "Warrior").
-     * @type {string}
-     */
     this.role = actorData.role;
 
-    /**
-     * The list of active passives on this battler.
-     * Resolves string IDs to full passive objects.
-     * @type {Object[]}
-     */
+    // Store actorData for trait access
+    this.actorData = actorData;
+
     this.passives = (actorData.passives || []).map(pId => {
-        // If it's already an object (legacy/test), try to use it, but prefer lookup if string
         if (typeof pId === 'string') {
             return passivesData[pId] || { id: pId, code: pId, value: 0, name: pId };
         }
         return pId;
     });
 
-    /**
-     * The list of skill IDs available to the battler.
-     * @type {string[]}
-     */
     this.skills = actorData.skills ? actorData.skills.slice() : [];
-
-    /**
-     * The key for the sprite image.
-     * @type {string}
-     */
     this.spriteKey = actorData.spriteKey;
-
-    /**
-     * Flavor text description.
-     * @type {string}
-     */
     this.flavor = actorData.flavor;
-
-    /**
-     * Current experience points.
-     * @type {number}
-     */
     this.xp = 0;
-
-    /**
-     * Base equipment configuration.
-     * @type {Object|null}
-     */
     this.baseEquipment = actorData.equipment || null;
-
-    /**
-     * Currently equipped item instance.
-     * @type {Object|null}
-     */
     this.equipmentItem = null;
-
-    /**
-     * Experience growth factor.
-     * @type {number}
-     */
     this.expGrowth = actorData.expGrowth || 5;
-
-    /**
-     * Possible evolutions for this unit.
-     * @type {Array}
-     */
     this.evolutions = actorData.evolutions || [];
-
-    /**
-     * Gold value (dropped by enemies).
-     * @type {number}
-     */
     this.gold = actorData.gold || 0;
-
-    /**
-     * Whether this battler is an enemy.
-     * @type {boolean}
-     */
     this.isEnemy = isEnemy;
 
+    /**
+     * Active states on the battler.
+     * @type {Array<{id: string, turns: number}>}
+     */
+    this.states = [];
+
     if (this.isEnemy) {
-      this.maxHp += (depth - 1) * 4;
+      this._baseMaxHp += (depth - 1) * 4;
       this.hp = this.maxHp;
     }
   }
 
   /**
-   * Calculates the experience points needed for the next level.
-   * @method xpNeeded
-   * @param {number} level - The current level.
-   * @returns {number} The XP required for the next level.
+   * Aggregates all traits from Actor, Equipment, Passives, and States.
+   * @type {Array}
    */
+  get traits() {
+      const traits = [];
+      // Actor innate traits
+      if (this.actorData && this.actorData.traits) {
+          traits.push(...this.actorData.traits);
+      }
+
+      // Equipment traits
+      if (this.equipmentItem && this.equipmentItem.traits) {
+          traits.push(...this.equipmentItem.traits);
+      }
+
+      // Passive traits
+      this.passives.forEach(p => {
+          if (p.traits) traits.push(...p.traits);
+      });
+
+      // State traits
+      this.states.forEach(s => {
+          const stateData = statesData[s.id];
+          if (stateData && stateData.traits) {
+              traits.push(...stateData.traits);
+          }
+      });
+
+      return traits;
+  }
+
+  /**
+   * Gets the effective maximum HP.
+   * @type {number}
+   */
+  get maxHp() {
+      const base = this._baseMaxHp;
+      const bonus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'maxHp')
+                               .reduce((sum, t) => sum + t.value, 0);
+      return base + bonus;
+  }
+
+  /**
+   * Gets the effective Attack power.
+   * @type {number}
+   */
+  get atk() {
+      let base = 0;
+      if (this.isEnemy) {
+           // Base enemy logic: ~level. Variance handled in BattleManager.
+           base = this.level;
+      } else {
+           // Base actor logic: 3 + level/2.
+           base = 3 + Math.floor(this.level / 2);
+      }
+
+      const bonus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'atk')
+                               .reduce((sum, t) => sum + t.value, 0);
+      return base + bonus;
+  }
+
   xpNeeded(level) {
     return Math.floor(level * (this.expGrowth * 0.5) + 10);
   }
 
-  /**
-   * Adds experience points to the battler and handles leveling up logic.
-   * Automatically increases HP and Level when thresholds are met.
-   * @method gainXp
-   * @param {number} amount - The amount of XP to gain.
-   * @returns {Object} An object containing level-up details:
-   *                   { leveledUp: boolean, hpGain: number, newLevel: number }
-   */
   gainXp(amount) {
     if (amount <= 0) return { leveledUp: false, hpGain: 0, newLevel: this.level };
 
@@ -197,11 +206,16 @@ export class Game_Battler extends Game_Base {
       this.xp -= this.xpNeeded(this.level);
       this.level++;
       const hpGain = randInt(2, 4);
-      this.maxHp += hpGain;
-      this.hp = this.maxHp;
+      this._baseMaxHp += hpGain; // Update base max HP
+      this.hp = this.maxHp;      // Heal to full effective max HP? Or just add gain?
+      // "Automaticallly increases HP ... and hp = maxHp" - current logic sets hp to maxHp.
+      // So fully heal on level up.
       totalHpGain += hpGain;
       leveledUp = true;
     }
+
+    // Ensure HP respects new Max HP (if traits changed? unlikely here)
+    if (this.hp > this.maxHp) this.hp = this.maxHp;
 
     return {
       leveledUp,
@@ -210,70 +224,97 @@ export class Game_Battler extends Game_Base {
     };
   }
 
-  /**
-   * Gets the numeric value of a specific passive ability.
-   * @method getPassiveValue
-   * @param {string} code - The code of the passive to lookup (e.g., "PARASITE").
-   * @returns {number} The value of the passive, or 0 if not found.
-   */
   getPassiveValue(code) {
-    const passive = this.passives.find((p) => p.code === code);
-    return passive ? (passive.value !== undefined ? passive.value : 0) : 0;
+    // New implementation using traits
+    // First, check direct traits with this code
+    const traitSum = this.traits.filter(t => t.code === code)
+                                .reduce((sum, t) => sum + t.value, 0);
+
+    if (traitSum !== 0) return traitSum;
+
+    // Fallback: Check for legacy passives that might use this code but not via traits?
+    // Current data/passives.js uses traits for everything now.
+    // So if traits are correctly set, this handles it.
+
+    return 0;
   }
 
   /**
-   * Executes a given action against a target.
-   * Future-forward: This is a placeholder for a more robust action system.
-   * It will eventually take a Game_Action object and apply its effects.
-   * @method executeAction
-   * @param {Object} action - The action to execute.
-   * @param {Game_Battler} target - The target of the action.
+   * Adds a state to the battler.
+   * @param {string} stateId - The ID of the state to add.
    */
+  addState(stateId) {
+      const stateData = statesData[stateId];
+      if (!stateData) return;
+
+      // specific resistance check?
+      // const resist = this.getPassiveValue('STATE_RESIST_' + stateId);
+
+      const existing = this.states.find(s => s.id === stateId);
+      if (existing) {
+          existing.turns = stateData.duration || 3;
+      } else {
+          this.states.push({ id: stateId, turns: stateData.duration || 3 });
+      }
+  }
+
+  /**
+   * Removes a state from the battler.
+   * @param {string} stateId - The ID of the state to remove.
+   */
+  removeState(stateId) {
+      const index = this.states.findIndex(s => s.id === stateId);
+      if (index !== -1) {
+          this.states.splice(index, 1);
+      }
+  }
+
+  /**
+   * Checks if the battler is affected by a state.
+   * @param {string} stateId - The ID of the state.
+   * @returns {boolean}
+   */
+  isStateAffected(stateId) {
+      return this.states.some(s => s.id === stateId);
+  }
+
+  /**
+   * Updates state turns and removes expired states.
+   * @returns {string[]} List of removed state IDs.
+   */
+  updateStateTurns() {
+      const removed = [];
+      this.states.forEach(s => {
+          if (s.turns > 0) s.turns--;
+      });
+
+      // Remove expired states
+      for (let i = this.states.length - 1; i >= 0; i--) {
+          if (this.states[i].turns <= 0) {
+              removed.push(this.states[i].id);
+              this.states.splice(i, 1);
+          }
+      }
+      return removed;
+  }
+
   executeAction(action, target) {
-    // To be implemented in a future phase.
     console.log(`${this.name} uses an action on ${target.name}.`);
   }
 }
 
 /**
  * @class Game_Party
- * @description Manages the player's party members, inventory, and gold.
+ * @description Manages the party.
  */
 export class Game_Party {
-  /**
-   * Creates a new Game_Party instance.
-   */
   constructor() {
-    /**
-     * The maximum number of party members allowed.
-     * @type {number}
-     */
     this.MAX_MEMBERS = 24;
-
-    /**
-     * The list of current party members.
-     * @type {Game_Battler[]}
-     */
     this.members = [];
-
-    /**
-     * The current amount of gold held by the party.
-     * @type {number}
-     */
     this.gold = 0;
-
-    /**
-     * The party's inventory.
-     * @type {Object[]}
-     */
     this.inventory = [];
   }
 
-  /**
-   * Initializes the party with starting members, gold, and items defined in data.
-   * @method createInitialMembers
-   * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
-   */
   createInitialMembers(dataManager) {
     const { startingParty, actors, items } = dataManager;
 
@@ -298,17 +339,6 @@ export class Game_Party {
  * @description Represents an interactive entity on the map.
  */
 export class Game_Event {
-  /**
-   * Creates a new Game_Event.
-   * @param {number} x - X coordinate.
-   * @param {number} y - Y coordinate.
-   * @param {Object} data - Event configuration.
-   * @param {string} data.type - Event type (e.g., 'enemy', 'stairs').
-   * @param {string} data.symbol - Character to display.
-   * @param {string} data.cssClass - CSS class for styling.
-   * @param {string} [data.trigger='touch'] - Trigger type ('touch', 'interact').
-   * @param {Array<Object>} [data.actions=[]] - List of actions to execute.
-   */
   constructor(x, y, data) {
     this.x = x;
     this.y = y;
@@ -317,88 +347,31 @@ export class Game_Event {
     this.cssClass = data.cssClass || "";
     this.trigger = data.trigger || "touch";
     this.actions = data.actions || [];
-
-    // Legacy/Data support
     if (data.id) this.id = data.id;
   }
 }
 
 /**
  * @class Game_Map
- * @description Represents the game map, managing floors, tiles, and player position.
- * Handles procedural generation of dungeon floors.
+ * @description Represents the game map.
  */
 export class Game_Map {
-  /**
-   * Creates a new Game_Map instance.
-   */
   constructor() {
-    /**
-     * The width of the map grid.
-     * @type {number}
-     */
     this.MAX_W = 16;
-
-    /**
-     * The height of the map grid.
-     * @type {number}
-     */
     this.MAX_H = 16;
-
-    /**
-     * The array of generated floors.
-     * @type {Object[]}
-     */
     this.floors = [];
-
-    /**
-     * The index of the current floor.
-     * @type {number}
-     */
     this.floorIndex = 0;
-
-    /**
-     * The maximum floor index reached by the player.
-     * @type {number}
-     */
     this.maxReachedFloorIndex = 0;
-
-    /**
-     * The player's X position on the current floor.
-     * @type {number}
-     */
     this.playerX = 0;
-
-    /**
-     * The player's Y position on the current floor.
-     * @type {number}
-     */
     this.playerY = 0;
   }
 
-  /**
-   * Initializes the map floors using provided map metadata.
-   * @method initFloors
-   * @param {Array} mapData - The array of map metadata objects from data manager.
-   * @param {Array} eventDefs - The array of event definitions.
-   * @param {Array} [npcData] - Optional array of NPC definitions.
-   */
   initFloors(mapData, eventDefs, npcData = []) {
     this.floors = mapData.map((meta, i) => this.generateFloor(meta, i, eventDefs, npcData));
     this.floors[0].discovered = true;
     this.maxReachedFloorIndex = 0;
   }
 
-  /**
-   * Procedurally generates a single floor layout.
-   * Places tiles and spawns events based on map configuration.
-   * @method generateFloor
-   * @param {Object} meta - The metadata for the floor (title, depth, events).
-   * @param {number} index - The index of the floor in the dungeon.
-   * @param {Array} eventDefs - The array of event definitions.
-   * @param {Array} [npcData] - Optional array of NPC definitions.
-   * @returns {Object} The generated floor object containing layout and entity positions.
-   */
   generateFloor(meta, index, eventDefs, npcData = []) {
     const tiles = Array.from({ length: this.MAX_H }, () =>
       Array.from({ length: this.MAX_W }, () => "#")
@@ -513,13 +486,6 @@ export class Game_Map {
     };
   }
 
-  /**
-   * Removes an event from the map at the specified coordinates.
-   * @method removeEvent
-   * @param {number} floorIndex - The floor index.
-   * @param {number} x - The x coordinate.
-   * @param {number} y - The y coordinate.
-   */
   removeEvent(floorIndex, x, y) {
     if (floorIndex < 0 || floorIndex >= this.floors.length) return;
     const floor = this.floors[floorIndex];
@@ -529,10 +495,6 @@ export class Game_Map {
     }
   }
 
-  /**
-   * Reveals the map tiles around the player (fog of war mechanic).
-   * @method revealAroundPlayer
-   */
   revealAroundPlayer() {
     const floor = this.floors[this.floorIndex];
     const r = 1;
