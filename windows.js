@@ -1,5 +1,140 @@
-import { getPrimaryElements, Graphics, elementToAscii, getIconStyle } from "./core.js";
+import { getPrimaryElements, Graphics, elementToAscii, getIconStyle, elementToIconId } from "./core.js";
 import { tooltip } from "./tooltip.js";
+
+/**
+ * Creates a DOM element representing an icon for a set of elements.
+ * @param {string[]} elements - The elements.
+ * @returns {HTMLElement} The icon container element.
+ */
+export function createElementIcon(elements) {
+    const primaryElements = getPrimaryElements(elements);
+    const container = document.createElement('div');
+
+    if (primaryElements.length <= 1) {
+        container.className = 'element-icon-container-name';
+        const icon = document.createElement('div');
+        icon.className = 'icon';
+        if (primaryElements.length === 1) {
+            const iconId = elementToIconId(primaryElements[0]);
+            if (iconId > 0) {
+                icon.style.backgroundPosition = getIconStyle(iconId);
+            }
+        }
+        container.appendChild(icon);
+    } else {
+        container.className = 'element-icon-container';
+        const positions = [
+            { top: '0px', left: '0px' },
+            { top: '6px', left: '6px' },
+            { top: '0px', left: '6px' },
+            { top: '6px', left: '0px' },
+        ];
+        primaryElements.forEach((element, index) => {
+            if (index < 4) {
+                const icon = document.createElement('div');
+                icon.className = 'element-icon';
+                const iconId = elementToIconId('l_' + element);
+                if (iconId > 0) {
+                    icon.style.backgroundPosition = getIconStyle(iconId);
+                    icon.style.top = positions[index].top;
+                    icon.style.left = positions[index].left;
+                    container.appendChild(icon);
+                }
+            }
+        });
+    }
+    return container;
+}
+
+/**
+ * Creates an interactive label for a game object (Skill, Passive, Item).
+ * @param {Object} data - The object data (must have name, and optionally icon/elements).
+ * @param {string} type - 'skill' | 'passive' | 'item' | 'generic'.
+ * @param {Object} options - { tooltipText, showTooltip, className, elements }.
+ * @returns {HTMLElement} The span element.
+ */
+export function createInteractiveLabel(data, type, options = {}) {
+    const el = document.createElement("span");
+    el.className = "interactive-label";
+    el.style.display = "inline-flex";
+    el.style.alignItems = "center";
+    el.style.marginRight = "5px";
+
+    if (options.className) {
+        el.classList.add(options.className);
+    }
+
+    // Icon / Elements
+    if (type === 'skill' || (data.element || data.elements)) {
+        // Use element icon logic if available
+        let elements = data.elements || (data.element ? [data.element] : []);
+        if (options.elements) elements = options.elements;
+
+        if (elements.length > 0) {
+            const iconEl = createElementIcon(elements);
+            el.appendChild(iconEl);
+        } else if (data.icon) {
+             const icon = document.createElement("span");
+             icon.className = "icon";
+             if (data.icon > 0) {
+                 icon.style.backgroundPosition = getIconStyle(data.icon);
+             }
+             icon.style.marginRight = "4px";
+             el.appendChild(icon);
+        }
+    } else if (data.icon) {
+        const icon = document.createElement("span");
+        icon.className = "icon";
+        if (data.icon > 0) {
+            icon.style.backgroundPosition = getIconStyle(data.icon);
+        }
+        icon.style.marginRight = "4px";
+        el.appendChild(icon);
+    }
+
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = data.name;
+    // Inspect window styles
+    if (type === 'skill' || type === 'passive') {
+         nameSpan.style.textDecoration = "underline";
+         nameSpan.style.textDecorationStyle = "dotted";
+    }
+    el.appendChild(nameSpan);
+
+    // Tooltip
+    if (options.showTooltip !== false) {
+        let text = options.tooltipText || data.description || "";
+
+        // Append extra info if not provided in text
+        if (!options.tooltipText) {
+             let extra = "";
+             if (type === 'passive' && data.effect) {
+                 extra = data.effect;
+             }
+
+             if (extra) {
+                 text += `<br/><span style="color:#478174; font-size: 0.9em;">${extra}</span>`;
+             }
+        }
+
+        if (text) {
+             el.style.cursor = "help";
+             el.addEventListener("mouseenter", (e) => {
+                tooltip.show(e.clientX, e.clientY, null, text);
+            });
+            el.addEventListener("mouseleave", () => {
+                tooltip.hide();
+            });
+            el.addEventListener("mousemove", (e) => {
+                if (tooltip.visible) {
+                    tooltip.show(e.clientX, e.clientY, null, text);
+                }
+            });
+        }
+    }
+
+    return el;
+}
 
 /**
  * @class WindowLayer

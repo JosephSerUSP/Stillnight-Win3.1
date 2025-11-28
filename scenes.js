@@ -11,6 +11,8 @@ import {
   Window_Inspect,
   Window_Confirm,
   WindowLayer,
+  createInteractiveLabel,
+  createElementIcon
 } from "./windows.js";
 import { tooltip } from "./tooltip.js";
 
@@ -1739,59 +1741,117 @@ export class Scene_Map extends Scene_Base {
     }
     const recruit = availableCreatures[randInt(0, availableCreatures.length - 1)];
     const cost = randInt(25, 75);
-    this.recruitWindow.bodyEl.innerHTML = `
-      <div class="inspect-layout">
-        <div class="inspect-sprite" style="background-image: url('assets/portraits/${
-          recruit.spriteKey || "pixie"
-        }.png')"></div>
-        <div class="inspect-fields">
-          <div class="inspect-row">
-            <span class="inspect-label">Name</span>
-            <span id="recruit-name" class="inspect-value"></span>
-          </div>
-          <div class="inspect-row">
-            <span class="inspect-label">Level</span>
-            <span class="inspect-value">${recruit.level}</span>
-          </div>
-          <div class="inspect-row">
-            <span class="inspect-label">Role</span>
-            <span class="inspect-value">${recruit.role}</span>
-          </div>
-          <div class="inspect-row">
-            <span class="inspect-label">HP</span>
-            <span class="inspect-value">${recruit.maxHp} / ${
-      recruit.maxHp
-    }</span>
-          </div>
-          <div class="inspect-row">
-            <span class="inspect-label">Element</span>
-            <span id="recruit-element-icon" class="inspect-value"></span>
-          </div>
-          <div class="inspect-row">
-            <span class="inspect-label">Equipment</span>
-            <span class="inspect-value">${recruit.equipment || "—"}</span>
-          </div>
-          <div class="inspect-row">
-            <span class="inspect-label">Passive</span>
-            <span class="inspect-value">${(recruit.passives || []).map(p => p.description).join(', ') || "—"}</span>
-          </div>
-          <div class="inspect-row">
-            <span class="inspect-label">Skills</span>
-            <span class="inspect-value">${
-              (recruit.skills && recruit.skills.length)
-                ? recruit.skills
-                    .map((s) => this.formatSkillName(s))
-                    .join(", ")
-                : "—"
-            }</span>
-          </div>
-          <div class="inspect-row">
-            <span class="inspect-label">Flavor</span>
-            <span class="inspect-value">${recruit.flavor || "—"}</span>
-          </div>
-        </div>
-      </div>
-    `;
+
+    this.recruitWindow.bodyEl.innerHTML = "";
+
+    const layout = document.createElement('div');
+    layout.className = 'inspect-layout';
+    this.recruitWindow.bodyEl.appendChild(layout);
+
+    const sprite = document.createElement('div');
+    sprite.className = 'inspect-sprite';
+    sprite.style.backgroundImage = `url('assets/portraits/${recruit.spriteKey || "pixie"}.png')`;
+    layout.appendChild(sprite);
+
+    const fields = document.createElement('div');
+    fields.className = 'inspect-fields';
+    layout.appendChild(fields);
+
+    const createRow = (label, valueEl) => {
+        const row = document.createElement('div');
+        row.className = 'inspect-row';
+        const lbl = document.createElement('span');
+        lbl.className = 'inspect-label';
+        lbl.textContent = label;
+        row.appendChild(lbl);
+        valueEl.classList.add('inspect-value');
+        row.appendChild(valueEl);
+        fields.appendChild(row);
+    };
+
+    // Name
+    const nameVal = document.createElement('span');
+    nameVal.appendChild(createElementIcon(recruit.elements));
+    nameVal.appendChild(document.createTextNode(recruit.name));
+    createRow('Name', nameVal);
+
+    // Level
+    const levelVal = document.createElement('span');
+    levelVal.textContent = recruit.level;
+    createRow('Level', levelVal);
+
+    // Role
+    const roleVal = document.createElement('span');
+    roleVal.textContent = recruit.role;
+    createRow('Role', roleVal);
+
+    // HP
+    const hpVal = document.createElement('span');
+    hpVal.textContent = `${recruit.maxHp} / ${recruit.maxHp}`;
+    createRow('HP', hpVal);
+
+    // Element
+    const elementVal = document.createElement('span');
+    if (recruit.elements && recruit.elements.length > 0) {
+        elementVal.appendChild(this.renderElements(recruit.elements));
+    } else {
+        elementVal.textContent = "—";
+    }
+    createRow('Element', elementVal);
+
+    // Equipment
+    const equipVal = document.createElement('span');
+    equipVal.textContent = recruit.equipment || "—";
+    createRow('Equipment', equipVal);
+
+    // Passive
+    const passiveVal = document.createElement('span');
+    if (recruit.passives && recruit.passives.length > 0) {
+        recruit.passives.forEach((pData, i) => {
+            const code = pData.code || pData.id;
+            let def = null;
+            if (this.dataManager.passives) {
+                def = Object.values(this.dataManager.passives).find(p => p.id === code || p.code === code);
+            }
+            if (!def) def = pData;
+
+            const el = createInteractiveLabel(def, 'passive');
+            passiveVal.appendChild(el);
+
+            if (i < recruit.passives.length - 1) {
+                passiveVal.appendChild(document.createTextNode(", "));
+            }
+        });
+    } else {
+        passiveVal.textContent = "—";
+    }
+    createRow('Passive', passiveVal);
+
+    // Skills
+    const skillVal = document.createElement('span');
+    if (recruit.skills && recruit.skills.length > 0) {
+        recruit.skills.forEach((sId, i) => {
+             const skill = this.dataManager.skills[sId];
+             if (skill) {
+                 const el = createInteractiveLabel(skill, 'skill');
+                 skillVal.appendChild(el);
+             } else {
+                 skillVal.appendChild(document.createTextNode(sId));
+             }
+             if (i < recruit.skills.length - 1) {
+                 skillVal.appendChild(document.createTextNode(", "));
+             }
+        });
+    } else {
+        skillVal.textContent = "—";
+    }
+    createRow('Skills', skillVal);
+
+    // Flavor
+    const flavorVal = document.createElement('span');
+    flavorVal.textContent = recruit.flavor || "—";
+    createRow('Flavor', flavorVal);
+
     this.recruitWindow.buttonsEl.innerHTML = "";
     const joinBtn = document.createElement("button");
     joinBtn.className = "win-btn";
@@ -1814,19 +1874,6 @@ export class Scene_Map extends Scene_Base {
     });
     this.recruitWindow.buttonsEl.appendChild(joinBtn);
     this.recruitWindow.buttonsEl.appendChild(declineBtn);
-
-    const nameContainer = this.recruitWindow.bodyEl.querySelector('#recruit-name');
-    nameContainer.appendChild(this.createElementIcon(recruit.elements));
-    const nameSpan = document.createElement('span');
-    nameSpan.textContent = recruit.name;
-    nameContainer.appendChild(nameSpan);
-
-    const elementIconContainer = this.recruitWindow.bodyEl.querySelector('#recruit-element-icon');
-    if (recruit.elements && recruit.elements.length > 0) {
-        elementIconContainer.appendChild(this.renderElements(recruit.elements));
-    } else {
-        elementIconContainer.textContent = "—";
-    }
 
     this.windowManager.push(this.recruitWindow);
     this.setStatus("Recruit encountered.");
@@ -2249,55 +2296,16 @@ renderElements(elements) {
     this.inspectWindow.passiveEl.innerHTML = "";
     if (member.passives && member.passives.length > 0) {
         member.passives.forEach((pData, i) => {
-            // Resolve passive data
-            let passive = pData;
-            // If pData is just { code: '...' } or { id: '...' }, look it up in dataManager
-            // Or if it's already an object, use it.
-            // But we prefer using dataManager definitions.
             const code = pData.code || pData.id;
             let def = null;
             if (this.dataManager.passives) {
-                // Find by ID or Code in passives object
                 def = Object.values(this.dataManager.passives).find(p => p.id === code || p.code === code);
             }
-            if (!def) def = pData; // Fallback to inline data if not found
+            if (!def) def = pData;
 
-            const span = document.createElement("span");
+            const el = createInteractiveLabel(def, 'passive');
+            this.inspectWindow.passiveEl.appendChild(el);
 
-            // Icon handling
-            if (def.icon) {
-                const iconId = def.icon;
-                const icon = document.createElement("span");
-                icon.className = "icon";
-                if (iconId > 0) {
-                    icon.style.backgroundPosition = getIconStyle(iconId);
-                }
-                icon.style.verticalAlign = "text-bottom";
-                icon.style.marginRight = "2px";
-                span.appendChild(icon);
-            }
-
-            span.appendChild(document.createTextNode(def.name || `Passive ${i+1}`));
-            span.className = "interactive-text";
-            span.style.marginRight = "5px";
-            span.style.textDecoration = "underline";
-            span.style.cursor = "help";
-
-            let tooltipText = def.description;
-            // If the passive has an explicit 'effect' field, display it on the second line
-            if (def.effect) {
-                tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${def.effect}</span>`;
-            }
-
-            span.addEventListener("mouseenter", (e) => {
-                tooltip.show(e.clientX, e.clientY, null, tooltipText);
-            });
-            span.addEventListener("mouseleave", () => tooltip.hide());
-            span.addEventListener("mousemove", (e) => {
-                 if (tooltip.visible) tooltip.show(e.clientX, e.clientY, null, tooltipText);
-            });
-
-            this.inspectWindow.passiveEl.appendChild(span);
             if (i < member.passives.length - 1) {
                 this.inspectWindow.passiveEl.appendChild(document.createTextNode(", "));
             }
@@ -2311,16 +2319,8 @@ renderElements(elements) {
     if (member.skills && member.skills.length > 0) {
         member.skills.forEach((sId, i) => {
             const skill = this.dataManager.skills[sId];
-            const span = document.createElement("span");
-            span.innerHTML = this.formatSkillName(sId);
-            span.className = "interactive-text";
-            span.style.marginRight = "5px";
-            span.style.cursor = "help";
-            span.style.borderBottom = "1px dotted #000";
-
             if (skill) {
-                let tooltipText = skill.description;
-                // Build second line with all effects
+                // Calculate dynamic effects
                 let effectsText = "";
                 if (skill.effects && skill.effects.length > 0) {
                     const descriptions = [];
@@ -2347,20 +2347,17 @@ renderElements(elements) {
                     }
                 }
 
+                let tooltipText = skill.description;
                 if (effectsText) {
                     tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
                 }
 
-                span.addEventListener("mouseenter", (e) => {
-                    tooltip.show(e.clientX, e.clientY, null, tooltipText);
-                });
-                span.addEventListener("mouseleave", () => tooltip.hide());
-                span.addEventListener("mousemove", (e) => {
-                    if (tooltip.visible) tooltip.show(e.clientX, e.clientY, null, tooltipText);
-                });
+                const el = createInteractiveLabel(skill, 'skill', { tooltipText });
+                this.inspectWindow.skillsEl.appendChild(el);
+            } else {
+                this.inspectWindow.skillsEl.appendChild(document.createTextNode(sId));
             }
 
-            this.inspectWindow.skillsEl.appendChild(span);
             if (i < member.skills.length - 1) {
                 this.inspectWindow.skillsEl.appendChild(document.createTextNode(", "));
             }
