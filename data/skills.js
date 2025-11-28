@@ -27,41 +27,122 @@
  * @type {Object.<string, Skill>}
  */
 export const skills = {
-    // Pixie
-    windBlade: {
-        id: 'windBlade',
-        name: 'Wind Blade',
+    // Basic
+    attack: {
+        id: 'attack',
+        name: 'Attack',
         target: 'enemy-any',
-        element: 'Green',
-        description: "Strikes a foe with a blade of wind.",
+        element: 'Physical',
+        description: "A basic attack.",
         effects: [
-            { type: 'hp_damage', formula: '5 + 1.2 * a.level' }
+            { type: 'hp_damage', formula: 'a.atk' }
         ]
     },
-    soothingMote: {
-        id: 'soothingMote',
-        name: 'Soothing Mote',
-        target: 'ally-any',
+    wait: {
+        id: 'wait',
+        name: 'Wait',
+        target: 'self',
         element: 'White',
-        description: "Heals a small amount of HP for an ally.",
-        effects: [
-            { type: 'hp_heal', formula: '4 + 1.5 * a.level' }
-        ]
+        description: "Do nothing.",
+        effects: []
     },
 
-    // Skeleton
-    boneRush: {
-        id: 'boneRush',
-        name: 'Bone Rush',
+    // Campaign Skills
+    ashBreath: {
+        id: 'ashBreath',
+        name: 'Ash Breath',
+        target: 'enemy-all',
+        element: 'Red',
+        description: "Exhales choking hot ash.",
+        effects: [
+            { type: 'hp_damage', formula: '4 + 1.2 * a.level' },
+            { type: 'add_status', status: 'blind', chance: 0.4 }
+        ]
+    },
+    sonicShriek: {
+        id: 'sonicShriek',
+        name: 'Sonic Shriek',
+        target: 'enemy-all',
+        element: 'Green',
+        description: "A deafening roar that stuns.",
+        effects: [
+            { type: 'hp_damage', formula: '2 + 1.0 * a.level' },
+            { type: 'add_status', status: 'stun', chance: 0.3 }
+        ]
+    },
+    gildedSlam: {
+        id: 'gildedSlam',
+        name: 'Gilded Slam',
+        target: 'enemy-any',
+        element: 'Physical',
+        description: "A heavy, crushing blow.",
+        effects: [
+            { type: 'hp_damage', formula: '10 + 2.0 * a.level' }
+        ]
+    },
+    wailOfSorrow: {
+        id: 'wailOfSorrow',
+        name: 'Wail of Sorrow',
+        target: 'enemy-all',
+        element: 'Blue',
+        description: "Drains the will to fight.",
+        effects: [
+            { type: 'hp_damage', formula: '5 + 1.1 * a.level' },
+            { type: 'add_status', status: 'blind', chance: 0.5 }
+        ]
+    },
+    temporalShift: {
+        id: 'temporalShift',
+        name: 'Temporal Shift',
+        target: 'self',
+        element: 'Blue',
+        description: "Phases out of sync with time.",
+        effects: [
+            { type: 'add_status', status: 'regen', chance: 1.0, duration: 2 }
+        ]
+    },
+    gearGrind: {
+        id: 'gearGrind',
+        name: 'Gear Grind',
+        target: 'enemy-any',
+        element: 'Physical',
+        description: "Grinds flesh like machinery.",
+        effects: [
+            { type: 'hp_damage', formula: '8 + 1.5 * a.level' }
+        ]
+    },
+    timeStop: {
+        id: 'timeStop',
+        name: 'Time Stop',
+        target: 'enemy-all',
+        element: 'Black',
+        description: "Freezes time for all opponents.",
+        effects: [
+            { type: 'hp_damage', formula: '5 + 1.0 * a.level' },
+            { type: 'add_status', status: 'stun', chance: 0.8 }
+        ]
+    },
+    doom: {
+        id: 'doom',
+        name: 'Doom',
         target: 'enemy-any',
         element: 'Black',
-        description: "A reckless charge.",
+        description: "Inflicts a curse of decay.",
         effects: [
-            { type: 'hp_damage', formula: '6 + 1.1 * a.level' }
+             { type: 'add_status', status: 'doom', chance: 1.0 }
         ]
     },
-
-    // Angel
+    chronalTrigger: {
+        id: 'chronalTrigger',
+        name: 'Chronal Trigger',
+        target: 'self',
+        element: 'White',
+        description: "Accelerates personal time. Grants Berserk and Regen.",
+        effects: [
+             { type: 'add_status', status: 'berserk', chance: 1.0 },
+             { type: 'add_status', status: 'regen', chance: 1.0 }
+        ]
+    },
     holySmite: {
         id: 'holySmite',
         name: 'Holy Smite',
@@ -82,8 +163,6 @@ export const skills = {
             { type: 'add_status', status: 'regen', chance: 1.0, duration: 3 }
         ]
     },
-
-    // Demon
     shadowClaw: {
         id: 'shadowClaw',
         name: 'Shadow Claw',
@@ -94,18 +173,46 @@ export const skills = {
             { type: 'hp_damage', formula: '6 + 1.3 * a.level' }
         ]
     },
+    windBlade: {
+        id: 'windBlade',
+        name: 'Wind Blade',
+        target: 'enemy-any',
+        element: 'Green',
+        description: "Strikes a foe with a blade of wind.",
+        effects: [
+            { type: 'hp_damage', formula: '5 + 1.2 * a.level' }
+        ]
+    },
+    soothingMote: {
+        id: 'soothingMote',
+        name: 'Soothing Mote',
+        target: 'ally-any',
+        element: 'White',
+        description: "Heals a small amount of HP for an ally.",
+        effects: [
+            { type: 'hp_heal', formula: '4 + 1.5 * a.level' }
+        ]
+    },
+    boneRush: {
+        id: 'boneRush',
+        name: 'Bone Rush',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "A reckless charge.",
+        effects: [
+            { type: 'hp_damage', formula: '6 + 1.1 * a.level' }
+        ]
+    },
     infernalPact: {
         id: 'infernalPact',
         name: 'Infernal Pact',
         target: 'self',
         element: 'Red',
-        description: "Sacrifice safety for power. (Grants Berserk)",
+        description: "Sacrifice safety for power.",
         effects: [
             { type: 'add_status', status: 'berserk', chance: 1.0, duration: 3 }
         ]
     },
-
-    // Example from prompt
     sleepMist: {
         id: 'sleepMist',
         name: 'Sleep Mist',
@@ -117,16 +224,6 @@ export const skills = {
             { type: 'add_status', status: 'sleep', chance: 0.3 }
         ]
     },
-
-    wait: {
-        id: 'wait',
-        name: 'Wait',
-        target: 'self',
-        element: 'White',
-        description: "Do nothing.",
-        effects: []
-    },
-
     flameRebirth: {
         id: 'flameRebirth',
         name: 'Flame Rebirth',

@@ -1,168 +1,180 @@
 [
   {
-    "title": "Floor 1: Entry Hall",
-    "intro": "You cross the threshold of Stillnight.",
+    "title": "Floor 1: The Silent Gate",
+    "intro": "The gates of Aethelgard stand open, rusted by centuries of a single night.",
     "depth": 1,
+    "story_start": {
+        "title": "Echoes of Aethelgard",
+        "text": "The kingdom is trapped in a loop. You are an Echo Walker, sworn to ascend the Spire and break the curse. The Outskirts lie ahead.",
+        "image": "story_start.png"
+    },
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "count": 1 },
       { "id": "enemy", "min": 2, "max": 3 },
       { "id": "shop", "count": 1 },
       { "id": "recruit", "chance": 0.5 },
-      { "id": "npc", "chance": 0.3 },
-      { "id": "trap", "count": 2 },
       { "id": "treasure", "count": 1 }
     ],
-    "treasures": ["potion", "antidote"],
     "encounters": [
-      { "id": "bat", "weight": 10 },
-      { "id": "ooze", "weight": 5 },
-      { "id": "pixie", "weight": 2 }
+      { "id": "hollowMilitia", "weight": 10 },
+      { "id": "ashRat", "weight": 5 }
     ]
   },
   {
-    "title": "Floor 1: Silent Shrine",
-    "intro": "A distant bell tolls once.",
-    "depth": 1,
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.7 },
-      { "id": "enemy", "min": 2, "max": 3 },
-      { "id": "shrine", "count": 1 },
-      { "id": "shop", "count": 1 },
-      { "id": "recruit", "chance": 0.5 }
-    ],
-    "encounters": [
-      { "id": "wisp", "weight": 8 },
-      { "id": "pixie", "weight": 5 },
-      { "id": "ooze", "weight": 2 }
-    ]
-  },
-  {
-    "title": "Floor 2: Chasm Crossing",
-    "intro": "Wind howls across a broken bridge.",
+    "title": "Floor 2: Crumbling Market",
+    "intro": "Stalls still hold rotted fruit from a harvest that never ends.",
     "depth": 2,
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.5 },
+      { "id": "recovery", "chance": 0.8 },
       { "id": "enemy", "min": 3, "max": 4 },
-      { "id": "shrine", "chance": 0.8 },
+      { "id": "shrine", "count": 1 },
       { "id": "shop", "count": 1 },
-      { "id": "recruit", "chance": 0.6 },
-      { "id": "npc", "chance": 0.3 },
-      { "id": "trap", "min": 1, "max": 3 },
-      { "id": "treasure", "chance": 0.5 }
+      { "id": "npc", "chance": 0.5 },
+      { "id": "treasure", "chance": 0.6 }
     ],
-    "treasures": ["hi_potion", "iron_sword"],
+    "treasures": ["hp_tonic", "ashen_blade"],
     "encounters": [
-      { "id": "skeleton", "weight": 10 },
-      { "id": "imp", "weight": 6 },
+      { "id": "hollowMilitia", "weight": 8 },
+      { "id": "cinderWisp", "weight": 5 },
+      { "id": "ashRat", "weight": 5 }
+    ]
+  },
+  {
+    "title": "Floor 3: Cathedral of Dust",
+    "intro": "Prayers hang frozen in the cold air. A massive shape blocks the nave.",
+    "depth": 3,
+    "events": [
+      { "id": "stairs", "count": 1, "locked": true, "keyItemId": "cathedral_key", "unlockMessage": "The gargoyle's key unlocks the heavy sanctum doors." },
+      { "id": "recovery", "count": 1 },
+      { "id": "boss", "count": 1, "actions": [{ "type": "BOSS", "enemyId": "belltollGargoyle", "dropKeyItem": "cathedral_key" }] },
+      { "id": "shop", "chance": 0.5 }
+    ],
+    "encounters": [
+      { "id": "hollowMilitia", "weight": 5 },
+      { "id": "cinderWisp", "weight": 8 }
+    ]
+  },
+  {
+    "title": "Floor 4: Hall of Mirrors",
+    "intro": "The Gilded Halls. Your reflections show the faces you wore in lives before.",
+    "depth": 4,
+    "story_start": {
+        "title": "The Gilded Halls",
+        "text": "You have breached the castle. The air smells of perfume and rot. The walls are lined with mirrors that seem to watch you.",
+        "image": "story_mirrors.png"
+    },
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.4 },
+      { "id": "enemy", "min": 4, "max": 6 },
+      { "id": "shrine", "chance": 0.7 },
+      { "id": "recruit", "chance": 0.5 },
+      { "id": "trap", "min": 1, "max": 3 }
+    ],
+    "encounters": [
+      { "id": "gildedArmor", "weight": 8 },
+      { "id": "imp", "weight": 5 }
+    ]
+  },
+  {
+    "title": "Floor 5: The Royal Banquet",
+    "intro": "A feast laid for ghosts. The wine has turned to vinegar and blood.",
+    "depth": 5,
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.4 },
+      { "id": "enemy", "min": 5, "max": 7 },
+      { "id": "shrine", "chance": 0.7 },
+      { "id": "shop", "count": 1 },
+      { "id": "npc", "chance": 0.5 }
+    ],
+    "treasures": ["vial_starlight", "silver_blade"],
+    "encounters": [
+      { "id": "courtJester", "weight": 6 },
+      { "id": "gildedArmor", "weight": 6 },
       { "id": "wisp", "weight": 4 }
     ]
   },
   {
-    "title": "Floor 2: Glass Library",
-    "intro": "Shelves of crystal tomes hum quietly.",
-    "depth": 2,
+    "title": "Floor 6: The Throne Room",
+    "intro": "She sits upon the throne, weeping for a child never born.",
+    "depth": 6,
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.5 },
-      { "id": "enemy", "min": 3, "max": 5 },
-      { "id": "shrine", "count": 1 },
-      { "id": "shop", "chance": 0.8 },
-      { "id": "recruit", "chance": 0.6 }
+      { "id": "stairs", "count": 1, "locked": true, "keyItemId": "royal_seal", "unlockMessage": "The Queen's seal opens the path to the Spire." },
+      { "id": "recovery", "count": 1 },
+      { "id": "boss", "count": 1, "actions": [{ "type": "BOSS", "enemyId": "queenAeliana", "dropKeyItem": "royal_seal" }] }
     ],
     "encounters": [
-      { "id": "golem", "weight": 5 },
-      { "id": "wisp", "weight": 8 },
-      { "id": "imp", "weight": 4 }
+      { "id": "gildedArmor", "weight": 10 }
     ]
   },
   {
-    "title": "Floor 3: Rusted Choir",
-    "intro": "Broken bells sway above a dry pit.",
-    "depth": 3,
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.4 },
-      { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.7 },
-      { "id": "shop", "chance": 0.7 },
-      { "id": "recruit", "chance": 0.7 }
-    ],
-    "encounters": [
-      { "id": "skeleton", "weight": 8 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 2 }
-    ]
-  },
-  {
-    "title": "Floor 3: Hollow Arcade",
-    "intro": "Columns slice the dark like teeth.",
-    "depth": 3,
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.4 },
-      { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.7 },
-      { "id": "shop", "chance": 0.7 },
-      { "id": "recruit", "chance": 0.7 },
-      { "id": "npc", "chance": 0.4 }
-    ],
-    "encounters": [
-      { "id": "golem", "weight": 6 },
-      { "id": "imp", "weight": 8 },
-      { "id": "demon", "weight": 3 }
-    ]
-  },
-  {
-    "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
-    "depth": 4,
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 5, "max": 7 },
-      { "id": "shrine", "chance": 0.6 },
-      { "id": "shop", "chance": 0.6 },
-      { "id": "recruit", "chance": 0.5 }
-    ],
-    "encounters": [
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 },
-      { "id": "golem", "weight": 4 }
-    ]
-  },
-  {
-    "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
-    "depth": 5,
+    "title": "Floor 7: The Gearworks",
+    "intro": "The Spire of Time. Gears grind the bones of the fallen.",
+    "depth": 7,
+    "story_start": {
+        "title": "The Spire",
+        "text": "The laws of physics break down here. You are climbing the inner mechanism of the curse itself.",
+        "image": "story_spire.png"
+    },
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 5, "max": 8 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "npc", "chance": 0.5 }
+      { "id": "shrine", "chance": 0.8 },
+      { "id": "recruit", "chance": 0.4 }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 3 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
+      { "id": "clockworkSentinel", "weight": 10 },
+      { "id": "timeWraith", "weight": 4 }
     ]
   },
   {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
-    "depth": 6,
+    "title": "Floor 8: Fractured Observatory",
+    "intro": "The stars here are wrong. They form constellations of despair.",
+    "depth": 8,
     "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 6, "max": 9 },
+      { "id": "shop", "count": 1 },
+      { "id": "treasure", "chance": 0.8 }
+    ],
+    "treasures": ["royal_signet", "clockwork_shield", "memory_crystal"],
+    "encounters": [
+      { "id": "timeWraith", "weight": 8 },
+      { "id": "clockworkSentinel", "weight": 6 },
+      { "id": "demon", "weight": 4 }
+    ]
+  },
+  {
+    "title": "Floor 9: Precipice of Seconds",
+    "intro": "One step from eternity. Malacor awaits.",
+    "depth": 9,
+    "events": [
+      { "id": "stairs", "count": 1, "locked": true, "keyItemId": "void_key", "unlockMessage": "The Void Key dissolves the barrier to the final moment." },
       { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
+      { "id": "boss", "count": 1, "actions": [{ "type": "BOSS", "enemyId": "malacor", "dropKeyItem": "void_key" }] }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
+      { "id": "timeWraith", "weight": 10 },
       { "id": "demon", "weight": 5 }
     ]
+  },
+  {
+    "title": "Floor 10: The Shattered Hourglass",
+    "intro": "The center of the anomaly.",
+    "depth": 10,
+    "story_end": {
+        "title": "The End of the Loop",
+        "text": "With Malacor defeated, the Hourglass stands before you. You strike it, and the sand spills out—not gray ash, but golden light. Time begins to flow again. The nightmare is over.",
+        "image": "story_victory.png"
+    },
+    "events": [
+      { "id": "stairs", "count": 1 }
+    ],
+    "encounters": []
   }
 ]

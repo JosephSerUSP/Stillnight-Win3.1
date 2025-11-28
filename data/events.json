@@ -24,6 +24,14 @@
     "actions": [{ "type": "BATTLE" }]
   },
   {
+    "id": "boss",
+    "type": "enemy",
+    "symbol": "B",
+    "cssClass": "tile-boss",
+    "trigger": "touch",
+    "actions": [{ "type": "BOSS" }]
+  },
+  {
     "id": "shrine",
     "type": "shrine",
     "symbol": "♱",

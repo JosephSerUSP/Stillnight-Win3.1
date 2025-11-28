@@ -1,5 +1,42 @@
 [
   {
+    "id": "potion",
+    "name": "Potion",
+    "type": "consumable",
+    "cost": 10,
+    "description": "Restores 20 HP.",
+    "icon": 6,
+    "effects": { "hp": 20 }
+  },
+  {
+    "id": "hi_potion",
+    "name": "Hi-Potion",
+    "type": "consumable",
+    "cost": 30,
+    "description": "Restores 50 HP.",
+    "icon": 6,
+    "effects": { "hp": 50 }
+  },
+  {
+    "id": "antidote",
+    "name": "Antidote",
+    "type": "consumable",
+    "cost": 10,
+    "description": "Cures poison (Not implemented).",
+    "icon": 6,
+    "effects": {}
+  },
+  {
+    "id": "iron_sword",
+    "name": "Iron Sword",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 20,
+    "icon": 13,
+    "description": "Standard issue. +1 damage.",
+    "traits": [ { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 } ]
+  },
+  {
     "id": "hp_tonic",
     "name": "HP Tonic",
     "type": "consumable",
@@ -33,15 +70,68 @@
     }
   },
   {
+    "id": "memory_crystal",
+    "name": "Memory Crystal",
+    "type": "consumable",
+    "cost": 50,
+    "description": "A shard of a lost timeline. +20 XP.",
+    "icon": 6,
+    "effects": {
+      "xp": 20
+    }
+  },
+  {
+    "id": "vial_starlight",
+    "name": "Vial of Starlight",
+    "type": "consumable",
+    "cost": 40,
+    "description": "Pure light in a bottle. Fully heals and grants +2 Max HP.",
+    "icon": 6,
+    "effects": {
+      "hp": 999,
+      "maxHp": 2
+    }
+  },
+  {
+    "id": "rust_eater",
+    "name": "Rust-Eater",
+    "type": "consumable",
+    "cost": 25,
+    "description": "Dissolves decay. Fully heals HP.",
+    "icon": 6,
+    "effects": { "hp": 999 }
+  },
+  {
+    "id": "hourglass_sand",
+    "name": "Hourglass Sand",
+    "type": "consumable",
+    "cost": 60,
+    "description": "Grants 50 XP.",
+    "icon": 6,
+    "effects": { "xp": 50 }
+  },
+  {
     "id": "silver_blade",
     "name": "Silver Blade",
     "type": "equipment",
     "equipType": "Weapon",
     "cost": 25,
-    "icon": 6,
+    "icon": 13,
     "description": "Sharpened steel blade. +1 damage.",
     "traits": [
       { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 }
+    ]
+  },
+  {
+    "id": "ashen_blade",
+    "name": "Ashen Blade",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 40,
+    "icon": 13,
+    "description": "Forged from soot and hate. +2 damage.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 2 }
     ]
   },
   {
@@ -50,10 +140,22 @@
     "type": "equipment",
     "equipType": "Armor",
     "cost": 25,
-    "icon": 6,
+    "icon": 37,
     "description": "Sturdy bone harness. +3 max HP.",
     "traits": [
       { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 3 }
+    ]
+  },
+  {
+    "id": "ghostly_veil",
+    "name": "Ghostly Veil",
+    "type": "equipment",
+    "equipType": "Armor",
+    "cost": 50,
+    "icon": 37,
+    "description": "Shimmers like mist. +5 max HP.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 5 }
     ]
   },
   {
@@ -62,7 +164,7 @@
     "type": "equipment",
     "equipType": "Accessory",
     "cost": 35,
-    "icon": 6,
+    "icon": 57,
     "description": "A charm of rushing air. +1 damage, +1 max HP.",
     "traits": [
       { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 },
@@ -70,15 +172,64 @@
     ]
   },
   {
-    "id": "light_amulet",
-    "name": "Light Amulet",
+    "id": "clockwork_shield",
+    "name": "Clockwork Shield",
     "type": "equipment",
     "equipType": "Accessory",
-    "cost": 30,
-    "icon": 6,
-    "description": "Glowing amulet. +2 max HP, faintly warms your hands.",
+    "cost": 60,
+    "icon": 50,
+    "description": "Ticks rhythmically. +4 max HP.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 2 }
+      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 4 }
     ]
+  },
+  {
+    "id": "mirror_shard",
+    "name": "Mirror Shard",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 45,
+    "icon": 57,
+    "description": "Reflects bad luck. +3 Max HP.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 3 }
+    ]
+  },
+  {
+    "id": "royal_signet",
+    "name": "Royal Signet",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 100,
+    "icon": 57,
+    "description": "Heirloom of Aethelgard. +2 damage, +3 Max HP.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 3 },
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 2 }
+    ]
+  },
+  {
+    "id": "cathedral_key",
+    "name": "Cathedral Key",
+    "type": "key",
+    "cost": 0,
+    "description": "Unlocks the way to the Gilded Halls.",
+    "icon": 71
+  },
+  {
+    "id": "royal_seal",
+    "name": "Royal Seal",
+    "type": "key",
+    "cost": 0,
+    "description": "Unlocks the way to the Spire.",
+    "icon": 71
+  },
+  {
+    "id": "void_key",
+    "name": "Void Key",
+    "type": "key",
+    "cost": 0,
+    "description": "Unlocks the heart of the anomaly.",
+    "icon": 71
   }
 ]

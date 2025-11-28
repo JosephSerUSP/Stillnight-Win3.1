@@ -114,7 +114,7 @@ export class Scene_Battle extends Scene_Base {
    * @param {number} tileX - The X coordinate of the battle on the map.
    * @param {number} tileY - The Y coordinate of the battle on the map.
    */
-  constructor(dataManager, sceneManager, windowManager, party, battleManager, windowLayer, map, tileX, tileY) {
+  constructor(dataManager, sceneManager, windowManager, party, battleManager, windowLayer, map, tileX, tileY, options = {}) {
     super(dataManager, windowManager);
     this.sceneManager = sceneManager;
     this.party = party;
@@ -123,6 +123,7 @@ export class Scene_Battle extends Scene_Base {
     this.map = map;
     this.tileX = tileX;
     this.tileY = tileY;
+    this.options = options;
     this.battleBusy = false;
 
     this.battleWindow = new Window_Battle();
@@ -144,17 +145,24 @@ export class Scene_Battle extends Scene_Base {
     let enemies = [];
     const actorTemplates = this.dataManager.actors;
 
-    if (this.map.floorIndex === this.map.floors.length - 1) {
-      const bossHp = 40 + (depth - 3) * 5;
-      enemies.push(new Game_Battler({
-        name: "🌑 Eternal Warden",
-        role: "Boss",
-        maxHp: bossHp,
-        elements: ["Black"],
-        skills: ["shadowClaw", "infernalPact"],
-        gold: 100,
-        expGrowth: 10,
-      }, depth, true));
+    if (this.options.bossId) {
+       const bossTpl = actorTemplates.find(a => a.id === this.options.bossId);
+       if (bossTpl) {
+           enemies.push(new Game_Battler(bossTpl, depth, true));
+       } else {
+           // Fallback if ID not found
+           enemies.push(new Game_Battler({
+               name: "Unknown Boss",
+               role: "Boss",
+               maxHp: 100,
+               elements: [],
+               skills: [],
+               gold: 50
+           }, depth, true));
+       }
+    } else if (this.options.fixedEnemies) {
+        // Future support for passing instances
+        enemies = this.options.fixedEnemies;
     } else {
       // Use encounter table if available
       if (floor.encounters && floor.encounters.length > 0) {
@@ -438,6 +446,10 @@ export class Scene_Battle extends Scene_Base {
     this.sceneManager.previous().checkPermadeath();
 
     this.clearEnemyTileAfterBattle();
+
+    if (this.options.onVictory) {
+        this.options.onVictory();
+    }
 
     this.battleManager.isVictoryPending = false;
     this.battleWindow.btnVictory.style.display = "none";
@@ -1067,6 +1079,28 @@ export class Scene_Map extends Scene_Base {
     );
     SoundManager.beep(500, 200);
     this.updateAll();
+    this.checkFloorStory();
+  }
+
+  /**
+   * Checks for story events on the current floor.
+   * @method checkFloorStory
+   */
+  checkFloorStory() {
+      const floor = this.map.floors[this.map.floorIndex];
+      if (floor.story_start) {
+          this.eventWindow.show({
+              title: floor.story_start.title,
+              description: floor.story_start.text,
+              image: floor.story_start.image || "story_default.png",
+              style: 'terminal',
+              choices: [{
+                  label: "Continue",
+                  onClick: () => this.closeEvent()
+              }]
+          });
+          this.windowManager.push(this.eventWindow);
+      }
   }
 
   /**
@@ -1619,7 +1653,39 @@ export class Scene_Map extends Scene_Base {
           case 'TRAP_TRIGGER':
               this.triggerTrap(action);
               break;
+          case 'BOSS':
+              this.startBossBattle(event, action);
+              break;
       }
+  }
+
+  startBossBattle(event, action) {
+      this.setStatus("Boss Encounter!");
+      this.logMessage("[Battle] A terrible presence emerges.");
+      const opts = {
+          bossId: action.enemyId,
+          onVictory: () => {
+              if (action.dropKeyItem) {
+                  const item = this.dataManager.items.find(i => i.id === action.dropKeyItem);
+                  if (item) {
+                      this.party.inventory.push(item);
+                      this.logMessage(`[Victory] You obtained ${item.name}!`);
+                  }
+              }
+          }
+      };
+      this.sceneManager.push(new Scene_Battle(
+          this.dataManager,
+          this.sceneManager,
+          this.windowManager,
+          this.party,
+          this.battleManager,
+          this.windowLayer,
+          this.map,
+          event.x,
+          event.y,
+          opts
+      ));
   }
 
   healParty() {
@@ -1645,14 +1711,51 @@ export class Scene_Map extends Scene_Base {
    * @method descendStairs
    */
   descendStairs() {
+    const currentEvent = this.currentInteractionEvent;
+    if (currentEvent && currentEvent.locked) {
+        const keyId = currentEvent.keyItemId;
+        const hasKey = this.party.inventory.some(i => i.id === keyId);
+
+        if (!hasKey) {
+            this.logMessage(currentEvent.unlockMessage || "The way is locked.");
+            this.setStatus("Locked.");
+            SoundManager.beep(150, 300);
+            return;
+        } else {
+            this.logMessage("You unlock the way forward.");
+            // Optional: Consume key? For now, keep it as a badge of honor/permanent unlock.
+        }
+    }
+
     if (this.map.floorIndex + 1 >= this.map.floors.length) {
-      this.logMessage(
-        "[Floor] You find no further descent. The run ends here."
-      );
-      this.runActive = false;
-      this.setStatus("No deeper floors. Run over (for now).");
-      this.updateAll();
-      return;
+       // Check for End Game
+       const floor = this.map.floors[this.map.floorIndex];
+       if (floor.story_end) {
+           this.eventWindow.show({
+              title: floor.story_end.title,
+              description: floor.story_end.text,
+              image: floor.story_end.image || "story_end.png",
+              style: 'terminal',
+              choices: [{
+                  label: "End Run",
+                  onClick: () => {
+                      this.closeEvent();
+                      this.runActive = false;
+                      this.setStatus("Campaign Complete.");
+                      this.updateAll();
+                  }
+              }]
+          });
+          this.windowManager.push(this.eventWindow);
+       } else {
+          this.logMessage(
+            "[Floor] You find no further descent. The run ends here."
+          );
+          this.runActive = false;
+          this.setStatus("No deeper floors. Run over.");
+          this.updateAll();
+       }
+       return;
     }
     this.map.floorIndex++;
     if (this.map.floorIndex > this.map.maxReachedFloorIndex) {
@@ -1668,6 +1771,7 @@ export class Scene_Map extends Scene_Base {
     this.setStatus("Descending.");
     SoundManager.beep(800, 150);
     this.updateAll();
+    this.checkFloorStory();
   }
 
   /**
