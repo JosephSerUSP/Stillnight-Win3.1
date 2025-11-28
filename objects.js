@@ -495,10 +495,31 @@ export class Game_Map {
 
             // Special handling for NPC dynamic data
             if (def.type === "npc" && npcData.length > 0) {
-              const npcDef = npcData[randInt(0, npcData.length - 1)];
-              eventData.symbol = npcDef.char || "N";
-              eventData.actions = [{ type: "NPC_DIALOGUE", id: npcDef.id }];
-              eventData.id = npcDef.id; // Compatibility
+              let npcDef;
+              if (config.npcId) {
+                npcDef = npcData.find(n => n.id === config.npcId);
+              }
+              if (!npcDef) {
+                npcDef = npcData[randInt(0, npcData.length - 1)];
+              }
+
+              if (npcDef) {
+                  eventData.symbol = npcDef.char || "N";
+                  eventData.actions = [{
+                      type: "NPC_DIALOGUE",
+                      id: npcDef.id,
+                      scriptId: npcDef.scriptId
+                  }];
+                  eventData.id = npcDef.id; // Compatibility
+              }
+            }
+
+            // Merge config specific overrides
+            if (config.scriptId) {
+                eventData.actions = eventData.actions.map(a => ({ ...a, id: config.scriptId, scriptId: config.scriptId }));
+            }
+            if (config.actions) {
+                eventData.actions = config.actions;
             }
 
             events.push(new Game_Event(pos[0], pos[1], eventData));
@@ -509,7 +530,7 @@ export class Game_Map {
     }
 
     return {
-      id: "F" + (index + 1),
+      id: meta.id || ("F" + (index + 1)),
       title: meta.title,
       depth: meta.depth,
       intro: meta.intro,

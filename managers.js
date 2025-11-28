@@ -29,6 +29,12 @@ export class DataManager {
     this.events = null;
 
     /**
+     * The story event scripts loaded from story_events.json.
+     * @type {Object|null}
+     */
+    this.storyEvents = null;
+
+    /**
      * The map data loaded from maps.json.
      * @type {Array|null}
      */
@@ -92,6 +98,7 @@ export class DataManager {
       actors: "data/actors.json",
       elements: "data/elements.json",
       events: "data/events.json",
+      storyEvents: "data/story_events.json",
       maps: "data/maps.json",
       items: "data/items.json",
       npcs: "data/npcs.json",
@@ -645,6 +652,41 @@ export class BattleManager {
 }
 
 /**
+ * @class StoryManager
+ * @description Manages global narrative state (flags and variables).
+ */
+export class StoryManager {
+  constructor() {
+    this.flags = new Set();
+    this.variables = new Map();
+  }
+
+  setFlag(flag) {
+    this.flags.add(flag);
+  }
+
+  unsetFlag(flag) {
+    this.flags.delete(flag);
+  }
+
+  hasFlag(flag) {
+    return this.flags.has(flag);
+  }
+
+  setVar(name, value) {
+    this.variables.set(name, value);
+  }
+
+  getVar(name) {
+    return this.variables.get(name) || 0;
+  }
+
+  addVar(name, value) {
+    this.setVar(name, this.getVar(name) + value);
+  }
+}
+
+/**
  * @class SceneManager
  * @description Manages the scene stack and the main game loop.
  * Scenes are pushed onto a stack, and only the top scene is updated and rendered.
@@ -750,4 +792,5 @@ if (typeof window !== 'undefined' && window.location.search.includes("test=true"
     window.SoundManager = SoundManager;
     window.BattleManager = BattleManager;
     window.SceneManager = SceneManager;
+    window.StoryManager = StoryManager;
 }

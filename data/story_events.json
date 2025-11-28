@@ -1,0 +1,240 @@
+{
+  "kael_intro": [
+    {
+      "condition": { "missingFlag": "met_kael" },
+      "type": "TEXT",
+      "title": "Custodian Kael",
+      "text": "System... critical... Memory core... unresponsive."
+    },
+    {
+      "condition": { "missingFlag": "met_kael" },
+      "type": "TEXT",
+      "title": "Custodian Kael",
+      "text": "I am Unit 01... Keeper of the Gate to the upper Spire."
+    },
+    {
+      "condition": { "missingFlag": "met_kael" },
+      "type": "SET_FLAG",
+      "flag": "met_kael"
+    },
+    {
+      "condition": { "hasFlag": "met_kael", "missingFlag": "quest_kael_complete", "missingFlag": "has_rusty_gear" },
+      "type": "TEXT",
+      "title": "Custodian Kael",
+      "text": "My gears are seized. I need a Rusty Gear to repair my intake valve. Please..."
+    },
+    {
+      "condition": { "hasFlag": "met_kael", "missingFlag": "quest_kael_complete", "hasItem": "rusty_gear" },
+      "type": "TEXT",
+      "title": "Custodian Kael",
+      "text": "You... found it... Proceeding with repair sequence."
+    },
+    {
+      "condition": { "hasFlag": "met_kael", "missingFlag": "quest_kael_complete", "hasItem": "rusty_gear" },
+      "type": "REMOVE_ITEM",
+      "itemId": "rusty_gear"
+    },
+    {
+      "condition": { "hasFlag": "met_kael", "missingFlag": "quest_kael_complete", "missingFlag": "has_rusty_gear" },
+      "type": "TEXT",
+      "title": "Custodian Kael",
+      "text": "Systems online. The gate is open. Take this Archive Key."
+    },
+    {
+      "condition": { "hasFlag": "met_kael", "missingFlag": "quest_kael_complete", "missingFlag": "has_rusty_gear" },
+      "type": "GIVE_ITEM",
+      "itemId": "archive_key"
+    },
+    {
+      "condition": { "hasFlag": "met_kael", "missingFlag": "quest_kael_complete", "missingFlag": "has_rusty_gear" },
+      "type": "SET_FLAG",
+      "flag": "quest_kael_complete"
+    },
+    {
+      "condition": { "hasFlag": "quest_kael_complete" },
+      "type": "TEXT",
+      "title": "Custodian Kael",
+      "text": "Go forth, Echo. The Silence waits above."
+    }
+  ],
+  "f1_stairs_check": [
+      {
+          "condition": { "hasFlag": "quest_kael_complete" },
+          "type": "DESCEND"
+      },
+      {
+          "condition": { "missingFlag": "quest_kael_complete" },
+          "type": "TEXT",
+          "title": "Locked Gate",
+          "text": "The gate is sealed. A nearby construct seems to be the key."
+      }
+  ],
+  "f5_stairs_check": [
+      {
+          "condition": { "hasFlag": "f5_boss_dead" },
+          "type": "DESCEND"
+      },
+      {
+          "condition": { "missingFlag": "f5_boss_dead" },
+          "type": "TEXT",
+          "title": "Blocked Way",
+          "text": "The Crimson Lord guards this path. Defeat him to proceed."
+      }
+  ],
+  "f6_stairs_check": [
+      {
+          "condition": { "hasItem": "archive_key" },
+          "type": "DESCEND"
+      },
+      {
+          "condition": { "missingItem": "archive_key" },
+          "type": "TEXT",
+          "title": "Security Barrier",
+          "text": "Access Denied. Authorization required. (Requires Archive Key)"
+      }
+  ],
+  "f10_stairs_check": [
+      {
+          "condition": { "hasFlag": "f10_architect_resolved" },
+          "type": "DESCEND"
+      },
+      {
+          "condition": { "missingFlag": "f10_architect_resolved" },
+          "type": "TEXT",
+          "title": "Locked",
+          "text": "The Architect controls this gate. Confront him."
+      }
+  ],
+  "architect_encounter": [
+     {
+         "condition": { "missingFlag": "f10_architect_resolved" },
+         "type": "TEXT",
+         "title": "Grand Architect",
+         "text": "Inefficiency detected. Organic memories consume excessive storage."
+     },
+     {
+         "condition": { "missingFlag": "f10_architect_resolved" },
+         "type": "CHOICE",
+         "title": "Grand Architect",
+         "text": "Will you submit to deletion?",
+         "choices": [
+             { "label": "Never!", "script": [{ "type": "BATTLE" }] },
+             { "label": "We seek only to pass.", "script": [
+                 { "type": "TEXT", "title": "Grand Architect", "text": "Evaluating... Logic acceptable. Proceed." },
+                 { "type": "SET_FLAG", "flag": "f10_architect_resolved" },
+                 { "type": "REMOVE_EVENT" }
+             ]}
+         ]
+     },
+     {
+         "condition": { "hasFlag": "f10_architect_resolved" },
+         "type": "TEXT",
+         "title": "Grand Architect",
+         "text": "System... shut... down..."
+     }
+  ],
+  "f5_boss_encounter": [
+      { "type": "TEXT", "title": "The Crimson Gate", "text": "A towering figure in red armor blocks the stairs. It radiates a thirst that dries your throat." },
+      { "type": "TEXT", "title": "Crimson Lord", "text": "More blood for the Spire. Come, little droplets." },
+      {
+          "type": "BATTLE",
+          "enemies": ["crimsonLord"],
+          "onWin": [
+              { "type": "SET_FLAG", "flag": "f5_boss_dead" },
+              { "type": "TEXT", "title": "Crimson Lord", "text": "The flow... stops..." },
+              { "type": "REMOVE_EVENT" }
+          ]
+      }
+  ],
+  "f14_boss_encounter": [
+      { "type": "TEXT", "title": "Near Zenith", "text": "The air crackles with void energy. The Entropy Lord manifests." },
+      {
+          "type": "BATTLE",
+          "enemies": ["entropy_lord"],
+          "onWin": [
+              { "type": "SET_FLAG", "flag": "f14_boss_dead" },
+              { "type": "TEXT", "text": "The entity dissipates into static." },
+              { "type": "REMOVE_EVENT" }
+          ]
+      }
+  ],
+  "echo_log_1": [
+      { "type": "TEXT", "title": "Faint Echo", "text": "Log 001: The Silence has taken the lower valleys. We are sealing the Archive today." },
+      { "type": "GIVE_ITEM", "itemId": "whispered_lessons" }
+  ],
+  "echo_log_2": [
+      { "type": "TEXT", "title": "Faint Echo", "text": "Log 404: The Keepers are acting strange. They've started 'optimizing' the refugees." },
+      { "type": "GIVE_ITEM", "itemId": "keeper_oil" }
+  ],
+  "echo_log_3": [
+      { "type": "TEXT", "title": "Faint Echo", "text": "Log 999: There is no saving the world. Only remembering it. Kael was right." },
+      { "type": "GIVE_ITEM", "itemId": "void_essence" }
+  ],
+  "f2_stairs_choice": [
+      {
+          "type": "TEXT",
+          "title": "A Fork in the Path",
+          "text": "The path splits. One way leads to the Study, the other to the Gardens."
+      },
+      {
+          "type": "CHOICE",
+          "title": "Choose Path",
+          "choices": [
+              { "label": "Fractured Study (Normal)", "script": [{ "type": "DESCEND", "targetId": "F3" }] },
+              { "label": "Rotting Gardens (Dangerous)", "script": [{ "type": "DESCEND", "targetId": "F3B" }] }
+          ]
+      }
+  ],
+  "f7_stairs_choice": [
+      {
+          "type": "TEXT",
+          "title": "A Fork in the Path",
+          "text": "The steam obscures two doors. Logic or Fire?"
+      },
+      {
+          "type": "CHOICE",
+          "title": "Choose Path",
+          "choices": [
+              { "label": "Logic Core", "script": [{ "type": "DESCEND", "targetId": "F8" }] },
+              { "label": "The Furnace", "script": [{ "type": "DESCEND", "targetId": "F8B" }] }
+          ]
+      }
+  ],
+  "victory_rebirth": [
+      { "type": "TEXT", "text": "The Avatar shatters. The Spire trembles." },
+      { "type": "ENDING", "text": "With the Avatar gone, the Silence is broken. Life, chaotic and untamed, floods back into the world. The Spire stands as a monument to the memory of the Void." }
+  ],
+  "zenith_choice": [
+      {
+          "type": "TEXT",
+          "title": "The Spire Core",
+          "text": "You reach the Zenith. The Resonance Engines hum with the stored memories of the world."
+      },
+      {
+          "type": "TEXT",
+          "title": "The Spire Core",
+          "text": "The Silence is not an enemy. It is the end of the cycle. The Spire was built to save the SEED of the next world, not this one."
+      },
+      {
+          "type": "CHOICE",
+          "title": "The Final Choice",
+          "text": "What will you do?",
+          "choices": [
+              {
+                  "label": "Archive the World (Accept the End)",
+                  "script": [
+                      { "type": "TEXT", "text": "You activate the Archive Protocol. The world fades into white silence, safely stored for the next eon." },
+                      { "type": "ENDING", "text": "The world is saved in data. You sleep until the next cycle." }
+                  ]
+              },
+              {
+                  "label": "Shatter the Spire (Force a Rebirth)",
+                  "script": [
+                      { "type": "TEXT", "text": "You raise your weapon to strike the engine. A shadow manifests!" },
+                      { "type": "BATTLE", "enemies": ["avatar_of_silence"], "onWin": [{ "type": "SCRIPT", "id": "victory_rebirth" }] }
+                  ]
+              }
+          ]
+      }
+  ]
+}

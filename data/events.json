@@ -74,6 +74,14 @@
     "actions": [{ "type": "TREASURE" }]
   },
   {
+    "id": "story_trigger",
+    "type": "story",
+    "symbol": "!",
+    "cssClass": "tile-story",
+    "trigger": "touch",
+    "actions": [{ "type": "SCRIPT" }]
+  },
+  {
     "id": "shrine_shade",
     "type": "shrine_scenario",
     "title": "Whispering Shade",
