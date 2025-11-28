@@ -1,5 +1,6 @@
 import { randInt, shuffleArray } from "./core.js";
 import { passives as passivesData } from "./data/passives.js";
+import { states as statesData } from "./data/states.js";
 
 /**
  * @class Game_Base
@@ -22,10 +23,10 @@ class Game_Base {
     this.name = unitData.name;
 
     /**
-     * The maximum HP of the unit.
+     * The base max HP of the unit (before traits).
      * @type {number}
      */
-    this.maxHp = unitData.maxHp;
+    this._baseMaxHp = unitData.maxHp;
 
     /**
      * The current HP of the unit.
@@ -51,6 +52,21 @@ class Game_Base {
      * @type {string[]}
      */
     this.elements = unitData.elements || [];
+  }
+
+  /**
+   * The effective maximum HP of the unit, including traits.
+   * @type {number}
+   */
+  get maxHp() {
+      // Base + Level Growth (this._baseMaxHp already includes level growth if updated via gainXp)
+      // We assume _baseMaxHp is the "stat" value.
+      // Traits are added on top.
+      return this._baseMaxHp;
+  }
+
+  set maxHp(value) {
+      this._baseMaxHp = value;
   }
 }
 
@@ -90,6 +106,13 @@ export class Game_Battler extends Game_Base {
     this.role = actorData.role;
 
     /**
+     * The base data definition for this actor/enemy.
+     * Used for retrieving intrinsic traits.
+     * @type {Object}
+     */
+    this.actorData = actorData;
+
+    /**
      * The list of active passives on this battler.
      * Resolves string IDs to full passive objects.
      * @type {Object[]}
@@ -97,7 +120,7 @@ export class Game_Battler extends Game_Base {
     this.passives = (actorData.passives || []).map(pId => {
         // If it's already an object (legacy/test), try to use it, but prefer lookup if string
         if (typeof pId === 'string') {
-            return passivesData[pId] || { id: pId, code: pId, value: 0, name: pId };
+            return passivesData[pId] || { id: pId, name: pId, traits: [] };
         }
         return pId;
     });
@@ -162,10 +185,48 @@ export class Game_Battler extends Game_Base {
      */
     this.isEnemy = isEnemy;
 
+    /**
+     * Current active states/status effects on the battler.
+     * @type {Object[]}
+     */
+    this.states = [];
+
     if (this.isEnemy) {
       this.maxHp += (depth - 1) * 4;
       this.hp = this.maxHp;
     }
+  }
+
+  /**
+   * The effective maximum HP of the unit, including traits.
+   * Overrides Game_Base.maxHp.
+   * @type {number}
+   */
+  get maxHp() {
+      const base = this._baseMaxHp;
+      const plus = this.traitsSum('PARAM_PLUS', 'maxHp');
+      const rate = this.traitsPi('PARAM_RATE', 'maxHp');
+      return Math.floor((base + plus) * rate);
+  }
+
+  set maxHp(value) {
+      this._baseMaxHp = value;
+  }
+
+  /**
+   * The effective Attack power of the unit, based on traits and level.
+   * @type {number}
+   */
+  get atk() {
+      // Base attack logic can be moved here or kept simple.
+      // If we want to emulate the old "damageBonus" logic:
+      // Old logic: base = (level / 2) + damageBonus.
+      // New logic: base = (level / 2).
+      // Traits add to this.
+      const base = Math.floor(this.level / 2);
+      const plus = this.traitsSum('PARAM_PLUS', 'atk');
+      const rate = this.traitsPi('PARAM_RATE', 'atk');
+      return Math.floor((base + plus) * rate);
   }
 
   /**
@@ -197,7 +258,7 @@ export class Game_Battler extends Game_Base {
       this.xp -= this.xpNeeded(this.level);
       this.level++;
       const hpGain = randInt(2, 4);
-      this.maxHp += hpGain;
+      this.maxHp += hpGain; // Updates _baseMaxHp
       this.hp = this.maxHp;
       totalHpGain += hpGain;
       leveledUp = true;
@@ -211,14 +272,124 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
-   * Gets the numeric value of a specific passive ability.
+   * Gets the numeric value of a specific passive ability via traits.
+   * Wrapper for legacy support or specific code lookup.
    * @method getPassiveValue
-   * @param {string} code - The code of the passive to lookup (e.g., "PARASITE").
-   * @returns {number} The value of the passive, or 0 if not found.
+   * @param {string} code - The code of the passive to lookup.
+   * @returns {number} The value of the passive trait.
    */
   getPassiveValue(code) {
-    const passive = this.passives.find((p) => p.code === code);
-    return passive ? (passive.value !== undefined ? passive.value : 0) : 0;
+    return this.traitsSum(code);
+  }
+
+  // --- Traits System ---
+
+  /**
+   * Returns a list of all objects that provide traits (Self, Equipment, Passives, States).
+   * @method traitObjects
+   * @returns {Object[]} List of trait containers.
+   */
+  traitObjects() {
+      const objects = [];
+
+      // Intrinsic traits (from Actor/Enemy data)
+      if (this.actorData) {
+          objects.push(this.actorData);
+      }
+
+      // Equipment
+      if (this.equipmentItem) {
+          objects.push(this.equipmentItem);
+      }
+
+      // Passives
+      this.passives.forEach(p => objects.push(p));
+
+      // States
+      this.states.forEach(s => objects.push(s));
+
+      return objects;
+  }
+
+  /**
+   * Returns all traits from all sources.
+   * @method allTraits
+   * @returns {Object[]} List of traits.
+   */
+  allTraits() {
+      return this.traitObjects().reduce((r, obj) => {
+          return r.concat(obj.traits || []);
+      }, []);
+  }
+
+  /**
+   * Returns a list of traits matching the given code.
+   * @method traits
+   * @param {string} code - The trait code.
+   * @returns {Object[]} filtered traits.
+   */
+  traits(code) {
+      return this.allTraits().filter(t => t.code === code);
+  }
+
+  /**
+   * Calculates the sum of values for a specific trait code and data ID.
+   * @method traitsSum
+   * @param {string} code - The trait code.
+   * @param {string|number} [id] - The data ID (e.g. param ID). Optional.
+   * @returns {number} The sum of values.
+   */
+  traitsSum(code, id) {
+      return this.traits(code)
+          .filter(t => id === undefined || t.dataId === id)
+          .reduce((r, t) => r + t.value, 0);
+  }
+
+  /**
+   * Calculates the product of values for a specific trait code and data ID.
+   * @method traitsPi
+   * @param {string} code - The trait code.
+   * @param {string|number} [id] - The data ID. Optional.
+   * @returns {number} The product of values.
+   */
+  traitsPi(code, id) {
+      return this.traits(code)
+          .filter(t => id === undefined || t.dataId === id)
+          .reduce((r, t) => r * t.value, 1);
+  }
+
+  // --- State Management ---
+
+  /**
+   * Adds a state to the battler.
+   * @method addState
+   * @param {string} stateId - The ID of the state to add.
+   */
+  addState(stateId) {
+      if (this.isStateAffected(stateId)) return; // Already has state
+      const state = statesData[stateId];
+      if (state) {
+          this.states.push(state);
+      }
+  }
+
+  /**
+   * Removes a state from the battler.
+   * @method removeState
+   * @param {string} stateId - The ID of the state to remove.
+   */
+  removeState(stateId) {
+      this.states = this.states.filter(s => s.id !== stateId);
+  }
+
+  /**
+   * Checks if the battler is affected by a state.
+   * @method isStateAffected
+   * @param {string} stateId - The ID of the state.
+   * @returns {boolean} True if affected.
+   */
+  isStateAffected(stateId) {
+      return this.states.some(s => s.id === stateId);
   }
 
   /**

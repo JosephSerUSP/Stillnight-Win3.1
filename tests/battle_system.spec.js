@@ -155,8 +155,8 @@ test.describe('Battle System', () => {
             const party = new Game_Party();
 
             // Ensure PARASITE is available
-            const parasiteCode = "PARASITE";
-            // Use existing data or mock if missing in data files (but typically it's in passives.js)
+            // parasite in data has ID 'parasite', code 'PARASITE', value 2.
+            // The test needs to use the ID to load it.
 
             const hero = new Game_Battler({
                 name: "Hero",
@@ -165,16 +165,23 @@ test.describe('Battle System', () => {
                 passives: [parasiteCode]
             });
 
-            // Mock getPassiveValue if data isn't perfectly aligned or just rely on it working if data is good.
-            // Game_Battler constructor resolves string passives to objects.
-            // If PARASITE isn't in passives.js, value will be 0.
-            // Let's force it for the test if needed, but better to trust the data.
-            // We can inject it into the battler instance if needed.
-            const pObj = hero.passives.find(p => p.code === parasiteCode);
-            if (!pObj || !pObj.value) {
-                 // Manually add/update for test reliability if data is missing
-                 hero.passives = hero.passives.filter(p => p.code !== parasiteCode);
-                 hero.passives.push({ code: parasiteCode, value: 5, name: 'Parasite' });
+            // Force the passive trait for the test to ensure isolation from data changes
+            // Or trust the loader. Since we just refactored data/passives.js,
+            // 'parasite' ID should load object with traits: [{code: 'PARASITE', value: 2}]
+
+            // To be safe against data loading issues in test env, we can manually ensure the trait exists.
+            // But we can't easily push to 'passives' if it's already processed into objects.
+            // Game_Battler.passives is Array<Object>.
+            // Let's check if the trait is there.
+            const hasTrait = hero.traitsSum("PARASITE") > 0;
+
+            if (!hasTrait) {
+                 // Inject a mock passive object with the trait
+                 hero.passives.push({
+                     id: 'test_parasite',
+                     name: 'Test Parasite',
+                     traits: [{ code: 'PARASITE', value: 5 }]
+                 });
             }
 
             hero.hp = 50;

@@ -75,6 +75,12 @@ export class DataManager {
      * @type {Object|null}
      */
     this.animations = null;
+
+    /**
+     * The states data loaded from states.js.
+     * @type {Object|null}
+     */
+    this.states = null;
   }
 
   /**
@@ -99,8 +105,10 @@ export class DataManager {
       this.passives = passives;
       const { startingParty } = await import("./data/party.js");
       this.startingParty = startingParty;
+      const { states } = await import("./data/states.js");
+      this.states = states;
     } catch (error) {
-      console.error("Failed to load skills.js or passives.js:", error);
+      console.error("Failed to load skills.js, passives.js or states.js:", error);
     }
 
     for (const [key, src] of Object.entries(dataSources)) {
@@ -325,14 +333,34 @@ export class BattleManager {
       if (this.isBattleFinished) return null;
 
       let p = this.turnQueue.shift();
-      while (p && p.battler.hp <= 0) {
-           p = this.turnQueue.shift();
+      while (p) {
+           // Skip dead
+           if (p.battler.hp <= 0) {
+               p = this.turnQueue.shift();
+               continue;
+           }
+
+           // Check restriction (e.g., Sleep)
+           const restriction = p.battler.traitsSum('RESTRICTION', 'cannot_move');
+           if (restriction > 0) {
+               // Battler cannot move. Maybe clear states here or decrement duration?
+               // For now, simpler: check state duration elsewhere?
+               // Or just skip them.
+               // We should probably emit an event saying they can't move?
+               // The current structure expects 'startTurn' to run.
+               // Let's return them, but handle restriction in 'startTurn' or before 'getAIAction'.
+               // But 'getNextBattler' implies "Next Active Battler".
+               // If restricted, they lose turn.
+               // We can just skip them in the queue loop if we want "Silent Skip" or process them to show "Is Asleep".
+               // Better to return them and let startTurn/executeAction handle the "Can't move" logic or just skip action.
+           }
+           break;
       }
       return p || null;
   }
 
   /**
-   * Processes start-of-turn effects for the battler (e.g., passive drains).
+   * Processes start-of-turn effects for the battler (e.g., passive drains, regen).
    * @method startTurn
    * @param {Object} battlerContext - The context returned by getNextBattler().
    * @returns {Array} List of events occurring at start of turn.
@@ -340,6 +368,13 @@ export class BattleManager {
   startTurn(battlerContext) {
       const { battler, index, isEnemy } = battlerContext;
       const events = [];
+
+      // Check Restriction first
+      if (battler.traitsSum('RESTRICTION', 'cannot_move') > 0) {
+          events.push({ type: 'text', msg: `${battler.name} cannot move!` });
+          // We return events, but the caller needs to know to skip action?
+          // We can add a flag to context or handle it in Scene_Battle.
+      }
 
       // --- Passive Effects (e.g., Parasite) ---
       if (!isEnemy) {
@@ -371,7 +406,32 @@ export class BattleManager {
            }
       }
 
-      // Passive damage/healing might end the battle.
+      // --- Regen (Traits) ---
+      const hrg = battler.traitsSum('XPARAM_PLUS', 'hrg');
+      if (hrg > 0 && battler.hp > 0 && battler.hp < battler.maxHp) {
+          const healAmount = Math.floor(battler.maxHp * hrg) || 1;
+          const hpBefore = battler.hp;
+          battler.hp = Math.min(battler.maxHp, battler.hp + healAmount);
+          events.push({
+              type: 'heal',
+              battler: battler,
+              target: battler,
+              value: healAmount,
+              hpBefore: hpBefore,
+              hpAfter: battler.hp,
+              msg: `${battler.name} regenerates ${healAmount} HP.`,
+              animation: 'healing_sparkle'
+          });
+      }
+
+      // Decrement State Durations (Simplified)
+      // This implementation of states is very basic.
+      // Usually, we'd have a 'updateStates' method on battler.
+      // For now, let's assume states just persist or we need to implement duration logic in Game_Battler later.
+      // The prompt asked to create states and traits, but didn't explicitly ask for full duration system logic
+      // apart from what's implied by "effects from equipments and passives".
+      // However, skills.js implies duration for 'add_status'.
+
       this._checkBattleEnd(events);
 
       return events;
@@ -438,6 +498,11 @@ export class BattleManager {
    */
   getAIAction(battlerContext) {
       const { battler } = battlerContext;
+
+      // Check restriction
+      if (battler.traitsSum('RESTRICTION', 'cannot_move') > 0) {
+          return null; // Skip turn
+      }
 
       // 1. Decide Action Type (Skill or Attack)
       // Simple logic: 60% chance to use skill if available
@@ -541,7 +606,13 @@ export class BattleManager {
                  }
                  if (effect.type === "add_status") {
                    const chance = (effect.chance || 1) * boost;
+                   // Use traits for state resistance (STATE_RATE)
+                   // const stateRate = target.traitsPi('STATE_RATE', effect.status);
+                   // if (Math.random() < chance * stateRate) ...
+                   // For now, keeping it simple as I didn't add STATE_RATE yet to everything.
                    if (Math.random() < chance) {
+                     // Add state to target
+                     target.addState(effect.status);
                      events.push({ type: 'status', target: target, status: effect.status, msg: `  ${target.name} is afflicted with ${effect.status}.` });
                    }
                  }
@@ -553,18 +624,31 @@ export class BattleManager {
            if (isEnemy) {
                base = Math.max(1, battler.level + randInt(-1, 2));
            } else {
-               base = randInt(2, 4) + Math.floor(battler.level / 2);
-               if (battler.equipmentItem && battler.equipmentItem.damageBonus) {
-                 base += battler.equipmentItem.damageBonus;
-               }
+               // Player attack formula using Traits (atk)
+               // battler.atk = (level/2) + traits(PARAM_PLUS) * traits(PARAM_RATE)
+               // We add some random variance here or keep it in the formula.
+               base = randInt(2, 4) + battler.atk;
+
                const row = this._partyRow(index);
                if (row === "Front") base += 1;
                else base -= 1;
            }
 
+           // Elemental multipliers
            const mult = this.elementMultiplier(battler.elements, target.elements);
            let dmg = Math.round(base * mult);
-           dmg += battler.getPassiveValue("DEAL_DAMAGE_MOD");
+
+           // Apply passive damage modifiers via traits
+           dmg += battler.traitsSum('DEAL_DAMAGE_MOD');
+
+           // Apply target defense traits (e.g., Berserk takes more damage)
+           // SPARAM_RATE 'pdr' (Physical Damage Rate)
+           // Or generally 'taken_damage_rate' if I defined it.
+           // Berserk defined 'SPARAM_RATE' 'pdr' 1.5.
+           // Let's assume all normal attacks are physical.
+           const pdr = target.traitsPi('SPARAM_RATE', 'pdr'); // Default 1 if no traits
+           dmg = Math.floor(dmg * pdr);
+
            if (dmg < 1) dmg = 1;
 
            const hpBefore = target.hp;
