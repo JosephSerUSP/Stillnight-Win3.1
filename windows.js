@@ -1105,11 +1105,11 @@ export class Window_Event extends Window_Base {
    * Creates a new Window_Event instance.
    */
   constructor() {
-    super('center', 'center', 480, 'auto');
+    super('center', 'center', 520, 'auto');
     this.element.id = "event-window";
     this.element.style.display = 'flex';
     this.element.style.flexDirection = 'column';
-    this.element.style.height = 'fit-content';
+    this.element.style.maxHeight = '90vh';
 
     const titleBar = document.createElement("div");
     titleBar.className = "dialog-titlebar";
@@ -1122,24 +1122,130 @@ export class Window_Event extends Window_Base {
     this.btnClose = document.createElement("button");
     this.btnClose.className = "win-btn";
     this.btnClose.textContent = "X";
+    this.btnClose.onclick = () => this.close();
     titleBar.appendChild(this.btnClose);
 
     const content = document.createElement("div");
     content.className = "dialog-content";
     content.style.flexGrow = "1";
+    content.style.display = "flex";
+    content.style.flexDirection = "column";
     this.element.appendChild(content);
+
+    // Image Container
+    this.imageContainer = document.createElement("div");
+    this.imageContainer.className = "event-image-container";
+    this.imageContainer.style.textAlign = "center";
+    this.imageContainer.style.marginBottom = "8px";
+    this.imageContainer.style.backgroundColor = "#222";
+    this.imageContainer.style.display = "none"; // Hidden by default until shown
+
+    this.imageEl = document.createElement("img");
+    this.imageEl.style.maxWidth = "100%";
+    this.imageEl.style.maxHeight = "208px";
+    this.imageEl.style.border = "1px solid #478174";
+    this.imageEl.style.imageRendering = "pixelated";
+    this.imageEl.onerror = () => {
+        if (this.imageEl.src.indexOf("default.png") === -1) {
+             this.imageEl.src = `assets/eventArt/default.png`;
+        }
+    };
+    this.imageContainer.appendChild(this.imageEl);
+    content.appendChild(this.imageContainer);
 
     const eventBody = document.createElement('div');
     eventBody.className = 'event-body';
+    eventBody.style.flexGrow = "1";
+    eventBody.style.display = "flex";
+    eventBody.style.flexDirection = "column";
     content.appendChild(eventBody);
 
     this.descriptionEl = document.createElement('div');
     this.descriptionEl.className = 'event-description';
+    this.descriptionEl.style.marginBottom = "10px";
     eventBody.appendChild(this.descriptionEl);
 
     this.choicesEl = document.createElement('div');
-    this.choicesEl.className = 'event-choices';
+    this.choicesEl.className = 'event-choices dialog-buttons';
+    this.choicesEl.style.marginTop = "auto";
     eventBody.appendChild(this.choicesEl);
+  }
+
+  /**
+   * Configures and opens the event window.
+   * @param {Object} data - The event data.
+   * @param {string} [data.title] - Window title.
+   * @param {string} [data.description] - Main text.
+   * @param {string} [data.image] - Image filename (e.g. 'shrine.png').
+   * @param {string} [data.style] - 'terminal' or 'default'.
+   * @param {Array} [data.choices] - Array of choice objects { label, onClick }.
+   */
+  show(data) {
+      this.titleEl.textContent = data.title || "Event";
+
+      // Handle Image
+      const imgName = data.image || "default.png";
+      this.imageEl.src = `assets/eventArt/${imgName}`;
+      this.imageContainer.style.display = "block";
+
+      // Handle Style
+      if (data.style === 'terminal') {
+          this.descriptionEl.className = "event-description terminal-style";
+          this.descriptionEl.style.fontFamily = "monospace";
+          this.descriptionEl.style.backgroundColor = "#000";
+          this.descriptionEl.style.color = "#ccc";
+          this.descriptionEl.style.padding = "10px";
+          this.descriptionEl.style.height = "150px";
+          this.descriptionEl.style.overflowY = "auto";
+          this.descriptionEl.style.whiteSpace = "pre-wrap";
+          this.descriptionEl.style.border = "1px inset #444";
+          this.descriptionEl.textContent = ""; // Start clean for log
+          if (data.description) this.appendLog(data.description);
+      } else {
+          this.descriptionEl.className = "event-description";
+          this.descriptionEl.style = ""; // Reset inline styles
+          this.descriptionEl.style.marginBottom = "10px";
+          this.descriptionEl.textContent = data.description || "";
+      }
+
+      this.updateChoices(data.choices);
+      this.open();
+  }
+
+  /**
+   * Appends a message to the description area (useful for terminal style).
+   * @param {string} msg - Message to append.
+   */
+  appendLog(msg) {
+      const p = document.createElement('div');
+      p.textContent = msg;
+      this.descriptionEl.appendChild(p);
+      this.descriptionEl.scrollTop = this.descriptionEl.scrollHeight;
+  }
+
+  /**
+   * Updates the displayed image dynamically.
+   * @param {string} imageName - The new image filename.
+   */
+  updateImage(imageName) {
+       this.imageEl.src = `assets/eventArt/${imageName}`;
+  }
+
+  /**
+   * Renders the choice buttons.
+   * @param {Array} choices - Array of { label, onClick }.
+   */
+  updateChoices(choices) {
+      this.choicesEl.innerHTML = "";
+      if (choices) {
+          choices.forEach(ch => {
+              const btn = document.createElement("button");
+              btn.className = "win-btn";
+              btn.textContent = ch.label;
+              btn.onclick = ch.onClick;
+              this.choicesEl.appendChild(btn);
+          });
+      }
   }
 }
 

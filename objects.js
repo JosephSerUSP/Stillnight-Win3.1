@@ -348,6 +348,8 @@ export class Game_Event {
     this.trigger = data.trigger || "touch";
     this.actions = data.actions || [];
     if (data.id) this.id = data.id;
+    this.hidden = data.hidden || false;
+    this.trapValue = data.trapValue || 0;
   }
 }
 
