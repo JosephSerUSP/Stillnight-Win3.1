@@ -10,5 +10,12 @@
     "name": "Gossip Merchant",
     "char": "M",
     "dialogue": "I heard the boss on the bottom floor hates light."
+  },
+  {
+    "id": "ghostlyMaid",
+    "name": "Ghostly Maid",
+    "char": "G",
+    "dialogue": "The King is mad. The Queen weeps. Please... take this invitation and stop the madness.",
+    "gift": "banquet_invitation"
   }
 ]

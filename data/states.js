@@ -26,15 +26,15 @@ export const states = {
     dead: {
         id: 'dead',
         name: 'Dead',
-        icon: 11, // Skull-like icon if available, or placeholder
-        restriction: 4, // Cannot act
+        icon: 11,
+        restriction: 4,
         priority: 100,
         traits: []
     },
     sleep: {
         id: 'sleep',
         name: 'Sleep',
-        icon: 1,
+        icon: 89,
         restriction: 4,
         duration: 3,
         removeAtDamage: true,
@@ -43,19 +43,45 @@ export const states = {
     regen: {
         id: 'regen',
         name: 'Regeneration',
-        icon: 1,
+        icon: 72,
         duration: 5,
         traits: [
-            { code: 'HRG', value: 0.1 } // Heals 10% max HP per turn
+            { code: 'HRG', value: 0.1 }
         ]
     },
     berserk: {
         id: 'berserk',
         name: 'Berserk',
-        icon: 1,
+        icon: 4,
         duration: 3,
         traits: [
-            { code: 'PARAM_PLUS', dataId: 'atk', value: 3 }
+            { code: 'PARAM_PLUS', dataId: 'atk', value: 5 }
+        ]
+    },
+    stun: {
+        id: 'stun',
+        name: 'Stunned',
+        icon: 5,
+        restriction: 4,
+        duration: 1,
+        traits: []
+    },
+    blind: {
+        id: 'blind',
+        name: 'Blind',
+        icon: 6,
+        duration: 3,
+        traits: [
+             { code: 'PARAM_RATE', dataId: 'atk', value: -0.5 }
+        ]
+    },
+    doom: {
+        id: 'doom',
+        name: 'Doom',
+        icon: 10,
+        duration: 3,
+        traits: [
+            { code: 'HRG', value: -0.2 } // Drains 20% HP per turn
         ]
     }
 };

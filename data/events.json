@@ -24,6 +24,14 @@
     "actions": [{ "type": "BATTLE" }]
   },
   {
+    "id": "boss",
+    "type": "enemy",
+    "symbol": "B",
+    "cssClass": "tile-boss",
+    "trigger": "touch",
+    "actions": [{ "type": "BOSS" }]
+  },
+  {
     "id": "shrine",
     "type": "shrine",
     "symbol": "♱",
@@ -66,9 +74,27 @@
     "actions": [{ "type": "TRAP_TRIGGER", "damage": 5, "message": "You triggered a spike trap!" }]
   },
   {
+    "id": "story_trigger",
+    "type": "story",
+    "symbol": "!",
+    "cssClass": "tile-story",
+    "trigger": "touch",
+    "hidden": true,
+    "trapValue": 100,
+    "actions": [{ "type": "STORY", "text": "..." }]
+  },
+  {
     "id": "treasure",
     "type": "treasure",
     "symbol": "$",
+    "cssClass": "tile-treasure",
+    "trigger": "touch",
+    "actions": [{ "type": "TREASURE" }]
+  },
+  {
+    "id": "shattered_mirror",
+    "type": "treasure",
+    "symbol": "M",
     "cssClass": "tile-treasure",
     "trigger": "touch",
     "actions": [{ "type": "TREASURE" }]

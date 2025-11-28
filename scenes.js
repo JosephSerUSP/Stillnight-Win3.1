@@ -114,7 +114,7 @@ export class Scene_Battle extends Scene_Base {
    * @param {number} tileX - The X coordinate of the battle on the map.
    * @param {number} tileY - The Y coordinate of the battle on the map.
    */
-  constructor(dataManager, sceneManager, windowManager, party, battleManager, windowLayer, map, tileX, tileY) {
+  constructor(dataManager, sceneManager, windowManager, party, battleManager, windowLayer, map, tileX, tileY, options = {}) {
     super(dataManager, windowManager);
     this.sceneManager = sceneManager;
     this.party = party;
@@ -123,6 +123,7 @@ export class Scene_Battle extends Scene_Base {
     this.map = map;
     this.tileX = tileX;
     this.tileY = tileY;
+    this.options = options;
     this.battleBusy = false;
 
     this.battleWindow = new Window_Battle();
@@ -144,17 +145,24 @@ export class Scene_Battle extends Scene_Base {
     let enemies = [];
     const actorTemplates = this.dataManager.actors;
 
-    if (this.map.floorIndex === this.map.floors.length - 1) {
-      const bossHp = 40 + (depth - 3) * 5;
-      enemies.push(new Game_Battler({
-        name: "🌑 Eternal Warden",
-        role: "Boss",
-        maxHp: bossHp,
-        elements: ["Black"],
-        skills: ["shadowClaw", "infernalPact"],
-        gold: 100,
-        expGrowth: 10,
-      }, depth, true));
+    if (this.options.bossId) {
+       const bossTpl = actorTemplates.find(a => a.id === this.options.bossId);
+       if (bossTpl) {
+           enemies.push(new Game_Battler(bossTpl, depth, true));
+       } else {
+           // Fallback if ID not found
+           enemies.push(new Game_Battler({
+               name: "Unknown Boss",
+               role: "Boss",
+               maxHp: 100,
+               elements: [],
+               skills: [],
+               gold: 50
+           }, depth, true));
+       }
+    } else if (this.options.fixedEnemies) {
+        // Future support for passing instances
+        enemies = this.options.fixedEnemies;
     } else {
       // Use encounter table if available
       if (floor.encounters && floor.encounters.length > 0) {
@@ -430,6 +438,22 @@ export class Scene_Battle extends Scene_Base {
     this.sceneManager.previous().logMessage(
       `[Battle] Victory! Gained ${totalGold}G and ${totalXp} XP (split).`
     );
+
+    // Drop Logic
+    enemies.forEach(e => {
+        if (e.actorData && e.actorData.drops) {
+            e.actorData.drops.forEach(d => {
+                if (Math.random() < d.chance) {
+                    const item = this.dataManager.items.find(i => i.id === d.itemId);
+                    if (item) {
+                        this.party.inventory.push(item);
+                        this.sceneManager.previous().logMessage(`[Drop] Found ${item.name}!`);
+                    }
+                }
+            });
+        }
+    });
+
     this.sceneManager.previous().updateAll();
 
     this.applyPostBattlePassives();
@@ -438,6 +462,10 @@ export class Scene_Battle extends Scene_Base {
     this.sceneManager.previous().checkPermadeath();
 
     this.clearEnemyTileAfterBattle();
+
+    if (this.options.onVictory) {
+        this.options.onVictory();
+    }
 
     this.battleManager.isVictoryPending = false;
     this.battleWindow.btnVictory.style.display = "none";
@@ -783,12 +811,14 @@ export class Scene_Shop extends Scene_Base {
      * @param {import("./windows.js").WindowManager} windowManager - The window manager.
      * @param {import("./objects.js").Game_Party} party - The player's party.
      * @param {import("./windows.js").WindowLayer} windowLayer - The window layer to attach the shop window to.
+     * @param {string[]} [inventory] - Optional list of item IDs to sell.
      */
-    constructor(dataManager, sceneManager, windowManager, party, windowLayer) {
+    constructor(dataManager, sceneManager, windowManager, party, windowLayer, inventory = null) {
         super(dataManager, windowManager);
         this.sceneManager = sceneManager;
         this.party = party;
         this.windowLayer = windowLayer;
+        this.inventory = inventory;
 
         this.shopWindow = new Window_Shop();
         this.windowLayer.addChild(this.shopWindow);
@@ -802,10 +832,14 @@ export class Scene_Shop extends Scene_Base {
      * @method start
      */
     start() {
+        let items = this.dataManager.items;
+        if (this.inventory) {
+            items = items.filter(i => this.inventory.includes(i.id));
+        }
         this.shopWindow.setup(
             this.party.gold,
             this.dataManager.terms.shop.vendor_message,
-            this.dataManager.items,
+            items,
             (itemId) => this.buyItem(itemId)
         );
         this.windowManager.push(this.shopWindow);
@@ -1067,6 +1101,28 @@ export class Scene_Map extends Scene_Base {
     );
     SoundManager.beep(500, 200);
     this.updateAll();
+    this.checkFloorStory();
+  }
+
+  /**
+   * Checks for story events on the current floor.
+   * @method checkFloorStory
+   */
+  checkFloorStory() {
+      const floor = this.map.floors[this.map.floorIndex];
+      if (floor.story_start) {
+          this.eventWindow.show({
+              title: floor.story_start.title,
+              description: floor.story_start.text,
+              image: floor.story_start.image || "story_default.png",
+              style: 'terminal',
+              choices: [{
+                  label: "Continue",
+                  onClick: () => this.closeEvent()
+              }]
+          });
+          this.windowManager.push(this.eventWindow);
+      }
   }
 
   /**
@@ -1589,7 +1645,9 @@ export class Scene_Map extends Scene_Base {
               this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.battleManager, this.windowLayer, this.map, event.x, event.y));
               break;
           case 'SHOP':
-              this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.windowManager, this.party, this.windowLayer));
+              const floor = this.map.floors[this.map.floorIndex];
+              const inventory = floor.shop_inventory || null;
+              this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.windowManager, this.party, this.windowLayer, inventory));
               break;
           case 'SHRINE':
               this.logMessage("[Shrine] You encounter a shrine.");
@@ -1619,7 +1677,90 @@ export class Scene_Map extends Scene_Base {
           case 'TRAP_TRIGGER':
               this.triggerTrap(action);
               break;
+          case 'BOSS':
+              this.startBossBattle(event, action);
+              break;
+          case 'SEARCH':
+              this.performSearch(action);
+              break;
       }
+  }
+
+  performSearch(action) {
+      this.eventWindow.show({
+          title: action.title || "Search",
+          description: action.text,
+          style: 'terminal',
+          choices: [{
+              label: "Search",
+              onClick: () => {
+                  const item = this.dataManager.items.find(i => i.id === action.itemId);
+                  if (item) {
+                      this.party.inventory.push(item);
+                      this.logMessage(`[Found] ${item.name}`);
+                      this.eventWindow.updateChoices([{
+                          label: "Close",
+                          onClick: () => {
+                              this.clearEventTile();
+                              this.closeEvent();
+                          }
+                      }]);
+                      this.eventWindow.appendLog(`> Found ${item.name}`);
+                  } else {
+                      this.closeEvent();
+                  }
+              }
+          }]
+      });
+      this.windowManager.push(this.eventWindow);
+  }
+
+  startBossBattle(event, action) {
+      this.setStatus("Boss Encounter!");
+      this.logMessage("[Battle] A terrible presence emerges.");
+      const opts = {
+          bossId: action.enemyId,
+          onVictory: () => {
+              if (action.dropKeyItem) {
+                  const item = this.dataManager.items.find(i => i.id === action.dropKeyItem);
+                  if (item) {
+                      this.party.inventory.push(item);
+                      // Trigger modal on the Map scene (which is 'this' context here, captured via closure?)
+                      // No, startBossBattle is a method of Scene_Map.
+                      // However, Scene_Battle calls this callback. 'this' inside callback depends on how it's defined.
+                      // Arrow function preserves 'this' as Scene_Map instance.
+
+                      // We want to show the modal *after* battle closes.
+                      // We can push it to windowManager now, it will appear over Battle, then Battle closes under it?
+                      // Or rely on Battle closing first.
+
+                      this.eventWindow.show({
+                          title: "Victory!",
+                          description: `The enemy falls. You find: ${item.name}.`,
+                          image: "treasure.png",
+                          style: 'terminal',
+                          choices: [{
+                              label: "Take",
+                              onClick: () => this.windowManager.close(this.eventWindow)
+                          }]
+                      });
+                      this.windowManager.push(this.eventWindow);
+                  }
+              }
+          }
+      };
+      this.sceneManager.push(new Scene_Battle(
+          this.dataManager,
+          this.sceneManager,
+          this.windowManager,
+          this.party,
+          this.battleManager,
+          this.windowLayer,
+          this.map,
+          event.x,
+          event.y,
+          opts
+      ));
   }
 
   healParty() {
@@ -1645,14 +1786,77 @@ export class Scene_Map extends Scene_Base {
    * @method descendStairs
    */
   descendStairs() {
+    const currentEvent = this.currentInteractionEvent;
+    if (currentEvent && currentEvent.locked) {
+        const keyId = currentEvent.keyItemId;
+        const hasKey = this.party.inventory.some(i => i.id === keyId);
+
+        if (!hasKey) {
+            this.eventWindow.show({
+                title: "Locked",
+                description: [
+                    "The way is barred.",
+                    currentEvent.unlockMessage || "You need a specific key."
+                ],
+                style: 'terminal',
+                choices: [{ label: "Back", onClick: () => this.closeEvent() }]
+            });
+            this.windowManager.push(this.eventWindow);
+            SoundManager.beep(150, 300);
+            return;
+        } else {
+            // Unlock Modal
+            this.eventWindow.show({
+                title: "Unlocked",
+                description: "You use the key. The way opens.",
+                style: 'terminal',
+                choices: [{
+                    label: "Descend",
+                    onClick: () => {
+                        this.closeEvent();
+                        this.executeDescend();
+                    }
+                }]
+            });
+            this.windowManager.push(this.eventWindow);
+            SoundManager.beep(600, 100);
+            return;
+        }
+    }
+
+    this.executeDescend();
+  }
+
+  executeDescend() {
     if (this.map.floorIndex + 1 >= this.map.floors.length) {
-      this.logMessage(
-        "[Floor] You find no further descent. The run ends here."
-      );
-      this.runActive = false;
-      this.setStatus("No deeper floors. Run over (for now).");
-      this.updateAll();
-      return;
+       // Check for End Game
+       const floor = this.map.floors[this.map.floorIndex];
+       if (floor.story_end) {
+           this.eventWindow.show({
+              title: floor.story_end.title,
+              description: floor.story_end.text,
+              image: floor.story_end.image || "story_end.png",
+              style: 'terminal',
+              choices: [{
+                  label: "End Run",
+                  onClick: () => {
+                      this.closeEvent();
+                      this.runActive = false;
+                      this.setStatus("Campaign Complete.");
+                      this.updateAll();
+                  }
+              }]
+          });
+          this.windowManager.push(this.eventWindow);
+       } else {
+          this.logMessage(
+            "[Floor] You find no further descent. The run ends here."
+          );
+          this.runActive = false;
+          this.setStatus("No deeper floors. Run over.");
+          this.updateAll();
+       }
+       return;
     }
     this.map.floorIndex++;
     if (this.map.floorIndex > this.map.maxReachedFloorIndex) {
@@ -1668,6 +1872,7 @@ export class Scene_Map extends Scene_Base {
     this.setStatus("Descending.");
     SoundManager.beep(800, 150);
     this.updateAll();
+    this.checkFloorStory();
   }
 
   /**
@@ -1808,6 +2013,13 @@ export class Scene_Map extends Scene_Base {
         log(this.dataManager.terms.shrine.gold_gain.replace("{0}", effect.value));
         if (effect.onSuccess) {
           await this.applyEventEffect(effect.onSuccess);
+        }
+        break;
+      case "give_item":
+        const item = this.dataManager.items.find(i => i.id === effect.itemId);
+        if (item) {
+            this.party.inventory.push(item);
+            log(`[Event] You found ${item.name}.`);
         }
         break;
       case "message":
@@ -2120,6 +2332,15 @@ export class Scene_Map extends Scene_Base {
 
     this.setStatus(`Talking to ${npc.name}.`);
     SoundManager.beep(400, 100);
+
+    if (npc.gift) {
+        const item = this.dataManager.items.find(i => i.id === npc.gift);
+        if (item) {
+             this.party.inventory.push(item);
+             this.logMessage(`[NPC] ${npc.name} gives you ${item.name}.`);
+             this.clearEventTile();
+        }
+    }
   }
 
   /**
