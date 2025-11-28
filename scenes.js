@@ -1843,9 +1843,16 @@ export class Scene_Map extends Scene_Base {
       this.party.inventory.push(item);
       this.clearEventTile();
 
+      const itemLabel = createInteractiveLabel(item, 'item');
+
       this.eventWindow.show({
           title: "Treasure Found!",
-          description: `You found: ${item.name}\n\n${item.description}`,
+          description: [
+              "You found:",
+              itemLabel,
+              "",
+              item.description
+          ],
           image: "treasure.png",
           style: 'terminal',
           choices: [{
@@ -2588,27 +2595,6 @@ renderElements(elements) {
         const row = document.createElement("div");
         row.className = "shop-row";
 
-        const icon = document.createElement("div");
-        icon.className = "icon";
-        const iconId = item.icon || 6;
-        if (iconId > 0) {
-            icon.style.backgroundPosition = getIconStyle(iconId);
-        }
-        row.appendChild(icon);
-
-        const label = document.createElement("span");
-        let text = `${item.name}`;
-        if (item.traits) {
-             const dmg = item.traits.find(t => t.code === 'PARAM_PLUS' && t.dataId === 'atk');
-             if (dmg) text += ` (+${dmg.value} DMG)`;
-        } else if (item.damageBonus) {
-             text += ` (+${item.damageBonus} DMG)`;
-        }
-        if (item.equippedBy) {
-          text += ` (on ${item.equippedBy})`;
-        }
-        label.textContent = text;
-
         let tooltipText = item.description;
         // Add item effects to tooltip
         let effectsText = "";
@@ -2637,14 +2623,23 @@ renderElements(elements) {
              tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
         }
 
-        // Tooltip for equipment list
-        row.addEventListener("mouseenter", (e) => {
-            tooltip.show(e.clientX, e.clientY, null, tooltipText);
-        });
-        row.addEventListener("mouseleave", () => tooltip.hide());
-        row.addEventListener("mousemove", (e) => {
-             if (tooltip.visible) tooltip.show(e.clientX, e.clientY, null, tooltipText);
-        });
+        const label = createInteractiveLabel(item, 'item', { tooltipText });
+        row.appendChild(label);
+
+        const extraSpan = document.createElement("span");
+        let text = "";
+        if (item.traits) {
+             const dmg = item.traits.find(t => t.code === 'PARAM_PLUS' && t.dataId === 'atk');
+             if (dmg) text += ` (+${dmg.value} DMG)`;
+        } else if (item.damageBonus) {
+             text += ` (+${item.damageBonus} DMG)`;
+        }
+        if (item.equippedBy) {
+          text += ` (on ${item.equippedBy})`;
+        }
+        extraSpan.textContent = text;
+        extraSpan.style.flexGrow = "1";
+        row.appendChild(extraSpan);
 
         const btn = document.createElement("button");
         btn.className = "win-btn";
@@ -2652,7 +2647,6 @@ renderElements(elements) {
         btn.addEventListener("click", () => {
           this.equipItem(member, item);
         });
-        row.appendChild(label);
         row.appendChild(btn);
         listEl.appendChild(row);
       });

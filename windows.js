@@ -65,6 +65,11 @@ export function createInteractiveLabel(data, type, options = {}) {
     }
 
     // Icon / Elements
+    let iconId = data.icon;
+    if (!iconId && type === 'item') {
+        iconId = 6; // Default placeholder for items
+    }
+
     if (type === 'skill' || (data.element || data.elements)) {
         // Use element icon logic if available
         let elements = data.elements || (data.element ? [data.element] : []);
@@ -73,20 +78,20 @@ export function createInteractiveLabel(data, type, options = {}) {
         if (elements.length > 0) {
             const iconEl = createElementIcon(elements);
             el.appendChild(iconEl);
-        } else if (data.icon) {
+        } else if (iconId) {
              const icon = document.createElement("span");
              icon.className = "icon";
-             if (data.icon > 0) {
-                 icon.style.backgroundPosition = getIconStyle(data.icon);
+             if (iconId > 0) {
+                 icon.style.backgroundPosition = getIconStyle(iconId);
              }
              icon.style.marginRight = "4px";
              el.appendChild(icon);
         }
-    } else if (data.icon) {
+    } else if (iconId) {
         const icon = document.createElement("span");
         icon.className = "icon";
-        if (data.icon > 0) {
-            icon.style.backgroundPosition = getIconStyle(data.icon);
+        if (iconId > 0) {
+            icon.style.backgroundPosition = getIconStyle(iconId);
         }
         icon.style.marginRight = "4px";
         el.appendChild(icon);
@@ -809,37 +814,21 @@ export class Window_Shop extends Window_Base {
       const row = document.createElement("div");
       row.className = "shop-row";
 
-      const icon = document.createElement('div');
-      icon.className = 'icon';
-      const iconId = tpl.icon || 6; // Use icon 6 as a placeholder
-      if (iconId > 0) {
-          icon.style.backgroundPosition = getIconStyle(iconId);
-      }
-      row.appendChild(icon);
+      const label = createInteractiveLabel(tpl, 'item');
+      row.appendChild(label);
 
-      const label = document.createElement("span");
-      label.textContent = `${tpl.name} (${tpl.cost}G): ${tpl.description}`;
+      const costSpan = document.createElement("span");
+      costSpan.textContent = ` (${tpl.cost}G)`;
+      costSpan.style.marginRight = "auto";
+      row.appendChild(costSpan);
+
       const btn = document.createElement("button");
       btn.className = "win-btn";
       btn.textContent = "Buy";
       btn.addEventListener("click", () => {
         buyCallback(tpl.id);
       });
-      row.appendChild(label);
       row.appendChild(btn);
-
-      // Tooltip
-      row.addEventListener("mouseenter", (e) => {
-        tooltip.show(e.clientX, e.clientY, null, tpl.description);
-      });
-      row.addEventListener("mouseleave", () => {
-        tooltip.hide();
-      });
-      row.addEventListener("mousemove", (e) => {
-         if (tooltip.visible) {
-             tooltip.show(e.clientX, e.clientY, null, tpl.description);
-         }
-      });
 
       this.listContainer.appendChild(row);
     });
@@ -995,19 +984,6 @@ export class Window_Inventory extends Window_Base {
         const row = document.createElement("div");
         row.className = "shop-row";
 
-        const icon = document.createElement('div');
-        icon.className = "icon";
-        const iconId = item.icon || 6;
-        if (iconId > 0) {
-            icon.style.backgroundPosition = getIconStyle(iconId);
-        }
-        row.appendChild(icon);
-
-        const desc = document.createElement("span");
-        desc.textContent = `${item.name}`;
-        desc.style.flexGrow = "1";
-        row.appendChild(desc);
-
         let tooltipText = item.description;
         // Add item effects to tooltip
         let effectsText = "";
@@ -1036,18 +1012,9 @@ export class Window_Inventory extends Window_Base {
              tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
         }
 
-        // Tooltip
-        row.addEventListener("mouseenter", (e) => {
-            tooltip.show(e.clientX, e.clientY, null, tooltipText);
-        });
-        row.addEventListener("mouseleave", () => {
-            tooltip.hide();
-        });
-        row.addEventListener("mousemove", (e) => {
-            if (tooltip.visible) {
-                tooltip.show(e.clientX, e.clientY, null, tooltipText);
-            }
-        });
+        const label = createInteractiveLabel(item, 'item', { tooltipText });
+        label.style.flexGrow = "1";
+        row.appendChild(label);
 
         const btns = document.createElement("div");
         const useBtn = document.createElement("button");
@@ -1242,12 +1209,35 @@ export class Window_Event extends Window_Base {
           this.descriptionEl.style.whiteSpace = "pre-wrap";
           this.descriptionEl.style.border = "1px inset #444";
           this.descriptionEl.textContent = ""; // Start clean for log
-          if (data.description) this.appendLog(data.description);
+          if (data.description) {
+              if (Array.isArray(data.description)) {
+                  data.description.forEach(line => this.appendLog(line));
+              } else {
+                  this.appendLog(data.description);
+              }
+          }
       } else {
           this.descriptionEl.className = "event-description";
           this.descriptionEl.style = ""; // Reset inline styles
           this.descriptionEl.style.marginBottom = "10px";
-          this.descriptionEl.textContent = data.description || "";
+          this.descriptionEl.innerHTML = "";
+          if (data.description) {
+              if (Array.isArray(data.description)) {
+                  data.description.forEach(line => {
+                      if (line instanceof Node) {
+                          this.descriptionEl.appendChild(line);
+                      } else {
+                          const p = document.createElement("div");
+                          p.textContent = line;
+                          this.descriptionEl.appendChild(p);
+                      }
+                  });
+              } else if (data.description instanceof Node) {
+                  this.descriptionEl.appendChild(data.description);
+              } else {
+                  this.descriptionEl.textContent = data.description;
+              }
+          }
       }
 
       this.updateChoices(data.choices);
@@ -1255,11 +1245,15 @@ export class Window_Event extends Window_Base {
 
   /**
    * Appends a message to the description area (useful for terminal style).
-   * @param {string} msg - Message to append.
+   * @param {string|Node} msg - Message to append.
    */
   appendLog(msg) {
       const p = document.createElement('div');
-      p.textContent = msg;
+      if (msg instanceof Node) {
+          p.appendChild(msg);
+      } else {
+          p.textContent = msg;
+      }
       this.descriptionEl.appendChild(p);
       this.descriptionEl.scrollTop = this.descriptionEl.scrollHeight;
   }
