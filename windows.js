@@ -842,6 +842,14 @@ export class Window_Inventory extends Window_Base {
              if (item.effects.xp) effects.push(`Grants ${item.effects.xp} XP`);
         }
         // Equipment stats
+        if (item.traits) {
+             item.traits.forEach(t => {
+                 if (t.code === 'PARAM_PLUS') {
+                     if (t.dataId === 'atk') effects.push(`Damage +${t.value}`);
+                     if (t.dataId === 'maxHp') effects.push(`Max HP +${t.value}`);
+                 }
+             });
+        }
         if (item.damageBonus) effects.push(`Damage +${item.damageBonus}`);
 
         if (effects.length > 0) {

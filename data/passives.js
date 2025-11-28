@@ -1,7 +1,7 @@
 /**
  * @file data/passives.js
  * @description Defines the passive abilities available in the game.
- * Passives provide static bonuses or triggered effects.
+ * Passives provide static bonuses or triggered effects via Traits.
  */
 
 /**
@@ -11,31 +11,17 @@
  * @property {string} description - Flavor text (Line 1 of tooltip).
  * @property {string} effect - Functional description (Line 2 of tooltip).
  * @property {number} icon - Icon ID (from spritesheet).
- * @property {string} code - Logic code used in engine.
- * @property {number} value - Numerical value used by logic.
+ * @property {Array<Object>} traits - List of traits applied by this passive.
  */
 
-/**
- * @type {Object.<string, Passive>}
- */
 export const passives = {
-    // Standardized Passive Data
-    // id: Key used for lookup/referencing
-    // name: Display name
-    // description: Flavor text (Line 1 of tooltip)
-    // effect: Functional description (Line 2 of tooltip)
-    // icon: Icon ID (from spritesheet)
-    // code: Logic code used in engine (backward compat for logic, but forward for data)
-    // value: Numerical value used by logic
-
     postBattleHeal: {
         id: 'postBattleHeal',
         name: 'Trick Heal',
         description: 'A playful mending art.',
         effect: 'Restores 1 HP to party on victory.',
         icon: 1,
-        code: 'POST_BATTLE_HEAL',
-        value: 1
+        traits: [{ code: 'POST_BATTLE_HEAL', value: 1 }]
     },
     goldDigger: {
         id: 'goldDigger',
@@ -43,8 +29,7 @@ export const passives = {
         description: 'Greed is good.',
         effect: 'Increases gold found by 5.',
         icon: 1,
-        code: 'GOLD_DIGGER',
-        value: 5
+        traits: [{ code: 'GOLD_DIGGER', value: 5 }]
     },
     parasite: {
         id: 'parasite',
@@ -52,8 +37,7 @@ export const passives = {
         description: 'An insatiable void.',
         effect: 'Drains 2 HP from a nearby ally every turn.',
         icon: 1,
-        code: 'PARASITE',
-        value: 2
+        traits: [{ code: 'PARASITE', value: 2 }]
     },
     battleStartDamage: {
         id: 'battleStartDamage',
@@ -61,8 +45,7 @@ export const passives = {
         description: 'Strike from the shadows.',
         effect: 'Deals damage to an enemy at start of battle.',
         icon: 1,
-        code: 'BATTLE_START_DAMAGE',
-        value: 2
+        traits: [{ code: 'BATTLE_START_DAMAGE', value: 2 }]
     },
     moveHeal: {
         id: 'moveHeal',
@@ -70,8 +53,7 @@ export const passives = {
         description: 'Life finds a way.',
         effect: 'Restores HP when moving.',
         icon: 1,
-        code: 'MOVE_HEAL',
-        value: 1
+        traits: [{ code: 'MOVE_HEAL', value: 1 }]
     },
     recoveryXpBonus: {
         id: 'recoveryXpBonus',
@@ -79,8 +61,7 @@ export const passives = {
         description: 'Knowledge is power.',
         effect: 'Gains bonus XP at recovery sites.',
         icon: 1,
-        code: 'RECOVERY_XP_BONUS',
-        value: 5
+        traits: [{ code: 'RECOVERY_XP_BONUS', value: 5 }]
     },
     fleeChanceBonus: {
         id: 'fleeChanceBonus',
@@ -88,8 +69,7 @@ export const passives = {
         description: 'He who fights and runs away...',
         effect: 'Increases chance to flee.',
         icon: 1,
-        code: 'FLEE_CHANCE_BONUS',
-        value: 0.1
+        traits: [{ code: 'FLEE_CHANCE_BONUS', value: 0.1 }]
     },
     dealDamageMod: {
         id: 'dealDamageMod',
@@ -97,7 +77,6 @@ export const passives = {
         description: 'Raw power.',
         effect: 'Increases damage dealt.',
         icon: 1,
-        code: 'DEAL_DAMAGE_MOD',
-        value: 1
+        traits: [{ code: 'PARAM_PLUS', dataId: 'atk', value: 1 }]
     }
 };

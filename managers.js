@@ -65,6 +65,12 @@ export class DataManager {
     this.passives = null;
 
     /**
+     * The state data loaded from states.js.
+     * @type {Object|null}
+     */
+    this.states = null;
+
+    /**
      * The starting party data loaded from party.js.
      * @type {Object|null}
      */
@@ -97,10 +103,12 @@ export class DataManager {
       this.skills = skills;
       const { passives } = await import("./data/passives.js");
       this.passives = passives;
+      const { states } = await import("./data/states.js");
+      this.states = states;
       const { startingParty } = await import("./data/party.js");
       this.startingParty = startingParty;
     } catch (error) {
-      console.error("Failed to load skills.js or passives.js:", error);
+      console.error("Failed to load skills.js, passives.js, or states.js:", error);
     }
 
     for (const [key, src] of Object.entries(dataSources)) {
@@ -341,7 +349,35 @@ export class BattleManager {
       const { battler, index, isEnemy } = battlerContext;
       const events = [];
 
-      // --- Passive Effects (e.g., Parasite) ---
+      // --- State Updates ---
+      const removedStates = battler.updateStateTurns();
+      removedStates.forEach(sId => {
+          const state = this.dataManager.states[sId];
+          events.push({ type: 'state_remove', target: battler, msg: `${battler.name}'s ${state ? state.name : sId} wore off.` });
+      });
+
+      // --- Passive/Trait Effects (e.g., Parasite, Regen) ---
+
+      // HRG: HP Regeneration (fraction of Max HP)
+      const hrg = battler.getPassiveValue('HRG');
+      if (hrg !== 0) {
+          const amount = Math.floor(battler.maxHp * hrg);
+          if (amount > 0) {
+              const hpBefore = battler.hp;
+              battler.hp = Math.min(battler.maxHp, battler.hp + amount);
+              events.push({
+                  type: 'heal',
+                  battler: battler,
+                  target: battler,
+                  value: amount,
+                  hpBefore: hpBefore,
+                  hpAfter: battler.hp,
+                  msg: `${battler.name} regenerates ${amount} HP.`,
+                  animation: 'healing_sparkle'
+              });
+          }
+      }
+
       if (!isEnemy) {
            const parasiteDrain = battler.getPassiveValue("PARASITE");
            if (parasiteDrain > 0) {
@@ -542,6 +578,7 @@ export class BattleManager {
                  if (effect.type === "add_status") {
                    const chance = (effect.chance || 1) * boost;
                    if (Math.random() < chance) {
+                     target.addState(effect.status);
                      events.push({ type: 'status', target: target, status: effect.status, msg: `  ${target.name} is afflicted with ${effect.status}.` });
                    }
                  }
@@ -549,18 +586,17 @@ export class BattleManager {
           }
       } else if (action.type === 'attack') {
            // Normal Attack
-           let base = 0;
-           if (isEnemy) {
-               base = Math.max(1, battler.level + randInt(-1, 2));
-           } else {
-               base = randInt(2, 4) + Math.floor(battler.level / 2);
-               if (battler.equipmentItem && battler.equipmentItem.damageBonus) {
-                 base += battler.equipmentItem.damageBonus;
-               }
+           // Base logic moved to Game_Battler.atk (includes traits)
+           // BattleManager adds variance (+/- 1)
+           let base = battler.atk + randInt(-1, 1);
+
+           if (!isEnemy) {
                const row = this._partyRow(index);
                if (row === "Front") base += 1;
                else base -= 1;
            }
+
+           if (base < 1) base = 1;
 
            const mult = this.elementMultiplier(battler.elements, target.elements);
            let dmg = Math.round(base * mult);
