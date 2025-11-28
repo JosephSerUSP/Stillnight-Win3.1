@@ -812,3 +812,42 @@ body.night-theme {
     font-size: 10px;
 }
 .tile-npc { color: #2040D0; }
+
+/* Evolution Window */
+.evolution-body {
+    background-color: #c0c0c0;
+    border: 1px solid #808080;
+    box-shadow: 1px 1px 0 #ffffff inset, -1px -1px 0 #404040 inset;
+    padding: 4px;
+    font-size: 11px;
+}
+
+.evolution-pane {
+    background-color: #ffffff;
+    border: 1px solid #808080;
+    box-shadow: 1px 1px 0 #ffffff inset, -1px -1px 0 #404040 inset;
+    padding: 4px;
+}
+
+.evolution-arrow {
+    font-size: 24px;
+    margin: 0 10px;
+    color: #000;
+}
+
+/* Night theme overrides */
+.night-theme .evolution-body {
+    background-color: #3c3c3c;
+    border-color: #555;
+    box-shadow: 1px 1px 0 #777 inset, -1px -1px 0 #222 inset;
+}
+
+.night-theme .evolution-pane {
+    background-color: #1c1c1c;
+    border-color: #555;
+    box-shadow: 1px 1px 0 #777 inset, -1px -1px 0 #222 inset;
+}
+
+.night-theme .evolution-arrow {
+    color: #e0e0e0;
+}

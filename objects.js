@@ -307,6 +307,35 @@ export class Game_Battler extends Game_Base {
   executeAction(action, target) {
     console.log(`${this.name} uses an action on ${target.name}.`);
   }
+
+  /**
+   * Checks if the battler meets any evolution criteria.
+   * @param {Array} inventory - The party's inventory.
+   * @param {number} floorDepth - The current floor depth.
+   * @returns {Object|null} The evolution definition if eligible, or null.
+   */
+  checkEvolution(inventory = [], floorDepth = 0) {
+    if (!this.evolutions || this.evolutions.length === 0) return null;
+
+    for (const evo of this.evolutions) {
+        let eligible = true;
+
+        // Level Requirement
+        if (evo.level && this.level < evo.level) eligible = false;
+
+        // Item Requirement
+        if (evo.item) {
+            const hasItem = inventory.some(i => i.id === evo.item);
+            if (!hasItem) eligible = false;
+        }
+
+        // Floor/Depth Requirement
+        if (evo.floorDepth && floorDepth < evo.floorDepth) eligible = false;
+
+        if (eligible) return evo;
+    }
+    return null;
+  }
 }
 
 /**

@@ -697,6 +697,13 @@ export class Window_Inspect extends Window_Base {
     this.btnSacrifice.style.display = "none";
     buttons.appendChild(this.btnSacrifice);
 
+    this.btnEvolve = document.createElement("button");
+    this.btnEvolve.className = "win-btn";
+    this.btnEvolve.textContent = "Evolution";
+    this.btnEvolve.style.display = "none";
+    this.btnEvolve.style.marginRight = "8px";
+    buttons.appendChild(this.btnEvolve);
+
     this.btnOk = document.createElement("button");
     this.btnOk.className = "win-btn";
     this.btnOk.textContent = "OK";
@@ -734,6 +741,159 @@ export class Window_Inspect extends Window_Base {
  * @description The window for buying items in the shop.
  * @extends Window_Base
  */
+/**
+ * @class Window_Evolution
+ * @description The window for previewing and confirming creature evolution.
+ * @extends Window_Base
+ */
+export class Window_Evolution extends Window_Base {
+  /**
+   * Creates a new Window_Evolution instance.
+   */
+  constructor() {
+    super('center', 'center', 700, 400);
+    this.element.id = "evolution-window";
+    this.element.style.display = 'flex';
+    this.element.style.flexDirection = 'column';
+
+    const titleBar = document.createElement("div");
+    titleBar.className = "dialog-titlebar";
+    this.element.appendChild(titleBar);
+    this.makeDraggable(titleBar);
+
+    const titleText = document.createElement("span");
+    titleText.textContent = "Evolution – Stillnight";
+    titleBar.appendChild(titleText);
+
+    this.btnClose = document.createElement("button");
+    this.btnClose.className = "win-btn";
+    this.btnClose.textContent = "X";
+    this.btnClose.onclick = () => this.onUserClose();
+    titleBar.appendChild(this.btnClose);
+
+    const content = document.createElement("div");
+    content.className = "dialog-content";
+    content.style.flexGrow = "1";
+    content.style.display = "flex";
+    content.style.flexDirection = "column";
+    this.element.appendChild(content);
+
+    // Main Body: Two panes
+    const body = document.createElement('div');
+    body.className = 'evolution-body';
+    body.style.display = 'flex';
+    body.style.flexGrow = '1';
+    body.style.justifyContent = 'space-between';
+    body.style.alignItems = 'center';
+    body.style.padding = '10px';
+    content.appendChild(body);
+
+    this.leftPane = document.createElement('div');
+    this.leftPane.className = 'evolution-pane';
+    this.leftPane.style.flex = '1';
+    body.appendChild(this.leftPane);
+
+    const arrow = document.createElement('div');
+    arrow.textContent = "➔";
+    arrow.className = "evolution-arrow";
+    body.appendChild(arrow);
+
+    this.rightPane = document.createElement('div');
+    this.rightPane.className = 'evolution-pane';
+    this.rightPane.style.flex = '1';
+    body.appendChild(this.rightPane);
+
+    const buttons = document.createElement("div");
+    buttons.className = "dialog-buttons";
+    this.element.appendChild(buttons);
+
+    this.btnConfirm = document.createElement("button");
+    this.btnConfirm.className = "win-btn";
+    this.btnConfirm.textContent = "Confirm Evolution";
+    buttons.appendChild(this.btnConfirm);
+
+    this.btnReturn = document.createElement("button");
+    this.btnReturn.className = "win-btn";
+    this.btnReturn.textContent = "Return";
+    this.btnReturn.onclick = () => this.onUserClose();
+    buttons.appendChild(this.btnReturn);
+  }
+
+  /**
+   * Sets up the evolution window with data.
+   * @param {Object} current - The current battler.
+   * @param {Object} next - The next battler (preview).
+   */
+  setup(current, next) {
+      this.renderPane(this.leftPane, current);
+      this.renderPane(this.rightPane, next);
+  }
+
+  renderPane(container, battler) {
+      container.innerHTML = "";
+      const layout = document.createElement('div');
+      layout.className = 'inspect-layout';
+      container.appendChild(layout);
+
+      const sprite = document.createElement('div');
+      sprite.className = 'inspect-sprite';
+      sprite.style.backgroundImage = `url('assets/portraits/${battler.spriteKey || "pixie"}.png')`;
+      layout.appendChild(sprite);
+
+      const fields = document.createElement('div');
+      fields.className = 'inspect-fields';
+      layout.appendChild(fields);
+
+      const createRow = (label, valueEl) => {
+        const row = document.createElement('div');
+        row.className = 'inspect-row';
+        const lbl = document.createElement('span');
+        lbl.className = 'inspect-label';
+        lbl.textContent = label;
+        row.appendChild(lbl);
+        valueEl.classList.add('inspect-value');
+        row.appendChild(valueEl);
+        fields.appendChild(row);
+      };
+
+      // Name
+      const nameVal = document.createElement('span');
+      if (battler.elements) {
+          nameVal.appendChild(createElementIcon(battler.elements));
+      }
+      nameVal.appendChild(document.createTextNode(battler.name));
+      createRow('Name', nameVal);
+
+      // Level
+      const levelVal = document.createElement('span');
+      levelVal.textContent = battler.level;
+      createRow('Level', levelVal);
+
+      // Role
+      const roleVal = document.createElement('span');
+      roleVal.textContent = battler.role || "—";
+      createRow('Role', roleVal);
+
+      // HP
+      const hpVal = document.createElement('span');
+      hpVal.textContent = `${battler.maxHp}`;
+      createRow('Max HP', hpVal);
+
+      // Passives
+      const passiveVal = document.createElement('span');
+      if (battler.passives && battler.passives.length > 0) {
+          battler.passives.forEach((p, i) => {
+              const el = createInteractiveLabel(p, 'passive');
+              passiveVal.appendChild(el);
+              if (i < battler.passives.length - 1) passiveVal.appendChild(document.createTextNode(", "));
+          });
+      } else {
+          passiveVal.textContent = "—";
+      }
+      createRow('Passive', passiveVal);
+  }
+}
+
 export class Window_Shop extends Window_Base {
   /**
    * Creates a new Window_Shop instance.

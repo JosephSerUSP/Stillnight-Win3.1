@@ -10,6 +10,7 @@ import {
   Window_Inventory,
   Window_Inspect,
   Window_Confirm,
+  Window_Evolution,
   WindowLayer,
   createInteractiveLabel,
   createElementIcon
@@ -901,10 +902,13 @@ export class Scene_Map extends Scene_Base {
     this.windowLayer.addChild(this.formationWindow)
     this.inspectWindow = new Window_Inspect();
     this.windowLayer.addChild(this.inspectWindow)
+    this.evolutionWindow = new Window_Evolution();
+    this.windowLayer.addChild(this.evolutionWindow);
     this.confirmWindow = new Window_Confirm();
     this.windowLayer.addChild(this.confirmWindow);
 
     this.recruitWindow.onUserClose = this.closeRecruitEvent.bind(this);
+    this.evolutionWindow.onUserClose = () => this.windowManager.close(this.evolutionWindow);
     this.formationWindow.onUserClose = this.closeFormation.bind(this);
     this.confirmWindow.onUserClose = () => this.windowManager.close(this.confirmWindow);
 
@@ -2482,6 +2486,27 @@ renderElements(elements) {
     nameSpan.textContent = member.name;
     this.inspectWindow.nameEl.appendChild(nameSpan);
 
+    // Evolution Check
+    const floor = this.map.floors[this.map.floorIndex];
+    const evolutionData = member.checkEvolution(this.party.inventory, floor ? floor.depth : 1);
+
+    if (evolutionData) {
+         const evoIcon = document.createElement("span");
+         evoIcon.className = "icon";
+         evoIcon.style.backgroundPosition = getIconStyle(6);
+         evoIcon.style.display = "inline-block";
+         evoIcon.style.marginLeft = "4px";
+         evoIcon.title = "Evolution Available";
+         this.inspectWindow.nameEl.appendChild(evoIcon);
+
+         this.inspectWindow.btnEvolve.style.display = "inline-block";
+         this.inspectWindow.btnEvolve.onclick = () => {
+             this.openEvolution(member, evolutionData);
+         };
+    } else {
+         this.inspectWindow.btnEvolve.style.display = "none";
+    }
+
     this.inspectWindow.levelEl.textContent = member.level;
     this.inspectWindow.rowPosEl.textContent = this.partyRow(index);
     this.inspectWindow.hpEl.textContent = `${member.hp} / ${member.maxHp}`;
@@ -2759,6 +2784,68 @@ renderElements(elements) {
    * @param {import("./objects.js").Game_Battler} member - The member.
    * @param {Object} item - The item to equip.
    */
+  openEvolution(member, evolutionData) {
+      this.closeInspect();
+      const nextId = evolutionData.evolvesTo;
+      const nextData = this.dataManager.actors.find(a => a.id === nextId);
+      if (!nextData) return;
+
+      const nextBattler = new Game_Battler({ ...nextData, level: member.level });
+      this.evolutionWindow.setup(member, nextBattler);
+
+      this.evolutionWindow.btnConfirm.onclick = () => {
+          this.confirmEvolution(member, nextBattler, evolutionData);
+      };
+
+      this.windowManager.push(this.evolutionWindow);
+  }
+
+  confirmEvolution(member, nextBattler, evolutionData) {
+      let msg = `Evolve ${member.name} into ${nextBattler.name}?`;
+      if (evolutionData.item) {
+          const item = this.dataManager.items.find(i => i.id === evolutionData.item);
+          if (item) {
+              msg += `\nConsumes ${item.name}.`;
+          }
+      }
+
+      this.confirmWindow.titleEl.textContent = "Confirm Evolution";
+      this.confirmWindow.messageEl.innerText = msg;
+
+      this.windowManager.push(this.confirmWindow);
+
+      this.confirmWindow.btnOk.onclick = () => {
+          this.windowManager.close(this.confirmWindow);
+          this.executeEvolution(member, nextBattler, evolutionData);
+      };
+      this.confirmWindow.btnCancel.onclick = () => {
+          this.windowManager.close(this.confirmWindow);
+      };
+  }
+
+  executeEvolution(member, nextBattler, evolutionData) {
+      if (evolutionData.item) {
+          const idx = this.party.inventory.findIndex(i => i.id === evolutionData.item);
+          if (idx !== -1) {
+              this.party.inventory.splice(idx, 1);
+          }
+      }
+
+      const index = this.party.members.indexOf(member);
+      if (index !== -1) {
+          nextBattler.xp = member.xp;
+          nextBattler.equipmentItem = member.equipmentItem;
+
+          this.party.members[index] = nextBattler;
+
+          this.logMessage(`[Evolution] ${member.name} evolved into ${nextBattler.name}!`);
+          SoundManager.beep(800, 300);
+
+          this.windowManager.close(this.evolutionWindow);
+          this.updateAll();
+      }
+  }
+
   equipItem(member, item) {
     const doEquip = () => {
       // Unequip current item if one exists
