@@ -10,5 +10,19 @@
     "name": "Gossip Merchant",
     "char": "M",
     "dialogue": "I heard the boss on the bottom floor hates light."
+  },
+  {
+    "id": "kael",
+    "name": "Custodian Kael",
+    "char": "K",
+    "dialogue": "...",
+    "scriptId": "kael_intro"
+  },
+  {
+    "id": "architect",
+    "name": "Grand Architect",
+    "char": "A",
+    "dialogue": "Inefficient.",
+    "scriptId": "architect_encounter"
   }
 ]
