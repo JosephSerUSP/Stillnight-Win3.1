@@ -348,6 +348,11 @@ export class Game_Event {
     this.trigger = data.trigger || "touch";
     this.actions = data.actions || [];
     if (data.id) this.id = data.id;
+
+    this.hidden = data.hidden || false;
+    this.value = data.value || 0;
+    this.image = data.image || "default.png";
+    this.revealed = false;
   }
 }
 
@@ -455,6 +460,11 @@ export class Game_Map {
           const pos = pickCell(used);
           if (pos) {
             const eventData = { ...def };
+
+            // Merge custom data from map config
+            if (config.data) {
+                Object.assign(eventData, config.data);
+            }
 
             // Special handling for NPC dynamic data
             if (def.type === "npc" && npcData.length > 0) {

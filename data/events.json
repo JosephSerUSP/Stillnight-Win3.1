@@ -56,6 +56,24 @@
     "actions": [{ "type": "NPC_DIALOGUE" }]
   },
   {
+    "id": "trap",
+    "type": "trap",
+    "symbol": ".",
+    "cssClass": "",
+    "trigger": "touch",
+    "hidden": true,
+    "value": 0,
+    "actions": [{ "type": "TRAP" }]
+  },
+  {
+    "id": "treasure",
+    "type": "treasure",
+    "symbol": "$",
+    "cssClass": "tile-treasure",
+    "trigger": "touch",
+    "actions": [{ "type": "TREASURE" }]
+  },
+  {
     "id": "shrine_shade",
     "type": "shrine_scenario",
     "title": "Whispering Shade",

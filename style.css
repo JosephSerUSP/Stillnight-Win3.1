@@ -812,3 +812,36 @@ body.night-theme {
     font-size: 10px;
 }
 .tile-npc { color: #2040D0; }
+
+/* Event Window Styles */
+.tile-trap {
+    color: #ff5555;
+    font-weight: bold;
+}
+
+.tile-treasure {
+    color: #ffd700;
+}
+
+.event-image-container {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.event-image {
+    max-width: 100%;
+    max-height: 200px;
+    border: 2px solid #555;
+    image-rendering: pixelated;
+}
+
+.terminal-log {
+    background: #000;
+    color: #ccc;
+    font-family: 'Courier New', monospace;
+    padding: 5px;
+    border: 1px inset #555;
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.4;
+}

@@ -1110,6 +1110,7 @@ export class Window_Event extends Window_Base {
     this.element.style.display = 'flex';
     this.element.style.flexDirection = 'column';
     this.element.style.height = 'fit-content';
+    this.element.style.maxHeight = '90vh';
 
     const titleBar = document.createElement("div");
     titleBar.className = "dialog-titlebar";
@@ -1127,7 +1128,18 @@ export class Window_Event extends Window_Base {
     const content = document.createElement("div");
     content.className = "dialog-content";
     content.style.flexGrow = "1";
+    content.style.display = 'flex';
+    content.style.flexDirection = 'column';
     this.element.appendChild(content);
+
+    // Image Area
+    this.imageContainer = document.createElement('div');
+    this.imageContainer.className = 'event-image-container';
+    this.imageContainer.style.display = 'none';
+    this.imageEl = document.createElement('img');
+    this.imageEl.className = 'event-image';
+    this.imageContainer.appendChild(this.imageEl);
+    content.appendChild(this.imageContainer);
 
     const eventBody = document.createElement('div');
     eventBody.className = 'event-body';
@@ -1137,9 +1149,56 @@ export class Window_Event extends Window_Base {
     this.descriptionEl.className = 'event-description';
     eventBody.appendChild(this.descriptionEl);
 
+    // Terminal Log (hidden by default)
+    this.logEl = document.createElement('div');
+    this.logEl.className = 'event-log terminal-log';
+    this.logEl.style.display = 'none';
+    this.logEl.style.height = '150px';
+    this.logEl.style.overflowY = 'auto';
+    this.logEl.style.marginBottom = '10px';
+    this.logEl.style.border = '1px inset #888';
+    this.logEl.style.padding = '4px';
+    this.logEl.style.backgroundColor = '#000';
+    this.logEl.style.color = '#ccc';
+    this.logEl.style.fontFamily = 'monospace';
+    eventBody.appendChild(this.logEl);
+
     this.choicesEl = document.createElement('div');
     this.choicesEl.className = 'event-choices';
     eventBody.appendChild(this.choicesEl);
+  }
+
+  setImage(filename) {
+    if (!filename) {
+      this.imageContainer.style.display = 'none';
+      return;
+    }
+    this.imageContainer.style.display = 'block';
+    this.imageEl.src = `assets/eventArt/${filename}`;
+    this.imageEl.onerror = () => {
+      this.imageEl.src = `assets/eventArt/default.png`;
+    };
+  }
+
+  setTerminalMode(enabled) {
+    if (enabled) {
+      this.descriptionEl.style.display = 'none';
+      this.logEl.style.display = 'block';
+    } else {
+      this.descriptionEl.style.display = 'block';
+      this.logEl.style.display = 'none';
+    }
+  }
+
+  addLog(message) {
+    const div = document.createElement('div');
+    div.textContent = message;
+    this.logEl.appendChild(div);
+    this.logEl.scrollTop = this.logEl.scrollHeight;
+  }
+
+  clearLog() {
+    this.logEl.innerHTML = "";
   }
 }
 
