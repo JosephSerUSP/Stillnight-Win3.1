@@ -1,0 +1,118 @@
+[
+  {
+    "title": "Floor 1: Entry Hall",
+    "intro": "You cross the threshold of Stillnight.",
+    "depth": 1,
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "count": 1 },
+      { "id": "enemy", "min": 2, "max": 3 },
+      { "id": "shop", "count": 1 },
+      { "id": "recruit", "chance": 0.5 },
+      { "id": "npc", "chance": 0.3 }
+    ]
+  },
+  {
+    "title": "Floor 1: Silent Shrine",
+    "intro": "A distant bell tolls once.",
+    "depth": 1,
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.7 },
+      { "id": "enemy", "min": 2, "max": 3 },
+      { "id": "shrine", "count": 1 },
+      { "id": "shop", "count": 1 },
+      { "id": "recruit", "chance": 0.5 }
+    ]
+  },
+  {
+    "title": "Floor 2: Chasm Crossing",
+    "intro": "Wind howls across a broken bridge.",
+    "depth": 2,
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.5 },
+      { "id": "enemy", "min": 3, "max": 4 },
+      { "id": "shrine", "chance": 0.8 },
+      { "id": "shop", "count": 1 },
+      { "id": "recruit", "chance": 0.6 },
+      { "id": "npc", "chance": 0.3 }
+    ]
+  },
+  {
+    "title": "Floor 2: Glass Library",
+    "intro": "Shelves of crystal tomes hum quietly.",
+    "depth": 2,
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.5 },
+      { "id": "enemy", "min": 3, "max": 5 },
+      { "id": "shrine", "count": 1 },
+      { "id": "shop", "chance": 0.8 },
+      { "id": "recruit", "chance": 0.6 }
+    ]
+  },
+  {
+    "title": "Floor 3: Rusted Choir",
+    "intro": "Broken bells sway above a dry pit.",
+    "depth": 3,
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.4 },
+      { "id": "enemy", "min": 4, "max": 6 },
+      { "id": "shrine", "chance": 0.7 },
+      { "id": "shop", "chance": 0.7 },
+      { "id": "recruit", "chance": 0.7 }
+    ]
+  },
+  {
+    "title": "Floor 3: Hollow Arcade",
+    "intro": "Columns slice the dark like teeth.",
+    "depth": 3,
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.4 },
+      { "id": "enemy", "min": 4, "max": 6 },
+      { "id": "shrine", "chance": 0.7 },
+      { "id": "shop", "chance": 0.7 },
+      { "id": "recruit", "chance": 0.7 },
+      { "id": "npc", "chance": 0.4 }
+    ]
+  },
+  {
+    "title": "Floor 4: Cryptic Vault",
+    "intro": "Relic pedestals gleam with unnatural light.",
+    "depth": 4,
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 5, "max": 7 },
+      { "id": "shrine", "chance": 0.6 },
+      { "id": "shop", "chance": 0.6 },
+      { "id": "recruit", "chance": 0.5 }
+    ]
+  },
+  {
+    "title": "Floor 5: Blood Chapel",
+    "intro": "Walls whisper of ancient oaths.",
+    "depth": 5,
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 5, "max": 8 },
+      { "id": "shrine", "chance": 0.5 },
+      { "id": "shop", "chance": 0.5 },
+      { "id": "recruit", "chance": 0.5 },
+      { "id": "npc", "chance": 0.5 }
+    ]
+  },
+  {
+    "title": "Floor 6: Stillnight Sanctum",
+    "intro": "A presence fills the air. The Eternal Warden awaits.",
+    "depth": 6,
+    "events": [
+      { "id": "recovery", "count": 1 },
+      { "id": "enemy", "min": 1, "max": 1 }
+    ]
+  }
+]

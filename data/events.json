@@ -1,5 +1,63 @@
 [
   {
+    "id": "stairs",
+    "type": "stairs",
+    "symbol": "S",
+    "cssClass": "tile-stairs",
+    "trigger": "touch",
+    "actions": [{ "type": "DESCEND" }]
+  },
+  {
+    "id": "recovery",
+    "type": "recovery",
+    "symbol": "R",
+    "cssClass": "tile-recovery",
+    "trigger": "touch",
+    "actions": [{ "type": "HEAL_PARTY" }]
+  },
+  {
+    "id": "enemy",
+    "type": "enemy",
+    "symbol": "E",
+    "cssClass": "tile-enemy",
+    "trigger": "touch",
+    "actions": [{ "type": "BATTLE" }]
+  },
+  {
+    "id": "shrine",
+    "type": "shrine",
+    "symbol": "♱",
+    "cssClass": "tile-shrine",
+    "trigger": "touch",
+    "actions": [{ "type": "SHRINE" }]
+  },
+  {
+    "id": "shop",
+    "type": "shop",
+    "symbol": "¥",
+    "cssClass": "tile-shop",
+    "trigger": "touch",
+    "actions": [{ "type": "SHOP" }]
+  },
+  {
+    "id": "recruit",
+    "type": "recruit",
+    "symbol": "U",
+    "cssClass": "tile-recruit",
+    "trigger": "touch",
+    "actions": [{ "type": "RECRUIT" }]
+  },
+  {
+    "id": "npc",
+    "type": "npc",
+    "symbol": "N",
+    "cssClass": "tile-npc",
+    "trigger": "touch",
+    "actions": [{ "type": "NPC_DIALOGUE" }]
+  },
+  {
+    "id": "shrine_shade",
+    "type": "shrine_scenario",
     "title": "Whispering Shade",
     "description": "A whisper from beyond promises knowledge... at a price.",
     "choices": [
@@ -17,6 +75,8 @@
     ]
   },
   {
+    "id": "shrine_idol",
+    "type": "shrine_scenario",
     "title": "Gleaming Idol",
     "description": "A gleaming idol stands before you, radiating warmth. Touching it could imbue power or curse you.",
     "choices": [
@@ -34,6 +94,8 @@
     ]
   },
   {
+    "id": "shrine_spirit",
+    "type": "shrine_scenario",
     "title": "Bargaining Spirit",
     "description": "A translucent merchant appears, offering to trade gold for knowledge.",
     "choices": [
@@ -55,6 +117,8 @@
     ]
   },
   {
+    "id": "shrine_haste",
+    "type": "shrine_scenario",
     "title": "Trial of Haste",
     "description": "A spectral stopwatch hovers in the air, its ticking echoing in your mind. It offers a challenge: a trial of speed for a reward.",
     "choices": [
