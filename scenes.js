@@ -1,4 +1,4 @@
-import { Game_Map, Game_Party, Game_Battler } from "./objects.js";
+import { Game_Map, Game_Party, Game_Battler, Game_Event } from "./objects.js";
 import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle } from "./core.js";
 import { BattleManager, SoundManager } from "./managers.js";
 import {
@@ -1222,29 +1222,8 @@ export class Scene_Map extends Scene_Base {
           let symbol = " ";
 
           if (event) {
-            switch (event.type) {
-              case 'enemy':
-                symbol = "E";
-                tileEl.classList.add("tile-enemy");
-                break;
-              case 'shop':
-                symbol = "¥";
-                tileEl.classList.add("tile-shop");
-                break;
-              case 'recruit':
-                symbol = "U";
-                tileEl.classList.add("tile-recruit");
-                break;
-              case 'shrine':
-                symbol = "♱";
-                tileEl.classList.add("tile-shrine");
-                break;
-              case 'npc':
-                const npcDef = this.dataManager.npcs ? this.dataManager.npcs.find(n => n.id === event.id) : null;
-                symbol = npcDef ? npcDef.char : "N";
-                tileEl.classList.add("tile-npc");
-                break;
-            }
+              symbol = event.symbol;
+              if (event.cssClass) tileEl.classList.add(event.cssClass);
           }
 
           if (symbol === " ") {
@@ -1254,14 +1233,6 @@ export class Scene_Map extends Scene_Base {
                 break;
               case ".":
                 symbol = " ";
-                break;
-              case "S":
-                symbol = "S";
-                tileEl.classList.add("tile-stairs");
-                break;
-              case "R":
-                symbol = "R";
-                tileEl.classList.add("tile-recovery");
                 break;
               default:
                 symbol = " ";
@@ -1466,31 +1437,62 @@ export class Scene_Map extends Scene_Base {
 
     if (event) {
        this.currentInteractionEvent = event;
-       if (event.type === "enemy") {
-          this.setStatus("Enemy encountered!");
-          this.logMessage("[Battle] Shapes uncoil from the dark.");
-          this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.battleManager, this.windowLayer, this.map, x, y));
-          return;
-       } else if (event.type === "shop") {
-          this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.windowManager, this.party, this.windowLayer));
-          return;
-       } else if (event.type === "shrine") {
-          this.logMessage("[Shrine] You encounter a shrine.");
-          this.openShrineEvent();
-          return;
-       } else if (event.type === "recruit") {
-          this.openRecruitEvent();
-          return;
-       } else if (event.type === "npc") {
-          this.openNpcEvent(event);
-          return;
-       }
+       this.executeEvent(event);
+       return;
     }
 
     if (ch === ".") {
       this.logMessage("[Step] Your footsteps echo softly.");
       this.setStatus("You move.");
-    } else if (ch === "R") {
+    }
+
+    SoundManager.beep(600, 80);
+    this.applyMovePassives();
+    this.updateAll();
+  }
+
+  executeEvent(event) {
+      if (event.actions) {
+          event.actions.forEach(action => this.executeAction(action, event));
+      }
+  }
+
+  executeAction(action, event) {
+      switch(action.type) {
+          case 'BATTLE':
+              this.setStatus("Enemy encountered!");
+              this.logMessage("[Battle] Shapes uncoil from the dark.");
+              this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.battleManager, this.windowLayer, this.map, event.x, event.y));
+              break;
+          case 'SHOP':
+              this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.windowManager, this.party, this.windowLayer));
+              break;
+          case 'SHRINE':
+              this.logMessage("[Shrine] You encounter a shrine.");
+              this.openShrineEvent();
+              break;
+          case 'RECRUIT':
+              this.openRecruitEvent();
+              break;
+          case 'NPC_DIALOGUE':
+              this.openNpcEvent(action.id);
+              this.updateAll();
+              break;
+          case 'DESCEND':
+              this.descendStairs();
+              SoundManager.beep(800, 150);
+              break;
+          case 'HEAL_PARTY':
+              this.healParty();
+              break;
+          case 'MESSAGE':
+              if (action.text) this.logMessage(action.text);
+              this.updateAll();
+              break;
+      }
+  }
+
+  healParty() {
       this.party.members.forEach((m) => (m.hp = m.maxHp));
       this.logMessage("[Recover] A soft glow restores your party.");
       this.party.members.forEach((member) => {
@@ -1503,15 +1505,9 @@ export class Scene_Map extends Scene_Base {
         }
       });
       this.setStatus("Recovered HP.");
-    } else if (ch === "S") {
-      this.descendStairs();
-      SoundManager.beep(800, 150);
-      return;
-    }
-
-    SoundManager.beep(600, 80);
-    this.applyMovePassives();
-    this.updateAll();
+      SoundManager.beep(600, 80);
+      this.applyMovePassives();
+      this.updateAll();
   }
 
   /**
@@ -1830,8 +1826,8 @@ export class Scene_Map extends Scene_Base {
    * @method openNpcEvent
    * @param {Object} event - The NPC event object.
    */
-  openNpcEvent(event) {
-    const npc = this.dataManager.npcs.find(n => n.id === event.id);
+  openNpcEvent(npcId) {
+    const npc = this.dataManager.npcs.find(n => n.id === npcId);
     if (!npc) return;
 
     let text = "";

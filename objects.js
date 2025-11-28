@@ -294,6 +294,36 @@ export class Game_Party {
 }
 
 /**
+ * @class Game_Event
+ * @description Represents an interactive entity on the map.
+ */
+export class Game_Event {
+  /**
+   * Creates a new Game_Event.
+   * @param {number} x - X coordinate.
+   * @param {number} y - Y coordinate.
+   * @param {Object} data - Event configuration.
+   * @param {string} data.type - Event type (e.g., 'enemy', 'stairs').
+   * @param {string} data.symbol - Character to display.
+   * @param {string} data.cssClass - CSS class for styling.
+   * @param {string} [data.trigger='touch'] - Trigger type ('touch', 'interact').
+   * @param {Array<Object>} [data.actions=[]] - List of actions to execute.
+   */
+  constructor(x, y, data) {
+    this.x = x;
+    this.y = y;
+    this.type = data.type;
+    this.symbol = data.symbol || "?";
+    this.cssClass = data.cssClass || "";
+    this.trigger = data.trigger || "touch";
+    this.actions = data.actions || [];
+
+    // Legacy/Data support
+    if (data.id) this.id = data.id;
+  }
+}
+
+/**
  * @class Game_Map
  * @description Represents the game map, managing floors, tiles, and player position.
  * Handles procedural generation of dungeon floors.
@@ -435,13 +465,26 @@ export class Game_Map {
 
     const stairsPos =
       floorCells[Math.floor(floorCells.length / 3)] || floorCells[0];
-    tiles[stairsPos[1]][stairsPos[0]] = "S";
+
+    events.push(new Game_Event(stairsPos[0], stairsPos[1], {
+        type: 'stairs',
+        symbol: 'S',
+        cssClass: 'tile-stairs',
+        trigger: 'touch',
+        actions: [{ type: 'DESCEND' }]
+    }));
 
     const used = [startPos, stairsPos];
 
     const recPos = pickCell(used);
     if (recPos) {
-      tiles[recPos[1]][recPos[0]] = "R";
+      events.push(new Game_Event(recPos[0], recPos[1], {
+          type: 'recovery',
+          symbol: 'R',
+          cssClass: 'tile-recovery',
+          trigger: 'touch',
+          actions: [{ type: 'HEAL_PARTY' }]
+      }));
       used.push(recPos);
     }
 
@@ -449,21 +492,39 @@ export class Game_Map {
     for (let i = 0; i < enemyCount; i++) {
       const ePos = pickCell(used);
       if (!ePos) break;
-      events.push({ type: 'enemy', x: ePos[0], y: ePos[1] });
+      events.push(new Game_Event(ePos[0], ePos[1], {
+        type: 'enemy',
+        symbol: 'E',
+        cssClass: 'tile-enemy',
+        trigger: 'touch',
+        actions: [{ type: 'BATTLE' }]
+      }));
       used.push(ePos);
     }
 
     if (meta.depth >= 1 && index >= 1) {
       const shrinePos = pickCell(used);
       if (shrinePos) {
-        events.push({ type: 'shrine', x: shrinePos[0], y: shrinePos[1] });
+        events.push(new Game_Event(shrinePos[0], shrinePos[1], {
+            type: 'shrine',
+            symbol: '♱',
+            cssClass: 'tile-shrine',
+            trigger: 'touch',
+            actions: [{ type: 'SHRINE' }]
+        }));
         used.push(shrinePos);
       }
     }
     if (meta.depth >= 2 || index === 0) { // Always on first floor for testing
       const shopPos = pickCell(used);
       if (shopPos) {
-        events.push({ type: 'shop', x: shopPos[0], y: shopPos[1] });
+        events.push(new Game_Event(shopPos[0], shopPos[1], {
+            type: 'shop',
+            symbol: '¥',
+            cssClass: 'tile-shop',
+            trigger: 'touch',
+            actions: [{ type: 'SHOP' }]
+        }));
         used.push(shopPos);
       }
     }
@@ -471,7 +532,13 @@ export class Game_Map {
     if (meta.depth >= 1) {
       const recruitPos = pickCell(used);
       if (recruitPos) {
-        events.push({ type: 'recruit', x: recruitPos[0], y: recruitPos[1] });
+        events.push(new Game_Event(recruitPos[0], recruitPos[1], {
+            type: 'recruit',
+            symbol: 'U',
+            cssClass: 'tile-recruit',
+            trigger: 'touch',
+            actions: [{ type: 'RECRUIT' }]
+        }));
         used.push(recruitPos);
       }
     }
@@ -481,7 +548,14 @@ export class Game_Map {
       const npcPos = pickCell(used);
       if (npcPos) {
         const npcDef = npcData[randInt(0, npcData.length - 1)];
-        events.push({ type: 'npc', x: npcPos[0], y: npcPos[1], id: npcDef.id });
+        events.push(new Game_Event(npcPos[0], npcPos[1], {
+            type: 'npc',
+            symbol: npcDef.char || 'N',
+            cssClass: 'tile-npc',
+            trigger: 'touch',
+            actions: [{ type: 'NPC_DIALOGUE', id: npcDef.id }],
+            id: npcDef.id // Keep ID on event for test compatibility
+        }));
         used.push(npcPos);
       }
     }
@@ -540,4 +614,5 @@ if (typeof window !== 'undefined' && window.location.search.includes("test=true"
     window.Game_Battler = Game_Battler;
     window.Game_Party = Game_Party;
     window.Game_Map = Game_Map;
+    window.Game_Event = Game_Event;
 }

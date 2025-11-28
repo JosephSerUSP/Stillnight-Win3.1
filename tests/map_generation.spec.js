@@ -22,11 +22,12 @@ test.describe('Map Generation', () => {
             for (let y = 0; y < map.MAX_H; y++) {
                 for (let x = 0; x < map.MAX_W; x++) {
                     const tile = floor.tiles[y][x];
-                    if (tile === 'S') hasStairs = true;
+                    // Stairs are now events, tile is floor
                     if (tile === '.') hasFloor = true;
                     if (x === floor.startX && y === floor.startY) hasStart = true;
                 }
             }
+            if (floor.events.some(e => e.type === 'stairs')) hasStairs = true;
 
             return {
                 hasStairs,
