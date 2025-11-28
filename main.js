@@ -1,4 +1,4 @@
-import { DataManager, SceneManager } from "./managers.js";
+import { DataManager, SceneManager, StoryManager } from "./managers.js";
 import { Scene_Boot } from "./scenes.js";
 import { WindowManager } from "./windows.js";
 
@@ -12,7 +12,8 @@ async function main() {
   const sceneManager = new SceneManager(gameContainer);
   const dataManager = new DataManager();
   const windowManager = new WindowManager();
-  const initialScene = new Scene_Boot(dataManager, sceneManager, windowManager);
+  const storyManager = new StoryManager();
+  const initialScene = new Scene_Boot(dataManager, sceneManager, windowManager, storyManager);
   sceneManager.push(initialScene);
 
   // Global Input Handler
@@ -36,6 +37,7 @@ async function main() {
     window.sceneManager = sceneManager;
     window.windowManager = windowManager;
     window.dataManager = dataManager;
+    window.storyManager = storyManager;
   }
 }
 

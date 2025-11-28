@@ -1,0 +1,122 @@
+{
+  "kael_intro": [
+    {
+      "condition": { "missingFlag": "met_kael" },
+      "type": "TEXT",
+      "title": "Custodian Kael",
+      "text": "System... critical... Memory core... unresponsive."
+    },
+    {
+      "condition": { "missingFlag": "met_kael" },
+      "type": "TEXT",
+      "title": "Custodian Kael",
+      "text": "I am Unit 01... Keeper of the Gate to the upper Spire."
+    },
+    {
+      "condition": { "missingFlag": "met_kael" },
+      "type": "SET_FLAG",
+      "flag": "met_kael"
+    },
+    {
+      "condition": { "hasFlag": "met_kael", "missingFlag": "quest_kael_complete", "missingFlag": "has_rusty_gear" },
+      "type": "TEXT",
+      "title": "Custodian Kael",
+      "text": "My gears are seized. I need a Rusty Gear to repair my intake valve. Please..."
+    },
+    {
+      "condition": { "hasFlag": "met_kael", "missingFlag": "quest_kael_complete", "hasItem": "rusty_gear" },
+      "type": "TEXT",
+      "title": "Custodian Kael",
+      "text": "You... found it... Proceeding with repair sequence."
+    },
+    {
+      "condition": { "hasFlag": "met_kael", "missingFlag": "quest_kael_complete", "hasItem": "rusty_gear" },
+      "type": "REMOVE_ITEM",
+      "itemId": "rusty_gear"
+    },
+    {
+      "condition": { "hasFlag": "met_kael", "missingFlag": "quest_kael_complete", "missingFlag": "has_rusty_gear" },
+      "type": "TEXT",
+      "title": "Custodian Kael",
+      "text": "Systems online. The gate is open. Take this Archive Key."
+    },
+    {
+      "condition": { "hasFlag": "met_kael", "missingFlag": "quest_kael_complete", "missingFlag": "has_rusty_gear" },
+      "type": "GIVE_ITEM",
+      "itemId": "archive_key"
+    },
+    {
+      "condition": { "hasFlag": "met_kael", "missingFlag": "quest_kael_complete", "missingFlag": "has_rusty_gear" },
+      "type": "SET_FLAG",
+      "flag": "quest_kael_complete"
+    },
+    {
+      "condition": { "hasFlag": "quest_kael_complete" },
+      "type": "TEXT",
+      "title": "Custodian Kael",
+      "text": "Go forth, Echo. The Silence waits above."
+    }
+  ],
+  "architect_encounter": [
+     {
+         "condition": { "missingFlag": "architect_defeated" },
+         "type": "TEXT",
+         "title": "Grand Architect",
+         "text": "Inefficiency detected. Organic memories consume excessive storage."
+     },
+     {
+         "condition": { "missingFlag": "architect_defeated" },
+         "type": "CHOICE",
+         "title": "Grand Architect",
+         "text": "Will you submit to deletion?",
+         "choices": [
+             { "label": "Never!", "script": [{ "type": "BATTLE" }] },
+             { "label": "Wait, we can help.", "script": [
+                 { "type": "TEXT", "title": "Grand Architect", "text": "Logic error. Optimism is inefficient. Exterminate." },
+                 { "type": "BATTLE" }
+             ]}
+         ]
+     },
+     {
+         "condition": { "hasFlag": "architect_defeated" },
+         "type": "TEXT",
+         "title": "Grand Architect",
+         "text": "System... shut... down..."
+     }
+  ],
+  "zenith_choice": [
+      {
+          "type": "TEXT",
+          "title": "The Spire Core",
+          "text": "You reach the Zenith. The Resonance Engines hum with the stored memories of the world."
+      },
+      {
+          "type": "TEXT",
+          "title": "The Spire Core",
+          "text": "The Silence is not an enemy. It is the end of the cycle. The Spire was built to save the SEED of the next world, not this one."
+      },
+      {
+          "type": "CHOICE",
+          "title": "The Final Choice",
+          "text": "What will you do?",
+          "choices": [
+              {
+                  "label": "Archive the World (Accept the End)",
+                  "script": [
+                      { "type": "TEXT", "text": "You activate the Archive Protocol. The world fades into white silence, safely stored for the next eon." },
+                      { "type": "SET_FLAG", "flag": "ending_archive" },
+                      { "type": "TEXT", "text": "GAME OVER - The Archivist Ending" }
+                  ]
+              },
+              {
+                  "label": "Shatter the Spire (Force a Rebirth)",
+                  "script": [
+                      { "type": "TEXT", "text": "You smash the engines. The stored memories flood back into reality, pushing back the Silence violently." },
+                      { "type": "SET_FLAG", "flag": "ending_rebirth" },
+                      { "type": "TEXT", "text": "GAME OVER - The Rebirth Ending" }
+                  ]
+              }
+          ]
+      }
+  ]
+}

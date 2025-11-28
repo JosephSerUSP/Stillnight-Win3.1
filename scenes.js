@@ -78,10 +78,12 @@ export class Scene_Boot extends Scene_Base {
      * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
      * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
      * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
+     * @param {import("./managers.js").StoryManager} storyManager - The story manager instance.
      */
-    constructor(dataManager, sceneManager, windowManager) {
+    constructor(dataManager, sceneManager, windowManager, storyManager) {
         super(dataManager, windowManager);
         this.sceneManager = sceneManager;
+        this.storyManager = storyManager;
     }
 
     /**
@@ -91,7 +93,7 @@ export class Scene_Boot extends Scene_Base {
      */
     async start() {
         await this.dataManager.loadData();
-        this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager));
+        this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager, this.storyManager));
     }
 }
 
@@ -872,10 +874,12 @@ export class Scene_Map extends Scene_Base {
    * @param {import("./managers.js").DataManager} dataManager - The data manager.
    * @param {import("./managers.js").SceneManager} sceneManager - The scene manager.
    * @param {import("./windows.js").WindowManager} windowManager - The window manager.
+   * @param {import("./managers.js").StoryManager} storyManager - The story manager.
    */
-  constructor(dataManager, sceneManager, windowManager) {
+  constructor(dataManager, sceneManager, windowManager, storyManager) {
     super(dataManager, windowManager);
     this.sceneManager = sceneManager;
+    this.storyManager = storyManager;
     this.map = new Game_Map();
     this.party = new Game_Party();
     this.battleManager = new BattleManager(this.party, this.dataManager);
@@ -1581,8 +1585,13 @@ export class Scene_Map extends Scene_Base {
       }
   }
 
-  executeAction(action, event) {
+  async executeAction(action, event) {
       switch(action.type) {
+          case 'SCRIPT':
+              if (this.dataManager.storyEvents && this.dataManager.storyEvents[action.id]) {
+                  await this.executeScript(this.dataManager.storyEvents[action.id], event);
+              }
+              break;
           case 'BATTLE':
               this.setStatus("Enemy encountered!");
               this.logMessage("[Battle] Shapes uncoil from the dark.");
@@ -1599,7 +1608,13 @@ export class Scene_Map extends Scene_Base {
               this.openRecruitEvent();
               break;
           case 'NPC_DIALOGUE':
-              this.openNpcEvent(action.id);
+              if (action.scriptId) {
+                 if (this.dataManager.storyEvents && this.dataManager.storyEvents[action.scriptId]) {
+                     await this.executeScript(this.dataManager.storyEvents[action.scriptId], event);
+                 }
+              } else {
+                 this.openNpcEvent(action.id);
+              }
               this.updateAll();
               break;
           case 'DESCEND':
@@ -1620,6 +1635,102 @@ export class Scene_Map extends Scene_Base {
               this.triggerTrap(action);
               break;
       }
+  }
+
+  async executeScript(script, eventContext) {
+      if (!script) return;
+      const steps = Array.isArray(script) ? script : [script];
+
+      for (const step of steps) {
+          if (step.condition) {
+              if (!this.checkCondition(step.condition)) continue;
+          }
+
+          if (step.type === 'TEXT') {
+              await new Promise(resolve => {
+                  this.eventWindow.show({
+                      title: step.title || "Event",
+                      description: step.text,
+                      image: step.image,
+                      style: 'terminal',
+                      choices: [{
+                          label: "Continue",
+                          onClick: () => {
+                              this.windowManager.close(this.eventWindow);
+                              resolve();
+                          }
+                      }]
+                  });
+                  this.windowManager.push(this.eventWindow);
+              });
+          }
+          else if (step.type === 'CHOICE') {
+              await new Promise(resolve => {
+                  const choices = step.choices.map(c => ({
+                      label: c.label,
+                      onClick: async () => {
+                          this.windowManager.close(this.eventWindow);
+                          if (c.scriptId && this.dataManager.storyEvents[c.scriptId]) {
+                              await this.executeScript(this.dataManager.storyEvents[c.scriptId], eventContext);
+                          } else if (c.script) {
+                              await this.executeScript(c.script, eventContext);
+                          }
+                          resolve();
+                      }
+                  }));
+
+                  this.eventWindow.show({
+                      title: step.title || "Decision",
+                      description: step.text,
+                      image: step.image,
+                      style: 'terminal',
+                      choices: choices
+                  });
+                  this.windowManager.push(this.eventWindow);
+              });
+          }
+          else if (step.type === 'SET_FLAG') {
+              if (step.value === false) this.storyManager.unsetFlag(step.flag);
+              else this.storyManager.setFlag(step.flag);
+          }
+          else if (step.type === 'GIVE_ITEM') {
+              const item = this.dataManager.items.find(i => i.id === step.itemId);
+              if (item) {
+                  this.party.inventory.push(item);
+                  this.logMessage(`[Event] Received ${item.name}.`);
+                  SoundManager.beep(800, 100);
+              }
+          }
+          else if (step.type === 'REMOVE_ITEM') {
+              const idx = this.party.inventory.findIndex(i => i.id === step.itemId);
+              if (idx !== -1) {
+                  this.party.inventory.splice(idx, 1);
+                  this.logMessage(`[Event] Lost ${step.itemId}.`); // Ideally use item name if we looked it up
+              }
+          }
+          else if (step.type === 'HEAL_PARTY') {
+              this.healParty();
+          }
+          else if (step.type === 'BATTLE') {
+              // Trigger battle and stop script (battle logic handles scene push)
+              this.executeAction({ type: 'BATTLE' }, eventContext);
+              return;
+          }
+          else if (step.type === 'REMOVE_EVENT') {
+              if (eventContext) {
+                   this.map.removeEvent(this.map.floorIndex, eventContext.x, eventContext.y);
+                   this.updateGrid();
+              }
+          }
+      }
+      this.updateAll();
+  }
+
+  checkCondition(cond) {
+      if (cond.hasFlag && !this.storyManager.hasFlag(cond.hasFlag)) return false;
+      if (cond.missingFlag && this.storyManager.hasFlag(cond.missingFlag)) return false;
+      if (cond.hasItem && !this.party.inventory.some(i => i.id === cond.hasItem)) return false;
+      return true;
   }
 
   healParty() {

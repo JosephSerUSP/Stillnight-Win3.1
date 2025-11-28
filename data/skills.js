@@ -134,5 +134,87 @@ export const skills = {
         element: 'Red',
         description: "Rise from the ashes.",
         effects: []
+    },
+
+    // Campaign Skills
+    resonance_wave: {
+        id: 'resonance_wave',
+        name: 'Resonance Wave',
+        target: 'enemy-any',
+        element: 'Blue',
+        description: "Vibrates the target to pieces.",
+        effects: [{ type: 'hp_damage', formula: '4 + 1.2 * a.level' }]
+    },
+    gear_grind: {
+        id: 'gear_grind',
+        name: 'Gear Grind',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "Crushes the target in machinery.",
+        effects: [{ type: 'hp_damage', formula: '5 + 1.3 * a.level' }]
+    },
+    static_discharge: {
+        id: 'static_discharge',
+        name: 'Static Discharge',
+        target: 'enemy-any',
+        element: 'Green',
+        description: "Shocks the enemy.",
+        effects: [{ type: 'hp_damage', formula: '4 + 1.4 * a.level' }]
+    },
+    repair_protocol: {
+        id: 'repair_protocol',
+        name: 'Repair Protocol',
+        target: 'ally-any',
+        element: 'Blue',
+        description: "Restores HP to an ally.",
+        effects: [{ type: 'hp_heal', formula: '6 + 1.2 * a.level' }]
+    },
+    song_of_hope: {
+        id: 'song_of_hope',
+        name: 'Song of Hope',
+        target: 'ally-any',
+        element: 'White',
+        description: "Inspires an ally with regeneration.",
+        effects: [{ type: 'add_status', status: 'regen', chance: 1.0, duration: 4 }]
+    },
+    void_spike: {
+        id: 'void_spike',
+        name: 'Void Spike',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "Impales with nothingness.",
+        effects: [{ type: 'hp_damage', formula: '8 + 1.5 * a.level' }]
+    },
+    data_purge: {
+        id: 'data_purge',
+        name: 'Data Purge',
+        target: 'enemy-any',
+        element: 'Blue',
+        description: "Violently deletes data.",
+        effects: [{ type: 'hp_damage', formula: '5 + 1.0 * a.level' }]
+    },
+    silence_scream: {
+        id: 'silence_scream',
+        name: 'Silence Scream',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "A silent scream that hurts.",
+        effects: [{ type: 'hp_damage', formula: '3 + 1.5 * a.level' }]
+    },
+    clockwork_barrage: {
+        id: 'clockwork_barrage',
+        name: 'Clockwork Barrage',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "Fires gears and bolts.",
+        effects: [{ type: 'hp_damage', formula: '2 + 1.8 * a.level' }]
+    },
+    entropy_touch: {
+        id: 'entropy_touch',
+        name: 'Entropy Touch',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "Decays the target.",
+        effects: [{ type: 'hp_damage', formula: '6 + 1.2 * a.level' }]
     }
 };

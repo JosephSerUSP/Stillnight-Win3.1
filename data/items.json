@@ -80,5 +80,106 @@
     "traits": [
       { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 2 }
     ]
+  },
+  {
+    "id": "memory_shard",
+    "name": "Memory Shard",
+    "type": "key",
+    "cost": 50,
+    "description": "A crystallized fragment of a lost memory.",
+    "icon": 6
+  },
+  {
+    "id": "rusty_gear",
+    "name": "Rusty Gear",
+    "type": "key",
+    "cost": 10,
+    "description": "An essential component for Custodian Kael.",
+    "icon": 6
+  },
+  {
+    "id": "tuning_fork",
+    "name": "Tuning Fork",
+    "type": "consumable",
+    "cost": 40,
+    "description": "Removes Silence status.",
+    "icon": 6,
+    "effects": {
+      "status_remove": "silence"
+    }
+  },
+  {
+    "id": "archive_key",
+    "name": "Archive Key",
+    "type": "key",
+    "cost": 0,
+    "description": "Unlocks the upper floors of the Spire.",
+    "icon": 6
+  },
+  {
+    "id": "architect_blueprint",
+    "name": "Architect Blueprint",
+    "type": "key",
+    "cost": 100,
+    "description": "Plans for the Resonance Engines.",
+    "icon": 6
+  },
+  {
+    "id": "void_essence",
+    "name": "Void Essence",
+    "type": "consumable",
+    "cost": 200,
+    "description": "Grant massive XP but deals damage.",
+    "icon": 6,
+    "effects": {
+      "xp": 50,
+      "hp": -10
+    }
+  },
+  {
+    "id": "aethelgard_ration",
+    "name": "Aethelgard Ration",
+    "type": "consumable",
+    "cost": 15,
+    "description": "Preserved food. Heals 20 HP.",
+    "icon": 6,
+    "effects": {
+      "hp": 20
+    }
+  },
+  {
+    "id": "keeper_oil",
+    "name": "Keeper Oil",
+    "type": "consumable",
+    "cost": 30,
+    "description": "Buffs Max HP by 5 temporarily (simulated as perm for now).",
+    "icon": 6,
+    "effects": {
+      "maxHp": 5
+    }
+  },
+  {
+    "id": "scribe_ink",
+    "name": "Scribe Ink",
+    "type": "consumable",
+    "cost": 40,
+    "description": "Grants XP.",
+    "icon": 6,
+    "effects": {
+      "xp": 15
+    }
+  },
+  {
+    "id": "zenith_lens",
+    "name": "Zenith Lens",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 500,
+    "icon": 6,
+    "description": "Allows one to see the truth. +5 DMG, +10 HP.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 5 },
+      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 10 }
+    ]
   }
 ]
