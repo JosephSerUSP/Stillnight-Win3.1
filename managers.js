@@ -23,16 +23,22 @@ export class DataManager {
     this.elements = null;
 
     /**
-     * The event data loaded from events.json.
+     * The event definitions loaded from events.json.
      * @type {Array|null}
      */
-    this.events = null;
+    this.eventDefs = null;
 
     /**
-     * The floor data loaded from floors.json.
+     * The shrine stories loaded from shrine_stories.json.
      * @type {Array|null}
      */
-    this.floors = null;
+    this.shrineStories = null;
+
+    /**
+     * The map data loaded from maps.json.
+     * @type {Array|null}
+     */
+    this.maps = null;
 
     /**
      * The item data loaded from items.json.
@@ -85,8 +91,9 @@ export class DataManager {
     const dataSources = {
       actors: "data/actors.json",
       elements: "data/elements.json",
-      events: "data/events.json",
-      floors: "data/floors.json",
+      eventDefs: "data/events.json",
+      shrineStories: "data/shrine_stories.json",
+      maps: "data/maps.json",
       items: "data/items.json",
       npcs: "data/npcs.json",
       terms: "data/terms.json",

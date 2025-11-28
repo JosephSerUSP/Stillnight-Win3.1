@@ -377,13 +377,14 @@ export class Game_Map {
   }
 
   /**
-   * Initializes the map floors using provided floor metadata.
+   * Initializes the map floors using provided map metadata.
    * @method initFloors
-   * @param {Array} floorData - The array of floor metadata objects from data manager.
+   * @param {Array} mapData - The array of map metadata objects from data manager.
+   * @param {Array} eventDefs - The array of event definitions.
    * @param {Array} [npcData] - Optional array of NPC definitions.
    */
-  initFloors(floorData, npcData = []) {
-    this.floors = floorData.map((meta, i) => this.generateFloor(meta, i, npcData));
+  initFloors(mapData, eventDefs, npcData = []) {
+    this.floors = mapData.map((meta, i) => this.generateFloor(meta, eventDefs, i, npcData));
     this.floors[0].discovered = true;
     this.maxReachedFloorIndex = 0;
   }
@@ -393,11 +394,12 @@ export class Game_Map {
    * Places tiles, stairs, enemies, shrines, and shops.
    * @method generateFloor
    * @param {Object} meta - The metadata for the floor (title, depth, etc.).
+   * @param {Array} eventDefs - The array of event definitions.
    * @param {number} index - The index of the floor in the dungeon.
    * @param {Array} [npcData] - Optional array of NPC definitions.
    * @returns {Object} The generated floor object containing layout and entity positions.
    */
-  generateFloor(meta, index, npcData = []) {
+  generateFloor(meta, eventDefs, index, npcData = []) {
     const tiles = Array.from({ length: this.MAX_H }, () =>
       Array.from({ length: this.MAX_W }, () => "#")
     );
@@ -463,84 +465,54 @@ export class Game_Map {
     const startPos = floorCells[floorCells.length - 1];
     const [startX, startY] = startPos;
 
-    const stairsPos =
-      floorCells[Math.floor(floorCells.length / 3)] || floorCells[0];
+    const used = [startPos];
 
-    events.push(new Game_Event(stairsPos[0], stairsPos[1], {
-        type: 'stairs',
-        symbol: 'S',
-        cssClass: 'tile-stairs',
-        trigger: 'touch',
-        actions: [{ type: 'DESCEND' }]
-    }));
+    if (meta.spawns && eventDefs) {
+      meta.spawns.forEach((spawnRule) => {
+        const eventDef = eventDefs.find((e) => e.id === spawnRule.id || e.id === spawnRule.eventId);
+        if (!eventDef) return;
 
-    const used = [startPos, stairsPos];
+        let count = 0;
+        if (spawnRule.count !== undefined) {
+          if (typeof spawnRule.count === "number") count = spawnRule.count;
+          else if (typeof spawnRule.count === "string") {
+            const parts = spawnRule.count.split("-");
+            if (parts.length === 2)
+              count = randInt(parseInt(parts[0]), parseInt(parts[1]));
+            else count = parseInt(spawnRule.count);
+          }
+        } else if (spawnRule.chance !== undefined) {
+          if (Math.random() < spawnRule.chance) count = 1;
+        }
 
-    const recPos = pickCell(used);
-    if (recPos) {
-      events.push(new Game_Event(recPos[0], recPos[1], {
-          type: 'recovery',
-          symbol: 'R',
-          cssClass: 'tile-recovery',
-          trigger: 'touch',
-          actions: [{ type: 'HEAL_PARTY' }]
-      }));
-      used.push(recPos);
-    }
+        // Special handling for stairs to ensure they are placed far from start
+        if (eventDef.type === 'stairs') {
+           // Try to place at 1/3 point like before, or just pick random if not available
+           const preferredPos = floorCells[Math.floor(floorCells.length / 3)] || floorCells[0];
+           // Check if preferredPos is already used
+           if (!used.some(u => u[0] === preferredPos[0] && u[1] === preferredPos[1])) {
+               events.push(new Game_Event(preferredPos[0], preferredPos[1], {
+                   ...eventDef,
+                   id: eventDef.id
+               }));
+               used.push(preferredPos);
+               count--; // One placed
+           }
+        }
 
-    const enemyCount = randInt(2, 4);
-    for (let i = 0; i < enemyCount; i++) {
-      const ePos = pickCell(used);
-      if (!ePos) break;
-      events.push(new Game_Event(ePos[0], ePos[1], {
-        type: 'enemy',
-        symbol: 'E',
-        cssClass: 'tile-enemy',
-        trigger: 'touch',
-        actions: [{ type: 'BATTLE' }]
-      }));
-      used.push(ePos);
-    }
-
-    if (meta.depth >= 1 && index >= 1) {
-      const shrinePos = pickCell(used);
-      if (shrinePos) {
-        events.push(new Game_Event(shrinePos[0], shrinePos[1], {
-            type: 'shrine',
-            symbol: '♱',
-            cssClass: 'tile-shrine',
-            trigger: 'touch',
-            actions: [{ type: 'SHRINE' }]
-        }));
-        used.push(shrinePos);
-      }
-    }
-    if (meta.depth >= 2 || index === 0) { // Always on first floor for testing
-      const shopPos = pickCell(used);
-      if (shopPos) {
-        events.push(new Game_Event(shopPos[0], shopPos[1], {
-            type: 'shop',
-            symbol: '¥',
-            cssClass: 'tile-shop',
-            trigger: 'touch',
-            actions: [{ type: 'SHOP' }]
-        }));
-        used.push(shopPos);
-      }
-    }
-
-    if (meta.depth >= 1) {
-      const recruitPos = pickCell(used);
-      if (recruitPos) {
-        events.push(new Game_Event(recruitPos[0], recruitPos[1], {
-            type: 'recruit',
-            symbol: 'U',
-            cssClass: 'tile-recruit',
-            trigger: 'touch',
-            actions: [{ type: 'RECRUIT' }]
-        }));
-        used.push(recruitPos);
-      }
+        for (let i = 0; i < count; i++) {
+          const pos = pickCell(used);
+          if (pos) {
+            events.push(
+              new Game_Event(pos[0], pos[1], {
+                ...eventDef,
+                id: eventDef.id,
+              })
+            );
+            used.push(pos);
+          }
+        }
+      });
     }
 
     // Place random NPC (small chance)

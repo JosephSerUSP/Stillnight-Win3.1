@@ -3,16 +3,26 @@ const { test, expect } = require('@playwright/test');
 test.describe('Map Generation', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/?test=true');
-        await page.waitForFunction(() => window.dataManager && window.dataManager.floors);
+        await page.waitForFunction(() => window.dataManager && window.dataManager.maps);
     });
 
     test('generateFloor creates valid map structure', async ({ page }) => {
         const floorData = await page.evaluate(() => {
             const { Game_Map } = window;
             const map = new Game_Map();
-            const meta = { title: "Test Floor", depth: 1, intro: "Welcome" };
+            const eventDefs = [
+                 { id: 'stairs_down', type: 'stairs', symbol: 'S' }
+            ];
+            const meta = {
+                title: "Test Floor",
+                depth: 1,
+                intro: "Welcome",
+                spawns: [
+                    { id: 'stairs_down', count: 1 }
+                ]
+            };
 
-            const floor = map.generateFloor(meta, 0);
+            const floor = map.generateFloor(meta, eventDefs, 0);
 
             // Check for essential elements
             let hasStairs = false;

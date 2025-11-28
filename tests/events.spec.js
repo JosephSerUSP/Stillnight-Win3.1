@@ -3,23 +3,33 @@ const { test, expect } = require('@playwright/test');
 test.describe('Event System', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/?test=true');
-    await page.waitForFunction(() => window.dataManager && window.dataManager.floors && window.dataManager.npcs);
+    await page.waitForFunction(() => window.dataManager && window.dataManager.maps && window.dataManager.npcs);
   });
 
   test('Map generates events properly', async ({ page }) => {
     const floorData = await page.evaluate(() => {
       const { Game_Map } = window;
       const map = new Game_Map();
-      const meta = { title: "Test Floor", depth: 1, intro: "Welcome" };
-      // Pass empty npcs so we can control it if needed, or check default gen
-      // Actually we want to verify enemies etc are generated.
-      const floor = map.generateFloor(meta, 0, []);
+      const eventDefs = [
+          { id: 'enemy', type: 'enemy', symbol: 'E' },
+          { id: 'shop', type: 'shop', symbol: '¥' }
+      ];
+      const meta = {
+          title: "Test Floor",
+          depth: 1,
+          intro: "Welcome",
+          spawns: [
+              { id: 'enemy', count: 1 },
+              { id: 'shop', count: 1 }
+          ]
+      };
+
+      const floor = map.generateFloor(meta, eventDefs, 0, []);
       return floor.events;
     });
 
     // Should have enemies at least
     expect(floorData.some(e => e.type === 'enemy')).toBe(true);
-    // Should have shop? Depth 1, index 0 -> yes shop logic is (depth>=2 || index===0)
     expect(floorData.some(e => e.type === 'shop')).toBe(true);
   });
 
@@ -27,8 +37,13 @@ test.describe('Event System', () => {
      const result = await page.evaluate(() => {
          const { Game_Map } = window;
          const map = new Game_Map();
-         const meta = { title: "Test Floor", depth: 1 };
-         const floor = map.generateFloor(meta, 0, []);
+         const eventDefs = [{ id: 'test_event', type: 'test', symbol: '?' }];
+         const meta = {
+             title: "Test Floor",
+             depth: 1,
+             spawns: [{ id: 'test_event', count: 1 }]
+         };
+         const floor = map.generateFloor(meta, eventDefs, 0, []);
 
          const event = floor.events[0];
          if (!event) return { success: false, reason: 'No events generated' };
@@ -61,7 +76,7 @@ test.describe('Event System', () => {
           let hasNpc = false;
           // Try 20 times to hit the 30% chance
           for(let i=0; i<20; i++) {
-              const floor = map.generateFloor(meta, 0, npcs);
+              const floor = map.generateFloor(meta, [], 0, npcs);
               if (floor.events.some(e => e.type === 'npc' && e.id === 'test_npc')) {
                   hasNpc = true;
                   break;

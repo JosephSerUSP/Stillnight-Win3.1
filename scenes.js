@@ -1036,7 +1036,7 @@ export class Scene_Map extends Scene_Base {
    */
   startNewRun() {
     if (this.sceneManager.currentScene() !== this) return;
-    this.map.initFloors(this.dataManager.floors, this.dataManager.npcs);
+    this.map.initFloors(this.dataManager.maps, this.dataManager.eventDefs, this.dataManager.npcs);
     this.party.createInitialMembers(this.dataManager);
     this.runActive = true;
     this.map.floorIndex = 0;
@@ -1613,12 +1613,12 @@ export class Scene_Map extends Scene_Base {
    * @method openShrineEvent
    */
   openShrineEvent() {
-    if (this.dataManager.events.length === 0) {
+    if (!this.dataManager.shrineStories || this.dataManager.shrineStories.length === 0) {
       this.logMessage(this.dataManager.terms.shrine.silent);
       return;
     }
     const ev =
-      this.dataManager.events[randInt(0, this.dataManager.events.length - 1)];
+      this.dataManager.shrineStories[randInt(0, this.dataManager.shrineStories.length - 1)];
     this.eventWindow.titleEl.textContent = ev.title;
     this.eventWindow.descriptionEl.textContent = ev.description;
     this.eventWindow.choicesEl.innerHTML = "";
