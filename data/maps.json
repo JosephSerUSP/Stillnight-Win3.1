@@ -10,6 +10,11 @@
       { "id": "shop", "count": 1 },
       { "id": "recruit", "chance": 0.5 },
       { "id": "npc", "chance": 0.3 }
+    ],
+    "encounters": [
+      { "id": "bat", "weight": 10 },
+      { "id": "ooze", "weight": 5 },
+      { "id": "pixie", "weight": 2 }
     ]
   },
   {
@@ -23,6 +28,11 @@
       { "id": "shrine", "count": 1 },
       { "id": "shop", "count": 1 },
       { "id": "recruit", "chance": 0.5 }
+    ],
+    "encounters": [
+      { "id": "wisp", "weight": 8 },
+      { "id": "pixie", "weight": 5 },
+      { "id": "ooze", "weight": 2 }
     ]
   },
   {
@@ -37,6 +47,11 @@
       { "id": "shop", "count": 1 },
       { "id": "recruit", "chance": 0.6 },
       { "id": "npc", "chance": 0.3 }
+    ],
+    "encounters": [
+      { "id": "skeleton", "weight": 10 },
+      { "id": "imp", "weight": 6 },
+      { "id": "wisp", "weight": 4 }
     ]
   },
   {
@@ -50,6 +65,11 @@
       { "id": "shrine", "count": 1 },
       { "id": "shop", "chance": 0.8 },
       { "id": "recruit", "chance": 0.6 }
+    ],
+    "encounters": [
+      { "id": "golem", "weight": 5 },
+      { "id": "wisp", "weight": 8 },
+      { "id": "imp", "weight": 4 }
     ]
   },
   {
@@ -63,6 +83,11 @@
       { "id": "shrine", "chance": 0.7 },
       { "id": "shop", "chance": 0.7 },
       { "id": "recruit", "chance": 0.7 }
+    ],
+    "encounters": [
+      { "id": "skeleton", "weight": 8 },
+      { "id": "demon", "weight": 4 },
+      { "id": "angel", "weight": 2 }
     ]
   },
   {
@@ -77,6 +102,11 @@
       { "id": "shop", "chance": 0.7 },
       { "id": "recruit", "chance": 0.7 },
       { "id": "npc", "chance": 0.4 }
+    ],
+    "encounters": [
+      { "id": "golem", "weight": 6 },
+      { "id": "imp", "weight": 8 },
+      { "id": "demon", "weight": 3 }
     ]
   },
   {
@@ -90,6 +120,11 @@
       { "id": "shrine", "chance": 0.6 },
       { "id": "shop", "chance": 0.6 },
       { "id": "recruit", "chance": 0.5 }
+    ],
+    "encounters": [
+      { "id": "demon", "weight": 8 },
+      { "id": "highPixie", "weight": 5 },
+      { "id": "golem", "weight": 4 }
     ]
   },
   {
@@ -104,6 +139,11 @@
       { "id": "shop", "chance": 0.5 },
       { "id": "recruit", "chance": 0.5 },
       { "id": "npc", "chance": 0.5 }
+    ],
+    "encounters": [
+      { "id": "crimsonLord", "weight": 3 },
+      { "id": "demon", "weight": 8 },
+      { "id": "highPixie", "weight": 5 }
     ]
   },
   {
@@ -113,6 +153,10 @@
     "events": [
       { "id": "recovery", "count": 1 },
       { "id": "enemy", "min": 1, "max": 1 }
+    ],
+    "encounters": [
+      { "id": "crimsonLord", "weight": 10 },
+      { "id": "demon", "weight": 5 }
     ]
   }
 ]
