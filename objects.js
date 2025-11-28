@@ -503,6 +503,7 @@ export class Game_Map {
       title: meta.title,
       depth: meta.depth,
       intro: meta.intro,
+      encounters: meta.encounters,
       tiles,
       events,
       visited,
