@@ -1,5 +1,5 @@
 import { Game_Map, Game_Party, Game_Battler, Game_Event } from "./objects.js";
-import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle } from "./core.js";
+import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted } from "./core.js";
 import { BattleManager, SoundManager } from "./managers.js";
 import {
   Window_Battle,
@@ -153,11 +153,32 @@ export class Scene_Battle extends Scene_Base {
         expGrowth: 10,
       }, depth, true));
     } else {
-      const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
-      const enemyCount = randInt(1, maxEnemies);
-      for (let i = 0; i < enemyCount; i++) {
-        const tpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
-        enemies.push(new Game_Battler(tpl, depth, true));
+      // Use encounter table if available
+      if (floor.encounters && floor.encounters.length > 0) {
+        const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
+        const enemyCount = randInt(1, maxEnemies);
+        for (let i = 0; i < enemyCount; i++) {
+            const encounter = pickWeighted(floor.encounters);
+            if (encounter) {
+                const tpl = actorTemplates.find(a => a.id === encounter.id);
+                if (tpl) {
+                    enemies.push(new Game_Battler(tpl, depth, true));
+                } else {
+                    console.warn(`Encounter ID ${encounter.id} not found in actors.`);
+                    // Fallback to random
+                    const randomTpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
+                    enemies.push(new Game_Battler(randomTpl, depth, true));
+                }
+            }
+        }
+      } else {
+        // Legacy fallback
+        const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
+        const enemyCount = randInt(1, maxEnemies);
+        for (let i = 0; i < enemyCount; i++) {
+          const tpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
+          enemies.push(new Game_Battler(tpl, depth, true));
+        }
       }
     }
 

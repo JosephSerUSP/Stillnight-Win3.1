@@ -95,6 +95,22 @@ export function getIconStyle(iconId) {
 }
 
 /**
+ * Picks an element from an array based on weight.
+ * @param {Array} options - Array of objects with a 'weight' property.
+ * @returns {Object|null} The selected object.
+ */
+export function pickWeighted(options) {
+  if (!options || options.length === 0) return null;
+  const totalWeight = options.reduce((sum, opt) => sum + (opt.weight || 1), 0);
+  let r = Math.random() * totalWeight;
+  for (const opt of options) {
+    r -= (opt.weight || 1);
+    if (r <= 0) return opt;
+  }
+  return options[options.length - 1];
+}
+
+/**
  * @namespace Graphics
  * @description A utility class for accessing global screen/container dimensions.
  */
