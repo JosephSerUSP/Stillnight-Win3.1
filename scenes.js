@@ -789,7 +789,7 @@ export class Scene_Shop extends Scene_Base {
         this.shopWindow = new Window_Shop();
         this.windowLayer.addChild(this.shopWindow);
 
-        this.shopWindow.btnClose.addEventListener("click", this.closeShop.bind(this));
+        this.shopWindow.onUserClose = this.closeShop.bind(this);
         this.shopWindow.btnLeave.addEventListener("click", this.closeShop.bind(this));
     }
 
@@ -890,6 +890,7 @@ export class Scene_Map extends Scene_Base {
     this.inventoryWindow = new Window_Inventory();
     this.windowLayer.addChild(this.inventoryWindow);
     this.eventWindow = new Window_Event();
+    this.eventWindow.onUserClose = this.closeEvent.bind(this);
     this.windowLayer.addChild(this.eventWindow);
     this.recruitWindow = new Window_Recruit();
     this.windowLayer.addChild(this.recruitWindow)
@@ -900,20 +901,10 @@ export class Scene_Map extends Scene_Base {
     this.confirmWindow = new Window_Confirm();
     this.windowLayer.addChild(this.confirmWindow);
 
-    this.recruitWindow.btnClose.addEventListener(
-      "click",
-      this.closeRecruitEvent.bind(this)
-    );
+    this.recruitWindow.onUserClose = this.closeRecruitEvent.bind(this);
+    this.formationWindow.onUserClose = this.closeFormation.bind(this);
+    this.confirmWindow.onUserClose = () => this.windowManager.close(this.confirmWindow);
 
-    this.formationWindow.btnClose.addEventListener(
-      "click",
-      this.closeFormation.bind(this)
-    );
-
-    this.confirmWindow.btnClose.addEventListener(
-      "click",
-      () => this.windowManager.close(this.confirmWindow)
-    );
     this.formationWindow.btnOk.addEventListener(
       "click",
       this.closeFormation.bind(this)
@@ -923,14 +914,7 @@ export class Scene_Map extends Scene_Base {
       this.closeFormation.bind(this)
     );
 
-    this.inventoryWindow.btnClose.addEventListener(
-      "click",
-      this.closeInventory.bind(this)
-    );
-    this.inventoryWindow.btnClose2.addEventListener(
-      "click",
-      this.closeInventory.bind(this)
-    );
+    this.inventoryWindow.onUserClose = this.closeInventory.bind(this);
   }
 
   /**
@@ -1118,7 +1102,6 @@ export class Scene_Map extends Scene_Base {
     });
     this.btnFormation.addEventListener("click", this.openFormation.bind(this));
     this.btnInventory.addEventListener("click", this.openInventory.bind(this));
-    document.addEventListener("keydown", this.onKeyDown.bind(this));
   }
 
   /**
@@ -1186,6 +1169,16 @@ export class Scene_Map extends Scene_Base {
   }
 
   /**
+   * Returns a promise that resolves after the given milliseconds.
+   * @method delay
+   * @param {number} ms
+   * @returns {Promise}
+   */
+  delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
    * Appends a message to the event log.
    * @method logMessage
    * @param {string} msg - The message to log.
@@ -1193,6 +1186,10 @@ export class Scene_Map extends Scene_Base {
   logMessage(msg) {
     this.logEl.textContent += msg + "\n";
     this.logEl.scrollTop = this.logEl.scrollHeight;
+
+    if (this.windowManager.stack.includes(this.eventWindow)) {
+        this.eventWindow.appendLog(msg);
+    }
   }
 
   /**
@@ -1245,8 +1242,22 @@ export class Scene_Map extends Scene_Base {
           let symbol = " ";
 
           if (event) {
-              symbol = event.symbol;
-              if (event.cssClass) tileEl.classList.add(event.cssClass);
+              let visible = true;
+              if (event.hidden) {
+                  let maxSee = 0;
+                  this.party.members.forEach(m => {
+                      const v = m.getPassiveValue("SEE_TRAPS");
+                      if (v > maxSee) maxSee = v;
+                  });
+                  if (maxSee <= event.trapValue) {
+                      visible = false;
+                  }
+              }
+
+              if (visible) {
+                  symbol = event.symbol;
+                  if (event.cssClass) tileEl.classList.add(event.cssClass);
+              }
           }
 
           if (symbol === " ") {
@@ -1459,9 +1470,41 @@ export class Scene_Map extends Scene_Base {
     this.updateGrid();
 
     if (event) {
-       this.currentInteractionEvent = event;
-       this.executeEvent(event);
-       return;
+       let isHidden = false;
+       if (event.hidden) {
+           let maxSee = 0;
+           this.party.members.forEach(m => {
+              const v = m.getPassiveValue("SEE_TRAPS");
+              if (v > maxSee) maxSee = v;
+           });
+           if (maxSee <= event.trapValue) {
+               isHidden = true;
+           }
+       }
+
+       if (isHidden) {
+           this.map.playerX = x;
+           this.map.playerY = y;
+           this.map.revealAroundPlayer();
+           this.updateGrid();
+
+           event.hidden = false;
+           this.currentInteractionEvent = event;
+           this.executeEvent(event);
+           return;
+       } else {
+           // If it's a trap, we still move onto it (triggering it)
+           if (event.type === 'trap') {
+               this.map.playerX = x;
+               this.map.playerY = y;
+               this.map.revealAroundPlayer();
+               this.updateGrid();
+           }
+
+           this.currentInteractionEvent = event;
+           this.executeEvent(event);
+           return;
+       }
     }
 
     if (ch === ".") {
@@ -1511,6 +1554,12 @@ export class Scene_Map extends Scene_Base {
           case 'MESSAGE':
               if (action.text) this.logMessage(action.text);
               this.updateAll();
+              break;
+          case 'TREASURE':
+              this.openTreasureEvent();
+              break;
+          case 'TRAP_TRIGGER':
+              this.triggerTrap(action);
               break;
       }
   }
@@ -1642,20 +1691,28 @@ export class Scene_Map extends Scene_Base {
       return;
     }
     const ev = scenarios[randInt(0, scenarios.length - 1)];
-    this.eventWindow.titleEl.textContent = ev.title;
-    this.eventWindow.descriptionEl.textContent = ev.description;
-    this.eventWindow.choicesEl.innerHTML = "";
-    ev.choices.forEach((ch) => {
-      const btn = document.createElement("button");
-      btn.className = "win-btn";
-      btn.textContent = ch.label;
-      btn.addEventListener("click", () => {
-        this.applyEventEffect(ch.effect);
-        this.closeEvent();
-      });
-      this.eventWindow.choicesEl.appendChild(btn);
+
+    const choices = ev.choices.map(ch => ({
+        label: ch.label,
+        onClick: async () => {
+            this.eventWindow.appendLog(`> ${ch.label}`);
+            await this.applyEventEffect(ch.effect);
+            this.eventWindow.updateChoices([{
+                label: "Exit Shrine",
+                onClick: () => this.closeEvent()
+            }]);
+        }
+    }));
+
+    this.eventWindow.show({
+        title: ev.title,
+        description: ev.description,
+        image: ev.image || "shrine.png",
+        style: 'terminal',
+        choices: choices
     });
     this.windowManager.push(this.eventWindow);
+
     this.setStatus("Shrine event.");
     SoundManager.beep(700, 150);
   }
@@ -1663,42 +1720,40 @@ export class Scene_Map extends Scene_Base {
   /**
    * Applies the outcome of a shrine event choice.
    * @method applyEventEffect
+   * @async
    * @param {Object} effect - The effect object.
    */
-  applyEventEffect(effect) {
+  async applyEventEffect(effect) {
+    const log = (msg) => this.logMessage(msg);
+
+    await this.delay(300);
+
     switch (effect.type) {
       case "hp":
-        this.party.members.forEach((m) => (m.hp += effect.value));
-        this.logMessage(
-          this.dataManager.terms.shrine.hp_change.replace("{0}", effect.value)
-        );
+        this.party.members.forEach((m) => {
+            m.hp += effect.value;
+            if (m.hp > m.maxHp) m.hp = m.maxHp;
+            if (m.hp < 0) m.hp = 0;
+        });
+        log(this.dataManager.terms.shrine.hp_change.replace("{0}", effect.value));
         break;
       case "maxHp":
         this.party.members.forEach((m) => (m.maxHp += effect.value));
-        this.logMessage(
-          this.dataManager.terms.shrine.max_hp_change.replace(
-            "{0}",
-            effect.value
-          )
-        );
+        log(this.dataManager.terms.shrine.max_hp_change.replace("{0}", effect.value));
         break;
       case "xp":
         this.party.members.forEach((m) => this.gainXp(m, effect.value));
-        this.logMessage(
-          this.dataManager.terms.shrine.xp_gain.replace("{0}", effect.value)
-        );
+        log(this.dataManager.terms.shrine.xp_gain.replace("{0}", effect.value));
         break;
       case "gold":
         this.party.gold += effect.value;
-        this.logMessage(
-          this.dataManager.terms.shrine.gold_gain.replace("{0}", effect.value)
-        );
+        log(this.dataManager.terms.shrine.gold_gain.replace("{0}", effect.value));
         if (effect.onSuccess) {
-          this.applyEventEffect(effect.onSuccess);
+          await this.applyEventEffect(effect.onSuccess);
         }
         break;
       case "message":
-        this.logMessage(effect.value);
+        log(effect.value);
         break;
       case "random":
         const roll = Math.random();
@@ -1710,14 +1765,97 @@ export class Scene_Map extends Scene_Base {
           }
         }
         if (outcome) {
-          this.applyEventEffect(outcome.effect);
+          await this.applyEventEffect(outcome.effect);
         }
         break;
       case "multi":
-        effect.effects.forEach((e) => this.applyEventEffect(e));
+        for (const e of effect.effects) {
+            await this.applyEventEffect(e);
+        }
         break;
     }
     this.updateAll();
+  }
+
+  triggerTrap(action) {
+      this.eventWindow.show({
+          title: "Trap!",
+          description: action.message || "You triggered a trap!",
+          image: "trap.png",
+          style: 'terminal',
+          choices: [{
+              label: "Ouch...",
+              onClick: () => this.resolveTrap(action)
+          }]
+      });
+      this.windowManager.push(this.eventWindow);
+      SoundManager.beep(150, 300);
+  }
+
+  async resolveTrap(action) {
+      try {
+          const dmg = action.damage || 5;
+          this.eventWindow.appendLog(`> Ouch...`);
+          await this.delay(500);
+
+          this.party.members.forEach(m => {
+              m.hp = Math.max(0, m.hp - dmg);
+          });
+
+          this.logMessage(`The party takes ${dmg} damage.`);
+          SoundManager.beep(150, 300);
+          this.updateAll();
+
+          this.eventWindow.updateChoices([{
+              label: "Close",
+              onClick: () => this.eventWindow.onUserClose()
+          }]);
+      } catch (e) {
+          console.error(e);
+          this.eventWindow.appendLog("Error in resolveTrap: " + e);
+      }
+  }
+
+  openTreasureEvent() {
+      const floor = this.map.floors[this.map.floorIndex];
+      let possibleItems = floor.treasures || [];
+
+      if (!possibleItems || possibleItems.length === 0) {
+          possibleItems = this.dataManager.items.filter(i => i.type !== 'key').map(i => i.id);
+      }
+
+      let itemId;
+      if (typeof possibleItems[0] === 'string') {
+          itemId = possibleItems[randInt(0, possibleItems.length - 1)];
+      } else {
+          const picked = pickWeighted(possibleItems);
+          itemId = picked ? picked.id : null;
+      }
+
+      if (!itemId && possibleItems.length > 0) {
+           // Fallback if weighted pick failed or was strange
+           if (typeof possibleItems[0] === 'string') itemId = possibleItems[0];
+           else itemId = possibleItems[0].id;
+      }
+
+      const item = this.dataManager.items.find(i => i.id === itemId) || this.dataManager.items[0];
+
+      this.party.inventory.push(item);
+      this.clearEventTile();
+
+      this.eventWindow.show({
+          title: "Treasure Found!",
+          description: `You found: ${item.name}\n\n${item.description}`,
+          image: "treasure.png",
+          style: 'terminal',
+          choices: [{
+              label: "Take",
+              onClick: () => this.closeEvent()
+          }]
+      });
+      this.windowManager.push(this.eventWindow);
+      SoundManager.beep(800, 100);
+      this.updateAll();
   }
 
   /**
@@ -1903,7 +2041,17 @@ export class Scene_Map extends Scene_Base {
         text = npc.dialogue;
     }
 
-    this.logMessage(`[${npc.name}] "${text}"`);
+    this.eventWindow.show({
+        title: npc.name,
+        description: `"${text}"`,
+        style: 'terminal',
+        choices: [{
+            label: "Leave",
+            onClick: () => this.closeEvent()
+        }]
+    });
+    this.windowManager.push(this.eventWindow);
+
     this.setStatus(`Talking to ${npc.name}.`);
     SoundManager.beep(400, 100);
   }
@@ -2373,7 +2521,7 @@ renderElements(elements) {
     this.setStatus(`Inspecting ${member.name}`);
     this.logMessage(`[Inspect] ${member.name} – Lv${member.level}, ${this.partyRow(index)}, HP ${member.hp}/${member.maxHp}.`);
 
-    this.inspectWindow.btnClose.onclick = () => this.closeInspect();
+    this.inspectWindow.onUserClose = () => this.closeInspect();
     this.inspectWindow.btnOk.onclick = () => this.closeInspect();
     this.inspectWindow.equipEl.onclick = () => this.openEquipmentScreen();
   }

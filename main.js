@@ -15,6 +15,22 @@ async function main() {
   const initialScene = new Scene_Boot(dataManager, sceneManager, windowManager);
   sceneManager.push(initialScene);
 
+  // Global Input Handler
+  document.addEventListener("keydown", (e) => {
+      // 1. Give WindowManager priority (for modal dialogs, closing windows)
+      if (windowManager.handleInput(e)) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+      }
+
+      // 2. Delegate to active scene
+      const currentScene = sceneManager.currentScene();
+      if (currentScene && typeof currentScene.onKeyDown === 'function') {
+          currentScene.onKeyDown(e);
+      }
+  });
+
   // Expose managers to the window object for testing purposes if 'test=true' query param is present.
   if (window.location.search.includes("test=true")) {
     window.sceneManager = sceneManager;

@@ -172,6 +172,12 @@ export class Game_Battler extends Game_Base {
       return base + bonus;
   }
 
+  set maxHp(value) {
+      const bonus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'maxHp')
+                               .reduce((sum, t) => sum + t.value, 0);
+      this._baseMaxHp = value - bonus;
+  }
+
   /**
    * Gets the effective Attack power.
    * @type {number}
@@ -348,6 +354,8 @@ export class Game_Event {
     this.trigger = data.trigger || "touch";
     this.actions = data.actions || [];
     if (data.id) this.id = data.id;
+    this.hidden = data.hidden || false;
+    this.trapValue = data.trapValue || 0;
   }
 }
 
@@ -477,6 +485,7 @@ export class Game_Map {
       depth: meta.depth,
       intro: meta.intro,
       encounters: meta.encounters,
+      treasures: meta.treasures,
       tiles,
       events,
       visited,

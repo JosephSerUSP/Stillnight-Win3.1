@@ -56,6 +56,24 @@
     "actions": [{ "type": "NPC_DIALOGUE" }]
   },
   {
+    "id": "trap",
+    "type": "trap",
+    "symbol": "T",
+    "cssClass": "tile-trap",
+    "trigger": "touch",
+    "hidden": true,
+    "trapValue": 5,
+    "actions": [{ "type": "TRAP_TRIGGER", "damage": 5, "message": "You triggered a spike trap!" }]
+  },
+  {
+    "id": "treasure",
+    "type": "treasure",
+    "symbol": "$",
+    "cssClass": "tile-treasure",
+    "trigger": "touch",
+    "actions": [{ "type": "TREASURE" }]
+  },
+  {
     "id": "shrine_shade",
     "type": "shrine_scenario",
     "title": "Whispering Shade",
