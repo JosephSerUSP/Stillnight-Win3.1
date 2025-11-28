@@ -29,10 +29,10 @@ export class DataManager {
     this.events = null;
 
     /**
-     * The floor data loaded from floors.json.
+     * The map data loaded from maps.json.
      * @type {Array|null}
      */
-    this.floors = null;
+    this.maps = null;
 
     /**
      * The item data loaded from items.json.
@@ -86,7 +86,7 @@ export class DataManager {
       actors: "data/actors.json",
       elements: "data/elements.json",
       events: "data/events.json",
-      floors: "data/floors.json",
+      maps: "data/maps.json",
       items: "data/items.json",
       npcs: "data/npcs.json",
       terms: "data/terms.json",
