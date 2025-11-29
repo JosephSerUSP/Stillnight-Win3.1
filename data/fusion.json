@@ -1,0 +1,22 @@
+{
+  "Fairy": {
+    "Jirae": "Brute"
+  },
+  "Element": {
+    "Jirae": "Fairy"
+  },
+  "Jirae": {
+    "Element": "Fairy",
+    "Yoma": "Fairy",
+    "Fairy": "Brute"
+  },
+  "Yoma": {
+    "Jirae": "Fairy"
+  },
+  "Beast": {
+    "Brute": "Jirae"
+  },
+  "Brute": {
+    "Beast": "Jirae"
+  }
+}

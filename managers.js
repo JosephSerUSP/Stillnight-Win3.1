@@ -81,6 +81,12 @@ export class DataManager {
      * @type {Object|null}
      */
     this.animations = null;
+
+    /**
+     * The fusion data loaded from fusion.json.
+     * @type {Object|null}
+     */
+    this.fusion = null;
   }
 
   /**
@@ -96,6 +102,7 @@ export class DataManager {
       items: "data/items.json",
       npcs: "data/npcs.json",
       terms: "data/terms.json",
+      fusion: "data/fusion.json",
     };
 
     try {
@@ -682,10 +689,68 @@ export class SceneManager {
     }
 }
 
+/**
+ * @class FusionManager
+ * @description Manages demon fusion logic.
+ */
+export class FusionManager {
+    /**
+     * @param {DataManager} dataManager
+     */
+    constructor(dataManager) {
+        this.dataManager = dataManager;
+    }
+
+    /**
+     * Predicts the result of fusing two demons.
+     * @param {import("./objects.js").Game_Battler} demon1
+     * @param {import("./objects.js").Game_Battler} demon2
+     * @returns {Object|null} The resulting actor data or null.
+     */
+    predictFusion(demon1, demon2) {
+        if (!this.dataManager.fusion || !this.dataManager.actors) return null;
+
+        const race1 = demon1.role; // Assuming role == Race
+        const race2 = demon2.role;
+
+        // Look up rule
+        // fusion.json structure: { "Fairy": { "Jirae": "Genma", ... }, ... }
+        // We need to handle commutative lookup
+        let resultRace = null;
+        if (this.dataManager.fusion[race1] && this.dataManager.fusion[race1][race2]) {
+            resultRace = this.dataManager.fusion[race1][race2];
+        } else if (this.dataManager.fusion[race2] && this.dataManager.fusion[race2][race1]) {
+            resultRace = this.dataManager.fusion[race2][race1];
+        }
+
+        if (!resultRace) return null; // Invalid combination
+
+        // Calculate Target Level: (LvlA + LvlB) / 2 + 1
+        const targetLevel = Math.floor((demon1.level + demon2.level) / 2) + 1;
+
+        // Find demon of resultRace closest to targetLevel (but usually >= targetLevel?)
+        // Standard MT logic: First demon of that race with level >= targetLevel.
+        const candidates = this.dataManager.actors
+            .filter(a => a.role === resultRace)
+            .sort((a, b) => a.level - b.level);
+
+        if (candidates.length === 0) return null;
+
+        let result = candidates.find(a => a.level >= targetLevel);
+        if (!result) {
+            // If none higher, take the highest available?
+            result = candidates[candidates.length - 1];
+        }
+
+        return result;
+    }
+}
+
 // Expose classes to the window object for testing if in test mode.
 if (typeof window !== 'undefined' && window.location.search.includes("test=true")) {
     window.DataManager = DataManager;
     window.SoundManager = SoundManager;
     window.BattleManager = BattleManager;
     window.SceneManager = SceneManager;
+    window.FusionManager = FusionManager;
 }

@@ -1,0 +1,124 @@
+
+D00. FUSION RULES
+
+Fairy Fusion:
+Element + Jirae
+Yoma + Jirae
+
+Jirae Fusion:
+Beast + Brute
+
+Brute Fusion:
+Jirae + Fairy
+
+F00. DEMON FUSIONS
+
+F01. FAIRY CLAN
+
+*Pixie*
+Race: Fairy (Neutral)
+LVL: 2
+HP: 7
+MP: 8
+CP: 1
+
+Skills:
+Hapilma - 3MP
+Flee
+
+VI: 5
+IN: 6
+ST: 5
+SP: 5
+LU: 5
+Defense: 3
+Hits: 1
+Affinity: Winged
+Resist: 0.5X Sword/Force, 0.75X Curse, 0.63X Nerve
+Weak: 1.5X Elec
+
+*Goblin*
+Race: Fairy (Neutral)
+LVL: 6
+HP: 21
+MP: 12
+CP: 3
+
+Skills:
+Agi - 2MP
+
+VI: 6
+IN: 6
+ST: 5
+SP: 7
+LU: 6
+Defense: 3
+Hits: 1
+Affinity: Normal
+Resist: 0.75X Sword, 0.38X Force, 0.75X Curse
+
+F02. JIRAE CLAN
+
+*Kobold*
+Race: Jirae (Neutral)
+LVL: 3
+HP: 11
+MP: 0
+CP: 3
+
+Skills:
+Poison Fang
+
+VI: 6
+IN: 5
+ST: 5
+SP: 6
+LU: 5
+Defense: 3
+Hits: 1
+Affinity: Normal
+Resist: 0.75X Sword, 0.38X Force, 0.75X Curse
+
+H00. USABLE ITEMS
+
+H01. GUNS
+
+[Walther PPK]
+Gender: Both
+Power: 2
+Hits: 1
+Miss Rate: 15
+Critical Rate: 1
+Where to Buy: Shinagawa
+Cost: 200
+Sell: 100
+
+H02. MELEE WEAPONS
+
+[Jack Knife]
+Gender: Female
+Power: 1
+Hits: 1
+Miss Rate: 12
+Critical Rate: 1
+Sell: 100
+
+[Bronze Sword]
+Gender: Male
+Power: 1
+Hits: 1
+Miss Rate: 7
+Critical Rate: 2
+Sell: 120
+
+H03. SUITS
+
+[Battle Suit]
+Gender: Male
+Defense: 1
+Appeal: 0
+Speed Bonus: 0
+Where to Buy: Shinagawa
+Cost: 300
+Sell: 150
+Resist: 0.5X Expel

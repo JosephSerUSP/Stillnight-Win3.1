@@ -1,84 +1,36 @@
 [
   {
-    "id": "hp_tonic",
-    "name": "HP Tonic",
-    "type": "consumable",
-    "cost": 10,
-    "description": "Heals one member to full HP.",
-    "icon": 6,
-    "effects": {
-      "hp": 999
-    }
-  },
-  {
-    "id": "sigil_ink",
-    "name": "Sigil Ink",
-    "type": "consumable",
-    "cost": 20,
-    "description": "+2 max HP to one member.",
-    "icon": 6,
-    "effects": {
-      "maxHp": 2
-    }
-  },
-  {
-    "id": "whispered_lessons",
-    "name": "Whispered Lessons",
-    "type": "consumable",
-    "cost": 15,
-    "description": "+6 XP to one member.",
-    "icon": 6,
-    "effects": {
-      "xp": 6
-    }
-  },
-  {
-    "id": "silver_blade",
-    "name": "Silver Blade",
+    "id": "walther_ppk",
+    "name": "Walther PPK",
     "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 25,
-    "icon": 6,
-    "description": "Sharpened steel blade. +1 damage.",
-    "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 }
-    ]
+    "description": "Imported item.",
+    "damageBonus": 2,
+    "cost": 200,
+    "equipType": "Gun"
   },
   {
-    "id": "bone_plate",
-    "name": "Bone Plate",
+    "id": "jack_knife",
+    "name": "Jack Knife",
     "type": "equipment",
-    "equipType": "Armor",
-    "cost": 25,
-    "icon": 6,
-    "description": "Sturdy bone harness. +3 max HP.",
-    "traits": [
-      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 3 }
-    ]
+    "description": "Imported item.",
+    "damageBonus": 1,
+    "equipType": "Weapon"
   },
   {
-    "id": "wind_charm",
-    "name": "Wind Charm",
+    "id": "bronze_sword",
+    "name": "Bronze Sword",
     "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 35,
-    "icon": 6,
-    "description": "A charm of rushing air. +1 damage, +1 max HP.",
-    "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 },
-      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 1 }
-    ]
+    "description": "Imported item.",
+    "damageBonus": 1,
+    "equipType": "Weapon"
   },
   {
-    "id": "light_amulet",
-    "name": "Light Amulet",
+    "id": "battle_suit",
+    "name": "Battle Suit",
     "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 30,
-    "icon": 6,
-    "description": "Glowing amulet. +2 max HP, faintly warms your hands.",
-    "traits": [
-      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 2 }
-    ]
+    "description": "Imported item.",
+    "traits": [],
+    "cost": 300,
+    "equipType": "Armor"
   }
 ]

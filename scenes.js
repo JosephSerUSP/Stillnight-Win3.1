@@ -1649,9 +1649,16 @@ export class Scene_Map extends Scene_Base {
     this.updateCardList();
     this.updateParty();
     this.statusGoldEl.textContent = this.party.gold;
-    this.statusItemsEl.textContent = this.party.inventory.length;
+    this.hud.statusMagEl.textContent = this.party.mag;
+    this.hud.statusMoonEl.textContent = this.getMoonPhaseName(this.map.moonPhase);
+    // this.statusItemsEl.textContent = this.party.inventory.length; // Removed from HTML
     this.statusRunEl.textContent = this.runActive ? "Active" : "Over";
     this.modeLabelEl.textContent = "Exploration";
+  }
+
+  getMoonPhaseName(phase) {
+      const phases = ["New Moon", "Waxing 1/8", "Waxing 2/8", "Waxing 3/8", "Full Moon", "Waning 3/8", "Waning 2/8", "Waning 1/8"];
+      return phases[phase % 8];
   }
 
   /**
@@ -1847,6 +1854,32 @@ export class Scene_Map extends Scene_Base {
     if (ch === ".") {
       this.logMessage("[Step] Your footsteps echo softly.");
       this.setStatus("You move.");
+    }
+
+    // Step Logic
+    this.map.steps++;
+    // Moon Phase: Cycle every 8 steps
+    if (this.map.steps % 8 === 0) {
+        this.map.moonPhase = (this.map.moonPhase + 1) % 8;
+        this.logMessage(`[Moon] The moon is now ${this.getMoonPhaseName(this.map.moonPhase)}.`);
+    }
+
+    // MAG Depletion
+    // Only depletes if demons are in party (index > 0 or checks `isDemon` trait?)
+    // Assuming non-human party members consume MAG.
+    const magCost = this.party.members.reduce((sum, m) => sum + (m.cp || (m.role !== 'Human' ? 1 : 0)), 0);
+    if (magCost > 0 && this.party.mag > 0) {
+        this.party.mag = Math.max(0, this.party.mag - magCost);
+    } else if (magCost > 0 && this.party.mag === 0) {
+        // MAG Exhaustion: Take damage?
+        this.party.members.forEach(m => {
+             if (m.cp > 0 || m.role !== 'Human') {
+                 m.hp = Math.max(1, m.hp - 1); // Lose 1 HP per step if no MAG
+             }
+        });
+        if (this.map.steps % 5 === 0) {
+             this.logMessage("Magnetite exhausted! Demons are taking damage.");
+        }
     }
 
     SoundManager.beep(600, 80);
@@ -2148,8 +2181,11 @@ renderElements(elements) {
         this.inspectWindow.elementEl.textContent = "—";
     }
 
-    if (member.equipmentItem) {
-      this.inspectWindow.equipEl.textContent = member.equipmentItem.name;
+    const equippedNames = Object.values(member.equipment)
+        .filter(i => i)
+        .map(i => i.name);
+    if (equippedNames.length > 0) {
+      this.inspectWindow.equipEl.textContent = equippedNames.join(", ");
     } else if (member.baseEquipment) {
       this.inspectWindow.equipEl.textContent = member.baseEquipment;
     } else {
@@ -2301,7 +2337,7 @@ renderElements(elements) {
     filterEl.innerHTML = "";
     const member = this.inspectWindow.member;
 
-    const itemTypes = ["All", "Weapon", "Armor", "Accessory"];
+    const itemTypes = ["All", "Weapon", "Gun", "Armor", "Helmet", "Gloves", "Boots", "Accessory"];
     itemTypes.forEach(type => {
       const btn = document.createElement("button");
       btn.className = "win-btn";
@@ -2316,13 +2352,20 @@ renderElements(elements) {
     const inventoryItems = this.party.inventory.filter(
       (i) => i.type === "equipment" && (filter === "All" || i.equipType === filter)
     );
-    const otherMemberItems = this.party.members
-      .filter((m) => m !== member && m.equipmentItem && (filter === "All" || m.equipmentItem.equipType === filter))
-      .map((m) => ({
-        ...m.equipmentItem,
-        equippedBy: m.name,
-        equippedMember: m,
-      }));
+
+    // Find items equipped by others in the filtered slot(s)
+    const otherMemberItems = [];
+    this.party.members.filter(m => m !== member).forEach(m => {
+        Object.values(m.equipment).forEach(equip => {
+            if (equip && (filter === "All" || equip.equipType === filter)) {
+                otherMemberItems.push({
+                    ...equip,
+                    equippedBy: m.name,
+                    equippedMember: m
+                });
+            }
+        });
+    });
 
     const allEquipable = [...inventoryItems, ...otherMemberItems];
 
@@ -2457,7 +2500,7 @@ renderElements(elements) {
       const index = this.party.members.indexOf(member);
       if (index !== -1) {
           nextBattler.xp = member.xp;
-          nextBattler.equipmentItem = member.equipmentItem;
+          nextBattler.equipment = JSON.parse(JSON.stringify(member.equipment));
 
           this.party.members[index] = nextBattler;
 
@@ -2469,15 +2512,31 @@ renderElements(elements) {
       }
   }
 
+  getEquipSlot(item) {
+      const type = item.equipType || "Accessory";
+      const map = {
+          "Weapon": "weapon",
+          "Gun": "gun",
+          "Armor": "armor",
+          "Helmet": "head",
+          "Gloves": "arms",
+          "Boots": "legs",
+          "Accessory": "accessory"
+      };
+      return map[type] || "accessory";
+  }
+
   equipItem(member, item) {
+    const slot = this.getEquipSlot(item);
+
     const doEquip = () => {
-      // Unequip current item if one exists
-      if (member.equipmentItem) {
-        this.party.inventory.push(member.equipmentItem);
+      // Unequip current item in slot if one exists
+      if (member.equipment[slot]) {
+        this.party.inventory.push(member.equipment[slot]);
         SoundManager.beep(600, 80); // Unequip sound
       }
       // Equip the new item
-      member.equipmentItem = item;
+      member.equipment[slot] = item;
       // Remove the new item from inventory
       const invIndex = this.party.inventory.findIndex((i) => i.id === item.id);
       if (invIndex > -1) {
@@ -2497,9 +2556,14 @@ renderElements(elements) {
       this.confirmWindow.messageEl.textContent = `Swap ${item.name} from ${otherMember.name} to ${member.name}?`;
       this.windowManager.push(this.confirmWindow);
       this.confirmWindow.btnOk.onclick = () => {
-        const currentItem = member.equipmentItem;
-        otherMember.equipmentItem = currentItem;
-        member.equipmentItem = item;
+        // Swap logic for slots
+        // The item is currently on otherMember.equipment[slot] (assuming same type)
+        const itemOnTarget = member.equipment[slot]; // Could be null
+
+        // Remove item from otherMember
+        otherMember.equipment[slot] = itemOnTarget; // Give them my item (or null)
+        member.equipment[slot] = item; // Take their item
+
         this.logMessage(
           `[Equip] ${member.name} swapped ${item.name} with ${otherMember.name}.`
         );

@@ -1784,10 +1784,10 @@ export class Window_HUD {
           </div>
           <div>
             <span>Gold: <span id="status-gold">0</span></span>
+            <span>| MAG: <span id="status-mag">0</span></span>
+            <span>| Moon: <span id="status-moon">New</span></span>
             <span>| Floor: <span id="status-floor">1</span></span>
-            <span>| Cards: <span id="status-cards">1</span></span>
             <span>| Run: <span id="status-run">Active</span></span>
-            <span>| Items: <span id="status-items">0</span></span>
           </div>
         </div>
       </div>
@@ -1807,6 +1807,8 @@ export class Window_HUD {
         this.logEl = document.getElementById("log-content");
         this.statusMessageEl = document.getElementById("status-message");
         this.statusGoldEl = document.getElementById("status-gold");
+        this.statusMagEl = document.getElementById("status-mag");
+        this.statusMoonEl = document.getElementById("status-moon");
         this.statusFloorEl = document.getElementById("status-floor");
         this.statusCardsEl = document.getElementById("status-cards");
         this.statusRunEl = document.getElementById("status-run");
