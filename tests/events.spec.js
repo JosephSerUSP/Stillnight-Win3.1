@@ -186,7 +186,7 @@ test.describe('Event System', () => {
           const floor = scene.map.floors[scene.map.floorIndex];
           if (floor) {
               floor.treasures = ['hp_tonic'];
-              scene.openTreasureEvent();
+              scene.interpreter.openTreasureEvent();
           }
       });
 

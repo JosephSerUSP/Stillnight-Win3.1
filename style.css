@@ -851,3 +851,37 @@ body.night-theme {
 .night-theme .evolution-arrow {
     color: #e0e0e0;
 }
+
+/* Updated dialog buttons positioning */
+.dialog-buttons {
+    padding: 0 4px 4px 4px; /* Move buttons 4px inwards */
+}
+
+/* Tab navigation for inventory */
+.tab-nav {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #808080;
+    box-shadow: 0 1px 0 #ffffff;
+}
+
+.tab-btn {
+    flex: 1;
+    font-family: inherit;
+    font-size: 11px;
+    padding: 2px 4px;
+    background-color: #c0c0c0;
+    border-width: 2px;
+    border-style: solid;
+    border-color: #ffffff #404040 #404040 #ffffff;
+    cursor: pointer;
+    text-align: center;
+}
+
+.tab-btn:active, .tab-btn.active {
+    border-color: #404040 #ffffff #ffffff #404040;
+    background-color: #e0e0e0;
+    font-weight: bold;
+}
