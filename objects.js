@@ -17,6 +17,12 @@ class Game_Base {
    */
   constructor(unitData) {
     /**
+     * The unique ID of the unit (if available).
+     * @type {string|null}
+     */
+    this.id = unitData.id || null;
+
+    /**
      * The name of the unit.
      * @type {string}
      */
@@ -309,6 +315,74 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
+   * Handles start-of-turn logic (states, passives).
+   * @param {Game_Battler[]} allies - List of active allies.
+   * @param {Game_Battler[]} enemies - List of active enemies.
+   * @param {Object} dataManager - Reference to DataManager.
+   * @returns {Array} List of events.
+   */
+  onTurnStart(allies, enemies, dataManager) {
+      const events = [];
+      const removedStates = this.updateStateTurns();
+      removedStates.forEach(sId => {
+          const state = dataManager.states[sId];
+          events.push({ type: 'state_remove', target: this, msg: `${this.name}'s ${state ? state.name : sId} wore off.` });
+      });
+
+      // HRG: HP Regeneration
+      const hrg = this.getPassiveValue('HRG');
+      if (hrg !== 0) {
+          const amount = Math.floor(this.maxHp * hrg);
+          if (amount > 0) {
+              const hpBefore = this.hp;
+              this.hp = Math.min(this.maxHp, this.hp + amount);
+              events.push({
+                  type: 'heal',
+                  battler: this,
+                  target: this,
+                  value: amount,
+                  hpBefore: hpBefore,
+                  hpAfter: this.hp,
+                  msg: `${this.name} regenerates ${amount} HP.`,
+                  animation: 'healing_sparkle'
+              });
+          }
+      }
+
+      // PARASITE: Drains HP from ally
+      const parasiteDrain = this.getPassiveValue("PARASITE");
+      if (parasiteDrain > 0 && allies) {
+           const myIndex = allies.indexOf(this);
+           if (myIndex !== -1) {
+               const targetIndex = myIndex % 2 === 0 ? myIndex + 1 : myIndex - 1;
+               if (targetIndex >= 0 && targetIndex < allies.length) {
+                   const target = allies[targetIndex];
+                   if (target && target.hp > 0) {
+                       const hpBeforeTarget = target.hp;
+                       const hpBeforeSource = this.hp;
+                       target.hp = Math.max(0, target.hp - parasiteDrain);
+                       this.hp = Math.min(this.maxHp, this.hp + parasiteDrain);
+
+                       events.push({
+                          type: 'passive_drain',
+                          source: this,
+                          target: target,
+                          value: parasiteDrain,
+                          hpBeforeTarget: hpBeforeTarget,
+                          hpAfterTarget: target.hp,
+                          hpBeforeSource: hpBeforeSource,
+                          hpAfterSource: this.hp,
+                          msg: `[Passive] ${this.name} drains ${parasiteDrain} HP from ${target.name}.`
+                       });
+                   }
+               }
+           }
+      }
+
+      return events;
+  }
+
+  /**
    * Checks if the battler meets any evolution criteria.
    * @param {Array} inventory - The party's inventory.
    * @param {number} floorDepth - The current floor depth.
@@ -366,6 +440,59 @@ export class Game_Party {
       const newActorData = { ...actorData, level: config.level };
       return new Game_Battler(newActorData);
     }).filter(member => member !== null);
+  }
+
+  /**
+   * Reorders a party member from one index to another.
+   * @param {number} fromIndex - The current index of the member.
+   * @param {number} toIndex - The target index.
+   * @returns {boolean} True if successful.
+   */
+  reorderMembers(fromIndex, toIndex) {
+      if (fromIndex < 0 || fromIndex >= this.members.length) return false;
+      // Allow dropping at the end of the list? The logic in Scene_Map limited it to valid slots.
+      // But Scene_Map rendered slots for all members.
+      if (toIndex < 0) return false; // toIndex can be >= length if we append?
+      // For now, stick to existing logic which seemed to assume swapping within existing slots.
+      // But Scene_Map rendered "Reserve" slots too.
+
+      // Safety check
+      if (toIndex >= this.members.length) toIndex = this.members.length - 1;
+
+      const [moved] = this.members.splice(fromIndex, 1);
+      this.members.splice(toIndex, 0, moved);
+      return true;
+  }
+
+  /**
+   * Consumes an item on a target member.
+   * @param {Object} item - The item object (from inventory).
+   * @param {import("./objects.js").Game_Battler} targetMember - The target.
+   * @returns {Object} Result of the operation.
+   */
+  useItem(item, targetMember) {
+      const index = this.inventory.indexOf(item);
+      if (index === -1) return { success: false, msg: "Item not in inventory." };
+
+      const outcomes = [];
+
+      if (item.effects.hp) {
+          const old = targetMember.hp;
+          targetMember.hp = Math.min(targetMember.maxHp, targetMember.hp + item.effects.hp);
+          outcomes.push({ type: 'heal', value: targetMember.hp - old });
+      }
+      if (item.effects.maxHp) {
+           targetMember.maxHp += item.effects.maxHp;
+           targetMember.hp += item.effects.maxHp;
+           outcomes.push({ type: 'maxHp', value: item.effects.maxHp });
+      }
+      if (item.effects.xp) {
+           const result = targetMember.gainXp(item.effects.xp);
+           outcomes.push({ type: 'xp', value: item.effects.xp, result });
+      }
+
+      this.inventory.splice(index, 1);
+      return { success: true, outcomes, item };
   }
 }
 
