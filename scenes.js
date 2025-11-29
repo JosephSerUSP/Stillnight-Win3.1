@@ -1,5 +1,5 @@
 import { Game_Map, Game_Party, Game_Battler, Game_Event } from "./objects.js";
-import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted } from "./core.js";
+import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula } from "./core.js";
 import { BattleManager, SoundManager } from "./managers.js";
 import {
   Window_Battle,
@@ -11,6 +11,7 @@ import {
   Window_Inspect,
   Window_Confirm,
   Window_Evolution,
+  Window_HUD,
   WindowLayer,
   createInteractiveLabel,
   createElementIcon
@@ -430,6 +431,26 @@ export class Scene_Battle extends Scene_Base {
     this.sceneManager.previous().logMessage(
       `[Battle] Victory! Gained ${totalGold}G and ${totalXp} XP (split).`
     );
+
+    // Process Drops
+    const droppedItems = [];
+    enemies.forEach(e => {
+        if (e.actorData && e.actorData.drops) {
+            e.actorData.drops.forEach(drop => {
+                if (Math.random() < drop.chance) {
+                    const item = this.dataManager.items.find(i => i.id === drop.itemId);
+                    if (item) droppedItems.push(item);
+                }
+            });
+        }
+    });
+
+    if (droppedItems.length > 0) {
+        droppedItems.forEach(item => this.party.inventory.push(item));
+        const names = droppedItems.map(i => i.name).join(", ");
+        this.sceneManager.previous().logMessage(`[Battle] Found: ${names}`);
+    }
+
     this.sceneManager.previous().updateAll();
 
     this.applyPostBattlePassives();
@@ -460,66 +481,37 @@ export class Scene_Battle extends Scene_Base {
     this.sceneManager.previous().updateGrid();
   }
 
-  /**
-   * Animates a specific battler's HP gauge in the UI.
-   * @method animateBattleHpGauge
-   * @param {import("./objects.js").Game_Battler} battler - The battler whose HP gauge to animate.
-   * @param {number} startHp - The starting HP value.
-   * @param {number} endHp - The ending HP value.
-   * @returns {Promise} A promise that resolves when the animation is complete.
-   */
+  _getBattlerContext(battler) {
+      const enemyIndex = this.battleManager.enemies.indexOf(battler);
+      if (enemyIndex !== -1) return { index: enemyIndex, isEnemy: true };
+      const partyIndex = this.party.members.indexOf(battler);
+      if (partyIndex !== -1) return { index: partyIndex, isEnemy: false };
+      return null;
+  }
+
   animateBattleHpGauge(battler, startHp, endHp) {
     return new Promise((resolve) => {
       const duration = 500;
       const interval = 30;
       let elapsed = 0;
 
-      // Determine ID to target specific element for override
-      const enemyIndex = this.battleManager.enemies.indexOf(battler);
-      const partyIndex = this.party.members.indexOf(battler);
-      let overrideId = null;
-      if (enemyIndex !== -1) overrideId = `battler-enemy-${enemyIndex}`;
-      else if (partyIndex !== -1) overrideId = `battler-party-${partyIndex}`;
+      const ctx = this._getBattlerContext(battler);
 
       const interpolator = () => {
         elapsed += interval;
         const progress = Math.min(elapsed / duration, 1);
         const currentHp = Math.round(startHp + (endHp - startHp) * progress);
 
-        // We only want to update the specific battler's display, not the whole window
-        // But renderBattleAscii refreshes everything.
-        // Let's modify renderBattleAscii to accept overrides?
-        // Or just manipulate the DOM directly here since we have unique IDs now.
-
-        if (overrideId) {
-             const element = this.battleWindow.viewportEl.querySelector(`#${overrideId}`);
-             if (element) {
-                 // We need to find the HP gauge container next to or inside the battler container
-                 // In Window_Battle.refresh:
-                 // <div class="battler-container" ...>
-                 //    <div class="battler-name">...<span id="battler-X">Name</span>...</div>
-                 //    <div class="battler-hp">[#####     ]</div>
-                 // </div>
-
-                 const container = element.closest('.battler-container');
-                 if (container) {
-                     const hpEl = container.querySelector('.battler-hp');
-                     if (hpEl) {
-                         hpEl.textContent = this.battleWindow.createHpGauge(currentHp, battler.maxHp);
-                     }
-                     // Update text as well? "HP X/Y"
-                     // The text is inside battler-name.
-                     // <div class="battler-name">...(HP X/Y)</div>
-                     // It's a bit hard to parse out without structured HTML.
-                     // But visual gauge is most important.
-                 }
+        if (ctx) {
+             const hpEl = this.battleWindow.getHpElement(ctx.index, ctx.isEnemy);
+             if (hpEl) {
+                 hpEl.textContent = this.battleWindow.createHpGauge(currentHp, battler.maxHp);
              }
         }
 
         if (progress < 1) {
           setTimeout(interpolator, interval);
         } else {
-          // Final sync
           this.renderBattleAscii();
           resolve();
         }
@@ -529,30 +521,11 @@ export class Scene_Battle extends Scene_Base {
     });
   }
 
-  /**
-   * Applies a visual animation effect (like flashing or shaking) to a battler.
-   * @method animateBattler
-   * @param {import("./objects.js").Game_Battler} battler - The battler to animate.
-   * @param {string} animationType - The type of animation ('flash', 'shake').
-   */
   animateBattler(battler, animationType) {
-    // Find unique ID
-    const enemyIndex = this.battleManager.enemies.indexOf(battler);
-    const partyIndex = this.party.members.indexOf(battler);
-    let battlerId = null;
+    const ctx = this._getBattlerContext(battler);
+    if (!ctx) return;
 
-    if (enemyIndex !== -1) {
-        battlerId = `battler-enemy-${enemyIndex}`;
-    } else if (partyIndex !== -1) {
-        battlerId = `battler-party-${partyIndex}`;
-    }
-
-    // Fallback (should not happen if consistent)
-    if (!battlerId) {
-        battlerId = `battler-${battler.name.replace(/\s/g, '-')}`;
-    }
-
-    const battlerElement = this.battleWindow.viewportEl.querySelector(`#${battlerId}`);
+    const battlerElement = this.battleWindow.getBattlerElement(ctx.index, ctx.isEnemy);
 
     if (battlerElement) {
       let animationClass = '';
@@ -567,9 +540,8 @@ export class Scene_Battle extends Scene_Base {
           animationClass = 'shake';
           duration = 500;
           break;
-        // Add other animation cases here
         default:
-          return; // No valid animation type provided
+          return;
       }
 
       battlerElement.classList.add(animationClass);
@@ -579,12 +551,6 @@ export class Scene_Battle extends Scene_Base {
     }
   }
 
-  /**
-   * Animates the battler's name (e.g., text wobble) to indicate activity or damage.
-   * @method animateBattlerName
-   * @param {import("./objects.js").Game_Battler} battler - The battler.
-   * @returns {Promise} A promise resolving when the animation finishes.
-   */
   animateBattlerName(battler) {
     return new Promise((resolve) => {
       const originalName = battler.name;
@@ -592,20 +558,14 @@ export class Scene_Battle extends Scene_Base {
       const maxFrames = 15;
       const interval = 50;
 
-      // Find the element once
-      const enemyIndex = this.battleManager.enemies.indexOf(battler);
-      const partyIndex = this.party.members.indexOf(battler);
-      let elementId = null;
-      if (enemyIndex !== -1) elementId = `battler-enemy-${enemyIndex}`;
-      else if (partyIndex !== -1) elementId = `battler-party-${partyIndex}`;
-
-      const nameEl = elementId ? this.battleWindow.viewportEl.querySelector(`#${elementId}`) : null;
+      const ctx = this._getBattlerContext(battler);
+      const nameEl = ctx ? this.battleWindow.getBattlerElement(ctx.index, ctx.isEnemy) : null;
 
       const animator = () => {
         if (frame >= maxFrames) {
           battler.name = originalName;
           if (nameEl) nameEl.textContent = originalName;
-          else this.renderBattleAscii(); // Fallback if element not found
+          else this.renderBattleAscii();
           resolve();
           return;
         }
@@ -620,11 +580,10 @@ export class Scene_Battle extends Scene_Base {
           }
         }
 
-        // Update DOM directly to avoid full re-render which would snap HP to current state
         if (nameEl) {
             nameEl.textContent = newName;
         } else {
-            battler.name = newName; // Only update object if we rely on renderBattleAscii
+            battler.name = newName;
             this.renderBattleAscii();
         }
 
@@ -636,13 +595,6 @@ export class Scene_Battle extends Scene_Base {
     });
   }
 
-  /**
-   * Plays a complex, data-driven animation on a target battler.
-   * @method playAnimation
-   * @param {import("./objects.js").Game_Battler} target - The target battler.
-   * @param {string} animationId - The ID of the animation in data/animations.js.
-   * @returns {Promise} A promise resolving when the animation finishes.
-   */
   playAnimation(target, animationId) {
        return new Promise((resolve) => {
            if (!this.dataManager.animations || !this.dataManager.animations[animationId]) {
@@ -651,31 +603,18 @@ export class Scene_Battle extends Scene_Base {
            }
 
            const anim = this.dataManager.animations[animationId];
+           const ctx = this._getBattlerContext(target);
+           if (!ctx) { resolve(); return; }
 
-           // Find target element
-           const enemyIndex = this.battleManager.enemies.indexOf(target);
-           const partyIndex = this.party.members.indexOf(target);
-           let battlerId = null;
-           if (enemyIndex !== -1) battlerId = `battler-enemy-${enemyIndex}`;
-           else if (partyIndex !== -1) battlerId = `battler-party-${partyIndex}`;
-
-           if (!battlerId) { resolve(); return; }
-
-           const battlerElement = this.battleWindow.viewportEl.querySelector(`#${battlerId}`);
+           const battlerElement = this.battleWindow.getBattlerElement(ctx.index, ctx.isEnemy);
            if (!battlerElement) { resolve(); return; }
 
-           // Find sub-element if specified
            let targetEl = battlerElement;
            let preserveBrackets = false;
            if (anim.targetPart === "hp_gauge") {
-                const container = battlerElement.closest('.battler-container');
-                if (container) {
-                    const hpEl = container.querySelector('.battler-hp');
-                    if (hpEl) {
-                        targetEl = hpEl;
-                        preserveBrackets = true;
-                    }
-                }
+                targetEl = this.battleWindow.getHpElement(ctx.index, ctx.isEnemy);
+                if (targetEl) preserveBrackets = true;
+                else targetEl = battlerElement; // fallback
            }
 
            if (anim.type === "text_flow" || anim.type === "text_flow_liquid") {
@@ -687,7 +626,6 @@ export class Scene_Battle extends Scene_Base {
 
                if (color) targetEl.style.color = color;
 
-               // Setup for fixed width preservation
                let animationContainer = targetEl;
                let contentLen = originalText.length;
 
@@ -695,7 +633,6 @@ export class Scene_Battle extends Scene_Base {
                    contentLen = originalText.length - 2;
                    const innerContent = originalText.substring(1, originalText.length - 1);
 
-                   // Measure width of inner content
                    const measureSpan = document.createElement("span");
                    measureSpan.style.visibility = "hidden";
                    measureSpan.style.position = "absolute";
@@ -705,7 +642,6 @@ export class Scene_Battle extends Scene_Base {
                    const width = measureSpan.getBoundingClientRect().width;
                    targetEl.removeChild(measureSpan);
 
-                   // Create wrapper structure
                    targetEl.innerHTML = "";
                    targetEl.appendChild(document.createTextNode("["));
                    animationContainer = document.createElement("span");
@@ -734,22 +670,14 @@ export class Scene_Battle extends Scene_Base {
                    let frameContent = "";
 
                    if (anim.type === "text_flow_liquid") {
-                       // Liquid Flow: Characters move at different speeds (sine wave offset)
                        for (let i = 0; i < contentLen; i++) {
-                           // Use sine wave to determine which char from sequence to pick
-                           // Speed factor depends on time
                            const timeFactor = elapsed / 100;
-                           // Spatial frequency
                            const wave = Math.sin(i * 0.5 + timeFactor);
-                           // Map wave (-1 to 1) to sequence index
-                           // We want a flowing effect, so index should increase with time
                            const index = Math.floor(i + timeFactor * 2 + wave * 2) % sequence.length;
-                           // JS modulo of negative numbers behaves weirdly, ensure positive
                            const safeIndex = (index + sequence.length * 100) % sequence.length;
                            frameContent += sequence[safeIndex];
                        }
                    } else {
-                       // Standard Text Flow
                        const offset = Math.floor(elapsed / interval);
                        let s = "";
                        while (s.length < contentLen + sequence.length) s += sequence;
@@ -861,6 +789,521 @@ export class Scene_Shop extends Scene_Base {
 }
 
 /**
+ * @class Game_Interpreter
+ * @description Handles event execution logic decoupled from Scene_Map.
+ */
+class Game_Interpreter {
+    /**
+     * @param {Scene_Map} scene - The scene instance.
+     */
+    constructor(scene) {
+        this.scene = scene;
+    }
+
+    get dataManager() { return this.scene.dataManager; }
+    get windowManager() { return this.scene.windowManager; }
+    get sceneManager() { return this.scene.sceneManager; }
+    get party() { return this.scene.party; }
+    get map() { return this.scene.map; }
+
+    execute(action, event) {
+        switch(action.type) {
+            case 'BATTLE':
+                this.scene.setStatus("Enemy encountered!");
+                this.scene.logMessage("[Battle] Shapes uncoil from the dark.");
+                this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.scene.battleManager, this.scene.windowLayer, this.map, event.x, event.y));
+                break;
+            case 'SHOP':
+                this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.windowManager, this.party, this.scene.windowLayer));
+                break;
+            case 'SHRINE':
+                this.scene.logMessage("[Shrine] You encounter a shrine.");
+                this.openShrineEvent();
+                break;
+            case 'RECRUIT':
+                this.openRecruitEvent();
+                break;
+            case 'NPC_DIALOGUE':
+                this.openNpcEvent(action.id);
+                this.scene.updateAll();
+                break;
+            case 'DESCEND':
+                this.descendStairs();
+                SoundManager.beep(800, 150);
+                break;
+            case 'HEAL_PARTY':
+                this.healParty();
+                break;
+            case 'MESSAGE':
+                if (action.text) this.scene.logMessage(action.text);
+                this.scene.updateAll();
+                break;
+            case 'TREASURE':
+                this.openTreasureEvent();
+                break;
+            case 'TRAP_TRIGGER':
+                this.triggerTrap(action);
+                break;
+        }
+    }
+
+    healParty() {
+        this.party.members.forEach((m) => (m.hp = m.maxHp));
+        this.scene.logMessage("[Recover] A soft glow restores your party.");
+        this.party.members.forEach((member) => {
+            const xpBonus = member.getPassiveValue("RECOVERY_XP_BONUS");
+            if (xpBonus > 0) {
+            this.scene.gainXp(member, xpBonus);
+            this.scene.logMessage(
+                `[Passive] ${member.name} gains ${xpBonus} bonus XP.`
+            );
+            }
+        });
+        this.scene.setStatus("Recovered HP.");
+        SoundManager.beep(600, 80);
+        this.scene.applyMovePassives();
+        this.scene.updateAll();
+    }
+
+    descendStairs() {
+        if (this.map.floorIndex + 1 >= this.map.floors.length) {
+            this.scene.logMessage("[Floor] You find no further descent. The run ends here.");
+            this.scene.runActive = false;
+            this.scene.setStatus("No deeper floors. Run over (for now).");
+            this.scene.updateAll();
+            return;
+        }
+        this.map.floorIndex++;
+        if (this.map.floorIndex > this.map.maxReachedFloorIndex) {
+            this.map.maxReachedFloorIndex = this.map.floorIndex;
+        }
+        const f = this.map.floors[this.map.floorIndex];
+        f.discovered = true;
+        this.map.playerX = f.startX;
+        this.map.playerY = f.startY;
+        this.map.revealAroundPlayer();
+        this.scene.logMessage(`[Floor] You descend to: ${f.title}`);
+        this.scene.logMessage(`[Floor] ${f.intro}`);
+        this.scene.setStatus("Descending.");
+        SoundManager.beep(800, 150);
+        this.scene.updateAll();
+    }
+
+    openShrineEvent() {
+        const scenarios = this.dataManager.events.filter(e => e.type === 'shrine_scenario');
+        if (scenarios.length === 0) {
+            this.scene.logMessage(this.dataManager.terms.shrine.silent);
+            return;
+        }
+        const ev = scenarios[randInt(0, scenarios.length - 1)];
+
+        const choices = ev.choices.map(ch => ({
+            label: ch.label,
+            onClick: async () => {
+                this.scene.eventWindow.appendLog(`> ${ch.label}`);
+                await this.applyEventEffect(ch.effect);
+                this.scene.eventWindow.updateChoices([{
+                    label: "Exit Shrine",
+                    onClick: () => this.closeEvent()
+                }]);
+            }
+        }));
+
+        this.scene.eventWindow.show({
+            title: ev.title,
+            description: ev.description,
+            image: ev.image || "shrine.png",
+            style: 'terminal',
+            choices: choices
+        });
+        this.windowManager.push(this.scene.eventWindow);
+
+        this.scene.setStatus("Shrine event.");
+        SoundManager.beep(700, 150);
+    }
+
+    async applyEventEffect(effect) {
+        const log = (msg) => this.scene.logMessage(msg);
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        await delay(300);
+
+        switch (effect.type) {
+        case "hp":
+            this.party.members.forEach((m) => {
+                m.hp += effect.value;
+                if (m.hp > m.maxHp) m.hp = m.maxHp;
+                if (m.hp < 0) m.hp = 0;
+            });
+            log(this.dataManager.terms.shrine.hp_change.replace("{0}", effect.value));
+            break;
+        case "maxHp":
+            this.party.members.forEach((m) => (m.maxHp += effect.value));
+            log(this.dataManager.terms.shrine.max_hp_change.replace("{0}", effect.value));
+            break;
+        case "xp":
+            this.party.members.forEach((m) => this.scene.gainXp(m, effect.value));
+            log(this.dataManager.terms.shrine.xp_gain.replace("{0}", effect.value));
+            break;
+        case "gold":
+            this.party.gold += effect.value;
+            log(this.dataManager.terms.shrine.gold_gain.replace("{0}", effect.value));
+            if (effect.onSuccess) {
+            await this.applyEventEffect(effect.onSuccess);
+            }
+            break;
+        case "message":
+            log(effect.value);
+            break;
+        case "random":
+            const roll = Math.random();
+            let outcome;
+            for (const o of effect.outcomes) {
+            if (roll < o.chance) {
+                outcome = o;
+                break;
+            }
+            }
+            if (outcome) {
+            await this.applyEventEffect(outcome.effect);
+            }
+            break;
+        case "multi":
+            for (const e of effect.effects) {
+                await this.applyEventEffect(e);
+            }
+            break;
+        }
+        this.scene.updateAll();
+    }
+
+    triggerTrap(action) {
+        this.scene.eventWindow.show({
+            title: "Trap!",
+            description: action.message || "You triggered a trap!",
+            image: "trap.png",
+            style: 'terminal',
+            choices: [{
+                label: "Ouch...",
+                onClick: () => this.resolveTrap(action)
+            }]
+        });
+        this.windowManager.push(this.scene.eventWindow);
+        SoundManager.beep(150, 300);
+    }
+
+    async resolveTrap(action) {
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        try {
+            const dmg = action.damage || 5;
+            this.scene.eventWindow.appendLog(`> Ouch...`);
+            await delay(500);
+
+            this.party.members.forEach(m => {
+                m.hp = Math.max(0, m.hp - dmg);
+            });
+
+            this.scene.logMessage(`The party takes ${dmg} damage.`);
+            this.scene.checkPermadeath();
+            SoundManager.beep(150, 300);
+            this.scene.updateAll();
+
+            this.scene.eventWindow.updateChoices([{
+                label: "Close",
+                onClick: () => this.scene.eventWindow.onUserClose()
+            }]);
+        } catch (e) {
+            console.error(e);
+            this.scene.eventWindow.appendLog("Error in resolveTrap: " + e);
+        }
+    }
+
+    openTreasureEvent() {
+        const floor = this.map.floors[this.map.floorIndex];
+        let possibleItems = floor.treasures || [];
+
+        if (!possibleItems || possibleItems.length === 0) {
+            possibleItems = this.dataManager.items.filter(i => i.type !== 'key').map(i => i.id);
+        }
+
+        let itemId;
+        if (typeof possibleItems[0] === 'string') {
+            itemId = possibleItems[randInt(0, possibleItems.length - 1)];
+        } else {
+            const picked = pickWeighted(possibleItems);
+            itemId = picked ? picked.id : null;
+        }
+
+        if (!itemId && possibleItems.length > 0) {
+            if (typeof possibleItems[0] === 'string') itemId = possibleItems[0];
+            else itemId = possibleItems[0].id;
+        }
+
+        const item = this.dataManager.items.find(i => i.id === itemId) || this.dataManager.items[0];
+
+        this.party.inventory.push(item);
+        this.clearEventTile();
+
+        const itemLabel = createInteractiveLabel(item, 'item');
+
+        this.scene.eventWindow.show({
+            title: "Treasure Found!",
+            description: [
+                "You found:",
+                itemLabel,
+                "",
+                item.description
+            ],
+            image: "treasure.png",
+            style: 'terminal',
+            choices: [{
+                label: "Take",
+                onClick: () => this.closeEvent()
+            }]
+        });
+        this.windowManager.push(this.scene.eventWindow);
+        SoundManager.beep(800, 100);
+        this.scene.updateAll();
+    }
+
+    closeEvent() {
+        this.windowManager.close(this.scene.eventWindow);
+        this.scene.updateAll();
+    }
+
+    openRecruitEvent() {
+        const availableCreatures = this.dataManager.actors.filter(creature => !creature.isEnemy);
+        if (availableCreatures.length === 0) {
+            this.scene.logMessage(this.dataManager.terms.recruit.no_one_here);
+            return;
+        }
+        const recruit = availableCreatures[randInt(0, availableCreatures.length - 1)];
+        const cost = randInt(25, 75);
+
+        this.scene.recruitWindow.bodyEl.innerHTML = "";
+
+        const layout = document.createElement('div');
+        layout.className = 'inspect-layout';
+        this.scene.recruitWindow.bodyEl.appendChild(layout);
+
+        const sprite = document.createElement('div');
+        sprite.className = 'inspect-sprite';
+        sprite.style.backgroundImage = `url('assets/portraits/${recruit.spriteKey || "pixie"}.png')`;
+        layout.appendChild(sprite);
+
+        const fields = document.createElement('div');
+        fields.className = 'inspect-fields';
+        layout.appendChild(fields);
+
+        const createRow = (label, valueEl) => {
+            const row = document.createElement('div');
+            row.className = 'inspect-row';
+            const lbl = document.createElement('span');
+            lbl.className = 'inspect-label';
+            lbl.textContent = label;
+            row.appendChild(lbl);
+            valueEl.classList.add('inspect-value');
+            row.appendChild(valueEl);
+            fields.appendChild(row);
+        };
+
+        // Name
+        const nameVal = document.createElement('span');
+        nameVal.appendChild(createElementIcon(recruit.elements));
+        nameVal.appendChild(document.createTextNode(recruit.name));
+        createRow('Name', nameVal);
+
+        // Level
+        const levelVal = document.createElement('span');
+        levelVal.textContent = recruit.level;
+        createRow('Level', levelVal);
+
+        // Role
+        const roleVal = document.createElement('span');
+        roleVal.textContent = recruit.role;
+        createRow('Role', roleVal);
+
+        // HP
+        const hpVal = document.createElement('span');
+        hpVal.textContent = `${recruit.maxHp} / ${recruit.maxHp}`;
+        createRow('HP', hpVal);
+
+        // Element
+        const elementVal = document.createElement('span');
+        if (recruit.elements && recruit.elements.length > 0) {
+            elementVal.appendChild(this.scene.renderElements(recruit.elements));
+        } else {
+            elementVal.textContent = "—";
+        }
+        createRow('Element', elementVal);
+
+        // Equipment
+        const equipVal = document.createElement('span');
+        equipVal.textContent = recruit.equipment || "—";
+        createRow('Equipment', equipVal);
+
+        // Passive
+        const passiveVal = document.createElement('span');
+        if (recruit.passives && recruit.passives.length > 0) {
+            recruit.passives.forEach((pData, i) => {
+                const code = pData.code || pData.id;
+                let def = null;
+                if (this.dataManager.passives) {
+                    def = Object.values(this.dataManager.passives).find(p => p.id === code || p.code === code);
+                }
+                if (!def) def = pData;
+
+                const el = createInteractiveLabel(def, 'passive');
+                passiveVal.appendChild(el);
+
+                if (i < recruit.passives.length - 1) {
+                    passiveVal.appendChild(document.createTextNode(", "));
+                }
+            });
+        } else {
+            passiveVal.textContent = "—";
+        }
+        createRow('Passive', passiveVal);
+
+        // Skills
+        const skillVal = document.createElement('span');
+        if (recruit.skills && recruit.skills.length > 0) {
+            recruit.skills.forEach((sId, i) => {
+                const skill = this.dataManager.skills[sId];
+                if (skill) {
+                    const el = createInteractiveLabel(skill, 'skill');
+                    skillVal.appendChild(el);
+                } else {
+                    skillVal.appendChild(document.createTextNode(sId));
+                }
+                if (i < recruit.skills.length - 1) {
+                    skillVal.appendChild(document.createTextNode(", "));
+                }
+            });
+        } else {
+            skillVal.textContent = "—";
+        }
+        createRow('Skills', skillVal);
+
+        // Flavor
+        const flavorVal = document.createElement('span');
+        flavorVal.textContent = recruit.flavor || "—";
+        createRow('Flavor', flavorVal);
+
+        this.scene.recruitWindow.buttonsEl.innerHTML = "";
+        const joinBtn = document.createElement("button");
+        joinBtn.className = "win-btn";
+        joinBtn.textContent = `Pay ${cost} Gold`;
+        joinBtn.addEventListener("click", () => {
+            if (this.party.gold >= cost) {
+                this.party.gold -= cost;
+                this.attemptRecruit(recruit);
+            } else {
+                this.scene.logMessage(`[Recruit] You don't have enough gold.`);
+                this.closeRecruitEvent();
+            }
+        });
+        const declineBtn = document.createElement("button");
+        declineBtn.className = "win-btn";
+        declineBtn.textContent = "Decline";
+        declineBtn.addEventListener("click", () => {
+            this.scene.logMessage(`[Recruit] You decline ${recruit.name}'s offer.`);
+            this.closeRecruitEvent();
+        });
+        this.scene.recruitWindow.buttonsEl.appendChild(joinBtn);
+        this.scene.recruitWindow.buttonsEl.appendChild(declineBtn);
+
+        this.windowManager.push(this.scene.recruitWindow);
+        this.scene.setStatus("Recruit encountered.");
+        SoundManager.beep(400, 100);
+    }
+
+    closeRecruitEvent() {
+        this.windowManager.close(this.scene.recruitWindow);
+        this.scene.setStatus("Exploration");
+    }
+
+    openNpcEvent(npcId) {
+        const npc = this.dataManager.npcs.find(n => n.id === npcId);
+        if (!npc) return;
+
+        let text = "";
+        if (typeof npc.dialogue === 'string') {
+            text = npc.dialogue;
+        }
+
+        this.scene.eventWindow.show({
+            title: npc.name,
+            description: `"${text}"`,
+            style: 'terminal',
+            choices: [{
+                label: "Leave",
+                onClick: () => this.closeEvent()
+            }]
+        });
+        this.windowManager.push(this.scene.eventWindow);
+
+        this.scene.setStatus(`Talking to ${npc.name}.`);
+        SoundManager.beep(400, 100);
+    }
+
+    clearEventTile() {
+        if (this.scene.currentInteractionEvent) {
+            this.map.removeEvent(this.map.floorIndex, this.scene.currentInteractionEvent.x, this.scene.currentInteractionEvent.y);
+            this.scene.currentInteractionEvent = null;
+        }
+        this.scene.updateGrid();
+    }
+
+    attemptRecruit(recruit) {
+        if (this.party.members.length < this.party.MAX_MEMBERS) {
+            this.party.members.push(new Game_Battler(recruit));
+            this.scene.logMessage(`[Recruit] ${recruit.name} joins your party.`);
+            this.scene.setStatus(
+                this.dataManager.terms.recruit.recruited.replace("{0}", recruit.name)
+            );
+            this.clearEventTile();
+            this.closeRecruitEvent();
+            this.scene.updateParty();
+            return;
+        }
+        this.scene.recruitWindow.bodyEl.innerHTML =
+            this.dataManager.terms.recruit.party_full;
+        this.scene.recruitWindow.buttonsEl.innerHTML = "";
+        this.party.members.forEach((m, idx) => {
+            const btn = document.createElement("button");
+            btn.className = "win-btn";
+            btn.textContent = m.name;
+            btn.addEventListener("click", () => {
+                this.replaceMemberWithRecruit(idx, recruit);
+            });
+            this.scene.recruitWindow.buttonsEl.appendChild(btn);
+        });
+        const cancelBtn = document.createElement("button");
+        cancelBtn.className = "win-btn";
+        cancelBtn.textContent = "Cancel";
+        cancelBtn.addEventListener("click", () => {
+            this.scene.logMessage(this.dataManager.terms.recruit.decide_not_to_replace);
+            this.closeRecruitEvent();
+        });
+        this.scene.recruitWindow.buttonsEl.appendChild(cancelBtn);
+    }
+
+    replaceMemberWithRecruit(index, recruit) {
+        const replaced = this.party.members[index];
+        this.scene.logMessage(
+            this.dataManager.terms.recruit.replace_member
+                .replace("{0}", replaced.name)
+                .replace("{1}", recruit.name)
+        );
+        this.party.members[index] = new Game_Battler(recruit);
+        this.clearEventTile();
+        this.scene.updateParty();
+        this.closeRecruitEvent();
+    }
+}
+
+/**
  * @class Scene_Map
  * @description The main scene for exploration. Currently acts as a central hub
  * handling map logic, UI creation, and delegation to sub-scenes like Battle and Shop.
@@ -878,12 +1321,13 @@ export class Scene_Map extends Scene_Base {
     this.sceneManager = sceneManager;
     this.map = new Game_Map();
     this.party = new Game_Party();
+    this.interpreter = new Game_Interpreter(this);
     this.battleManager = new BattleManager(this.party, this.dataManager);
     this.runActive = true;
     this.draggedIndex = null;
     this.currentInteractionEvent = null;
 
-    this.createUI();
+    this.hud = new Window_HUD();
     this.getDomElements();
     this.addEventListeners();
 
@@ -894,7 +1338,7 @@ export class Scene_Map extends Scene_Base {
     this.inventoryWindow = new Window_Inventory();
     this.windowLayer.addChild(this.inventoryWindow);
     this.eventWindow = new Window_Event();
-    this.eventWindow.onUserClose = this.closeEvent.bind(this);
+    this.eventWindow.onUserClose = this.interpreter.closeEvent.bind(this.interpreter);
     this.windowLayer.addChild(this.eventWindow);
     this.recruitWindow = new Window_Recruit();
     this.windowLayer.addChild(this.recruitWindow)
@@ -907,134 +1351,14 @@ export class Scene_Map extends Scene_Base {
     this.confirmWindow = new Window_Confirm();
     this.windowLayer.addChild(this.confirmWindow);
 
-    this.recruitWindow.onUserClose = this.closeRecruitEvent.bind(this);
+    this.recruitWindow.onUserClose = this.interpreter.closeRecruitEvent.bind(this.interpreter);
     this.evolutionWindow.onUserClose = () => this.windowManager.close(this.evolutionWindow);
     this.formationWindow.onUserClose = this.closeFormation.bind(this);
     this.confirmWindow.onUserClose = () => this.windowManager.close(this.confirmWindow);
 
-    this.formationWindow.btnOk.addEventListener(
-      "click",
-      this.closeFormation.bind(this)
-    );
-    this.formationWindow.btnCancel.addEventListener(
-      "click",
-      this.closeFormation.bind(this)
-    );
-
     this.inventoryWindow.onUserClose = this.closeInventory.bind(this);
   }
 
-  /**
-   * Generates the static HTML structure for the game UI.
-   * Note: This moves the core UI layout out of index.html.
-   * @method createUI
-   */
-  createUI() {
-    const gameContainer = document.getElementById("game-container");
-    gameContainer.innerHTML = `
-      <div class="stack-nav panel">
-        <h1>Stillnight Stack</h1>
-        <div class="group-box">
-          <legend>Run</legend>
-          <div class="stack-nav-buttons">
-            <button class="win-btn" id="btn-new-run">New Run</button>
-            <button class="win-btn" id="btn-reveal-all">Reveal</button>
-          </div>
-          <div style="margin-top:4px;">
-            <div>Card: <span id="card-index-label">1 / 1</span></div>
-            <div>Floor depth: <span id="card-depth-label">1</span></div>
-          </div>
-        </div>
-        <div class="group-box">
-          <legend>Cards (Floors)</legend>
-          <div class="card-list" id="card-list"></div>
-        </div>
-        <div class="group-box">
-          <legend>Short Help</legend>
-          <div class="info-box">
-            • Each floor is a card.<br>
-            • ☺ is your party (highlighted).<br>
-            • Click adjacent tiles to move.<br>
-            • E triggers a battle.<br>
-            • R heals, S descends.<br>
-            • ¥ opens a shop.<br>
-            • Front row hits harder,<br>
-            &nbsp;&nbsp;back row is safer.<br>
-            • Floors are reachable only<br>
-            &nbsp;&nbsp;if you've reached their<br>
-            &nbsp;&nbsp;stairs at least once.<br>
-            • Shrines may offer<br>
-            &nbsp;&nbsp;mysterious events.<br>
-            • Boss awaits at the deepest floor.
-          </div>
-        </div>
-      </div>
-      <div class="right-side">
-        <div class="card-area">
-          <div class="card-main panel">
-            <div class="card-header">
-              <div>
-                <span class="card-header-title" id="card-title">Floor 1</span>
-              </div>
-              <div>
-                <span class="label">Mode:</span>
-                <span id="mode-label">Exploration</span>
-              </div>
-            </div>
-            <div class="exploration-frame panel">
-              <div class="exploration-grid" id="exploration-grid"></div>
-              <div class="legend">
-                <span>☺ = Party</span>
-                <span>█ = Wall</span>
-                <span>E = Enemy</span>
-                <span>R = Recovery</span>
-                <span>S = Stairs</span>
-                <span>♱ = Shrine</span>
-                <span>¥ = Shop</span>
-                <span>? = Unseen</span>
-                <span>U = Recruit</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-side-panels">
-            <div class="party-panel panel">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span>Party Status (click to inspect)</span>
-                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-formation">
-                  Formation...
-                </button>
-                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-inventory">
-                  Inventory...
-                </button>
-              </div>
-              <div class="party-grid" id="party-grid"></div>
-            </div>
-            <div class="log-panel panel">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span>Event Log</span>
-                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-clear-log">
-                  Clear
-                </button>
-              </div>
-              <div class="log-content" id="log-content"></div>
-            </div>
-          </div>
-        </div>
-        <div class="status-bar">
-          <div>
-            <span id="status-message">Ready.</span>
-          </div>
-          <div>
-            <span>Gold: <span id="status-gold">0</span></span>
-            <span>| Floor: <span id="status-floor">1</span></span>
-            <span>| Cards: <span id="status-cards">1</span></span>
-            <span>| Run: <span id="status-run">Active</span></span>
-            <span>| Items: <span id="status-items">0</span></span>
-          </div>
-        </div>
-      </div>
-    `;
-  }
 
   /**
    * Starts the map scene by initiating a new run.
@@ -1351,13 +1675,7 @@ export class Scene_Map extends Scene_Base {
    */
   updateCardHeader() {
     const floor = this.map.floors[this.map.floorIndex];
-    this.cardTitleEl.textContent = floor.title;
-    this.cardIndexLabelEl.textContent = `${this.map.floorIndex + 1} / ${
-      this.map.floors.length
-    }`;
-    this.cardDepthLabelEl.textContent = floor.depth;
-    this.statusFloorEl.textContent = floor.depth;
-    this.statusCardsEl.textContent = this.map.floors.length;
+    this.hud.updateCardHeader(floor, this.map.floorIndex, this.map.floors.length);
   }
 
   /**
@@ -1365,33 +1683,21 @@ export class Scene_Map extends Scene_Base {
    * @method updateCardList
    */
   updateCardList() {
-    this.cardListEl.innerHTML = "";
-    this.map.floors.forEach((f, idx) => {
-      const item = document.createElement("div");
-      let cls = "card-item";
-      if (idx === this.map.floorIndex) cls += " selected";
-      if (!f.discovered) cls += " disabled";
-      item.className = cls;
-      const title = f.discovered ? f.title : "Unknown Floor";
-      item.textContent = `${idx + 1}. ${title}`;
-
-      if (f.discovered && idx <= this.map.maxReachedFloorIndex) {
-        item.addEventListener("click", () => {
-          this.map.floorIndex = idx;
-          const floor = this.map.floors[this.map.floorIndex];
-          this.map.playerX = floor.startX;
-          this.map.playerY = floor.startY;
-          this.map.revealAroundPlayer();
-          this.logMessage(
-            `[Navigate] You flip to card ${idx + 1} (${floor.title}).`
-          );
-          SoundManager.beep(550, 120);
-          this.updateAll();
-        });
-      }
-
-      this.cardListEl.appendChild(item);
-    });
+    this.hud.updateCardList(
+        this.map.floors,
+        this.map.floorIndex,
+        this.map.maxReachedFloorIndex,
+        (idx) => {
+            this.map.floorIndex = idx;
+            const floor = this.map.floors[this.map.floorIndex];
+            this.map.playerX = floor.startX;
+            this.map.playerY = floor.startY;
+            this.map.revealAroundPlayer();
+            this.logMessage(`[Navigate] You flip to card ${idx + 1} (${floor.title}).`);
+            SoundManager.beep(550, 120);
+            this.updateAll();
+        }
+    );
   }
 
   /**
@@ -1399,90 +1705,7 @@ export class Scene_Map extends Scene_Base {
    * @method updateParty
    */
   updateParty() {
-    this.partyGridEl.innerHTML = "";
-    this.party.members.slice(0, 4).forEach((member, index) => {
-      const slot = document.createElement("div");
-      slot.className = "party-slot";
-      slot.dataset.index = index;
-      slot.dataset.testid = `party-slot-${index}`;
-
-      const portrait = document.createElement("div");
-      portrait.className = "party-slot-portrait";
-      portrait.style.backgroundImage = `url('assets/portraits/${
-        member.spriteKey || "pixie"
-      }.png')`;
-
-      const info = document.createElement("div");
-      info.className = "party-slot-info";
-
-      const nameEl = document.createElement("div");
-      nameEl.className = "party-slot-name";
-      const elementIcon = this.createElementIcon(member.elements);
-      nameEl.appendChild(elementIcon);
-      const nameSpan = document.createElement('span');
-      nameSpan.textContent = member.name;
-      nameEl.appendChild(nameSpan);
-
-      const hpLabel = document.createElement("div");
-      const row = this.partyRow(index);
-      hpLabel.textContent = `Lv${member.level} (${row})  HP ${member.hp}/${member.maxHp}`;
-
-      const hpBar = document.createElement("div");
-      hpBar.className = "hp-bar";
-      const hpFill = document.createElement("div");
-      hpFill.className = "hp-fill";
-      hpFill.style.width = `${Math.max(
-        0,
-        ((member.prevHp || member.hp) / member.maxHp) * 100
-      )}%`;
-      this.animateHpGauge(
-        hpFill,
-        member.prevHp || member.hp,
-        member.hp,
-        member.maxHp,
-        500
-      );
-      member.prevHp = member.hp;
-      hpBar.appendChild(hpFill);
-
-      info.appendChild(nameEl);
-      info.appendChild(hpLabel);
-      info.appendChild(hpBar);
-
-      slot.appendChild(portrait);
-      slot.appendChild(info);
-
-      slot.addEventListener("click", () => this.openInspect(member, index));
-      this.partyGridEl.appendChild(slot);
-    });
-  }
-
-  /**
-   * Animates a smooth transition for the HP bar width.
-   * @method animateHpGauge
-   * @param {HTMLElement} element - The HP bar element.
-   * @param {number} startHp - Previous HP.
-   * @param {number} endHp - Current HP.
-   * @param {number} maxHp - Max HP.
-   * @param {number} duration - Animation duration in ms.
-   */
-  animateHpGauge(element, startHp, endHp, maxHp, duration) {
-    const startTime = performance.now();
-    const startWidth = (startHp / maxHp) * 100;
-    const endWidth = (endHp / maxHp) * 100;
-
-    const frame = (currentTime) => {
-      const elapsedTime = currentTime - startTime;
-      const progress = Math.min(elapsedTime / duration, 1);
-      const currentWidth = startWidth + (endWidth - startWidth) * progress;
-      element.style.width = `${currentWidth}%`;
-
-      if (progress < 1) {
-        requestAnimationFrame(frame);
-      }
-    };
-
-    requestAnimationFrame(frame);
+    this.hud.updateParty(this.party, (member, index) => this.openInspect(member, index));
   }
 
   /**
@@ -1577,98 +1800,10 @@ export class Scene_Map extends Scene_Base {
 
   executeEvent(event) {
       if (event.actions) {
-          event.actions.forEach(action => this.executeAction(action, event));
+          event.actions.forEach(action => this.interpreter.execute(action, event));
       }
   }
 
-  executeAction(action, event) {
-      switch(action.type) {
-          case 'BATTLE':
-              this.setStatus("Enemy encountered!");
-              this.logMessage("[Battle] Shapes uncoil from the dark.");
-              this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.battleManager, this.windowLayer, this.map, event.x, event.y));
-              break;
-          case 'SHOP':
-              this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.windowManager, this.party, this.windowLayer));
-              break;
-          case 'SHRINE':
-              this.logMessage("[Shrine] You encounter a shrine.");
-              this.openShrineEvent();
-              break;
-          case 'RECRUIT':
-              this.openRecruitEvent();
-              break;
-          case 'NPC_DIALOGUE':
-              this.openNpcEvent(action.id);
-              this.updateAll();
-              break;
-          case 'DESCEND':
-              this.descendStairs();
-              SoundManager.beep(800, 150);
-              break;
-          case 'HEAL_PARTY':
-              this.healParty();
-              break;
-          case 'MESSAGE':
-              if (action.text) this.logMessage(action.text);
-              this.updateAll();
-              break;
-          case 'TREASURE':
-              this.openTreasureEvent();
-              break;
-          case 'TRAP_TRIGGER':
-              this.triggerTrap(action);
-              break;
-      }
-  }
-
-  healParty() {
-      this.party.members.forEach((m) => (m.hp = m.maxHp));
-      this.logMessage("[Recover] A soft glow restores your party.");
-      this.party.members.forEach((member) => {
-        const xpBonus = member.getPassiveValue("RECOVERY_XP_BONUS");
-        if (xpBonus > 0) {
-          this.gainXp(member, xpBonus);
-          this.logMessage(
-            `[Passive] ${member.name} gains ${xpBonus} bonus XP.`
-          );
-        }
-      });
-      this.setStatus("Recovered HP.");
-      SoundManager.beep(600, 80);
-      this.applyMovePassives();
-      this.updateAll();
-  }
-
-  /**
-   * Descends to the next floor if available.
-   * @method descendStairs
-   */
-  descendStairs() {
-    if (this.map.floorIndex + 1 >= this.map.floors.length) {
-      this.logMessage(
-        "[Floor] You find no further descent. The run ends here."
-      );
-      this.runActive = false;
-      this.setStatus("No deeper floors. Run over (for now).");
-      this.updateAll();
-      return;
-    }
-    this.map.floorIndex++;
-    if (this.map.floorIndex > this.map.maxReachedFloorIndex) {
-      this.map.maxReachedFloorIndex = this.map.floorIndex;
-    }
-    const f = this.map.floors[this.map.floorIndex];
-    f.discovered = true;
-    this.map.playerX = f.startX;
-    this.map.playerY = f.startY;
-    this.map.revealAroundPlayer();
-    this.logMessage(`[Floor] You descend to: ${f.title}`);
-    this.logMessage(`[Floor] ${f.intro}`);
-    this.setStatus("Descending.");
-    SoundManager.beep(800, 150);
-    this.updateAll();
-  }
 
   /**
    * Debug command to reveal the entire map.
@@ -1738,459 +1873,6 @@ export class Scene_Map extends Scene_Base {
     return Math.max(0, Math.min(1, baseChance));
   }
 
-  /**
-   * Opens the shrine event window.
-   * @method openShrineEvent
-   */
-  openShrineEvent() {
-    const scenarios = this.dataManager.events.filter(e => e.type === 'shrine_scenario');
-    if (scenarios.length === 0) {
-      this.logMessage(this.dataManager.terms.shrine.silent);
-      return;
-    }
-    const ev = scenarios[randInt(0, scenarios.length - 1)];
-
-    const choices = ev.choices.map(ch => ({
-        label: ch.label,
-        onClick: async () => {
-            this.eventWindow.appendLog(`> ${ch.label}`);
-            await this.applyEventEffect(ch.effect);
-            this.eventWindow.updateChoices([{
-                label: "Exit Shrine",
-                onClick: () => this.closeEvent()
-            }]);
-        }
-    }));
-
-    this.eventWindow.show({
-        title: ev.title,
-        description: ev.description,
-        image: ev.image || "shrine.png",
-        style: 'terminal',
-        choices: choices
-    });
-    this.windowManager.push(this.eventWindow);
-
-    this.setStatus("Shrine event.");
-    SoundManager.beep(700, 150);
-  }
-
-  /**
-   * Applies the outcome of a shrine event choice.
-   * @method applyEventEffect
-   * @async
-   * @param {Object} effect - The effect object.
-   */
-  async applyEventEffect(effect) {
-    const log = (msg) => this.logMessage(msg);
-
-    await this.delay(300);
-
-    switch (effect.type) {
-      case "hp":
-        this.party.members.forEach((m) => {
-            m.hp += effect.value;
-            if (m.hp > m.maxHp) m.hp = m.maxHp;
-            if (m.hp < 0) m.hp = 0;
-        });
-        log(this.dataManager.terms.shrine.hp_change.replace("{0}", effect.value));
-        break;
-      case "maxHp":
-        this.party.members.forEach((m) => (m.maxHp += effect.value));
-        log(this.dataManager.terms.shrine.max_hp_change.replace("{0}", effect.value));
-        break;
-      case "xp":
-        this.party.members.forEach((m) => this.gainXp(m, effect.value));
-        log(this.dataManager.terms.shrine.xp_gain.replace("{0}", effect.value));
-        break;
-      case "gold":
-        this.party.gold += effect.value;
-        log(this.dataManager.terms.shrine.gold_gain.replace("{0}", effect.value));
-        if (effect.onSuccess) {
-          await this.applyEventEffect(effect.onSuccess);
-        }
-        break;
-      case "message":
-        log(effect.value);
-        break;
-      case "random":
-        const roll = Math.random();
-        let outcome;
-        for (const o of effect.outcomes) {
-          if (roll < o.chance) {
-            outcome = o;
-            break;
-          }
-        }
-        if (outcome) {
-          await this.applyEventEffect(outcome.effect);
-        }
-        break;
-      case "multi":
-        for (const e of effect.effects) {
-            await this.applyEventEffect(e);
-        }
-        break;
-    }
-    this.updateAll();
-  }
-
-  triggerTrap(action) {
-      this.eventWindow.show({
-          title: "Trap!",
-          description: action.message || "You triggered a trap!",
-          image: "trap.png",
-          style: 'terminal',
-          choices: [{
-              label: "Ouch...",
-              onClick: () => this.resolveTrap(action)
-          }]
-      });
-      this.windowManager.push(this.eventWindow);
-      SoundManager.beep(150, 300);
-  }
-
-  async resolveTrap(action) {
-      try {
-          const dmg = action.damage || 5;
-          this.eventWindow.appendLog(`> Ouch...`);
-          await this.delay(500);
-
-          this.party.members.forEach(m => {
-              m.hp = Math.max(0, m.hp - dmg);
-          });
-
-          this.logMessage(`The party takes ${dmg} damage.`);
-          this.checkPermadeath();
-          SoundManager.beep(150, 300);
-          this.updateAll();
-
-          this.eventWindow.updateChoices([{
-              label: "Close",
-              onClick: () => this.eventWindow.onUserClose()
-          }]);
-      } catch (e) {
-          console.error(e);
-          this.eventWindow.appendLog("Error in resolveTrap: " + e);
-      }
-  }
-
-  openTreasureEvent() {
-      const floor = this.map.floors[this.map.floorIndex];
-      let possibleItems = floor.treasures || [];
-
-      if (!possibleItems || possibleItems.length === 0) {
-          possibleItems = this.dataManager.items.filter(i => i.type !== 'key').map(i => i.id);
-      }
-
-      let itemId;
-      if (typeof possibleItems[0] === 'string') {
-          itemId = possibleItems[randInt(0, possibleItems.length - 1)];
-      } else {
-          const picked = pickWeighted(possibleItems);
-          itemId = picked ? picked.id : null;
-      }
-
-      if (!itemId && possibleItems.length > 0) {
-           // Fallback if weighted pick failed or was strange
-           if (typeof possibleItems[0] === 'string') itemId = possibleItems[0];
-           else itemId = possibleItems[0].id;
-      }
-
-      const item = this.dataManager.items.find(i => i.id === itemId) || this.dataManager.items[0];
-
-      this.party.inventory.push(item);
-      this.clearEventTile();
-
-      const itemLabel = createInteractiveLabel(item, 'item');
-
-      this.eventWindow.show({
-          title: "Treasure Found!",
-          description: [
-              "You found:",
-              itemLabel,
-              "",
-              item.description
-          ],
-          image: "treasure.png",
-          style: 'terminal',
-          choices: [{
-              label: "Take",
-              onClick: () => this.closeEvent()
-          }]
-      });
-      this.windowManager.push(this.eventWindow);
-      SoundManager.beep(800, 100);
-      this.updateAll();
-  }
-
-  /**
-   * Closes the event window.
-   * @method closeEvent
-   */
-  closeEvent() {
-    this.windowManager.close(this.eventWindow);
-    this.updateAll();
-  }
-
-  /**
-   * Opens the recruit event window.
-   * @method openRecruitEvent
-   */
-  openRecruitEvent() {
-    const availableCreatures = this.dataManager.actors.filter(creature => !creature.isEnemy);
-    if (availableCreatures.length === 0) {
-      this.logMessage(this.dataManager.terms.recruit.no_one_here);
-      return;
-    }
-    const recruit = availableCreatures[randInt(0, availableCreatures.length - 1)];
-    const cost = randInt(25, 75);
-
-    this.recruitWindow.bodyEl.innerHTML = "";
-
-    const layout = document.createElement('div');
-    layout.className = 'inspect-layout';
-    this.recruitWindow.bodyEl.appendChild(layout);
-
-    const sprite = document.createElement('div');
-    sprite.className = 'inspect-sprite';
-    sprite.style.backgroundImage = `url('assets/portraits/${recruit.spriteKey || "pixie"}.png')`;
-    layout.appendChild(sprite);
-
-    const fields = document.createElement('div');
-    fields.className = 'inspect-fields';
-    layout.appendChild(fields);
-
-    const createRow = (label, valueEl) => {
-        const row = document.createElement('div');
-        row.className = 'inspect-row';
-        const lbl = document.createElement('span');
-        lbl.className = 'inspect-label';
-        lbl.textContent = label;
-        row.appendChild(lbl);
-        valueEl.classList.add('inspect-value');
-        row.appendChild(valueEl);
-        fields.appendChild(row);
-    };
-
-    // Name
-    const nameVal = document.createElement('span');
-    nameVal.appendChild(createElementIcon(recruit.elements));
-    nameVal.appendChild(document.createTextNode(recruit.name));
-    createRow('Name', nameVal);
-
-    // Level
-    const levelVal = document.createElement('span');
-    levelVal.textContent = recruit.level;
-    createRow('Level', levelVal);
-
-    // Role
-    const roleVal = document.createElement('span');
-    roleVal.textContent = recruit.role;
-    createRow('Role', roleVal);
-
-    // HP
-    const hpVal = document.createElement('span');
-    hpVal.textContent = `${recruit.maxHp} / ${recruit.maxHp}`;
-    createRow('HP', hpVal);
-
-    // Element
-    const elementVal = document.createElement('span');
-    if (recruit.elements && recruit.elements.length > 0) {
-        elementVal.appendChild(this.renderElements(recruit.elements));
-    } else {
-        elementVal.textContent = "—";
-    }
-    createRow('Element', elementVal);
-
-    // Equipment
-    const equipVal = document.createElement('span');
-    equipVal.textContent = recruit.equipment || "—";
-    createRow('Equipment', equipVal);
-
-    // Passive
-    const passiveVal = document.createElement('span');
-    if (recruit.passives && recruit.passives.length > 0) {
-        recruit.passives.forEach((pData, i) => {
-            const code = pData.code || pData.id;
-            let def = null;
-            if (this.dataManager.passives) {
-                def = Object.values(this.dataManager.passives).find(p => p.id === code || p.code === code);
-            }
-            if (!def) def = pData;
-
-            const el = createInteractiveLabel(def, 'passive');
-            passiveVal.appendChild(el);
-
-            if (i < recruit.passives.length - 1) {
-                passiveVal.appendChild(document.createTextNode(", "));
-            }
-        });
-    } else {
-        passiveVal.textContent = "—";
-    }
-    createRow('Passive', passiveVal);
-
-    // Skills
-    const skillVal = document.createElement('span');
-    if (recruit.skills && recruit.skills.length > 0) {
-        recruit.skills.forEach((sId, i) => {
-             const skill = this.dataManager.skills[sId];
-             if (skill) {
-                 const el = createInteractiveLabel(skill, 'skill');
-                 skillVal.appendChild(el);
-             } else {
-                 skillVal.appendChild(document.createTextNode(sId));
-             }
-             if (i < recruit.skills.length - 1) {
-                 skillVal.appendChild(document.createTextNode(", "));
-             }
-        });
-    } else {
-        skillVal.textContent = "—";
-    }
-    createRow('Skills', skillVal);
-
-    // Flavor
-    const flavorVal = document.createElement('span');
-    flavorVal.textContent = recruit.flavor || "—";
-    createRow('Flavor', flavorVal);
-
-    this.recruitWindow.buttonsEl.innerHTML = "";
-    const joinBtn = document.createElement("button");
-    joinBtn.className = "win-btn";
-    joinBtn.textContent = `Pay ${cost} Gold`;
-    joinBtn.addEventListener("click", () => {
-      if (this.party.gold >= cost) {
-        this.party.gold -= cost;
-        this.attemptRecruit(recruit);
-      } else {
-        this.logMessage(`[Recruit] You don't have enough gold.`);
-        this.closeRecruitEvent();
-      }
-    });
-    const declineBtn = document.createElement("button");
-    declineBtn.className = "win-btn";
-    declineBtn.textContent = "Decline";
-    declineBtn.addEventListener("click", () => {
-      this.logMessage(`[Recruit] You decline ${recruit.name}'s offer.`);
-      this.closeRecruitEvent();
-    });
-    this.recruitWindow.buttonsEl.appendChild(joinBtn);
-    this.recruitWindow.buttonsEl.appendChild(declineBtn);
-
-    this.windowManager.push(this.recruitWindow);
-    this.setStatus("Recruit encountered.");
-    SoundManager.beep(400, 100);
-  }
-
-  /**
-   * Closes the recruit event window.
-   * @method closeRecruitEvent
-   */
-  closeRecruitEvent() {
-    this.windowManager.close(this.recruitWindow);
-    this.setStatus("Exploration");
-  }
-
-  /**
-   * Opens an interaction with an NPC.
-   * @method openNpcEvent
-   * @param {Object} event - The NPC event object.
-   */
-  openNpcEvent(npcId) {
-    const npc = this.dataManager.npcs.find(n => n.id === npcId);
-    if (!npc) return;
-
-    let text = "";
-    if (typeof npc.dialogue === 'string') {
-        text = npc.dialogue;
-    }
-
-    this.eventWindow.show({
-        title: npc.name,
-        description: `"${text}"`,
-        style: 'terminal',
-        choices: [{
-            label: "Leave",
-            onClick: () => this.closeEvent()
-        }]
-    });
-    this.windowManager.push(this.eventWindow);
-
-    this.setStatus(`Talking to ${npc.name}.`);
-    SoundManager.beep(400, 100);
-  }
-
-  /**
-   * Clears a tile of a specific event character.
-   * @method clearEventTile
-   */
-  clearEventTile() {
-    if (this.currentInteractionEvent) {
-      this.map.removeEvent(this.map.floorIndex, this.currentInteractionEvent.x, this.currentInteractionEvent.y);
-      this.currentInteractionEvent = null;
-    }
-    this.updateGrid();
-  }
-
-  /**
-   * Logic to recruit a member or offer replacement if party is full.
-   * @method attemptRecruit
-   * @param {Object} recruit - The recruit data.
-   */
-  attemptRecruit(recruit) {
-    if (this.party.members.length < this.party.MAX_MEMBERS) {
-      this.party.members.push(new Game_Battler(recruit));
-      this.logMessage(`[Recruit] ${recruit.name} joins your party.`);
-      this.setStatus(
-        this.dataManager.terms.recruit.recruited.replace("{0}", recruit.name)
-      );
-      this.clearEventTile();
-      this.closeRecruitEvent();
-      this.updateParty();
-      return;
-    }
-    this.recruitWindow.bodyEl.innerHTML =
-      this.dataManager.terms.recruit.party_full;
-    this.recruitWindow.buttonsEl.innerHTML = "";
-    this.party.members.forEach((m, idx) => {
-      const btn = document.createElement("button");
-      btn.className = "win-btn";
-      btn.textContent = m.name;
-      btn.addEventListener("click", () => {
-        this.replaceMemberWithRecruit(idx, recruit);
-      });
-      this.recruitWindow.buttonsEl.appendChild(btn);
-    });
-    const cancelBtn = document.createElement("button");
-    cancelBtn.className = "win-btn";
-    cancelBtn.textContent = "Cancel";
-    cancelBtn.addEventListener("click", () => {
-      this.logMessage(this.dataManager.terms.recruit.decide_not_to_replace);
-      this.closeRecruitEvent();
-    });
-    this.recruitWindow.buttonsEl.appendChild(cancelBtn);
-  }
-
-  /**
-   * Replaces an existing party member with a new recruit.
-   * @method replaceMemberWithRecruit
-   * @param {number} index - Index of member to replace.
-   * @param {Object} recruit - The new recruit data.
-   */
-  replaceMemberWithRecruit(index, recruit) {
-    const replaced = this.party.members[index];
-    this.logMessage(
-      this.dataManager.terms.recruit.replace_member
-        .replace("{0}", replaced.name)
-        .replace("{1}", recruit.name)
-    );
-    this.party.members[index] = new Game_Battler(recruit);
-    this.clearEventTile();
-    this.updateParty();
-    this.closeRecruitEvent();
-  }
 
   /**
    * Formats a skill name with its elemental icon.
@@ -2289,7 +1971,10 @@ renderElements(elements) {
   openFormation() {
     if (this.sceneManager.currentScene() !== this) return;
     this.windowManager.push(this.formationWindow);
-    this.renderFormationGrid();
+    this.formationWindow.refresh(this.party, () => {
+        this.updateParty();
+        this.logMessage("[Formation] Party order changed.");
+    });
   }
 
   /**
@@ -2298,91 +1983,6 @@ renderElements(elements) {
    */
   closeFormation() {
     this.windowManager.close(this.formationWindow);
-  }
-
-  /**
-   * Renders the interactive grid for formation dragging.
-   * @method renderFormationGrid
-   */
-  renderFormationGrid() {
-    const grid = this.formationWindow.gridEl;
-    const reserveGrid = this.formationWindow.reserveGridEl;
-    grid.innerHTML = "";
-    reserveGrid.innerHTML = "";
-
-    this.party.members.forEach((m, index) => {
-      const slot = document.createElement("div");
-      slot.className = "formation-slot";
-      slot.dataset.index = index;
-      slot.textContent = m ? `${m.name} (Lv${m.level})` : "(empty)";
-      slot.draggable = true;
-
-      slot.addEventListener("dragstart", this.onFormationDragStart.bind(this));
-      slot.addEventListener("dragover", this.onFormationDragOver.bind(this));
-      slot.addEventListener("drop", this.onFormationDrop.bind(this));
-      slot.addEventListener("dragend", this.onFormationDragEnd.bind(this));
-
-      if (index < 4) {
-        grid.appendChild(slot);
-      } else {
-        reserveGrid.appendChild(slot);
-      }
-    });
-  }
-
-  /**
-   * Handles start of dragging a formation slot.
-   * @method onFormationDragStart
-   * @param {DragEvent} e
-   */
-  onFormationDragStart(e) {
-    this.draggedIndex = parseInt(e.target.dataset.index, 10);
-    e.target.classList.add("dragging");
-  }
-
-  /**
-   * Handles dragging over a formation slot.
-   * @method onFormationDragOver
-   * @param {DragEvent} e
-   */
-  onFormationDragOver(e) {
-    e.preventDefault();
-    const target = e.target.closest(".formation-slot");
-    if (target) {
-      target.classList.add("drag-over");
-    }
-  }
-
-  /**
-   * Handles dropping a formation slot.
-   * @method onFormationDrop
-   * @param {DragEvent} e
-   */
-  onFormationDrop(e) {
-    e.preventDefault();
-    const targetIndex = parseInt(e.target.dataset.index, 10);
-    if (this.draggedIndex === null || this.draggedIndex === targetIndex) return;
-
-    const draggedMember = this.party.members[this.draggedIndex];
-    this.party.members.splice(this.draggedIndex, 1);
-    this.party.members.splice(targetIndex, 0, draggedMember);
-
-    this.draggedIndex = null;
-    this.renderFormationGrid();
-    this.updateParty();
-    this.logMessage("[Formation] Party order changed.");
-    SoundManager.beep(500, 80);
-  }
-
-  /**
-   * Handles end of dragging a formation slot.
-   * @method onFormationDragEnd
-   * @param {DragEvent} e
-   */
-  onFormationDragEnd(e) {
-    document
-      .querySelectorAll(".formation-slot")
-      .forEach((s) => s.classList.remove("dragging", "drag-over"));
   }
 
   /**
@@ -2409,63 +2009,36 @@ renderElements(elements) {
    */
   refreshInventoryWindow() {
     this.inventoryWindow.refresh(
-      this.party.inventory,
-      this.useItem.bind(this),
-      this.discardItem.bind(this)
+      this.party,
+      (item, target) => {
+          const result = this.party.useItem(item, target);
+          if (result.success) {
+              this.logMessage(`[Inventory] Used ${item.name} on ${target.name}.`);
+              result.outcomes.forEach(o => {
+                 if (o.type === 'xp' && o.result.leveledUp) {
+                     this.logMessage(`[Level] ${target.name} grows to Lv${o.result.newLevel}! HP +${o.result.hpGain}.`);
+                     SoundManager.beep(900, 150);
+                 }
+              });
+              this.updateParty();
+              this.refreshInventoryWindow();
+              this.updateAll();
+              SoundManager.beep(700, 100);
+          } else {
+              this.logMessage(result.msg);
+          }
+      },
+      (item) => {
+          const index = this.party.inventory.indexOf(item);
+          if (index > -1) {
+              this.party.inventory.splice(index, 1);
+              this.refreshInventoryWindow();
+              this.updateAll();
+              this.logMessage(`[Inventory] Discarded ${item.name}.`);
+              SoundManager.beep(300, 80);
+          }
+      }
     );
-  }
-
-  /**
-   * Initiates the use of an item from the inventory.
-   * @method useItem
-   * @param {Object} item - The item.
-   * @param {number} index - Index in inventory.
-   */
-  useItem(item, index) {
-    this.inventoryWindow.showTargetSelection(this.party.members, (memberIndex) => {
-      this.applyItemToMember(item, index, memberIndex);
-    });
-  }
-
-  /**
-   * Applies an item's effect to a party member.
-   * @method applyItemToMember
-   * @param {Object} item - The item.
-   * @param {number} itemIndex - Index in inventory.
-   * @param {number} memberIndex - Index of target member.
-   */
-  applyItemToMember(item, itemIndex, memberIndex) {
-    const member = this.party.members[memberIndex];
-    if (item.effects.hp) {
-      member.hp = Math.min(member.maxHp, member.hp + item.effects.hp);
-    }
-    if (item.effects.maxHp) {
-      member.maxHp += item.effects.maxHp;
-      member.hp += item.effects.maxHp;
-    }
-    if (item.effects.xp) {
-      this.gainXp(member, item.effects.xp);
-    }
-    this.logMessage(`[Inventory] Used ${item.name} on ${member.name}.`);
-    this.party.inventory.splice(itemIndex, 1);
-    this.updateParty();
-    this.refreshInventoryWindow();
-    this.updateAll();
-    SoundManager.beep(700, 100);
-  }
-
-  /**
-   * Discards an item from the inventory.
-   * @method discardItem
-   * @param {Object} item - The item.
-   * @param {number} index - Index in inventory.
-   */
-  discardItem(item, index) {
-    this.party.inventory.splice(index, 1);
-    this.refreshInventoryWindow();
-    this.updateAll();
-    this.logMessage(`[Inventory] Discarded ${item.name}.`);
-    SoundManager.beep(300, 80);
   }
 
   /**
@@ -2561,17 +2134,11 @@ renderElements(elements) {
                     const descriptions = [];
                     skill.effects.forEach(eff => {
                          if (eff.type === 'hp_damage') {
-                             try {
-                                 const a = { level: member.level };
-                                 const val = Math.round(eval(eff.formula.replace(/a\.level/g, a.level)));
-                                 descriptions.push(`Deals ~${val} Damage`);
-                             } catch(e) { descriptions.push("Deals Damage"); }
+                             const val = Math.round(evaluateFormula(eff.formula, member));
+                             descriptions.push(`Deals ~${val} Damage`);
                          } else if (eff.type === 'hp_heal') {
-                             try {
-                                 const a = { level: member.level };
-                                 const val = Math.round(eval(eff.formula.replace(/a\.level/g, a.level)));
-                                 descriptions.push(`Heals ~${val} HP`);
-                             } catch(e) { descriptions.push("Heals HP"); }
+                             const val = Math.round(evaluateFormula(eff.formula, member));
+                             descriptions.push(`Heals ~${val} HP`);
                          } else if (eff.type === 'add_status') {
                              const chance = Math.round((eff.chance || 1) * 100);
                              descriptions.push(`${chance}% chance to add ${eff.status}`);

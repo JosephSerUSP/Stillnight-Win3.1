@@ -151,3 +151,20 @@ export const Graphics = {
     return this._container ? this._container.clientHeight : 0;
   },
 };
+
+/**
+ * Safely evaluates a formula string.
+ * @param {string} formula - The formula (e.g. "a.atk * 4").
+ * @param {Object} a - The source/attacker context.
+ * @param {Object} [b={}] - The target/defender context.
+ * @returns {number} The result.
+ */
+export function evaluateFormula(formula, a, b = {}) {
+    try {
+        const f = new Function("a", "b", "return " + formula);
+        return f(a, b);
+    } catch (e) {
+        console.error("Formula error:", formula, e);
+        return 0;
+    }
+}
