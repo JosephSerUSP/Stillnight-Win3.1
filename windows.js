@@ -143,6 +143,68 @@ export function createInteractiveLabel(data, type, options = {}) {
 }
 
 /**
+ * Creates a party slot DOM element (HUD style).
+ * @param {import("./objects.js").Game_Battler} member
+ * @param {number} index
+ * @returns {HTMLElement}
+ */
+export function createPartySlot(member, index) {
+    const slot = document.createElement("div");
+    slot.className = "party-slot";
+    slot.dataset.index = index;
+    slot.dataset.testid = `party-slot-${index}`;
+
+    const portrait = document.createElement("div");
+    portrait.className = "party-slot-portrait";
+    portrait.style.backgroundImage = `url('assets/portraits/${member.spriteKey || "pixie"}.png')`;
+
+    const info = document.createElement("div");
+    info.className = "party-slot-info";
+
+    const nameEl = document.createElement("div");
+    nameEl.className = "party-slot-name";
+    const elementIcon = createElementIcon(member.elements);
+    nameEl.appendChild(elementIcon);
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = member.name;
+    nameEl.appendChild(nameSpan);
+
+    const hpLabel = document.createElement("div");
+    const row = index <= 1 ? "Front" : "Back";
+    hpLabel.textContent = `Lv${member.level} (${row})  HP ${member.hp}/${member.maxHp}`;
+
+    const hpBar = document.createElement("div");
+    hpBar.className = "hp-bar";
+    const hpFill = document.createElement("div");
+    hpFill.className = "hp-fill";
+    hpFill.style.width = `${Math.max(0, (member.hp / member.maxHp) * 100)}%`;
+    hpBar.appendChild(hpFill);
+
+    info.appendChild(nameEl);
+    info.appendChild(hpLabel);
+    info.appendChild(hpBar);
+
+    slot.appendChild(portrait);
+    slot.appendChild(info);
+
+    return slot;
+}
+
+/**
+ * Creates a compact party slot DOM element (Small rect).
+ * @param {import("./objects.js").Game_Battler} member
+ * @param {number} index
+ * @returns {HTMLElement}
+ */
+export function createCompactPartySlot(member, index) {
+    const slot = document.createElement("div");
+    slot.className = "formation-slot";
+    slot.dataset.index = index;
+    slot.textContent = member ? `${member.name} (Lv${member.level})` : "(empty)";
+    return slot;
+}
+
+/**
  * @class WindowLayer
  * @description A container that manages all game windows. This is a key component
  * for decoupling the UI from the main HTML file. The WindowLayer is appended to the
@@ -1065,7 +1127,8 @@ export class Window_Formation extends Window_Base {
     formationBody.appendChild(label);
 
     this.gridEl = document.createElement('div');
-    this.gridEl.className = 'formation-grid';
+    this.gridEl.className = 'party-grid';
+    this.gridEl.style.marginBottom = '4px';
     formationBody.appendChild(this.gridEl);
 
     const reserveLabel = document.createElement('div');
@@ -1120,12 +1183,14 @@ export class Window_Formation extends Window_Base {
     if (!this.party) return;
 
     this.party.members.forEach((m, index) => {
-      const slot = document.createElement("div");
-      slot.className = "formation-slot";
-      slot.dataset.index = index;
-      slot.textContent = m ? `${m.name} (Lv${m.level})` : "(empty)";
-      slot.draggable = true;
+      let slot;
+      if (index < 4) {
+          slot = createPartySlot(m, index);
+      } else {
+          slot = createCompactPartySlot(m, index);
+      }
 
+      slot.draggable = true;
       slot.addEventListener("dragstart", this.onDragStart.bind(this));
       slot.addEventListener("dragover", this.onDragOver.bind(this));
       slot.addEventListener("drop", this.onDrop.bind(this));
@@ -1146,7 +1211,7 @@ export class Window_Formation extends Window_Base {
 
   onDragOver(e) {
     e.preventDefault();
-    const target = e.target.closest(".formation-slot");
+    const target = e.target.closest(".formation-slot, .party-slot");
     if (target) {
       target.classList.add("drag-over");
     }
@@ -1154,7 +1219,9 @@ export class Window_Formation extends Window_Base {
 
   onDrop(e) {
     e.preventDefault();
-    const targetIndex = parseInt(e.target.dataset.index, 10);
+    const slot = e.target.closest(".formation-slot, .party-slot");
+    if (!slot) return;
+    const targetIndex = parseInt(slot.dataset.index, 10);
     if (this.draggedIndex === null || this.draggedIndex === targetIndex) return;
 
     if (this.party.reorderMembers(this.draggedIndex, targetIndex)) {
@@ -1166,99 +1233,183 @@ export class Window_Formation extends Window_Base {
   }
 
   onDragEnd(e) {
-    const allSlots = this.element.querySelectorAll(".formation-slot");
+    const allSlots = this.element.querySelectorAll(".formation-slot, .party-slot");
     allSlots.forEach((s) => s.classList.remove("dragging", "drag-over"));
   }
 }
 
 /**
- * @class Window_Inventory
- * @description The window for viewing and managing the inventory.
- * Supports using and discarding items.
+ * @class Window_TargetSelect
+ * @description Modal window for selecting a party member target.
  * @extends Window_Base
  */
-export class Window_Inventory extends Window_Base {
-  /**
-   * Creates a new Window_Inventory instance.
-   */
-  constructor() {
-    super('center', 'center', 400, 300); // x, y, width, height
-    this.element.id = "inventory-window";
-    this.element.style.display = 'flex';
-    this.element.style.flexDirection = 'column';
+export class Window_TargetSelect extends Window_Base {
+    constructor() {
+        super('center', 'center', 420, 320);
+        this.element.id = "target-select-window";
+        this.element.style.display = 'flex';
+        this.element.style.flexDirection = 'column';
 
-    const titleBar = document.createElement("div");
-    titleBar.className = "dialog-titlebar";
-    this.element.appendChild(titleBar);
-    this.makeDraggable(titleBar);
+        const titleBar = document.createElement("div");
+        titleBar.className = "dialog-titlebar";
+        this.element.appendChild(titleBar);
+        this.makeDraggable(titleBar);
 
-    const titleText = document.createElement("span");
-    titleText.textContent = "Inventory";
-    titleBar.appendChild(titleText);
+        const titleText = document.createElement("span");
+        titleText.textContent = "Select Target";
+        titleBar.appendChild(titleText);
 
-    this.btnClose = document.createElement("button");
-    this.btnClose.className = "win-btn";
-    this.btnClose.textContent = "X";
-    this.btnClose.onclick = () => this.onUserClose();
-    titleBar.appendChild(this.btnClose);
+        this.btnClose = document.createElement("button");
+        this.btnClose.className = "win-btn";
+        this.btnClose.textContent = "X";
+        this.btnClose.onclick = () => this.onUserClose();
+        titleBar.appendChild(this.btnClose);
 
-    const content = document.createElement("div");
-    content.className = "dialog-content";
-    content.style.flexGrow = "1";
-    content.style.overflowY = "auto";
-    this.element.appendChild(content);
+        const content = document.createElement("div");
+        content.className = "dialog-content";
+        content.style.flexGrow = "1";
+        this.element.appendChild(content);
 
-    this.listEl = document.createElement("div");
-    content.appendChild(this.listEl);
+        this.headerEl = document.createElement("div");
+        this.headerEl.style.marginBottom = "10px";
+        this.headerEl.style.textAlign = "center";
+        content.appendChild(this.headerEl);
 
-    this.emptyMsgEl = document.createElement("p");
-    this.emptyMsgEl.textContent = "Your inventory is empty.";
-    this.emptyMsgEl.style.textAlign = "center";
-    this.emptyMsgEl.style.display = "none";
-    content.appendChild(this.emptyMsgEl);
+        this.gridEl = document.createElement('div');
+        this.gridEl.className = 'party-grid';
+        content.appendChild(this.gridEl);
 
-    const buttons = document.createElement("div");
-    buttons.className = "dialog-buttons";
-    this.element.appendChild(buttons);
+        this.reserveEl = document.createElement('div');
+        this.reserveEl.className = 'formation-reserve-grid';
+        this.reserveEl.style.marginTop = "10px";
+        content.appendChild(this.reserveEl);
 
-    this.btnClose2 = document.createElement("button");
-    this.btnClose2.className = "win-btn";
-    this.btnClose2.textContent = "Close";
-    this.btnClose2.onclick = () => this.onUserClose();
-    buttons.appendChild(this.btnClose2);
+        const buttons = document.createElement("div");
+        buttons.className = "dialog-buttons";
+        this.element.appendChild(buttons);
 
-    this.party = null;
-    this.onUse = null;
-    this.onDiscard = null;
-  }
+        this.btnCancel = document.createElement("button");
+        this.btnCancel.className = "win-btn";
+        this.btnCancel.textContent = "Cancel";
+        this.btnCancel.onclick = () => this.onUserClose();
+        buttons.appendChild(this.btnCancel);
+    }
 
-  /**
-   * Refreshes the inventory list.
-   * @param {import("./objects.js").Game_Party} party - The party object.
-   * @param {Function} onUse - Callback (item, target) => void.
-   * @param {Function} onDiscard - Callback (item) => void.
-   */
-  refresh(party, onUse, onDiscard) {
-    this.party = party;
-    this.onUse = onUse;
-    this.onDiscard = onDiscard;
-    this.showItemList();
-  }
+    /**
+     * Sets up the window.
+     * @param {import("./objects.js").Game_Party} party
+     * @param {string} actionText - e.g. "Use Potion on:"
+     * @param {Function} onSelect - (member) => void
+     */
+    setup(party, actionText, onSelect) {
+        this.headerEl.textContent = actionText;
+        this.gridEl.innerHTML = "";
+        this.reserveEl.innerHTML = "";
 
-  showItemList() {
-    this.listEl.innerHTML = "";
-    const inventory = this.party.inventory;
+        party.members.forEach((m, index) => {
+            let slot;
+            if (index < 4) {
+                slot = createPartySlot(m, index);
+                this.gridEl.appendChild(slot);
+            } else {
+                slot = createCompactPartySlot(m, index);
+                this.reserveEl.appendChild(slot);
+            }
+            slot.style.cursor = "pointer";
+            slot.onclick = () => onSelect(m);
+        });
+    }
+}
 
-    if (inventory.length === 0) {
-      this.emptyMsgEl.style.display = "block";
-    } else {
-      this.emptyMsgEl.style.display = "none";
-      inventory.forEach((item, idx) => {
+/**
+ * @class Window_ItemList
+ * @description Base class for windows that display a list of items with tabs.
+ * @extends Window_Base
+ */
+export class Window_ItemList extends Window_Base {
+    /**
+     * @param {string} title
+     * @param {Array<{id: string, label: string}>} tabs
+     * @param {number} width
+     * @param {number} height
+     */
+    constructor(title, tabs, width, height) {
+        super('center', 'center', width, height);
+        this.element.style.display = 'flex';
+        this.element.style.flexDirection = 'column';
+
+        const titleBar = document.createElement("div");
+        titleBar.className = "dialog-titlebar";
+        this.element.appendChild(titleBar);
+        this.makeDraggable(titleBar);
+
+        const titleText = document.createElement("span");
+        titleText.textContent = title;
+        titleBar.appendChild(titleText);
+
+        this.btnClose = document.createElement("button");
+        this.btnClose.className = "win-btn";
+        this.btnClose.textContent = "X";
+        this.btnClose.onclick = () => this.onUserClose();
+        titleBar.appendChild(this.btnClose);
+
+        const content = document.createElement("div");
+        content.className = "dialog-content";
+        content.style.flexGrow = "1";
+        content.style.overflowY = "auto";
+        this.element.appendChild(content);
+
+        this.tabs = tabs || [];
+        this.currentTab = this.tabs.length > 0 ? this.tabs[0].id : null;
+
+        if (this.tabs.length > 0) {
+            this.tabNav = document.createElement("div");
+            this.tabNav.className = "tab-nav";
+            content.appendChild(this.tabNav);
+            this.renderTabs();
+        }
+
+        this.listEl = document.createElement("div");
+        content.appendChild(this.listEl);
+
+        this.emptyMsgEl = document.createElement("p");
+        this.emptyMsgEl.style.textAlign = "center";
+        this.emptyMsgEl.style.display = "none";
+        content.appendChild(this.emptyMsgEl);
+
+        this.buttonsEl = document.createElement("div");
+        this.buttonsEl.className = "dialog-buttons";
+        this.element.appendChild(this.buttonsEl);
+    }
+
+    renderTabs() {
+        this.tabNav.innerHTML = "";
+        this.tabs.forEach(tab => {
+            const btn = document.createElement("button");
+            btn.className = "tab-btn";
+            if (tab.id === this.currentTab) btn.classList.add("active");
+            btn.textContent = tab.label;
+            btn.onclick = () => this.switchTab(tab.id);
+            this.tabNav.appendChild(btn);
+        });
+    }
+
+    switchTab(tabId) {
+        this.currentTab = tabId;
+        this.renderTabs();
+        this.refreshList();
+    }
+
+    refreshList() {
+        // To be implemented by subclasses
+    }
+
+    // Helper to render standard row
+    createItemRow(item, buttons) {
         const row = document.createElement("div");
         row.className = "shop-row";
 
         let tooltipText = item.description;
-        // Add item effects to tooltip
         let effectsText = "";
         const effects = [];
         if (item.effects) {
@@ -1266,7 +1417,6 @@ export class Window_Inventory extends Window_Base {
              if (item.effects.maxHp) effects.push(`Max HP +${item.effects.maxHp}`);
              if (item.effects.xp) effects.push(`Grants ${item.effects.xp} XP`);
         }
-        // Equipment stats
         if (item.traits) {
              item.traits.forEach(t => {
                  if (t.code === 'PARAM_PLUS') {
@@ -1276,70 +1426,183 @@ export class Window_Inventory extends Window_Base {
              });
         }
         if (item.damageBonus) effects.push(`Damage +${item.damageBonus}`);
-
-        if (effects.length > 0) {
-            effectsText = effects.join(", ");
-        }
-
-        if (effectsText) {
-             tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
-        }
+        if (effects.length > 0) effectsText = effects.join(", ");
+        if (effectsText) tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
 
         const label = createInteractiveLabel(item, 'item', { tooltipText });
         label.style.flexGrow = "1";
         row.appendChild(label);
 
-        const btns = document.createElement("div");
+        if (buttons) {
+            buttons.forEach(b => row.appendChild(b));
+        }
+        return row;
+    }
+}
+
+/**
+ * @class Window_Inventory
+ * @description The window for viewing and managing the inventory.
+ * Supports using and discarding items.
+ * @extends Window_Base
+ */
+export class Window_Inventory extends Window_ItemList {
+  /**
+   * Creates a new Window_Inventory instance.
+   */
+  constructor() {
+    super('Inventory', [
+        { id: 'consumable', label: 'Consumables' },
+        { id: 'equipment', label: 'Equipment' }
+    ], 400, 300);
+    this.element.id = "inventory-window";
+
+    this.btnClose2 = document.createElement("button");
+    this.btnClose2.className = "win-btn";
+    this.btnClose2.textContent = "Close";
+    this.btnClose2.onclick = () => this.onUserClose();
+    this.buttonsEl.appendChild(this.btnClose2);
+
+    this.party = null;
+    this.onUse = null;
+    this.onDiscard = null;
+  }
+
+  /**
+   * Refreshes the inventory list.
+   * @param {import("./objects.js").Game_Party} party - The party object.
+   * @param {Function} onUse - Callback (item) => void.
+   * @param {Function} onDiscard - Callback (item) => void.
+   */
+  refresh(party, onUse, onDiscard) {
+    this.party = party;
+    this.onUse = onUse;
+    this.onDiscard = onDiscard;
+    this.refreshList();
+  }
+
+  refreshList() {
+    this.listEl.innerHTML = "";
+
+    let inventory = this.party.inventory;
+    if (this.currentTab === 'consumable') {
+        inventory = inventory.filter(i => i.type !== 'equipment');
+    } else {
+        inventory = inventory.filter(i => i.type === 'equipment');
+    }
+
+    if (inventory.length === 0) {
+      this.emptyMsgEl.style.display = "block";
+      this.emptyMsgEl.textContent = this.currentTab === 'consumable' ? "No consumables." : "No equipment.";
+    } else {
+      this.emptyMsgEl.style.display = "none";
+      inventory.forEach((item, idx) => {
+        const btns = [];
         const useBtn = document.createElement("button");
         useBtn.className = "win-btn";
-        useBtn.textContent = "Use";
-        useBtn.addEventListener("click", () => this.showTargetSelection(item));
+        useBtn.textContent = this.currentTab === 'equipment' ? "Equip" : "Use";
+        useBtn.addEventListener("click", () => {
+            if (this.onUse) this.onUse(item);
+        });
+        btns.push(useBtn);
+
         const discardBtn = document.createElement("button");
         discardBtn.className = "win-btn";
         discardBtn.textContent = "Discard";
         discardBtn.addEventListener("click", () => {
             if (this.onDiscard) this.onDiscard(item);
         });
-        btns.appendChild(useBtn);
-        btns.appendChild(discardBtn);
+        btns.push(discardBtn);
 
-        row.appendChild(btns);
+        const row = this.createItemRow(item, btns);
         this.listEl.appendChild(row);
       });
     }
   }
+}
 
-  showTargetSelection(item) {
-    this.listEl.innerHTML = "";
+/**
+ * @class Window_EquipSelect
+ * @description Window for selecting equipment to equip to a specific member.
+ * @extends Window_ItemList
+ */
+export class Window_EquipSelect extends Window_ItemList {
+    constructor() {
+        super('Equip Item', [
+            { id: 'All', label: 'All' },
+            { id: 'Weapon', label: 'Weapon' },
+            { id: 'Armor', label: 'Armor' },
+            { id: 'Accessory', label: 'Accessory' }
+        ], 450, 350);
+        this.element.id = "equip-select-window";
 
-    const header = document.createElement("div");
-    header.textContent = `Use ${item.name} on:`;
-    header.style.marginBottom = "10px";
-    header.style.textAlign = "center";
-    this.listEl.appendChild(header);
+        this.btnCancel = document.createElement("button");
+        this.btnCancel.className = "win-btn";
+        this.btnCancel.textContent = "Cancel";
+        this.btnCancel.onclick = () => this.onUserClose();
+        this.buttonsEl.appendChild(this.btnCancel);
+    }
 
-    this.party.members.forEach((m) => {
-      const btn = document.createElement("button");
-      btn.className = "win-btn";
-      btn.style.display = 'block';
-      btn.style.width = '90%';
-      btn.style.margin = '5px auto';
-      btn.textContent = `${m.name} (HP ${m.hp}/${m.maxHp})`;
-      btn.addEventListener("click", () => {
-        if (this.onUse) this.onUse(item, m);
-      });
-      this.listEl.appendChild(btn);
-    });
+    /**
+     * @param {import("./objects.js").Game_Party} party
+     * @param {import("./objects.js").Game_Battler} member
+     * @param {Function} onEquip - (item) => void
+     */
+    setup(party, member, onEquip) {
+        this.party = party;
+        this.member = member;
+        this.onEquip = onEquip;
+        this.refreshList();
+    }
 
-    const backBtn = document.createElement("button");
-    backBtn.className = "win-btn";
-    backBtn.style.display = 'block';
-    backBtn.style.width = '90%';
-    backBtn.style.margin = '20px auto 5px auto';
-    backBtn.textContent = "Back";
-    backBtn.onclick = () => this.showItemList();
-    this.listEl.appendChild(backBtn);
-  }
+    refreshList() {
+        this.listEl.innerHTML = "";
+        const filter = this.currentTab;
+
+        const inventoryItems = this.party.inventory.filter(
+            (i) => i.type === "equipment" && (filter === "All" || i.equipType === filter)
+        );
+        const otherMemberItems = this.party.members
+            .filter((m) => m !== this.member && m.equipmentItem && (filter === "All" || m.equipmentItem.equipType === filter))
+            .map((m) => ({
+                ...m.equipmentItem,
+                equippedBy: m.name,
+                equippedMember: m,
+            }));
+
+        const allEquipable = [...inventoryItems, ...otherMemberItems];
+
+        if (allEquipable.length === 0) {
+            this.emptyMsgEl.style.display = "block";
+            this.emptyMsgEl.textContent = "No items available.";
+        } else {
+            this.emptyMsgEl.style.display = "none";
+            allEquipable.forEach(item => {
+                const btns = [];
+                const btn = document.createElement("button");
+                btn.className = "win-btn";
+                btn.textContent = item.equippedBy ? "Swap" : "Equip";
+                btn.onclick = () => {
+                    if (this.onEquip) this.onEquip(item);
+                };
+                btns.push(btn);
+
+                const row = this.createItemRow(item, btns);
+
+                if (item.equippedBy) {
+                    const extra = document.createElement("span");
+                    extra.style.fontSize = "10px";
+                    extra.style.marginLeft = "auto";
+                    extra.style.marginRight = "4px";
+                    extra.textContent = \`(on \${item.equippedBy})\`;
+                    // Insert before buttons (last child)
+                    row.insertBefore(extra, row.children[row.children.length - 1]);
+                }
+
+                this.listEl.appendChild(row);
+            });
+        }
+    }
 }
 
 /**
@@ -1791,51 +2054,22 @@ export class Window_HUD {
     updateParty(party, onInspect) {
         this.partyGridEl.innerHTML = "";
         party.members.slice(0, 4).forEach((member, index) => {
-            const slot = document.createElement("div");
-            slot.className = "party-slot";
-            slot.dataset.index = index;
+            const slot = createPartySlot(member, index);
 
-            const portrait = document.createElement("div");
-            portrait.className = "party-slot-portrait";
-            portrait.style.backgroundImage = `url('assets/portraits/${member.spriteKey || "pixie"}.png')`;
+            const hpFill = slot.querySelector('.hp-fill');
+            if (hpFill) {
+                // Initialize with prevHp
+                hpFill.style.width = `${Math.max(0, ((member.prevHp || member.hp) / member.maxHp) * 100)}%`;
 
-            const info = document.createElement("div");
-            info.className = "party-slot-info";
-
-            const nameEl = document.createElement("div");
-            nameEl.className = "party-slot-name";
-            const elementIcon = createElementIcon(member.elements);
-            nameEl.appendChild(elementIcon);
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = member.name;
-            nameEl.appendChild(nameSpan);
-
-            const hpLabel = document.createElement("div");
-            const row = index <= 1 ? "Front" : "Back";
-            hpLabel.textContent = `Lv${member.level} (${row})  HP ${member.hp}/${member.maxHp}`;
-
-            const hpBar = document.createElement("div");
-            hpBar.className = "hp-bar";
-            const hpFill = document.createElement("div");
-            hpFill.className = "hp-fill";
-            hpFill.style.width = `${Math.max(0, ((member.prevHp || member.hp) / member.maxHp) * 100)}%`;
-
-            this.animateHpGauge(
-                hpFill,
-                member.prevHp || member.hp,
-                member.hp,
-                member.maxHp,
-                500
-            );
+                this.animateHpGauge(
+                    hpFill,
+                    member.prevHp || member.hp,
+                    member.hp,
+                    member.maxHp,
+                    500
+                );
+            }
             member.prevHp = member.hp;
-            hpBar.appendChild(hpFill);
-
-            info.appendChild(nameEl);
-            info.appendChild(hpLabel);
-            info.appendChild(hpBar);
-
-            slot.appendChild(portrait);
-            slot.appendChild(info);
 
             slot.addEventListener("click", () => onInspect(member, index));
             this.partyGridEl.appendChild(slot);
@@ -1858,5 +2092,240 @@ export class Window_HUD {
           }
         };
         requestAnimationFrame(frame);
+    }
+}
+
+/**
+ * Helper to render creature info (Sprite, Name, Level, HP, etc).
+ * @param {HTMLElement} container - The container element.
+ * @param {import("./objects.js").Game_Battler} battler - The battler.
+ * @param {string} [title] - Optional title.
+ */
+export function renderCreatureInfo(container, battler, title) {
+    container.innerHTML = "";
+    const layout = document.createElement('div');
+    layout.className = 'inspect-layout';
+    container.appendChild(layout);
+
+    const sprite = document.createElement('div');
+    sprite.className = 'inspect-sprite';
+    sprite.style.backgroundImage = `url('assets/portraits/${battler.spriteKey || "pixie"}.png')`;
+    layout.appendChild(sprite);
+
+    const fields = document.createElement('div');
+    fields.className = 'inspect-fields';
+    layout.appendChild(fields);
+
+    const createRow = (label, valueEl) => {
+        const row = document.createElement('div');
+        row.className = 'inspect-row';
+        const lbl = document.createElement('span');
+        lbl.className = 'inspect-label';
+        lbl.textContent = label;
+        row.appendChild(lbl);
+        valueEl.classList.add('inspect-value');
+        row.appendChild(valueEl);
+        fields.appendChild(row);
+    };
+
+    // Name
+    const nameVal = document.createElement('span');
+    if (battler.elements) {
+        nameVal.appendChild(createElementIcon(battler.elements));
+    }
+    nameVal.appendChild(document.createTextNode(battler.name));
+    createRow('Name', nameVal);
+
+    // Level
+    const levelVal = document.createElement('span');
+    levelVal.textContent = battler.level;
+    createRow('Level', levelVal);
+
+    // HP
+    const hpVal = document.createElement('span');
+    hpVal.textContent = `${battler.hp} / ${battler.maxHp}`;
+    createRow('HP', hpVal);
+
+    // Role
+    if (battler.role) {
+        const roleVal = document.createElement('span');
+        roleVal.textContent = battler.role;
+        createRow('Role', roleVal);
+    }
+}
+
+/**
+ * @class Window_EquipConfirm
+ * @description The window for confirming equipment changes.
+ * @extends Window_Base
+ */
+export class Window_EquipConfirm extends Window_Base {
+    constructor() {
+        super('center', 'center', 500, 420);
+        this.element.id = "equip-confirm-window";
+        this.element.style.display = 'flex';
+        this.element.style.flexDirection = 'column';
+
+        const titleBar = document.createElement("div");
+        titleBar.className = "dialog-titlebar";
+        this.element.appendChild(titleBar);
+        this.makeDraggable(titleBar);
+
+        const titleText = document.createElement("span");
+        titleText.textContent = "Equip Item";
+        titleBar.appendChild(titleText);
+
+        this.btnClose = document.createElement("button");
+        this.btnClose.className = "win-btn";
+        this.btnClose.textContent = "X";
+        this.btnClose.onclick = () => this.onUserClose();
+        titleBar.appendChild(this.btnClose);
+
+        const content = document.createElement("div");
+        content.className = "dialog-content";
+        content.style.flexGrow = "1";
+        this.element.appendChild(content);
+
+        this.infoPanel = document.createElement("div");
+        this.infoPanel.className = "inspect-body";
+        this.infoPanel.style.marginBottom = "8px";
+        content.appendChild(this.infoPanel);
+
+        this.changePanel = document.createElement("div");
+        this.changePanel.className = "group-box";
+        this.changePanel.style.padding = "10px";
+        content.appendChild(this.changePanel);
+
+        const leg = document.createElement("legend");
+        leg.textContent = "Changes";
+        this.changePanel.appendChild(leg);
+
+        this.slotChangeEl = document.createElement("div");
+        this.slotChangeEl.style.marginBottom = "8px";
+        this.slotChangeEl.style.fontWeight = "bold";
+        this.slotChangeEl.style.display = "flex";
+        this.slotChangeEl.style.alignItems = "center";
+        this.changePanel.appendChild(this.slotChangeEl);
+
+        this.traitListEl = document.createElement("div");
+        this.traitListEl.style.fontSize = "10px";
+        this.traitListEl.style.whiteSpace = "pre-wrap";
+        this.changePanel.appendChild(this.traitListEl);
+
+        const buttons = document.createElement("div");
+        buttons.className = "dialog-buttons";
+        this.element.appendChild(buttons);
+
+        this.btnConfirm = document.createElement("button");
+        this.btnConfirm.className = "win-btn";
+        this.btnConfirm.textContent = "Confirm";
+        buttons.appendChild(this.btnConfirm);
+
+        this.btnCancel = document.createElement("button");
+        this.btnCancel.className = "win-btn";
+        this.btnCancel.textContent = "Cancel";
+        this.btnCancel.onclick = () => this.onUserClose();
+        buttons.appendChild(this.btnCancel);
+    }
+
+    /**
+     * Sets up the confirmation window.
+     * @param {import("./objects.js").Game_Battler} member
+     * @param {Object} newItem
+     * @param {Object} oldItem
+     * @param {string} slotName
+     * @param {Function} onConfirm
+     */
+    setup(member, newItem, oldItem, slotName, onConfirm) {
+        renderCreatureInfo(this.infoPanel, member);
+
+        this.slotChangeEl.innerHTML = "";
+        const arrow = document.createElement("span");
+        arrow.textContent = " ➔ ";
+        arrow.style.margin = "0 8px";
+
+        const createItemSpan = (item) => {
+             const span = document.createElement("span");
+             span.style.display = "inline-flex";
+             span.style.alignItems = "center";
+
+             if (item) {
+                 span.appendChild(createInteractiveLabel(item, 'item', { showTooltip: true }));
+             } else {
+                 span.textContent = "None";
+                 span.style.color = "#808080";
+             }
+             return span;
+        };
+
+        const slotLabel = document.createElement("span");
+        slotLabel.textContent = slotName + ": ";
+        this.slotChangeEl.appendChild(slotLabel);
+        this.slotChangeEl.appendChild(createItemSpan(oldItem));
+        this.slotChangeEl.appendChild(arrow);
+        this.slotChangeEl.appendChild(createItemSpan(newItem));
+
+        // Traits Diff
+        this.traitListEl.innerHTML = "";
+        const diffs = this.calculateDiff(member, newItem, oldItem);
+        diffs.forEach(diff => {
+            const div = document.createElement("div");
+            div.textContent = diff;
+            this.traitListEl.appendChild(div);
+        });
+
+        this.btnConfirm.onclick = onConfirm;
+    }
+
+    calculateDiff(member, newItem, oldItem) {
+        const diffs = [];
+        const oldTraits = oldItem ? (oldItem.traits || []) : [];
+        const newTraits = newItem ? (newItem.traits || []) : [];
+
+        // Combine traits by code + dataId
+        const getTraitVal = (traits, code, dataId) => {
+             return traits.filter(t => t.code === code && t.dataId === dataId)
+                          .reduce((sum, t) => sum + t.value, 0);
+        };
+
+        const checkParam = (name, code, dataId) => {
+             const oldVal = getTraitVal(oldTraits, code, dataId);
+             const newVal = getTraitVal(newTraits, code, dataId);
+             if (oldVal !== newVal) {
+                 const sign = newVal > oldVal ? "+" : "";
+                 const change = newVal - oldVal;
+                 diffs.push(`${name}: ${sign}${change} (${member[dataId]} -> ${member[dataId] + change})`);
+             }
+        };
+
+        // Note: member stats already include oldItem stats if currently equipped.
+        // So member.atk includes oldVal. New Atk = member.atk - oldVal + newVal.
+
+        const checkParamDynamic = (name, getterProp, code, dataId) => {
+             const oldVal = getTraitVal(oldTraits, code, dataId);
+             const newVal = getTraitVal(newTraits, code, dataId);
+             if (oldVal !== newVal) {
+                 const currentTotal = member[getterProp];
+                 const newTotal = currentTotal - oldVal + newVal;
+                 const sign = newTotal > currentTotal ? "+" : "";
+                 const change = newTotal - currentTotal;
+                 diffs.push(`${name}: ${sign}${change} (${currentTotal} -> ${newTotal})`);
+             }
+        };
+
+        checkParamDynamic("Max HP", "maxHp", "PARAM_PLUS", "maxHp");
+        checkParamDynamic("Atk", "atk", "PARAM_PLUS", "atk");
+
+        // Damage Bonus legacy check
+        const oldDmg = oldItem ? (oldItem.damageBonus || 0) : 0;
+        const newDmg = newItem ? (newItem.damageBonus || 0) : 0;
+        if (oldDmg !== newDmg) {
+             diffs.push(`Damage Bonus: ${newDmg > oldDmg ? "+" : ""}${newDmg - oldDmg}`);
+        }
+
+        if (diffs.length === 0) {
+            diffs.push("No stat changes.");
+        }
+        return diffs;
     }
 }

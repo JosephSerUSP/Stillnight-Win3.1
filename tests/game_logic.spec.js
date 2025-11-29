@@ -84,9 +84,13 @@ test.describe('Game Logic', () => {
         await expect(equipBtn).toBeVisible();
         await equipBtn.click();
 
-        // Verify the inspect window is still open (Equipment list container)
-        const equipList = page.locator('.group-box legend', { hasText: 'Change Equipment' });
-        await expect(equipList).toBeVisible();
+        // Verify the inspect window is still open
+        const inspectWindow = page.locator('#inspect-window');
+        await expect(inspectWindow).toBeVisible();
+
+        // And the new item name is displayed in the Equipment field
+        const equipField = page.locator('.inspect-value', { hasText: 'Test Sword' });
+        await expect(equipField).toBeVisible();
     });
 
     test('Map interaction blocked during battle', async ({ page }) => {
