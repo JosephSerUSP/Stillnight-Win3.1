@@ -11,6 +11,7 @@ import {
   Window_Inspect,
   Window_Confirm,
   Window_Evolution,
+  Window_EquipConfirm,
   Window_HUD,
   WindowLayer,
   createInteractiveLabel,
@@ -1350,11 +1351,14 @@ export class Scene_Map extends Scene_Base {
     this.windowLayer.addChild(this.evolutionWindow);
     this.confirmWindow = new Window_Confirm();
     this.windowLayer.addChild(this.confirmWindow);
+    this.equipConfirmWindow = new Window_EquipConfirm();
+    this.windowLayer.addChild(this.equipConfirmWindow);
 
     this.recruitWindow.onUserClose = this.interpreter.closeRecruitEvent.bind(this.interpreter);
     this.evolutionWindow.onUserClose = () => this.windowManager.close(this.evolutionWindow);
     this.formationWindow.onUserClose = this.closeFormation.bind(this);
     this.confirmWindow.onUserClose = () => this.windowManager.close(this.confirmWindow);
+    this.equipConfirmWindow.onUserClose = () => this.windowManager.close(this.equipConfirmWindow);
 
     this.inventoryWindow.onUserClose = this.closeInventory.bind(this);
   }
@@ -2003,6 +2007,25 @@ renderElements(elements) {
     this.windowManager.close(this.inventoryWindow);
   }
 
+  openEquipConfirm(target, item) {
+      if (this.sceneManager.currentScene() !== this) return;
+
+      const oldItem = target.equipmentItem; // Assuming single slot for now
+
+      this.equipConfirmWindow.setup(
+          target,
+          item,
+          oldItem,
+          "Held Item",
+          () => {
+              this.windowManager.close(this.equipConfirmWindow);
+              this.equipItem(target, item);
+              this.refreshInventoryWindow();
+          }
+      );
+      this.windowManager.push(this.equipConfirmWindow);
+  }
+
   /**
    * Refreshes the content of the inventory window.
    * @method refreshInventoryWindow
@@ -2011,21 +2034,25 @@ renderElements(elements) {
     this.inventoryWindow.refresh(
       this.party,
       (item, target) => {
-          const result = this.party.useItem(item, target);
-          if (result.success) {
-              this.logMessage(`[Inventory] Used ${item.name} on ${target.name}.`);
-              result.outcomes.forEach(o => {
-                 if (o.type === 'xp' && o.result.leveledUp) {
-                     this.logMessage(`[Level] ${target.name} grows to Lv${o.result.newLevel}! HP +${o.result.hpGain}.`);
-                     SoundManager.beep(900, 150);
-                 }
-              });
-              this.updateParty();
-              this.refreshInventoryWindow();
-              this.updateAll();
-              SoundManager.beep(700, 100);
+          if (item.type === 'equipment') {
+              this.openEquipConfirm(target, item);
           } else {
-              this.logMessage(result.msg);
+              const result = this.party.useItem(item, target);
+              if (result.success) {
+                  this.logMessage(`[Inventory] Used ${item.name} on ${target.name}.`);
+                  result.outcomes.forEach(o => {
+                     if (o.type === 'xp' && o.result.leveledUp) {
+                         this.logMessage(`[Level] ${target.name} grows to Lv${o.result.newLevel}! HP +${o.result.hpGain}.`);
+                         SoundManager.beep(900, 150);
+                     }
+                  });
+                  this.updateParty();
+                  this.refreshInventoryWindow();
+                  this.updateAll();
+                  SoundManager.beep(700, 100);
+              } else {
+                  this.logMessage(result.msg);
+              }
           }
       },
       (item) => {
