@@ -1,4 +1,4 @@
-import { DataManager, SceneManager } from "./managers.js";
+import { DataManager, SceneManager, ThemeManager } from "./managers.js";
 import { Scene_Boot } from "./scenes.js";
 import { WindowManager } from "./windows.js";
 
@@ -41,11 +41,3 @@ async function main() {
 
 // Start the game when the DOM is fully loaded.
 window.addEventListener("DOMContentLoaded", main);
-
-// Theme switcher logic
-const themeBtn = document.getElementById("btn-theme");
-if (themeBtn) {
-  themeBtn.addEventListener("click", () => {
-    document.body.classList.toggle("night-theme");
-  });
-}
