@@ -25,7 +25,16 @@
       "text-special": "#600060",
       "text-info": "#2040D0",
       "selection-bg": "#000080",
-      "selection-text": "#ffffff"
+      "selection-text": "#ffffff",
+      "content-bg": "#ffffff",
+      "gauge-hp": "#00a000",
+      "gauge-bg": "#808080",
+      "text-functional": "#478174",
+      "bezel-light": "#ffffff",
+      "bezel-shadow": "#808080",
+      "bezel-dark": "#404040",
+      "tooltip-bg": "#ffffe1",
+      "tooltip-text": "#000000"
     }
   },
   {
@@ -54,7 +63,15 @@
       "text-special": "#a060a0",
       "text-info": "#60a0ff",
       "selection-bg": "#6060a0",
-      "selection-text": "#ffffff"
+      "selection-text": "#ffffff",
+      "content-bg": "#202020",
+      "gauge-bg": "#404040",
+      "text-functional": "#60a090",
+      "bezel-light": "#606060",
+      "bezel-shadow": "#202020",
+      "bezel-dark": "#101010",
+      "tooltip-bg": "#303020",
+      "tooltip-text": "#e0e0e0"
     }
   },
   {
@@ -83,7 +100,16 @@
       "text-special": "#ff00ff",
       "text-info": "#00ffff",
       "selection-bg": "#ffff00",
-      "selection-text": "#000000"
+      "selection-text": "#000000",
+      "content-bg": "#000000",
+      "gauge-hp": "#ffffff",
+      "gauge-bg": "#000000",
+      "text-functional": "#00ffff",
+      "bezel-light": "#ffffff",
+      "bezel-shadow": "#ffffff",
+      "bezel-dark": "#ffffff",
+      "tooltip-bg": "#000000",
+      "tooltip-text": "#ffffff"
     }
   }
 ]
