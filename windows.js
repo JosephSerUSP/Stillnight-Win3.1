@@ -943,6 +943,167 @@ export class Window_Evolution extends Window_Base {
   }
 }
 
+/**
+ * @class Window_Fusion
+ * @description The window for fusing demons.
+ * @extends Window_Base
+ */
+export class Window_Fusion extends Window_Base {
+  constructor() {
+    super('center', 'center', 700, 500);
+    this.element.id = "fusion-window";
+    this.element.style.display = 'flex';
+    this.element.style.flexDirection = 'column';
+
+    const titleBar = document.createElement("div");
+    titleBar.className = "dialog-titlebar";
+    this.element.appendChild(titleBar);
+    this.makeDraggable(titleBar);
+
+    const titleText = document.createElement("span");
+    titleText.textContent = "Jakyou Manor – Fusion";
+    titleBar.appendChild(titleText);
+
+    this.btnClose = document.createElement("button");
+    this.btnClose.className = "win-btn";
+    this.btnClose.textContent = "X";
+    this.btnClose.onclick = () => this.onUserClose();
+    titleBar.appendChild(this.btnClose);
+
+    const content = document.createElement("div");
+    content.className = "dialog-content";
+    content.style.flexGrow = "1";
+    content.style.display = "flex";
+    this.element.appendChild(content);
+
+    // Left: List
+    const leftPanel = document.createElement('div');
+    leftPanel.style.width = '300px';
+    leftPanel.style.borderRight = '2px solid #fff';
+    leftPanel.style.display = 'flex';
+    leftPanel.style.flexDirection = 'column';
+    leftPanel.style.padding = '8px';
+    content.appendChild(leftPanel);
+
+    const listLabel = document.createElement('div');
+    listLabel.textContent = "Select 2 Demons:";
+    listLabel.style.marginBottom = '8px';
+    leftPanel.appendChild(listLabel);
+
+    this.listEl = document.createElement('div');
+    this.listEl.style.flexGrow = '1';
+    this.listEl.style.overflowY = 'auto';
+    leftPanel.appendChild(this.listEl);
+
+    // Right: Result
+    const rightPanel = document.createElement('div');
+    rightPanel.style.flexGrow = '1';
+    rightPanel.style.padding = '10px';
+    rightPanel.style.display = 'flex';
+    rightPanel.style.flexDirection = 'column';
+    content.appendChild(rightPanel);
+
+    const resultLabel = document.createElement('div');
+    resultLabel.textContent = "Result Prediction:";
+    rightPanel.appendChild(resultLabel);
+
+    this.resultContainer = document.createElement('div');
+    this.resultContainer.className = 'inspect-body';
+    this.resultContainer.style.flexGrow = '1';
+    this.resultContainer.style.marginTop = '10px';
+    this.resultContainer.style.border = '1px inset #888';
+    rightPanel.appendChild(this.resultContainer);
+
+    const buttons = document.createElement("div");
+    buttons.className = "dialog-buttons";
+    this.element.appendChild(buttons);
+
+    this.btnFuse = document.createElement("button");
+    this.btnFuse.className = "win-btn";
+    this.btnFuse.textContent = "Perform Fusion";
+    this.btnFuse.disabled = true;
+    buttons.appendChild(this.btnFuse);
+  }
+
+  /**
+   * @param {import("./objects.js").Game_Party} party
+   * @param {Function} onSelect - (selection) => void
+   */
+  refresh(party, onSelect) {
+      this.listEl.innerHTML = "";
+      this.party = party;
+      // Filter fusable demons (skip Hero/Partner - assumindex 0,1)
+      // Actually check logic: usually first 2 are humans.
+      // I'll skip first 2 for now or check isEnemy (false) and maybe a "race" check?
+      // For now, index >= 2.
+      const demons = party.members.filter((m, i) => i >= 2);
+
+      demons.forEach(d => {
+          const row = document.createElement('div');
+          row.className = 'shop-row';
+          row.style.cursor = 'pointer';
+
+          const chk = document.createElement('input');
+          chk.type = 'checkbox';
+          chk.dataset.id = d.id; // Warning: ID might not be unique if duplicates exist. Use object ref map?
+          // Using unique object reference is hard with DOM dataset.
+          // Use index in party?
+          const partyIndex = party.members.indexOf(d);
+          chk.dataset.index = partyIndex;
+
+          chk.onchange = () => onSelect(this.getSelection());
+          row.appendChild(chk);
+
+          const label = document.createElement('span');
+          label.textContent = `${d.name} (Lv${d.level} ${d.role})`;
+          label.onclick = () => { chk.click(); };
+          row.appendChild(label);
+
+          this.listEl.appendChild(row);
+      });
+  }
+
+  getSelection() {
+      const selectedIndices = Array.from(this.listEl.querySelectorAll('input:checked')).map(el => parseInt(el.dataset.index));
+      return selectedIndices.map(idx => this.party.members[idx]);
+  }
+
+  showResult(resultData) {
+      this.resultContainer.innerHTML = "";
+      if (!resultData) {
+          this.resultContainer.textContent = "No valid fusion.";
+          this.btnFuse.disabled = true;
+          return;
+      }
+
+      this.btnFuse.disabled = false;
+      const layout = document.createElement('div');
+      layout.className = 'inspect-layout';
+      this.resultContainer.appendChild(layout);
+
+      const sprite = document.createElement('div');
+      sprite.className = 'inspect-sprite';
+      sprite.style.backgroundImage = `url('assets/portraits/${resultData.spriteKey || "pixie"}.png')`;
+      layout.appendChild(sprite);
+
+      const fields = document.createElement('div');
+      fields.className = 'inspect-fields';
+      layout.appendChild(fields);
+
+      const addRow = (lbl, txt) => {
+          const r = document.createElement('div');
+          r.className = 'inspect-row';
+          r.innerHTML = `<span class="inspect-label">${lbl}</span><span class="inspect-value">${txt}</span>`;
+          fields.appendChild(r);
+      };
+
+      addRow("Name", resultData.name);
+      addRow("Role", resultData.role);
+      addRow("Level", resultData.level);
+      addRow("HP", resultData.maxHp);
+  }
+}
+
 export class Window_Shop extends Window_Base {
   /**
    * Creates a new Window_Shop instance.
@@ -1784,6 +1945,8 @@ export class Window_HUD {
           </div>
           <div>
             <span>Gold: <span id="status-gold">0</span></span>
+            <span>| MAG: <span id="status-mag">0</span></span>
+            <span>| Moon: <span id="status-moon">New</span></span>
             <span>| Floor: <span id="status-floor">1</span></span>
             <span>| Cards: <span id="status-cards">1</span></span>
             <span>| Run: <span id="status-run">Active</span></span>
@@ -1807,6 +1970,8 @@ export class Window_HUD {
         this.logEl = document.getElementById("log-content");
         this.statusMessageEl = document.getElementById("status-message");
         this.statusGoldEl = document.getElementById("status-gold");
+        this.statusMagEl = document.getElementById("status-mag");
+        this.statusMoonEl = document.getElementById("status-moon");
         this.statusFloorEl = document.getElementById("status-floor");
         this.statusCardsEl = document.getElementById("status-cards");
         this.statusRunEl = document.getElementById("status-run");

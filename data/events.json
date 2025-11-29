@@ -74,6 +74,14 @@
     "actions": [{ "type": "TREASURE" }]
   },
   {
+    "id": "jakyou",
+    "type": "jakyou",
+    "symbol": "J",
+    "cssClass": "tile-shrine",
+    "trigger": "touch",
+    "actions": [{ "type": "JAKYOU" }]
+  },
+  {
     "id": "shrine_shade",
     "type": "shrine_scenario",
     "title": "Whispering Shade",

@@ -117,10 +117,19 @@ export class Game_Battler extends Game_Base {
     this.flavor = actorData.flavor;
     this.xp = 0;
     this.baseEquipment = actorData.equipment || null;
-    this.equipmentItem = null;
+    this.equipment = {
+        weapon: null,
+        gun: null,
+        armor: null,
+        head: null,
+        arms: null,
+        legs: null,
+        accessory: null
+    };
     this.expGrowth = actorData.expGrowth || 5;
     this.evolutions = actorData.evolutions || [];
     this.gold = actorData.gold || 0;
+    this.cp = actorData.cp || (isEnemy ? 0 : 1); // Magnetite cost
     this.isEnemy = isEnemy;
 
     /**
@@ -147,9 +156,11 @@ export class Game_Battler extends Game_Base {
       }
 
       // Equipment traits
-      if (this.equipmentItem && this.equipmentItem.traits) {
-          traits.push(...this.equipmentItem.traits);
-      }
+      Object.values(this.equipment).forEach(item => {
+          if (item && item.traits) {
+              traits.push(...item.traits);
+          }
+      });
 
       // Passive traits
       this.passives.forEach(p => {
@@ -421,6 +432,7 @@ export class Game_Party {
     this.MAX_MEMBERS = 24;
     this.members = [];
     this.gold = 0;
+    this.mag = 0;
     this.inventory = [];
   }
 
@@ -528,6 +540,8 @@ export class Game_Map {
     this.maxReachedFloorIndex = 0;
     this.playerX = 0;
     this.playerY = 0;
+    this.moonPhase = 0; // 0-7 (0=New, 4=Full)
+    this.steps = 0;
   }
 
   initFloors(mapData, eventDefs, npcData = []) {

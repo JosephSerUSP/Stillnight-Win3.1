@@ -81,6 +81,12 @@ export class DataManager {
      * @type {Object|null}
      */
     this.animations = null;
+
+    /**
+     * The fusion data loaded from fusion.json.
+     * @type {Object|null}
+     */
+    this.fusion = null;
   }
 
   /**
@@ -96,6 +102,7 @@ export class DataManager {
       items: "data/items.json",
       npcs: "data/npcs.json",
       terms: "data/terms.json",
+      fusion: "data/fusion.json",
     };
 
     try {
@@ -179,6 +186,60 @@ export class SoundManager {
     } catch (e) {
       // Fail silently if audio context fails.
     }
+  }
+}
+
+/**
+ * @class FusionManager
+ * @description Manages demon fusion logic.
+ */
+export class FusionManager {
+  /**
+   * @param {DataManager} dataManager
+   */
+  constructor(dataManager) {
+    this.dataManager = dataManager;
+  }
+
+  /**
+   * Predicts the result of fusing two battlers.
+   * @param {import("./objects.js").Game_Battler} demonA
+   * @param {import("./objects.js").Game_Battler} demonB
+   * @returns {Object|null} The resulting actor data template, or null.
+   */
+  predictFusion(demonA, demonB) {
+    if (!demonA || !demonB) return null;
+
+    // Assume role holds the Race
+    const raceA = demonA.role;
+    const raceB = demonB.role;
+
+    if (!this.dataManager.fusion || !this.dataManager.fusion.table) return null;
+
+    // Check table
+    let resultRace = null;
+    const table = this.dataManager.fusion.table;
+    if (table[raceA] && table[raceA][raceB]) resultRace = table[raceA][raceB];
+    else if (table[raceB] && table[raceB][raceA]) resultRace = table[raceB][raceA];
+
+    if (!resultRace) return null;
+
+    // Calculate Target Level
+    const avgLevel = Math.floor((demonA.level + demonB.level) / 2) + 1;
+
+    // Find candidates
+    const candidates = this.dataManager.actors.filter(a => a.role === resultRace && !a.isSpecial);
+    candidates.sort((a, b) => a.level - b.level);
+
+    // Closest level >= avgLevel
+    let result = candidates.find(a => a.level >= avgLevel);
+
+    // Fallback: highest level demon if we exceeded range
+    if (!result && candidates.length > 0) {
+        result = candidates[candidates.length - 1];
+    }
+
+    return result || null;
   }
 }
 
@@ -686,6 +747,7 @@ export class SceneManager {
 if (typeof window !== 'undefined' && window.location.search.includes("test=true")) {
     window.DataManager = DataManager;
     window.SoundManager = SoundManager;
+    window.FusionManager = FusionManager;
     window.BattleManager = BattleManager;
     window.SceneManager = SceneManager;
 }

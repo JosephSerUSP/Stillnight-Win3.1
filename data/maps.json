@@ -1,168 +1,41 @@
 [
   {
-    "title": "Floor 1: Entry Hall",
-    "intro": "You cross the threshold of Stillnight.",
+    "title": "Haneda Shelter",
     "depth": 1,
+    "intro": "The shelter is safe, but demons roam outside.",
+    "encounters": [{ "id": "pixie", "weight": 5 }, { "id": "kobold", "weight": 5 }],
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 2, "max": 3 },
-      { "id": "shop", "count": 1 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "npc", "chance": 0.3 },
-      { "id": "trap", "count": 2 },
-      { "id": "treasure", "count": 1 }
-    ],
-    "treasures": ["potion", "antidote"],
-    "encounters": [
-      { "id": "bat", "weight": 10 },
-      { "id": "ooze", "weight": 5 },
-      { "id": "pixie", "weight": 2 }
+        { "id": "stairs", "count": 1 },
+        { "id": "recovery", "count": 1 },
+        { "id": "treasure", "count": 2 },
+        { "id": "recruit", "count": 1 }
     ]
   },
   {
-    "title": "Floor 1: Silent Shrine",
-    "intro": "A distant bell tolls once.",
-    "depth": 1,
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.7 },
-      { "id": "enemy", "min": 2, "max": 3 },
-      { "id": "shrine", "count": 1 },
-      { "id": "shop", "count": 1 },
-      { "id": "recruit", "chance": 0.5 }
-    ],
-    "encounters": [
-      { "id": "wisp", "weight": 8 },
-      { "id": "pixie", "weight": 5 },
-      { "id": "ooze", "weight": 2 }
-    ]
-  },
-  {
-    "title": "Floor 2: Chasm Crossing",
-    "intro": "Wind howls across a broken bridge.",
+    "title": "Shiba",
     "depth": 2,
+    "intro": "The ruined streets of Shiba.",
+    "encounters": [{ "id": "kobold", "weight": 5 }, { "id": "goblin", "weight": 5 }],
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.5 },
-      { "id": "enemy", "min": 3, "max": 4 },
-      { "id": "shrine", "chance": 0.8 },
-      { "id": "shop", "count": 1 },
-      { "id": "recruit", "chance": 0.6 },
-      { "id": "npc", "chance": 0.3 },
-      { "id": "trap", "min": 1, "max": 3 },
-      { "id": "treasure", "chance": 0.5 }
-    ],
-    "treasures": ["hi_potion", "iron_sword"],
-    "encounters": [
-      { "id": "skeleton", "weight": 10 },
-      { "id": "imp", "weight": 6 },
-      { "id": "wisp", "weight": 4 }
+        { "id": "stairs", "count": 1 },
+        { "id": "jakyou", "count": 1 },
+        { "id": "shop", "count": 1 },
+        { "id": "recovery", "count": 1 },
+        { "id": "enemy", "count": 2 },
+        { "id": "treasure", "count": 1 }
     ]
   },
   {
-    "title": "Floor 2: Glass Library",
-    "intro": "Shelves of crystal tomes hum quietly.",
-    "depth": 2,
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.5 },
-      { "id": "enemy", "min": 3, "max": 5 },
-      { "id": "shrine", "count": 1 },
-      { "id": "shop", "chance": 0.8 },
-      { "id": "recruit", "chance": 0.6 }
-    ],
-    "encounters": [
-      { "id": "golem", "weight": 5 },
-      { "id": "wisp", "weight": 8 },
-      { "id": "imp", "weight": 4 }
-    ]
-  },
-  {
-    "title": "Floor 3: Rusted Choir",
-    "intro": "Broken bells sway above a dry pit.",
+    "title": "Ginza",
     "depth": 3,
+    "intro": "The neon-lit ruins of Ginza.",
+    "encounters": [{ "id": "jack_frost", "weight": 5 }, { "id": "carbuncle", "weight": 5 }],
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.4 },
-      { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.7 },
-      { "id": "shop", "chance": 0.7 },
-      { "id": "recruit", "chance": 0.7 }
-    ],
-    "encounters": [
-      { "id": "skeleton", "weight": 8 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 2 }
-    ]
-  },
-  {
-    "title": "Floor 3: Hollow Arcade",
-    "intro": "Columns slice the dark like teeth.",
-    "depth": 3,
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.4 },
-      { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.7 },
-      { "id": "shop", "chance": 0.7 },
-      { "id": "recruit", "chance": 0.7 },
-      { "id": "npc", "chance": 0.4 }
-    ],
-    "encounters": [
-      { "id": "golem", "weight": 6 },
-      { "id": "imp", "weight": 8 },
-      { "id": "demon", "weight": 3 }
-    ]
-  },
-  {
-    "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
-    "depth": 4,
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 5, "max": 7 },
-      { "id": "shrine", "chance": 0.6 },
-      { "id": "shop", "chance": 0.6 },
-      { "id": "recruit", "chance": 0.5 }
-    ],
-    "encounters": [
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 },
-      { "id": "golem", "weight": 4 }
-    ]
-  },
-  {
-    "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
-    "depth": 5,
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 5, "max": 8 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "npc", "chance": 0.5 }
-    ],
-    "encounters": [
-      { "id": "crimsonLord", "weight": 3 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
-    ]
-  },
-  {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
-    "depth": 6,
-    "events": [
-      { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
-    ],
-    "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
+        { "id": "jakyou", "count": 1 },
+        { "id": "shrine", "count": 1 },
+        { "id": "treasure", "count": 3 },
+        { "id": "enemy", "count": 3 },
+        { "id": "recruit", "count": 1 }
     ]
   }
 ]

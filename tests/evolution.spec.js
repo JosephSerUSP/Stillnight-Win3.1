@@ -31,7 +31,7 @@ test('Verify Evolution System', async ({ page }) => {
   });
 
   // 4. Click on the first party member (Pixie) to inspect
-  await page.click('[data-testid="party-slot-0"]');
+  await page.click('.party-slot[data-index="0"]');
 
   // 5. Verify Inspect Window is open and "Evolution" button is visible
   const inspectWindow = page.locator('#inspect-window');

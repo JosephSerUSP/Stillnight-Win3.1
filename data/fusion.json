@@ -1,0 +1,52 @@
+{
+  "clans": [
+    "Yoma",
+    "Jirae",
+    "Fairy",
+    "Brute"
+  ],
+  "table": {
+    "Element": {
+      "Jirae": "Fairy",
+      "Genma": "Fairy",
+      "Divine": "Fairy",
+      "Fairy": "Jirae",
+      "Kishin": "Brute"
+    },
+    "Jirae": {
+      "Element": "Fairy",
+      "Yoma": "Fairy",
+      "Fairy": "Brute"
+    },
+    "Genma": {
+      "Element": "Fairy",
+      "Kishin": "Brute",
+      "Genma": "Yoma"
+    },
+    "Divine": {
+      "Element": "Fairy",
+      "Divine": "Fairy"
+    },
+    "Yoma": {
+      "Jirae": "Fairy"
+    },
+    "Beast": {
+      "Brute": "Jirae"
+    },
+    "Brute": {
+      "Beast": "Jirae"
+    },
+    "Fairy": {
+      "Element": "Jirae",
+      "Jirae": "Brute"
+    },
+    "Kishin": {
+      "Kishin": "Jirae",
+      "Genma": "Brute",
+      "Element": "Brute"
+    },
+    "Deity": {
+      "Deity": "Yoma"
+    }
+  }
+}

@@ -1,0 +1,174 @@
+D00. FUSION RULES
+
+Fairy Fusion:
+Element + Jirae/Genma/Divine
+Yoma + Jirae
+Divine + Divine
+
+Jirae Fusion:
+Beast + Brute
+Element + Fairy
+Kishin + Kishin
+
+Brute Fusion:
+Jirae + Fairy
+Kishin + Genma/Element
+
+Yoma Fusion:
+Genma + Genma
+Deity + Deity
+
+F00. DEMON FUSIONS
+
+*Pixie*
+Race: Fairy (Neutral)
+LVL: 2
+HP: 7
+MP: 8
+CP: 1
+Skills:
+Hapilma - 3MP
+Dia - 3MP
+Flee
+VI: 5
+IN: 6
+ST: 5
+SP: 5
+LU: 5
+Defense: 3
+Hits: 1
+Affinity: Winged
+Resist: 0.5X Sword/Force, 0.75X Curse, 0.63X Nerve
+Weak: 1.5X Elec
+
+*Kobold*
+Race: Jirae (Neutral)
+LVL: 3
+HP: 11
+MP: 0
+CP: 3
+Skills:
+Poison Fang
+Flee
+VI: 6
+IN: 5
+ST: 5
+SP: 6
+LU: 5
+Defense: 3
+Hits: 1
+Affinity: Normal
+Resist: 0.75X Sword, 0.38X Force, 0.75X Curse
+
+*Goblin*
+Race: Fairy (Neutral)
+LVL: 6
+HP: 21
+MP: 12
+CP: 3
+Skills:
+Agi - 2MP
+Flee
+VI: 6
+IN: 6
+ST: 5
+SP: 7
+LU: 6
+Defense: 3
+Hits: 1
+Affinity: Normal
+Resist: 0.75X Sword, 0.38X Force, 0.75X Curse
+
+*Carbuncle*
+Race: Brute (Neutral)
+LVL: 4
+HP: 12
+MP: 11
+CP: 4
+Skills:
+Zio - 3MP
+VI: 5
+IN: 7
+ST: 5
+SP: 5
+LU: 5
+Defense: 5
+Hits: 1
+Affinity: Fire Demon
+Resist: 0.75X Sword/Elec/Force/Bind/Curse, 0.88X Expel/Nerve
+Weak: 2X Ice, 1.5X Mind
+Drain: Fire
+
+*Jack Frost*
+Race: Yoma (Neutral)
+LVL: 38
+HP: 385
+MP: 56
+CP: 39
+Skills:
+Bufulaon - 9MP
+Freeze
+VI: 20
+IN: 18
+ST: 6
+SP: 8
+LU: 10
+Defense: 15
+Hits: 1
+Affinity: Water Demon
+Resist: 0.75X Sword/Elec/Bind/Curse, 0.88X Force/Expel, 0.63X Nerve
+Weak: 2X Fire
+Drain: Ice
+
+H00. USABLE ITEMS
+
+[Jewel]
+Use: Restore full HP and cure Poison
+How to obtain: Find in treasure chests
+Enemy drops: Fairy and Jirae demons
+Sell: 50
+
+H01. GUNS
+
+[Walther PPK]
+Gender: Both
+Power: 2
+Hits: 1
+Miss Rate: 15
+Critical Rate: 1
+Where to Buy: Shinagawa
+Cost: 200
+Sell: 100
+
+H02. MELEE WEAPONS
+
+[Jack Knife]
+Gender: Female
+Power: 1
+Hits: 1
+Miss Rate: 12
+Critical Rate: 1
+Sell: 100
+
+H03. SUITS
+
+[Battle Suit]
+Gender: Male
+Defense: 1
+Appeal: 0
+Speed Bonus: 0
+Where to Buy: Shinagawa
+Cost: 300
+Sell: 150
+Resist: 0.5X Expel
+
+H04. HELMETS
+[Junk Helmet]
+Gender: Male
+Defense: 1
+Where to Buy: Shinagawa
+Cost: 250
+Sell: 125
+Resist: 0.5X Expel
+
+G00. BOSS STATS

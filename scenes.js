@@ -1,6 +1,6 @@
 import { Game_Map, Game_Party, Game_Battler, Game_Event } from "./objects.js";
 import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula } from "./core.js";
-import { BattleManager, SoundManager } from "./managers.js";
+import { BattleManager, FusionManager, SoundManager } from "./managers.js";
 import {
   Window_Battle,
   Window_Shop,
@@ -11,6 +11,7 @@ import {
   Window_Inspect,
   Window_Confirm,
   Window_Evolution,
+  Window_Fusion,
   Window_HUD,
   WindowLayer,
   createInteractiveLabel,
@@ -699,6 +700,102 @@ export class Scene_Battle extends Scene_Base {
 }
 
 /**
+ * @class Scene_Fusion
+ * @description Handles demon fusion (Jakyou Manor).
+ * @extends Scene_Base
+ */
+export class Scene_Fusion extends Scene_Base {
+    /**
+     * @param {import("./managers.js").DataManager} dataManager
+     * @param {import("./managers.js").SceneManager} sceneManager
+     * @param {import("./windows.js").WindowManager} windowManager
+     * @param {import("./objects.js").Game_Party} party
+     * @param {import("./windows.js").WindowLayer} windowLayer
+     */
+    constructor(dataManager, sceneManager, windowManager, party, windowLayer) {
+        super(dataManager, windowManager);
+        this.sceneManager = sceneManager;
+        this.party = party;
+        this.windowLayer = windowLayer;
+        this.fusionManager = new FusionManager(dataManager);
+
+        this.fusionWindow = new Window_Fusion();
+        this.windowLayer.addChild(this.fusionWindow);
+
+        this.fusionWindow.onUserClose = this.closeFusion.bind(this);
+        this.fusionWindow.btnFuse.addEventListener("click", this.performFusion.bind(this));
+    }
+
+    start() {
+        this.refresh();
+        this.windowManager.push(this.fusionWindow);
+        document.getElementById("mode-label").textContent = "Fusion";
+        SoundManager.beep(650, 150);
+    }
+
+    stop() {
+        this.windowManager.close(this.fusionWindow);
+        document.getElementById("mode-label").textContent = "Exploration";
+    }
+
+    closeFusion() {
+        this.sceneManager.pop();
+        if (this.sceneManager.currentScene() && this.sceneManager.currentScene().updateAll) {
+            this.sceneManager.currentScene().updateAll();
+        }
+    }
+
+    refresh() {
+        this.fusionWindow.refresh(this.party, (selection) => this.onSelect(selection));
+    }
+
+    onSelect(selection) {
+        if (selection.length !== 2) {
+            this.fusionWindow.showResult(null);
+            this.pendingResult = null;
+            return;
+        }
+
+        const resultTemplate = this.fusionManager.predictFusion(selection[0], selection[1]);
+        if (resultTemplate) {
+            // Preview uses template, but we can wrap it in Battler for display consistency if needed
+            // Window_Fusion expects { name, role, level, maxHp, spriteKey }
+            this.pendingResult = resultTemplate;
+            this.fusionWindow.showResult(resultTemplate);
+        } else {
+            this.pendingResult = null;
+            this.fusionWindow.showResult(null);
+        }
+    }
+
+    performFusion() {
+        const selection = this.fusionWindow.getSelection();
+        if (selection.length !== 2 || !this.pendingResult) return;
+
+        const [d1, d2] = selection;
+
+        // Remove ingredients
+        const idx1 = this.party.members.indexOf(d1);
+        if (idx1 > -1) this.party.members.splice(idx1, 1);
+
+        const idx2 = this.party.members.indexOf(d2);
+        if (idx2 > -1) this.party.members.splice(idx2, 1);
+
+        // Add result
+        const newDemon = new Game_Battler(this.pendingResult);
+        this.party.members.push(newDemon);
+
+        this.sceneManager.previous().logMessage(`[Fusion] Fused ${d1.name} and ${d2.name} into ${newDemon.name}!`);
+        SoundManager.beep(900, 300);
+
+        this.pendingResult = null;
+        this.fusionWindow.showResult(null);
+        this.refresh();
+        this.sceneManager.previous().updateAll();
+    }
+}
+
+/**
  * @class Scene_Shop
  * @description Handles the shop interaction logic.
  * @extends Scene_Base
@@ -820,6 +917,9 @@ class Game_Interpreter {
                 break;
             case 'SHOP':
                 this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.windowManager, this.party, this.scene.windowLayer));
+                break;
+            case 'JAKYOU':
+                this.sceneManager.push(new Scene_Fusion(this.dataManager, this.sceneManager, this.windowManager, this.party, this.scene.windowLayer));
                 break;
             case 'SHRINE':
                 this.scene.logMessage("[Shrine] You encounter a shrine.");
@@ -1639,6 +1739,11 @@ export class Scene_Map extends Scene_Base {
     }
   }
 
+  getMoonPhaseName(phase) {
+      const phases = ["New", "1/8", "2/8", "3/8", "Full", "5/8", "6/8", "7/8"];
+      return phases[phase] || "New";
+  }
+
   /**
    * Triggers a full update of all UI components.
    * @method updateAll
@@ -1649,6 +1754,8 @@ export class Scene_Map extends Scene_Base {
     this.updateCardList();
     this.updateParty();
     this.statusGoldEl.textContent = this.party.gold;
+    this.hud.statusMagEl.textContent = this.party.mag;
+    this.hud.statusMoonEl.textContent = this.getMoonPhaseName(this.map.moonPhase);
     this.statusItemsEl.textContent = this.party.inventory.length;
     this.statusRunEl.textContent = this.runActive ? "Active" : "Over";
     this.modeLabelEl.textContent = "Exploration";
@@ -1847,6 +1954,32 @@ export class Scene_Map extends Scene_Base {
     if (ch === ".") {
       this.logMessage("[Step] Your footsteps echo softly.");
       this.setStatus("You move.");
+    }
+
+    // Process Time and Resources
+    this.map.steps++;
+    if (this.map.steps % 8 === 0) { // Cycle every 8 steps
+        this.map.moonPhase = (this.map.moonPhase + 1) % 8;
+        if (this.map.moonPhase === 0) this.logMessage("[Moon] It is now New Moon.");
+        if (this.map.moonPhase === 4) this.logMessage("[Moon] It is now Full Moon.");
+    }
+
+    // MAG Consumption
+    if (!floor.title.toLowerCase().includes("overworld")) {
+        const magCost = this.party.members.reduce((sum, m) => sum + (m.cp || 0), 0);
+        if (magCost > 0) {
+            if (this.party.mag >= magCost) {
+                this.party.mag -= magCost;
+            } else {
+                this.party.mag = 0;
+                // Damage party if out of MAG? Walkthrough says "MAG depletion". Usually invokes damage or unsummon.
+                // For now, just log warning.
+                if (this.map.steps % 5 === 0) this.logMessage("WARNING: Out of Magnetite!");
+                this.party.members.forEach(m => {
+                    if (m.cp > 0) m.hp = Math.max(1, m.hp - 1); // Slight damage
+                });
+            }
+        }
     }
 
     SoundManager.beep(600, 80);
@@ -2148,8 +2281,9 @@ renderElements(elements) {
         this.inspectWindow.elementEl.textContent = "—";
     }
 
-    if (member.equipmentItem) {
-      this.inspectWindow.equipEl.textContent = member.equipmentItem.name;
+    const eqCount = Object.values(member.equipment).filter(e => e).length;
+    if (eqCount > 0) {
+      this.inspectWindow.equipEl.textContent = `${eqCount} Equipped (View)`;
     } else if (member.baseEquipment) {
       this.inspectWindow.equipEl.textContent = member.baseEquipment;
     } else {
@@ -2289,6 +2423,19 @@ renderElements(elements) {
     this.renderEquipmentList("All");
   }
 
+  getSlotForType(type) {
+      const map = {
+          'Weapon': 'weapon', 'Melee': 'weapon',
+          'Gun': 'gun',
+          'Armor': 'armor', 'Suit': 'armor',
+          'Head': 'head', 'Helmet': 'head',
+          'Arms': 'arms', 'Gloves': 'arms',
+          'Legs': 'legs', 'Boots': 'legs',
+          'Accessory': 'accessory', 'Mask': 'accessory', 'Mantle': 'accessory'
+      };
+      return map[type] || null;
+  }
+
   /**
    * Renders the list of available equipment.
    * @method renderEquipmentList
@@ -2301,7 +2448,7 @@ renderElements(elements) {
     filterEl.innerHTML = "";
     const member = this.inspectWindow.member;
 
-    const itemTypes = ["All", "Weapon", "Armor", "Accessory"];
+    const itemTypes = ["All", "Weapon", "Gun", "Armor", "Head", "Arms", "Legs", "Accessory"];
     itemTypes.forEach(type => {
       const btn = document.createElement("button");
       btn.className = "win-btn";
@@ -2314,15 +2461,22 @@ renderElements(elements) {
     });
 
     const inventoryItems = this.party.inventory.filter(
-      (i) => i.type === "equipment" && (filter === "All" || i.equipType === filter)
+      (i) => i.type === "equipment" && (filter === "All" || (i.equipType && (i.equipType === filter || this.getSlotForType(i.equipType) === this.getSlotForType(filter))))
     );
-    const otherMemberItems = this.party.members
-      .filter((m) => m !== member && m.equipmentItem && (filter === "All" || m.equipmentItem.equipType === filter))
-      .map((m) => ({
-        ...m.equipmentItem,
-        equippedBy: m.name,
-        equippedMember: m,
-      }));
+
+    const otherMemberItems = [];
+    this.party.members.forEach(m => {
+        if (m === member) return;
+        Object.values(m.equipment).forEach(eq => {
+            if (eq && (filter === "All" || (eq.equipType && (eq.equipType === filter || this.getSlotForType(eq.equipType) === this.getSlotForType(filter))))) {
+                otherMemberItems.push({
+                    ...eq,
+                    equippedBy: m.name,
+                    equippedMember: m
+                });
+            }
+        });
+    });
 
     const allEquipable = [...inventoryItems, ...otherMemberItems];
 
@@ -2332,15 +2486,8 @@ renderElements(elements) {
         row.className = "shop-row";
 
         let tooltipText = item.description;
-        // Add item effects to tooltip
         let effectsText = "";
         const effects = [];
-        if (item.effects) {
-             if (item.effects.hp) effects.push(`Restores ${item.effects.hp} HP`);
-             if (item.effects.maxHp) effects.push(`Max HP +${item.effects.maxHp}`);
-             if (item.effects.xp) effects.push(`Grants ${item.effects.xp} XP`);
-        }
-        // Equipment stats
         if (item.traits) {
              item.traits.forEach(t => {
                  if (t.code === 'PARAM_PLUS') {
@@ -2350,14 +2497,8 @@ renderElements(elements) {
              });
         }
         if (item.damageBonus) effects.push(`Damage +${item.damageBonus}`);
-
-        if (effects.length > 0) {
-            effectsText = effects.join(", ");
-        }
-
-        if (effectsText) {
-             tooltipText += `<br/><span class="text-functional">${effectsText}</span>`;
-        }
+        if (effects.length > 0) effectsText = effects.join(", ");
+        if (effectsText) tooltipText += `<br/><span class="text-functional">${effectsText}</span>`;
 
         const label = createInteractiveLabel(item, 'item', { tooltipText });
         row.appendChild(label);
@@ -2367,8 +2508,6 @@ renderElements(elements) {
         if (item.traits) {
              const dmg = item.traits.find(t => t.code === 'PARAM_PLUS' && t.dataId === 'atk');
              if (dmg) text += ` (+${dmg.value} DMG)`;
-        } else if (item.damageBonus) {
-             text += ` (+${item.damageBonus} DMG)`;
         }
         if (item.equippedBy) {
           text += ` (on ${item.equippedBy})`;
@@ -2457,7 +2596,7 @@ renderElements(elements) {
       const index = this.party.members.indexOf(member);
       if (index !== -1) {
           nextBattler.xp = member.xp;
-          nextBattler.equipmentItem = member.equipmentItem;
+          nextBattler.equipment = { ...member.equipment };
 
           this.party.members[index] = nextBattler;
 
@@ -2470,14 +2609,21 @@ renderElements(elements) {
   }
 
   equipItem(member, item) {
+    const slot = this.getSlotForType(item.equipType);
+    if (!slot) {
+        this.logMessage("Cannot equip: Unknown slot type.");
+        return;
+    }
+
     const doEquip = () => {
       // Unequip current item if one exists
-      if (member.equipmentItem) {
-        this.party.inventory.push(member.equipmentItem);
+      const current = member.equipment[slot];
+      if (current) {
+        this.party.inventory.push(current);
         SoundManager.beep(600, 80); // Unequip sound
       }
       // Equip the new item
-      member.equipmentItem = item;
+      member.equipment[slot] = item;
       // Remove the new item from inventory
       const invIndex = this.party.inventory.findIndex((i) => i.id === item.id);
       if (invIndex > -1) {
@@ -2497,9 +2643,9 @@ renderElements(elements) {
       this.confirmWindow.messageEl.textContent = `Swap ${item.name} from ${otherMember.name} to ${member.name}?`;
       this.windowManager.push(this.confirmWindow);
       this.confirmWindow.btnOk.onclick = () => {
-        const currentItem = member.equipmentItem;
-        otherMember.equipmentItem = currentItem;
-        member.equipmentItem = item;
+        const currentItem = member.equipment[slot];
+        otherMember.equipment[slot] = currentItem;
+        member.equipment[slot] = item;
         this.logMessage(
           `[Equip] ${member.name} swapped ${item.name} with ${otherMember.name}.`
         );

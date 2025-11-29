@@ -1,84 +1,77 @@
 [
   {
-    "id": "hp_tonic",
-    "name": "HP Tonic",
-    "type": "consumable",
-    "cost": 10,
-    "description": "Heals one member to full HP.",
+    "id": "jewel",
+    "name": "Jewel",
+    "cost": 0,
+    "description": "Item.",
     "icon": 6,
+    "type": "consumable",
     "effects": {
       "hp": 999
     }
   },
   {
-    "id": "sigil_ink",
-    "name": "Sigil Ink",
-    "type": "consumable",
-    "cost": 20,
-    "description": "+2 max HP to one member.",
+    "id": "walther_ppk",
+    "name": "Walther PPK",
+    "cost": 200,
+    "description": "Item.",
     "icon": 6,
-    "effects": {
-      "maxHp": 2
-    }
+    "type": "equipment",
+    "equipType": "Gun",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 2
+      }
+    ]
   },
   {
-    "id": "whispered_lessons",
-    "name": "Whispered Lessons",
-    "type": "consumable",
-    "cost": 15,
-    "description": "+6 XP to one member.",
+    "id": "jack_knife",
+    "name": "Jack Knife",
+    "cost": 0,
+    "description": "Item.",
     "icon": 6,
-    "effects": {
-      "xp": 6
-    }
-  },
-  {
-    "id": "silver_blade",
-    "name": "Silver Blade",
     "type": "equipment",
     "equipType": "Weapon",
-    "cost": 25,
-    "icon": 6,
-    "description": "Sharpened steel blade. +1 damage.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 1
+      }
     ]
   },
   {
-    "id": "bone_plate",
-    "name": "Bone Plate",
+    "id": "battle_suit",
+    "name": "Battle Suit",
+    "cost": 300,
+    "description": "Item.",
+    "icon": 6,
     "type": "equipment",
     "equipType": "Armor",
-    "cost": 25,
-    "icon": 6,
-    "description": "Sturdy bone harness. +3 max HP.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 3 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "maxHp",
+        "value": 5
+      }
     ]
   },
   {
-    "id": "wind_charm",
-    "name": "Wind Charm",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 35,
+    "id": "junk_helmet",
+    "name": "Junk Helmet",
+    "cost": 250,
+    "description": "Item.",
     "icon": 6,
-    "description": "A charm of rushing air. +1 damage, +1 max HP.",
-    "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 },
-      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 1 }
-    ]
-  },
-  {
-    "id": "light_amulet",
-    "name": "Light Amulet",
     "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 30,
-    "icon": 6,
-    "description": "Glowing amulet. +2 max HP, faintly warms your hands.",
+    "equipType": "Armor",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 2 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "maxHp",
+        "value": 5
+      }
     ]
   }
 ]
