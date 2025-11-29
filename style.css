@@ -1,4 +1,9 @@
 /* ===== Global Windows 3.1 look ================================== */
+:root {
+    --color-functional: #478174;
+    --color-bg-dark: #222;
+}
+
 html, body {
     margin: 0;
     padding: 0;
@@ -850,4 +855,17 @@ body.night-theme {
 
 .night-theme .evolution-arrow {
     color: #e0e0e0;
+}
+
+/* Helper classes for JS components */
+.text-functional {
+    color: var(--color-functional);
+    font-size: 0.9em;
+}
+
+.event-image-container {
+    text-align: center;
+    margin-bottom: 8px;
+    background-color: var(--color-bg-dark);
+    display: none; /* Default hidden */
 }

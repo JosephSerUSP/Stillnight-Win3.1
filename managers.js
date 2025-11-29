@@ -1,4 +1,4 @@
-import { randInt, elementToAscii } from "./core.js";
+import { randInt, elementToAscii, evaluateFormula } from "./core.js";
 
 /**
  * @class DataManager
@@ -346,70 +346,10 @@ export class BattleManager {
    * @returns {Array} List of events occurring at start of turn.
    */
   startTurn(battlerContext) {
-      const { battler, index, isEnemy } = battlerContext;
-      const events = [];
-
-      // --- State Updates ---
-      const removedStates = battler.updateStateTurns();
-      removedStates.forEach(sId => {
-          const state = this.dataManager.states[sId];
-          events.push({ type: 'state_remove', target: battler, msg: `${battler.name}'s ${state ? state.name : sId} wore off.` });
-      });
-
-      // --- Passive/Trait Effects (e.g., Parasite, Regen) ---
-
-      // HRG: HP Regeneration (fraction of Max HP)
-      const hrg = battler.getPassiveValue('HRG');
-      if (hrg !== 0) {
-          const amount = Math.floor(battler.maxHp * hrg);
-          if (amount > 0) {
-              const hpBefore = battler.hp;
-              battler.hp = Math.min(battler.maxHp, battler.hp + amount);
-              events.push({
-                  type: 'heal',
-                  battler: battler,
-                  target: battler,
-                  value: amount,
-                  hpBefore: hpBefore,
-                  hpAfter: battler.hp,
-                  msg: `${battler.name} regenerates ${amount} HP.`,
-                  animation: 'healing_sparkle'
-              });
-          }
-      }
-
-      if (!isEnemy) {
-           const parasiteDrain = battler.getPassiveValue("PARASITE");
-           if (parasiteDrain > 0) {
-               const targetIndex = index % 2 === 0 ? index + 1 : index - 1;
-               if (targetIndex >= 0 && targetIndex < 4) {
-                   const target = this.party.members[targetIndex];
-                   if (target && target.hp > 0) {
-                      const hpBeforeTarget = target.hp;
-                      const hpBeforeSource = battler.hp;
-
-                      target.hp = Math.max(0, target.hp - parasiteDrain);
-                      battler.hp = Math.min(battler.maxHp, battler.hp + parasiteDrain);
-
-                      events.push({
-                          type: 'passive_drain',
-                          source: battler,
-                          target: target,
-                          value: parasiteDrain,
-                          hpBeforeTarget: hpBeforeTarget,
-                          hpAfterTarget: target.hp,
-                          hpBeforeSource: hpBeforeSource,
-                          hpAfterSource: battler.hp,
-                          msg: `[Passive] ${battler.name} drains ${parasiteDrain} HP from ${target.name}.`,
-                      });
-                   }
-               }
-           }
-      }
-
-      // Passive damage/healing might end the battle.
+      const { battler, isEnemy } = battlerContext;
+      const allies = isEnemy ? this.enemies : this.party.members.slice(0, 4);
+      const events = battler.onTurnStart(allies, null, this.dataManager);
       this._checkBattleEnd(events);
-
       return events;
   }
 
@@ -539,8 +479,7 @@ export class BattleManager {
 
                skill.effects.forEach((effect) => {
                  if (effect.type === "hp_damage") {
-                   const formula = effect.formula.replace("a.level", battler.level);
-                   let skillDmg = Math.round(eval(formula) * boost);
+                   let skillDmg = Math.round(evaluateFormula(effect.formula, battler, target) * boost);
                    if (skillDmg < 1) skillDmg = 1;
 
                    const hpBefore = target.hp;
@@ -557,8 +496,7 @@ export class BattleManager {
                    });
                  }
                  if (effect.type === "hp_heal") {
-                    const formula = effect.formula.replace("a.level", battler.level);
-                    let heal = Math.round(eval(formula) * boost);
+                    let heal = Math.round(evaluateFormula(effect.formula, battler, target) * boost);
                     if (heal < 1) heal = 1;
 
                     const hpBefore = target.hp;

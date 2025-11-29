@@ -9,21 +9,21 @@ The **Stillnight Engine** is a single-page RPG engine featuring a unique aesthet
 ### Key Features
 - **Scene-Based Architecture**: Separation of concerns between Map, Battle, Shop, and Menu states.
 - **Dynamic Window System**: Programmatic generation of UI windows with a focus on modularity.
-- **Data-Driven Gameplay**: Skills, items, and actors are defined in JSON/JS data files.
+- **Data-Driven Gameplay**: Skills, items, and actors are defined in JSON/JS data files. Formulas are safely evaluated at runtime.
 - **Retro Aesthetic**: Custom CSS and ASCII/pixel art styling.
 
 ## File Structure
 
 ```
 .
-├── core.js           # Core utility functions and constants
+├── core.js           # Core utility functions (Math, Random, Formula Evaluation)
 ├── main.js           # Entry point, initializes the game
 ├── managers.js       # Game logic managers (SceneManager, BattleManager, SoundManager)
 ├── objects.js        # Game objects (Game_Battler, Game_Map, Game_Party)
-├── scenes.js         # Scene classes (Scene_Map, Scene_Battle, Scene_Shop)
-├── windows.js        # UI Window classes
+├── scenes.js         # Scene classes (Scene_Map, Scene_Battle) and Game_Interpreter
+├── windows.js        # UI Window classes, WindowLayer, and HUD management
 ├── tooltip.js        # Tooltip system
-├── sprites.js        # Sprite handling
+├── sprites.js        # Sprite handling (legacy)
 ├── data/             # Game data (JSON and JS files)
 ├── assets/           # Images and other static assets
 └── tests/            # Playwright tests
@@ -60,21 +60,29 @@ To run all tests:
 npm test
 ```
 
-#### Testing Strategy & Philosophy
-The engine is currently undergoing a fundamental refactor. As such, the testing strategy prioritizes **logic verification** over **structural rigidity**.
-
-*   **Tests as Scaffolding**: Tests are designed to verify that core math (Damage, XP curves, Healing) and game rules (Elemental weakness, Turn order) remain correct. They are *not* intended to lock down the internal class structure.
-*   **Refactoring Priority**: If a test fails because a class was renamed or moved during a refactor—but the game logic remains sound—**update or discard the test**. Do not let test maintenance block architectural improvements.
-*   **Infrastructure**: To facilitate unit-testing of internal logic within the browser context, the application exposes core classes (`Game_Battler`, `BattleManager`, etc.) to the `window` object when the URL query parameter `?test=true` is present.
-
 ## Architecture
 
 The engine follows a scene-based state machine pattern managed by `SceneManager`. The UI is handled by `WindowManager`, which manages a stack of `Window_Base` instances.
 
+### Core Systems
+
 *   **Scenes**: Handle the game loop for specific states (e.g., `Scene_Map`, `Scene_Battle`).
+    *   `Scene_Map` delegates UI to `Window_HUD` and event logic to `Game_Interpreter`.
+    *   `Scene_Battle` manages the combat loop via `BattleManager` and the view via `Window_Battle`.
 *   **Windows**: Handle the display and user interaction. They are completely decoupled from the HTML file and generate their own DOM.
-*   **Managers**: Static classes that handle global logic (e.g., `BattleManager` for turn resolution, `DataManager` for loading assets).
+    *   `Window_HUD`: Manages the static desktop interface (sidebar, grid).
+    *   `WindowLayer`: Handles z-indexing and modality for floating windows.
+*   **Managers**: Static classes that handle global logic.
+    *   `BattleManager`: Handles turn resolution using a granular phase system.
+    *   `DataManager`: Loads and caches all JSON assets.
 *   **Game Objects**: Classes that represent game entities (e.g., `Game_Battler` for characters).
+    *   `Game_Battler`: Encapsulates stats, state updates, and passive effect logic (`onTurnStart`).
+
+### Data & Formulas
+
+The engine uses a robust, data-driven approach for skills and effects.
+*   **Formulas**: Skill effects use string formulas (e.g., `"a.atk * 4 - b.def * 2"`) which are safely evaluated at runtime using `evaluateFormula` in `core.js`.
+*   **Drops**: Enemy item drops are defined in `data/actors.json` and processed by `Scene_Battle`.
 
 ## Documentation
 

@@ -1,145 +1,156 @@
 import { getPrimaryElements, Graphics, elementToAscii, getIconStyle, elementToIconId } from "./core.js";
 import { tooltip } from "./tooltip.js";
+import { SoundManager } from "./managers.js";
 
 /**
- * Creates a DOM element representing an icon for a set of elements.
- * @param {string[]} elements - The elements.
- * @returns {HTMLElement} The icon container element.
+ * @class UI
+ * @description A static utility class for generating common UI components.
  */
-export function createElementIcon(elements) {
-    const primaryElements = getPrimaryElements(elements);
-    const container = document.createElement('div');
+export class UI {
+    /**
+     * Creates a DOM element representing an icon for a set of elements.
+     * @param {string[]} elements - The elements.
+     * @returns {HTMLElement} The icon container element.
+     */
+    static createElementIcon(elements) {
+        const primaryElements = getPrimaryElements(elements);
+        const container = document.createElement('div');
 
-    if (primaryElements.length <= 1) {
-        container.className = 'element-icon-container-name';
-        const icon = document.createElement('div');
-        icon.className = 'icon';
-        if (primaryElements.length === 1) {
-            const iconId = elementToIconId(primaryElements[0]);
+        if (primaryElements.length <= 1) {
+            container.className = 'element-icon-container-name';
+            const icon = document.createElement('div');
+            icon.className = 'icon';
+            if (primaryElements.length === 1) {
+                const iconId = elementToIconId(primaryElements[0]);
+                if (iconId > 0) {
+                    icon.style.backgroundPosition = getIconStyle(iconId);
+                }
+            }
+            container.appendChild(icon);
+        } else {
+            container.className = 'element-icon-container';
+            const positions = [
+                { top: '0px', left: '0px' },
+                { top: '6px', left: '6px' },
+                { top: '0px', left: '6px' },
+                { top: '6px', left: '0px' },
+            ];
+            primaryElements.forEach((element, index) => {
+                if (index < 4) {
+                    const icon = document.createElement('div');
+                    icon.className = 'element-icon';
+                    const iconId = elementToIconId('l_' + element);
+                    if (iconId > 0) {
+                        icon.style.backgroundPosition = getIconStyle(iconId);
+                        icon.style.top = positions[index].top;
+                        icon.style.left = positions[index].left;
+                        container.appendChild(icon);
+                    }
+                }
+            });
+        }
+        return container;
+    }
+
+    /**
+     * Creates an interactive label for a game object (Skill, Passive, Item).
+     * @param {Object} data - The object data (must have name, and optionally icon/elements).
+     * @param {string} type - 'skill' | 'passive' | 'item' | 'generic'.
+     * @param {Object} options - { tooltipText, showTooltip, className, elements }.
+     * @returns {HTMLElement} The span element.
+     */
+    static createInteractiveLabel(data, type, options = {}) {
+        const el = document.createElement("span");
+        el.className = "interactive-label";
+        el.style.display = "inline-flex";
+        el.style.alignItems = "center";
+        el.style.marginRight = "5px";
+
+        if (options.className) {
+            el.classList.add(options.className);
+        }
+
+        // Icon / Elements
+        let iconId = data.icon;
+        if (!iconId && type === 'item') {
+            iconId = 6; // Default placeholder for items
+        }
+
+        if (type === 'skill' || (data.element || data.elements)) {
+            // Use element icon logic if available
+            let elements = data.elements || (data.element ? [data.element] : []);
+            if (options.elements) elements = options.elements;
+
+            if (elements.length > 0) {
+                const iconEl = UI.createElementIcon(elements);
+                el.appendChild(iconEl);
+            } else if (iconId) {
+                 const icon = document.createElement("span");
+                 icon.className = "icon";
+                 if (iconId > 0) {
+                     icon.style.backgroundPosition = getIconStyle(iconId);
+                 }
+                 icon.style.marginRight = "4px";
+                 el.appendChild(icon);
+            }
+        } else if (iconId) {
+            const icon = document.createElement("span");
+            icon.className = "icon";
             if (iconId > 0) {
                 icon.style.backgroundPosition = getIconStyle(iconId);
             }
+            icon.style.marginRight = "4px";
+            el.appendChild(icon);
         }
-        container.appendChild(icon);
-    } else {
-        container.className = 'element-icon-container';
-        const positions = [
-            { top: '0px', left: '0px' },
-            { top: '6px', left: '6px' },
-            { top: '0px', left: '6px' },
-            { top: '6px', left: '0px' },
-        ];
-        primaryElements.forEach((element, index) => {
-            if (index < 4) {
-                const icon = document.createElement('div');
-                icon.className = 'element-icon';
-                const iconId = elementToIconId('l_' + element);
-                if (iconId > 0) {
-                    icon.style.backgroundPosition = getIconStyle(iconId);
-                    icon.style.top = positions[index].top;
-                    icon.style.left = positions[index].left;
-                    container.appendChild(icon);
-                }
+
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = data.name;
+        // Inspect window styles
+        if (type === 'skill' || type === 'passive') {
+             nameSpan.style.textDecoration = "underline";
+             nameSpan.style.textDecorationStyle = "dotted";
+        }
+        el.appendChild(nameSpan);
+
+        // Tooltip
+        if (options.showTooltip !== false) {
+            let text = options.tooltipText || data.description || "";
+
+            // Append extra info if not provided in text
+            if (!options.tooltipText) {
+                 let extra = "";
+                 if (type === 'passive' && data.effect) {
+                     extra = data.effect;
+                 }
+
+                 if (extra) {
+                     text += `<br/><span class="text-functional">${extra}</span>`;
+                 }
             }
-        });
-    }
-    return container;
-}
 
-/**
- * Creates an interactive label for a game object (Skill, Passive, Item).
- * @param {Object} data - The object data (must have name, and optionally icon/elements).
- * @param {string} type - 'skill' | 'passive' | 'item' | 'generic'.
- * @param {Object} options - { tooltipText, showTooltip, className, elements }.
- * @returns {HTMLElement} The span element.
- */
-export function createInteractiveLabel(data, type, options = {}) {
-    const el = document.createElement("span");
-    el.className = "interactive-label";
-    el.style.display = "inline-flex";
-    el.style.alignItems = "center";
-    el.style.marginRight = "5px";
-
-    if (options.className) {
-        el.classList.add(options.className);
-    }
-
-    // Icon / Elements
-    let iconId = data.icon;
-    if (!iconId && type === 'item') {
-        iconId = 6; // Default placeholder for items
-    }
-
-    if (type === 'skill' || (data.element || data.elements)) {
-        // Use element icon logic if available
-        let elements = data.elements || (data.element ? [data.element] : []);
-        if (options.elements) elements = options.elements;
-
-        if (elements.length > 0) {
-            const iconEl = createElementIcon(elements);
-            el.appendChild(iconEl);
-        } else if (iconId) {
-             const icon = document.createElement("span");
-             icon.className = "icon";
-             if (iconId > 0) {
-                 icon.style.backgroundPosition = getIconStyle(iconId);
-             }
-             icon.style.marginRight = "4px";
-             el.appendChild(icon);
-        }
-    } else if (iconId) {
-        const icon = document.createElement("span");
-        icon.className = "icon";
-        if (iconId > 0) {
-            icon.style.backgroundPosition = getIconStyle(iconId);
-        }
-        icon.style.marginRight = "4px";
-        el.appendChild(icon);
-    }
-
-    const nameSpan = document.createElement("span");
-    nameSpan.textContent = data.name;
-    // Inspect window styles
-    if (type === 'skill' || type === 'passive') {
-         nameSpan.style.textDecoration = "underline";
-         nameSpan.style.textDecorationStyle = "dotted";
-    }
-    el.appendChild(nameSpan);
-
-    // Tooltip
-    if (options.showTooltip !== false) {
-        let text = options.tooltipText || data.description || "";
-
-        // Append extra info if not provided in text
-        if (!options.tooltipText) {
-             let extra = "";
-             if (type === 'passive' && data.effect) {
-                 extra = data.effect;
-             }
-
-             if (extra) {
-                 text += `<br/><span style="color:#478174; font-size: 0.9em;">${extra}</span>`;
-             }
-        }
-
-        if (text) {
-             el.style.cursor = "help";
-             el.addEventListener("mouseenter", (e) => {
-                tooltip.show(e.clientX, e.clientY, null, text);
-            });
-            el.addEventListener("mouseleave", () => {
-                tooltip.hide();
-            });
-            el.addEventListener("mousemove", (e) => {
-                if (tooltip.visible) {
+            if (text) {
+                 el.style.cursor = "help";
+                 el.addEventListener("mouseenter", (e) => {
                     tooltip.show(e.clientX, e.clientY, null, text);
-                }
-            });
+                });
+                el.addEventListener("mouseleave", () => {
+                    tooltip.hide();
+                });
+                el.addEventListener("mousemove", (e) => {
+                    if (tooltip.visible) {
+                        tooltip.show(e.clientX, e.clientY, null, text);
+                    }
+                });
+            }
         }
-    }
 
-    return el;
+        return el;
+    }
 }
+
+// Proxies for backward compatibility
+export const createElementIcon = UI.createElementIcon;
+export const createInteractiveLabel = UI.createInteractiveLabel;
 
 /**
  * @class WindowLayer
@@ -484,6 +495,10 @@ export class Window_Battle extends Window_Base {
     buttons.appendChild(this.btnVictory);
   }
 
+  /**
+   * Handles user attempt to close the window.
+   * Overrides default behavior to shake instead of closing.
+   */
   onUserClose() {
       this.element.classList.add("shake");
       setTimeout(() => this.element.classList.remove("shake"), 500);
@@ -596,6 +611,40 @@ export class Window_Battle extends Window_Base {
         return `[${"#".repeat(totalLength)}]`;
     }
     return `[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
+  }
+
+  /**
+   * Generates the DOM ID for a battler based on index and type.
+   * @param {number} index - The battler's index.
+   * @param {boolean} isEnemy - Whether the battler is an enemy.
+   * @returns {string} The DOM ID.
+   */
+  getBattlerId(index, isEnemy) {
+      return isEnemy ? `battler-enemy-${index}` : `battler-party-${index}`;
+  }
+
+  /**
+   * Retrieves the DOM element for a battler.
+   * @param {number} index - The battler's index.
+   * @param {boolean} isEnemy - Whether the battler is an enemy.
+   * @returns {HTMLElement|null} The DOM element.
+   */
+  getBattlerElement(index, isEnemy) {
+      return this.viewportEl.querySelector(`#${this.getBattlerId(index, isEnemy)}`);
+  }
+
+  /**
+   * Retrieves the HP gauge element for a battler.
+   * @param {number} index - The battler's index.
+   * @param {boolean} isEnemy - Whether the battler is an enemy.
+   * @returns {HTMLElement|null} The HP gauge element.
+   */
+  getHpElement(index, isEnemy) {
+      const el = this.getBattlerElement(index, isEnemy);
+      if (!el) return null;
+      const container = el.closest('.battler-container');
+      if (!container) return null;
+      return container.querySelector('.battler-hp');
   }
 }
 
@@ -1068,12 +1117,105 @@ export class Window_Formation extends Window_Base {
     this.btnOk = document.createElement("button");
     this.btnOk.className = "win-btn";
     this.btnOk.textContent = "OK";
+    this.btnOk.onclick = () => this.onUserClose();
     buttons.appendChild(this.btnOk);
 
     this.btnCancel = document.createElement("button");
     this.btnCancel.className = "win-btn";
     this.btnCancel.textContent = "Cancel";
+    this.btnCancel.onclick = () => this.onUserClose();
     buttons.appendChild(this.btnCancel);
+
+    this.draggedIndex = null;
+    this.party = null;
+    this.onChange = null;
+  }
+
+  /**
+   * Refreshes the window with the current party data.
+   * @param {import("./objects.js").Game_Party} party - The party to manage.
+   * @param {Function} [onChange] - Callback when formation changes.
+   */
+  refresh(party, onChange) {
+      this.party = party;
+      if (onChange) this.onChange = onChange;
+      this.renderFormationGrid();
+  }
+
+  /**
+   * Renders the interactive grid for formation dragging.
+   */
+  renderFormationGrid() {
+    this.gridEl.innerHTML = "";
+    this.reserveGridEl.innerHTML = "";
+
+    if (!this.party) return;
+
+    this.party.members.forEach((m, index) => {
+      const slot = document.createElement("div");
+      slot.className = "formation-slot";
+      slot.dataset.index = index;
+      slot.textContent = m ? `${m.name} (Lv${m.level})` : "(empty)";
+      slot.draggable = true;
+
+      slot.addEventListener("dragstart", this.onDragStart.bind(this));
+      slot.addEventListener("dragover", this.onDragOver.bind(this));
+      slot.addEventListener("drop", this.onDrop.bind(this));
+      slot.addEventListener("dragend", this.onDragEnd.bind(this));
+
+      if (index < 4) {
+        this.gridEl.appendChild(slot);
+      } else {
+        this.reserveGridEl.appendChild(slot);
+      }
+    });
+  }
+
+  /**
+   * Handles drag start event.
+   * @param {DragEvent} e
+   */
+  onDragStart(e) {
+    this.draggedIndex = parseInt(e.target.dataset.index, 10);
+    e.target.classList.add("dragging");
+  }
+
+  /**
+   * Handles drag over event.
+   * @param {DragEvent} e
+   */
+  onDragOver(e) {
+    e.preventDefault();
+    const target = e.target.closest(".formation-slot");
+    if (target) {
+      target.classList.add("drag-over");
+    }
+  }
+
+  /**
+   * Handles drop event.
+   * @param {DragEvent} e
+   */
+  onDrop(e) {
+    e.preventDefault();
+    const targetIndex = parseInt(e.target.dataset.index, 10);
+    if (this.draggedIndex === null || this.draggedIndex === targetIndex) return;
+
+    if (this.party.reorderMembers(this.draggedIndex, targetIndex)) {
+        this.draggedIndex = null;
+        this.renderFormationGrid();
+        SoundManager.beep(500, 80);
+        if (this.onChange) this.onChange();
+    }
+  }
+
+  /**
+   * Handles drag end event.
+   * @param {DragEvent} e
+   */
+  onDragEnd(e) {
+    const allSlots = this.element.querySelectorAll(".formation-slot");
+    allSlots.forEach((s) => s.classList.remove("dragging", "drag-over"));
   }
 }
 
@@ -1132,17 +1274,32 @@ export class Window_Inventory extends Window_Base {
     this.btnClose2.textContent = "Close";
     this.btnClose2.onclick = () => this.onUserClose();
     buttons.appendChild(this.btnClose2);
+
+    this.party = null;
+    this.onUse = null;
+    this.onDiscard = null;
   }
 
   /**
    * Refreshes the inventory list.
-   * @method refresh
-   * @param {Object[]} inventory - The party's inventory.
-   * @param {Function} useItemCallback - Callback for using an item.
-   * @param {Function} discardItemCallback - Callback for discarding an item.
+   * @param {import("./objects.js").Game_Party} party - The party object.
+   * @param {Function} onUse - Callback (item, target) => void.
+   * @param {Function} onDiscard - Callback (item) => void.
    */
-  refresh(inventory, useItemCallback, discardItemCallback) {
+  refresh(party, onUse, onDiscard) {
+    this.party = party;
+    this.onUse = onUse;
+    this.onDiscard = onDiscard;
+    this.showItemList();
+  }
+
+  /**
+   * Renders the list of items in the inventory.
+   */
+  showItemList() {
     this.listEl.innerHTML = "";
+    const inventory = this.party.inventory;
+
     if (inventory.length === 0) {
       this.emptyMsgEl.style.display = "block";
     } else {
@@ -1176,7 +1333,7 @@ export class Window_Inventory extends Window_Base {
         }
 
         if (effectsText) {
-             tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
+             tooltipText += `<br/><span class="text-functional">${effectsText}</span>`;
         }
 
         const label = createInteractiveLabel(item, 'item', { tooltipText });
@@ -1187,11 +1344,13 @@ export class Window_Inventory extends Window_Base {
         const useBtn = document.createElement("button");
         useBtn.className = "win-btn";
         useBtn.textContent = "Use";
-        useBtn.addEventListener("click", () => useItemCallback(item, idx));
+        useBtn.addEventListener("click", () => this.showTargetSelection(item));
         const discardBtn = document.createElement("button");
         discardBtn.className = "win-btn";
         discardBtn.textContent = "Discard";
-        discardBtn.addEventListener("click", () => discardItemCallback(item, idx));
+        discardBtn.addEventListener("click", () => {
+            if (this.onDiscard) this.onDiscard(item);
+        });
         btns.appendChild(useBtn);
         btns.appendChild(discardBtn);
 
@@ -1202,16 +1361,19 @@ export class Window_Inventory extends Window_Base {
   }
 
   /**
-   * Renders a list of party members for target selection when using an item.
-   * @method showTargetSelection
-   * @param {import("./objects.js").Game_Battler[]} members - The party members to display.
-   * @param {Function} onSelectCallback - Callback for when a member is selected.
+   * Renders the target selection view for an item.
+   * @param {Object} item - The item being used.
    */
-  showTargetSelection(members, onSelectCallback) {
-    this.listEl.innerHTML = "<div>Select a party member to use this on:</div>";
-    this.emptyMsgEl.style.display = "none";
+  showTargetSelection(item) {
+    this.listEl.innerHTML = "";
 
-    members.forEach((m, idx) => {
+    const header = document.createElement("div");
+    header.textContent = `Use ${item.name} on:`;
+    header.style.marginBottom = "10px";
+    header.style.textAlign = "center";
+    this.listEl.appendChild(header);
+
+    this.party.members.forEach((m) => {
       const btn = document.createElement("button");
       btn.className = "win-btn";
       btn.style.display = 'block';
@@ -1219,10 +1381,19 @@ export class Window_Inventory extends Window_Base {
       btn.style.margin = '5px auto';
       btn.textContent = `${m.name} (HP ${m.hp}/${m.maxHp})`;
       btn.addEventListener("click", () => {
-        onSelectCallback(idx);
+        if (this.onUse) this.onUse(item, m);
       });
       this.listEl.appendChild(btn);
     });
+
+    const backBtn = document.createElement("button");
+    backBtn.className = "win-btn";
+    backBtn.style.display = 'block';
+    backBtn.style.width = '90%';
+    backBtn.style.margin = '20px auto 5px auto';
+    backBtn.textContent = "Back";
+    backBtn.onclick = () => this.showItemList();
+    this.listEl.appendChild(backBtn);
   }
 }
 
@@ -1311,10 +1482,6 @@ export class Window_Event extends Window_Base {
     // Image Container
     this.imageContainer = document.createElement("div");
     this.imageContainer.className = "event-image-container";
-    this.imageContainer.style.textAlign = "center";
-    this.imageContainer.style.marginBottom = "8px";
-    this.imageContainer.style.backgroundColor = "#222";
-    this.imageContainer.style.display = "none"; // Hidden by default until shown
 
     this.imageEl = document.createElement("img");
     this.imageEl.style.maxWidth = "100%";
@@ -1505,4 +1672,274 @@ export class Window_Confirm extends Window_Base {
     this.btnCancel.onclick = () => this.onUserClose();
     buttons.appendChild(this.btnCancel);
   }
+}
+
+/**
+ * @class Window_HUD
+ * @description Manages the main static game layout.
+ */
+export class Window_HUD {
+    constructor() {
+        this.container = document.getElementById("game-container");
+        this.createUI();
+        this.getDomElements();
+    }
+
+    /**
+     * Generates the HTML structure for the HUD.
+     */
+    createUI() {
+        this.container.innerHTML = `
+      <div class="stack-nav panel">
+        <h1>Stillnight Stack</h1>
+        <div class="group-box">
+          <legend>Run</legend>
+          <div class="stack-nav-buttons">
+            <button class="win-btn" id="btn-new-run">New Run</button>
+            <button class="win-btn" id="btn-reveal-all">Reveal</button>
+          </div>
+          <div style="margin-top:4px;">
+            <div>Card: <span id="card-index-label">1 / 1</span></div>
+            <div>Floor depth: <span id="card-depth-label">1</span></div>
+          </div>
+        </div>
+        <div class="group-box">
+          <legend>Cards (Floors)</legend>
+          <div class="card-list" id="card-list"></div>
+        </div>
+        <div class="group-box">
+          <legend>Short Help</legend>
+          <div class="info-box">
+            • Each floor is a card.<br>
+            • ☺ is your party (highlighted).<br>
+            • Click adjacent tiles to move.<br>
+            • E triggers a battle.<br>
+            • R heals, S descends.<br>
+            • ¥ opens a shop.<br>
+            • Front row hits harder,<br>
+            &nbsp;&nbsp;back row is safer.<br>
+            • Floors are reachable only<br>
+            &nbsp;&nbsp;if you've reached their<br>
+            &nbsp;&nbsp;stairs at least once.<br>
+            • Shrines may offer<br>
+            &nbsp;&nbsp;mysterious events.<br>
+            • Boss awaits at the deepest floor.
+          </div>
+        </div>
+      </div>
+      <div class="right-side">
+        <div class="card-area">
+          <div class="card-main panel">
+            <div class="card-header">
+              <div>
+                <span class="card-header-title" id="card-title">Floor 1</span>
+              </div>
+              <div>
+                <span class="label">Mode:</span>
+                <span id="mode-label">Exploration</span>
+              </div>
+            </div>
+            <div class="exploration-frame panel">
+              <div class="exploration-grid" id="exploration-grid"></div>
+              <div class="legend">
+                <span>☺ = Party</span>
+                <span>█ = Wall</span>
+                <span>E = Enemy</span>
+                <span>R = Recovery</span>
+                <span>S = Stairs</span>
+                <span>♱ = Shrine</span>
+                <span>¥ = Shop</span>
+                <span>? = Unseen</span>
+                <span>U = Recruit</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-side-panels">
+            <div class="party-panel panel">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Party Status (click to inspect)</span>
+                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-formation">
+                  Formation...
+                </button>
+                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-inventory">
+                  Inventory...
+                </button>
+              </div>
+              <div class="party-grid" id="party-grid"></div>
+            </div>
+            <div class="log-panel panel">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Event Log</span>
+                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-clear-log">
+                  Clear
+                </button>
+              </div>
+              <div class="log-content" id="log-content"></div>
+            </div>
+          </div>
+        </div>
+        <div class="status-bar">
+          <div>
+            <span id="status-message">Ready.</span>
+          </div>
+          <div>
+            <span>Gold: <span id="status-gold">0</span></span>
+            <span>| Floor: <span id="status-floor">1</span></span>
+            <span>| Cards: <span id="status-cards">1</span></span>
+            <span>| Run: <span id="status-run">Active</span></span>
+            <span>| Items: <span id="status-items">0</span></span>
+          </div>
+        </div>
+      </div>
+    `;
+    }
+
+    /**
+     * Caches references to DOM elements.
+     */
+    getDomElements() {
+        this.explorationGridEl = document.getElementById("exploration-grid");
+        this.cardTitleEl = document.getElementById("card-title");
+        this.cardIndexLabelEl = document.getElementById("card-index-label");
+        this.cardDepthLabelEl = document.getElementById("card-depth-label");
+        this.cardListEl = document.getElementById("card-list");
+        this.partyGridEl = document.getElementById("party-grid");
+        this.logEl = document.getElementById("log-content");
+        this.statusMessageEl = document.getElementById("status-message");
+        this.statusGoldEl = document.getElementById("status-gold");
+        this.statusFloorEl = document.getElementById("status-floor");
+        this.statusCardsEl = document.getElementById("status-cards");
+        this.statusRunEl = document.getElementById("status-run");
+        this.statusItemsEl = document.getElementById("status-items");
+        this.modeLabelEl = document.getElementById("mode-label");
+        this.btnNewRun = document.getElementById("btn-new-run");
+        this.btnRevealAll = document.getElementById("btn-reveal-all");
+        this.btnClearLog = document.getElementById("btn-clear-log");
+        this.btnFormation = document.getElementById("btn-formation");
+        this.btnInventory = document.getElementById("btn-inventory");
+    }
+
+    /**
+     * Updates the card header information.
+     * @param {Object} floor - The current floor object.
+     * @param {number} index - The current floor index.
+     * @param {number} total - The total number of floors.
+     */
+    updateCardHeader(floor, index, total) {
+        this.cardTitleEl.textContent = floor.title;
+        this.cardIndexLabelEl.textContent = `${index + 1} / ${total}`;
+        this.cardDepthLabelEl.textContent = floor.depth;
+        this.statusFloorEl.textContent = floor.depth;
+        this.statusCardsEl.textContent = total;
+    }
+
+    /**
+     * Updates the list of floor cards.
+     * @param {Array} floors - Array of floor objects.
+     * @param {number} currentIndex - The current floor index.
+     * @param {number} maxReachedIndex - The max reached floor index.
+     * @param {Function} onSelect - Callback when a card is selected.
+     */
+    updateCardList(floors, currentIndex, maxReachedIndex, onSelect) {
+        this.cardListEl.innerHTML = "";
+        floors.forEach((f, idx) => {
+            const item = document.createElement("div");
+            let cls = "card-item";
+            if (idx === currentIndex) cls += " selected";
+            if (!f.discovered) cls += " disabled";
+            item.className = cls;
+            const title = f.discovered ? f.title : "Unknown Floor";
+            item.textContent = `${idx + 1}. ${title}`;
+
+            if (f.discovered && idx <= maxReachedIndex) {
+                item.addEventListener("click", () => onSelect(idx));
+            }
+            this.cardListEl.appendChild(item);
+        });
+    }
+
+    /**
+     * Updates the party status display.
+     * @param {import("./objects.js").Game_Party} party - The party object.
+     * @param {Function} onInspect - Callback when a member is clicked.
+     */
+    updateParty(party, onInspect) {
+        this.partyGridEl.innerHTML = "";
+        party.members.slice(0, 4).forEach((member, index) => {
+            const slot = document.createElement("div");
+            slot.className = "party-slot";
+            slot.dataset.index = index;
+
+            const portrait = document.createElement("div");
+            portrait.className = "party-slot-portrait";
+            portrait.style.backgroundImage = `url('assets/portraits/${member.spriteKey || "pixie"}.png')`;
+
+            const info = document.createElement("div");
+            info.className = "party-slot-info";
+
+            const nameEl = document.createElement("div");
+            nameEl.className = "party-slot-name";
+            const elementIcon = createElementIcon(member.elements);
+            nameEl.appendChild(elementIcon);
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = member.name;
+            nameEl.appendChild(nameSpan);
+
+            const hpLabel = document.createElement("div");
+            const row = index <= 1 ? "Front" : "Back";
+            hpLabel.textContent = `Lv${member.level} (${row})  HP ${member.hp}/${member.maxHp}`;
+
+            const hpBar = document.createElement("div");
+            hpBar.className = "hp-bar";
+            const hpFill = document.createElement("div");
+            hpFill.className = "hp-fill";
+            hpFill.style.width = `${Math.max(0, ((member.prevHp || member.hp) / member.maxHp) * 100)}%`;
+
+            this.animateHpGauge(
+                hpFill,
+                member.prevHp || member.hp,
+                member.hp,
+                member.maxHp,
+                500
+            );
+            member.prevHp = member.hp;
+            hpBar.appendChild(hpFill);
+
+            info.appendChild(nameEl);
+            info.appendChild(hpLabel);
+            info.appendChild(hpBar);
+
+            slot.appendChild(portrait);
+            slot.appendChild(info);
+
+            slot.addEventListener("click", () => onInspect(member, index));
+            this.partyGridEl.appendChild(slot);
+        });
+    }
+
+    /**
+     * Animates the HP gauge width.
+     * @param {HTMLElement} element - The gauge element.
+     * @param {number} startHp - Starting HP.
+     * @param {number} endHp - Target HP.
+     * @param {number} maxHp - Max HP.
+     * @param {number} duration - Duration in ms.
+     */
+    animateHpGauge(element, startHp, endHp, maxHp, duration) {
+        const startTime = performance.now();
+        const startWidth = (startHp / maxHp) * 100;
+        const endWidth = (endHp / maxHp) * 100;
+
+        const frame = (currentTime) => {
+          const elapsedTime = currentTime - startTime;
+          const progress = Math.min(elapsedTime / duration, 1);
+          const currentWidth = startWidth + (endWidth - startWidth) * progress;
+          element.style.width = `${currentWidth}%`;
+
+          if (progress < 1) {
+            requestAnimationFrame(frame);
+          }
+        };
+        requestAnimationFrame(frame);
+    }
 }
