@@ -729,16 +729,19 @@ export class ThemeManager {
    * @param {string} themeId - The ID of the theme to apply.
    */
   static applyTheme(themeId) {
-    const theme = this._themes.find(t => t.id === themeId);
-    if (!theme) {
+    const targetTheme = this._themes.find(t => t.id === themeId);
+    if (!targetTheme) {
       console.warn(`ThemeManager: Theme '${themeId}' not found.`);
       return;
     }
 
+    const defaultTheme = this._themes.find(t => t.id === 'original');
+    const colors = defaultTheme ? { ...defaultTheme.colors, ...targetTheme.colors } : targetTheme.colors;
+
     this._currentThemeId = themeId;
     const root = document.documentElement;
 
-    for (const [key, value] of Object.entries(theme.colors)) {
+    for (const [key, value] of Object.entries(colors)) {
       root.style.setProperty(`--${key}`, value);
     }
   }
