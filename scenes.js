@@ -1348,6 +1348,9 @@ class Game_Interpreter {
     replaceMemberWithRecruit(index, recruit) {
         const replaced = this.party.members[index];
     this.scene.logMessage(
+    replaceMemberWithRecruit(index, recruit) {
+        const replaced = this.party.members[index];
+        this.scene.logMessage(
             this.dataManager.terms.recruit.replace_member
                 .replace("{0}", replaced.name)
                 .replace("{1}", recruit.name)

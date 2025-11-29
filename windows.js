@@ -1296,6 +1296,14 @@ export class Window_Inventory extends Window_Base {
   /**
    * Renders the list of items in the inventory.
    */
+   */
+  refresh(party, onUse, onDiscard) {
+    this.party = party;
+    this.onUse = onUse;
+    this.onDiscard = onDiscard;
+    this.showItemList();
+  }
+
   showItemList() {
     this.listEl.innerHTML = "";
     const inventory = this.party.inventory;
@@ -1364,6 +1372,15 @@ export class Window_Inventory extends Window_Base {
    * Renders the target selection view for an item.
    * @param {Object} item - The item being used.
    */
+  showTargetSelection(item) {
+    this.listEl.innerHTML = "";
+
+    const header = document.createElement("div");
+    header.textContent = `Use ${item.name} on:`;
+    header.style.marginBottom = "10px";
+    header.style.textAlign = "center";
+    this.listEl.appendChild(header);
+
   showTargetSelection(item) {
     this.listEl.innerHTML = "";
 
