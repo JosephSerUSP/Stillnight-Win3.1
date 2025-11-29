@@ -183,6 +183,98 @@ export class SoundManager {
 }
 
 /**
+ * @class ThemeManager
+ * @description Manages application themes (colors, styles).
+ * Supports Original, Night, and High Contrast themes.
+ */
+export class ThemeManager {
+    static _currentTheme = 'original';
+    static _themes = {
+        'original': {
+            '--bg-color': '#008080', // Teal desktop
+            '--window-bg': '#c0c0c0', // Light gray
+            '--text-color': '#000000', // Black
+            '--header-bg': '#000080', // Blue
+            '--header-text': '#ffffff', // White
+            '--gauge-fill': '#00a000', // Green
+            '--border-light': '#ffffff',
+            '--border-dark': '#808080',
+            '--panel-bg': '#c0c0c0'
+        },
+        'night': {
+            '--bg-color': '#1a1a2e', // Dark blue
+            '--window-bg': '#2e2e3e', // Dark gray
+            '--text-color': '#e0e0e0', // Light gray
+            '--header-bg': '#16213e', // Darker blue
+            '--header-text': '#00ffcc', // Cyan-ish
+            '--gauge-fill': '#00ff00', // Bright Green
+            '--border-light': '#4e4e5e',
+            '--border-dark': '#1a1a2e',
+            '--panel-bg': '#2e2e3e'
+        },
+        'high-contrast': {
+            '--bg-color': '#000000', // Black
+            '--window-bg': '#000000', // Black
+            '--text-color': '#ffffff', // White
+            '--header-bg': '#ffffff', // White
+            '--header-text': '#000000', // Black
+            '--gauge-fill': '#ffffff', // White
+            '--border-light': '#ffffff',
+            '--border-dark': '#ffffff',
+            '--panel-bg': '#000000'
+        }
+    };
+
+    /**
+     * Initializes the theme system.
+     */
+    static init() {
+        this.applyTheme(this._currentTheme);
+    }
+
+    /**
+     * Applies the specified theme.
+     * @param {string} themeName - 'original', 'night', 'high-contrast'.
+     */
+    static applyTheme(themeName) {
+        if (!this._themes[themeName]) return;
+        this._currentTheme = themeName;
+
+        const root = document.documentElement;
+        const theme = this._themes[themeName];
+
+        for (const [prop, value] of Object.entries(theme)) {
+            root.style.setProperty(prop, value);
+        }
+
+        // Add class to body for specific overrides if needed
+        document.body.className = `theme-${themeName}`;
+    }
+
+    /**
+     * Toggles between available themes.
+     */
+    static cycleTheme() {
+        const keys = Object.keys(this._themes);
+        const currentIndex = keys.indexOf(this._currentTheme);
+        const nextIndex = (currentIndex + 1) % keys.length;
+        this.applyTheme(keys[nextIndex]);
+    }
+
+    static getTheme() {
+        return this._currentTheme;
+    }
+
+    static getGaugeColor() {
+        // Return CSS variable reference or raw value?
+        // JS components might need raw value for canvas, but here we use DOM.
+        // For simple DOM gauges, we can use 'var(--gauge-fill)'
+        // But the gauge utility sets style.backgroundColor which supports var()
+        return 'var(--gauge-fill)';
+    }
+}
+
+/**
  * @class BattleManager
  * @description Manages the state and flow of a single battle instance.
  * Handles turn order, action execution, and victory/defeat conditions.
@@ -688,4 +780,5 @@ if (typeof window !== 'undefined' && window.location.search.includes("test=true"
     window.SoundManager = SoundManager;
     window.BattleManager = BattleManager;
     window.SceneManager = SceneManager;
+    window.ThemeManager = ThemeManager;
 }

@@ -33,11 +33,11 @@ test.describe('Game Logic', () => {
     });
 
     // Wait for battle window to appear
-    const battleWindow = page.locator('.dialog-titlebar span', { hasText: 'Battle' });
+    const battleWindow = page.locator('.window-header span', { hasText: 'Battle' });
     await expect(battleWindow).toBeVisible();
 
     // Find close button
-    const closeBtn = page.locator('.dialog-titlebar button', { hasText: 'X' }).last();
+    const closeBtn = page.locator('.window-header button', { hasText: 'X' }).last();
 
     // Click close button
     await closeBtn.click();
