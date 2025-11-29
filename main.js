@@ -9,7 +9,6 @@ import { WindowManager } from "./windows.js";
  */
 async function main() {
   const gameContainer = document.getElementById("game-container");
-  ThemeManager.init(); // Initialize themes
   const sceneManager = new SceneManager(gameContainer);
   const dataManager = new DataManager();
   const windowManager = new WindowManager();
@@ -43,3 +42,10 @@ async function main() {
 // Start the game when the DOM is fully loaded.
 window.addEventListener("DOMContentLoaded", main);
 
+// Theme switcher logic
+const themeBtn = document.getElementById("btn-theme");
+if (themeBtn) {
+  themeBtn.addEventListener("click", () => {
+    ThemeManager.cycleTheme();
+  });
+}

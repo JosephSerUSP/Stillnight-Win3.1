@@ -1,6 +1,6 @@
 import { Game_Map, Game_Party, Game_Battler, Game_Event } from "./objects.js";
 import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula } from "./core.js";
-import { BattleManager, SoundManager } from "./managers.js";
+import { BattleManager, SoundManager, ThemeManager } from "./managers.js";
 import {
   Window_Battle,
   Window_Shop,
@@ -93,6 +93,7 @@ export class Scene_Boot extends Scene_Base {
      */
     async start() {
         await this.dataManager.loadData();
+        ThemeManager.init(this.dataManager.themes);
         this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager));
     }
 }

@@ -3,7 +3,7 @@
     "id": "stairs",
     "type": "stairs",
     "symbol": "S",
-    "cssClass": "text-highlight",
+    "cssClass": "tile-stairs",
     "trigger": "touch",
     "actions": [{ "type": "DESCEND" }]
   },
@@ -11,7 +11,7 @@
     "id": "recovery",
     "type": "recovery",
     "symbol": "R",
-    "cssClass": "text-good",
+    "cssClass": "tile-recovery",
     "trigger": "touch",
     "actions": [{ "type": "HEAL_PARTY" }]
   },
@@ -19,7 +19,7 @@
     "id": "enemy",
     "type": "enemy",
     "symbol": "E",
-    "cssClass": "text-danger",
+    "cssClass": "tile-enemy",
     "trigger": "touch",
     "actions": [{ "type": "BATTLE" }]
   },
@@ -27,7 +27,7 @@
     "id": "shrine",
     "type": "shrine",
     "symbol": "♱",
-    "cssClass": "text-special",
+    "cssClass": "tile-shrine",
     "trigger": "touch",
     "actions": [{ "type": "SHRINE" }]
   },
@@ -35,7 +35,7 @@
     "id": "shop",
     "type": "shop",
     "symbol": "¥",
-    "cssClass": "text-warning",
+    "cssClass": "tile-shop",
     "trigger": "touch",
     "actions": [{ "type": "SHOP" }]
   },
@@ -43,7 +43,7 @@
     "id": "recruit",
     "type": "recruit",
     "symbol": "U",
-    "cssClass": "text-interactive",
+    "cssClass": "tile-recruit",
     "trigger": "touch",
     "actions": [{ "type": "RECRUIT" }]
   },
@@ -51,7 +51,7 @@
     "id": "npc",
     "type": "npc",
     "symbol": "N",
-    "cssClass": "text-highlight",
+    "cssClass": "tile-npc",
     "trigger": "touch",
     "actions": [{ "type": "NPC_DIALOGUE" }]
   },
@@ -59,7 +59,7 @@
     "id": "trap",
     "type": "trap",
     "symbol": "T",
-    "cssClass": "text-danger",
+    "cssClass": "tile-trap",
     "trigger": "touch",
     "hidden": true,
     "trapValue": 5,
@@ -69,7 +69,7 @@
     "id": "treasure",
     "type": "treasure",
     "symbol": "$",
-    "cssClass": "text-good",
+    "cssClass": "tile-treasure",
     "trigger": "touch",
     "actions": [{ "type": "TREASURE" }]
   },

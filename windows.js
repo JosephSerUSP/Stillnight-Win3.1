@@ -1,6 +1,6 @@
 import { getPrimaryElements, Graphics, elementToAscii, getIconStyle, elementToIconId } from "./core.js";
 import { tooltip } from "./tooltip.js";
-import { SoundManager, ThemeManager } from "./managers.js";
+import { SoundManager } from "./managers.js";
 
 /**
  * Creates a DOM element representing an icon for a set of elements.
@@ -75,7 +75,7 @@ export function createGauge(options = {}) {
 
     const fill = document.createElement("div");
     fill.className = "gauge-fill";
-    fill.style.backgroundColor = options.color || ThemeManager.getGaugeColor();
+    fill.style.backgroundColor = options.color || "#00a000";
 
     container.appendChild(fill);
 
@@ -1704,7 +1704,6 @@ export class Window_HUD {
           <div class="stack-nav-buttons">
             <button class="win-btn" id="btn-new-run">New Run</button>
             <button class="win-btn" id="btn-reveal-all">Reveal</button>
-            <button class="win-btn" id="btn-theme-toggle">Theme</button>
           </div>
           <div style="margin-top:4px;">
             <div>Card: <span id="card-index-label">1 / 1</span></div>
@@ -1819,10 +1818,6 @@ export class Window_HUD {
         this.modeLabelEl = document.getElementById("mode-label");
         this.btnNewRun = document.getElementById("btn-new-run");
         this.btnRevealAll = document.getElementById("btn-reveal-all");
-        this.btnThemeToggle = document.getElementById("btn-theme-toggle");
-        if (this.btnThemeToggle) {
-            this.btnThemeToggle.onclick = () => ThemeManager.cycleTheme();
-        }
         this.btnClearLog = document.getElementById("btn-clear-log");
         this.btnFormation = document.getElementById("btn-formation");
         this.btnInventory = document.getElementById("btn-inventory");
@@ -1882,8 +1877,8 @@ export class Window_HUD {
             hpLabel.textContent = `Lv${member.level} (${row})  HP ${member.hp}/${member.maxHp}`;
 
             const { container: gauge, fill: gaugeFill } = createGauge({
-                height: "6px"
-                // color removed to use theme default
+                height: "6px",
+                color: "#00a000"
             });
             gauge.style.marginTop = "1px";
 
@@ -2001,7 +1996,7 @@ export class Window_EquipConfirm extends Window_Base {
         this.element.style.flexDirection = 'column';
 
         const titleBar = document.createElement("div");
-        titleBar.className = "window-header";
+    titleBar.className = "window-header";
         this.element.appendChild(titleBar);
         this.makeDraggable(titleBar);
 
