@@ -54,6 +54,34 @@ export function createElementIcon(elements) {
  * @param {Object} options - { tooltipText, showTooltip, className, elements }.
  * @returns {HTMLElement} The span element.
  */
+/**
+ * Creates a generic gauge element.
+ * @param {Object} options - Configuration options.
+ * @param {number} [options.width] - Width of the gauge (e.g. 100).
+ * @param {string} [options.height='6px'] - Height of the gauge.
+ * @param {string} [options.color='#00a000'] - Fill color.
+ * @param {string} [options.bgColor] - Background color (overrides CSS if set).
+ * @param {string} [options.className] - Additional class names.
+ * @returns {Object} { container, fill } - The DOM elements.
+ */
+export function createGauge(options = {}) {
+    const container = document.createElement("div");
+    container.className = "gauge";
+    if (options.className) container.classList.add(options.className);
+
+    if (options.width) container.style.width = `${options.width}px`;
+    container.style.height = options.height || "6px";
+    if (options.bgColor) container.style.backgroundColor = options.bgColor;
+
+    const fill = document.createElement("div");
+    fill.className = "gauge-fill";
+    fill.style.backgroundColor = options.color || "#00a000";
+
+    container.appendChild(fill);
+
+    return { container, fill };
+}
+
 export function createInteractiveLabel(data, type, options = {}) {
     const el = document.createElement("span");
     el.className = "interactive-label";
@@ -1848,25 +1876,26 @@ export class Window_HUD {
             const row = index <= 1 ? "Front" : "Back";
             hpLabel.textContent = `Lv${member.level} (${row})  HP ${member.hp}/${member.maxHp}`;
 
-            const hpBar = document.createElement("div");
-            hpBar.className = "hp-bar";
-            const hpFill = document.createElement("div");
-            hpFill.className = "hp-fill";
-            hpFill.style.width = `${Math.max(0, ((member.prevHp || member.hp) / member.maxHp) * 100)}%`;
+            const { container: gauge, fill: gaugeFill } = createGauge({
+                height: "6px",
+                color: "#00a000"
+            });
+            gauge.style.marginTop = "1px";
 
-            this.animateHpGauge(
-                hpFill,
+            gaugeFill.style.width = `${Math.max(0, ((member.prevHp || member.hp) / member.maxHp) * 100)}%`;
+
+            this.animateGauge(
+                gaugeFill,
                 member.prevHp || member.hp,
                 member.hp,
                 member.maxHp,
                 500
             );
             member.prevHp = member.hp;
-            hpBar.appendChild(hpFill);
 
             info.appendChild(nameEl);
             info.appendChild(hpLabel);
-            info.appendChild(hpBar);
+            info.appendChild(gauge);
 
             slot.appendChild(portrait);
             slot.appendChild(info);
@@ -1876,7 +1905,7 @@ export class Window_HUD {
         });
     }
 
-    animateHpGauge(element, startHp, endHp, maxHp, duration) {
+    animateGauge(element, startHp, endHp, maxHp, duration) {
         const startTime = performance.now();
         const startWidth = (startHp / maxHp) * 100;
         const endWidth = (endHp / maxHp) * 100;
