@@ -367,6 +367,59 @@ export class Game_Party {
       return new Game_Battler(newActorData);
     }).filter(member => member !== null);
   }
+
+  /**
+   * Reorders a party member from one index to another.
+   * @param {number} fromIndex - The current index of the member.
+   * @param {number} toIndex - The target index.
+   * @returns {boolean} True if successful.
+   */
+  reorderMembers(fromIndex, toIndex) {
+      if (fromIndex < 0 || fromIndex >= this.members.length) return false;
+      // Allow dropping at the end of the list? The logic in Scene_Map limited it to valid slots.
+      // But Scene_Map rendered slots for all members.
+      if (toIndex < 0) return false; // toIndex can be >= length if we append?
+      // For now, stick to existing logic which seemed to assume swapping within existing slots.
+      // But Scene_Map rendered "Reserve" slots too.
+
+      // Safety check
+      if (toIndex >= this.members.length) toIndex = this.members.length - 1;
+
+      const [moved] = this.members.splice(fromIndex, 1);
+      this.members.splice(toIndex, 0, moved);
+      return true;
+  }
+
+  /**
+   * Consumes an item on a target member.
+   * @param {Object} item - The item object (from inventory).
+   * @param {import("./objects.js").Game_Battler} targetMember - The target.
+   * @returns {Object} Result of the operation.
+   */
+  useItem(item, targetMember) {
+      const index = this.inventory.indexOf(item);
+      if (index === -1) return { success: false, msg: "Item not in inventory." };
+
+      const outcomes = [];
+
+      if (item.effects.hp) {
+          const old = targetMember.hp;
+          targetMember.hp = Math.min(targetMember.maxHp, targetMember.hp + item.effects.hp);
+          outcomes.push({ type: 'heal', value: targetMember.hp - old });
+      }
+      if (item.effects.maxHp) {
+           targetMember.maxHp += item.effects.maxHp;
+           targetMember.hp += item.effects.maxHp;
+           outcomes.push({ type: 'maxHp', value: item.effects.maxHp });
+      }
+      if (item.effects.xp) {
+           const result = targetMember.gainXp(item.effects.xp);
+           outcomes.push({ type: 'xp', value: item.effects.xp, result });
+      }
+
+      this.inventory.splice(index, 1);
+      return { success: true, outcomes, item };
+  }
 }
 
 /**
