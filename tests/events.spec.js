@@ -157,7 +157,7 @@ test.describe('Event System', () => {
 
       await page.locator('.tile[data-x="1"][data-y="0"]').click();
 
-      const eventTitle = await page.locator('#event-window .dialog-titlebar span').textContent();
+      const eventTitle = await page.locator('#event-window .window-header span').textContent();
       expect(eventTitle).toContain('Trap!');
 
       const eventDesc = await page.locator('#event-window .event-description').textContent();
@@ -190,7 +190,7 @@ test.describe('Event System', () => {
           }
       });
 
-      const eventTitle = await page.locator('#event-window .dialog-titlebar span').textContent();
+      const eventTitle = await page.locator('#event-window .window-header span').textContent();
       expect(eventTitle).toContain('Treasure Found!');
 
       // Check for interactive label

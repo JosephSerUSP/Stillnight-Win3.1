@@ -5,10 +5,10 @@ html, body {
     height: 100%;
     width: 100%;
     overflow: hidden;
-    background-color: #008080; /* teal desktop */
+    background-color: var(--bg-color, #008080); /* teal desktop */
     font-family: "MS Sans Serif", "Microsoft Sans Serif", Tahoma, sans-serif;
     font-size: 11px;
-    color: #000000;
+    color: var(--text-color, #000000);
 }
 
 /* Simple tiled wallpaper using gradients; center the window */
@@ -26,31 +26,47 @@ html, body {
     justify-content: center;
 }
 
+/* ===== Utility Classes ========================================== */
+.text-danger { color: #800000; }
+.text-highlight { color: #000080; }
+.text-good { color: #008000; }
+.text-special { color: #400040; }
+.text-interactive { color: #600060; }
+.text-warning { color: #804000; }
+
+/* Theme-specific overrides for high contrast might be needed,
+   but we'll rely on the base variables first. */
+
 /* ===== Window frame ============================================= */
 .win-window {
     width: 960px;
     height: 560px;
-    background-color: #c0c0c0;
+    background-color: var(--window-bg, #c0c0c0);
     box-sizing: border-box;
-    border: 2px solid #000000;
+    border: 2px solid var(--text-color, #000000);
     box-shadow:
-        0 0 0 1px #ffffff inset,
-        0 0 0 2px #808080 inset,
-        0 0 0 3px #404040 inset;
+        0 0 0 1px var(--border-light, #ffffff) inset,
+        0 0 0 2px var(--border-dark, #808080) inset,
+        0 0 0 3px #404040 inset; /* This inner shadow might need variable too */
     display: flex;
     flex-direction: column;
 }
 
-.title-bar {
-    height: 20px;
-    background: linear-gradient(90deg, #000080, #0000a8);
-    color: #ffffff;
+/* Replaced .title-bar and .dialog-titlebar with .window-header */
+.window-header {
+    height: 18px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 2px 4px;
     box-sizing: border-box;
+    font-size: 11px;
+    font-weight: bold;
+    /* Default appearance */
+    background-color: var(--header-bg, #000080);
+    color: var(--header-text, #ffffff);
 }
+
 .title-group {
     display: flex;
     align-items: center;
@@ -59,11 +75,11 @@ html, body {
     width: 14px;
     height: 14px;
     margin-right: 4px;
-    background-color: #c0c0c0;
-    border: 1px solid #000000;
+    background-color: var(--window-bg, #c0c0c0);
+    border: 1px solid var(--text-color, #000000);
     box-shadow:
-        1px 1px 0 #ffffff inset,
-        -1px -1px 0 #808080 inset;
+        1px 1px 0 var(--border-light, #ffffff) inset,
+        -1px -1px 0 var(--border-dark, #808080) inset;
     padding: 2px;
 }
 .title {
@@ -114,15 +130,17 @@ html, body {
     min-width: 18px;
     padding: 0 4px;
     height: 18px;
-    background-color: #c0c0c0;
+    background-color: var(--window-bg, #c0c0c0);
+    color: var(--text-color, #000000);
     border-width: 2px;
     border-style: solid;
-    border-color: #ffffff #404040 #404040 #ffffff;
+    border-color: var(--border-light, #ffffff) #404040 #404040 var(--border-light, #ffffff);
     box-sizing: border-box;
     cursor: pointer;
+    text-align: center;
 }
 .win-btn:active {
-    border-color: #404040 #ffffff #ffffff #404040;
+    border-color: #404040 var(--border-light, #ffffff) var(--border-light, #ffffff) #404040;
     padding-top: 1px;
     padding-left: 5px;
 }
@@ -136,10 +154,10 @@ html, body {
 }
 
 .panel {
-    background-color: #c0c0c0;
-    border: 2px solid #808080;
+    background-color: var(--panel-bg, #c0c0c0);
+    border: 2px solid var(--border-dark, #808080);
     box-shadow:
-        1px 1px 0 #ffffff inset,
+        1px 1px 0 var(--border-light, #ffffff) inset,
         -1px -1px 0 #404040 inset;
     box-sizing: border-box;
 }
@@ -162,9 +180,9 @@ html, body {
     position: relative;
     padding: 10px 4px 4px 4px;
     margin-top: 6px;
-    border: 1px solid #808080;
+    border: 1px solid var(--border-dark, #808080);
     box-shadow:
-        1px 1px 0 #ffffff inset,
+        1px 1px 0 var(--border-light, #ffffff) inset,
         -1px -1px 0 #404040 inset;
 }
 .group-box legend {
@@ -172,7 +190,7 @@ html, body {
     top: -7px;
     left: 8px;
     padding: 0 4px;
-    background-color: #c0c0c0;
+    background-color: var(--window-bg, #c0c0c0);
     font-size: 11px;
 }
 
@@ -191,11 +209,13 @@ html, body {
 .card-list {
     height: 110px;
     overflow-y: auto;
-    background-color: #ffffff;
-    border: 1px solid #808080;
+    background-color: var(--border-light, #ffffff); /* Usually white */
+    border: 1px solid var(--border-dark, #808080);
     box-shadow:
-        1px 1px 0 #ffffff inset,
+        1px 1px 0 var(--border-light, #ffffff) inset,
         -1px -1px 0 #404040 inset;
+    cursor: default;
+    color: var(--text-color, #000000);
 }
 .card-item {
     padding: 2px 4px;
@@ -203,15 +223,15 @@ html, body {
     white-space: nowrap;
 }
 .card-item:hover {
-    background-color: #808080;
-    color: #ffffff;
+    background-color: var(--border-dark, #808080);
+    color: var(--border-light, #ffffff);
 }
 .card-item.selected {
-    background-color: #000080;
-    color: #ffffff;
+    background-color: var(--header-bg, #000080);
+    color: var(--header-text, #ffffff);
 }
 .card-item.disabled {
-    color: #808080;
+    color: var(--border-dark, #808080);
     background-color: #f0f0f0;
     cursor: default;
     pointer-events: none;
@@ -232,12 +252,12 @@ html, body {
 
 /* ===== Terminal Look for Battle Window ===== */
 .terminal {
-    background-color: #000000;
+    background-color: #000000; /* Usually stays black/green */
     color: #00ff00;
     font-family: "Fixedsys", "Lucida Console", "Courier New", monospace;
     font-size: 11px;
-    border: 1px solid #808080;
-    box-shadow: 1px 1px 0 #ffffff inset, -1px -1px 0 #404040 inset;
+    border: 1px solid var(--border-dark, #808080);
+    box-shadow: 1px 1px 0 var(--border-light, #ffffff) inset, -1px -1px 0 #404040 inset;
     padding: 4px;
     flex-grow: 1;
     display: flex;
@@ -329,7 +349,7 @@ html, body {
 .exploration-frame {
     flex: 1;
     padding: 4px;
-    background-color: #a0a0a0;
+    background-color: #a0a0a0; /* This might need a variable */
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -348,10 +368,10 @@ html, body {
 }
 
 .tile {
-    background-color: #c0c0c0;
-    border: 1px solid #808080;
+    background-color: var(--window-bg, #c0c0c0);
+    border: 1px solid var(--border-dark, #808080);
     box-shadow:
-        1px 1px 0 #ffffff inset,
+        1px 1px 0 var(--border-light, #ffffff) inset,
         -1px -1px 0 #404040 inset;
     display: flex;
     align-items: center;
@@ -362,25 +382,20 @@ html, body {
     height: 24px;
     width: 24px;
     line-height: 24px;
+    color: var(--text-color, #000000);
 }
 .tile:hover {
     background-color: #e0e0e0;
 }
 .tile-fog {
-    background-color: #808080;
-    color: #c0c0c0;
+    background-color: var(--border-dark, #808080);
+    color: var(--window-bg, #c0c0c0);
 }
 .tile-player {
     font-weight: bold;
-    box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px #000000 inset;
+    box-shadow: 0 0 0 2px var(--border-light, #ffffff), 0 0 0 3px #000000 inset;
     background-color: #e8e8ff;
 }
-.tile-enemy   { color: #800000; }
-.tile-stairs  { color: #000080; }
-.tile-recovery{ color: #008000; }
-.tile-shrine  { color: #400040; }
-.tile-shop    { color: #804000; }
-    .tile-recruit { color: #600060; }
 
 .legend {
     font-size: 10px;
@@ -414,9 +429,9 @@ html, body {
 }
 
 .party-slot {
-    background-color: #c0c0c0;
-    border: 1px solid #808080;
-    box-shadow: 1px 1px 0 #ffffff inset, -1px -1px 0 #404040 inset;
+    background-color: var(--window-bg, #c0c0c0);
+    border: 1px solid var(--border-dark, #808080);
+    box-shadow: 1px 1px 0 var(--border-light, #ffffff) inset, -1px -1px 0 #404040 inset;
     display: flex;
     padding: 2px;
     font-size: 10px;
@@ -428,8 +443,8 @@ html, body {
     width: 48px;
     height: 48px;
     background-color: #000;
-    border: 1px solid #808080;
-    box-shadow: 1px 1px 0 #ffffff inset, -1px -1px 0 #404040 inset;
+    border: 1px solid var(--border-dark, #808080);
+    box-shadow: 1px 1px 0 var(--border-light, #ffffff) inset, -1px -1px 0 #404040 inset;
     background-size: cover;
     background-position: 50% 25%;
     image-rendering: pixelated;
@@ -448,7 +463,7 @@ html, body {
 }
 .gauge {
     border: 1px solid #000000;
-    background-color: #808080;
+    background-color: var(--border-dark, #808080);
     overflow: hidden;
 }
 .gauge-fill {
@@ -459,9 +474,9 @@ html, body {
 .log-content {
     background-color: #000000;
     color: #00ff00;
-    border: 1px solid #808080;
+    border: 1px solid var(--border-dark, #808080);
     box-shadow:
-        1px 1px 0 #ffffff inset,
+        1px 1px 0 var(--border-light, #ffffff) inset,
         -1px -1px 0 #404040 inset;
     padding: 2px;
     font-family: "Fixedsys", "Lucida Console", "Courier New", monospace;
@@ -474,8 +489,8 @@ html, body {
 /* Status bar */
 .status-bar {
     height: 20px;
-    border-top: 1px solid #ffffff;
-    box-shadow: 0 -1px 0 #808080 inset;
+    border-top: 1px solid var(--border-light, #ffffff);
+    box-shadow: 0 -1px 0 var(--border-dark, #808080) inset;
     padding: 2px 4px;
     box-sizing: border-box;
     display: flex;
@@ -514,26 +529,15 @@ html, body {
 }
 .dialog {
     width: 520px;
-    background-color: #c0c0c0;
-    border: 2px solid #000000;
+    background-color: var(--window-bg, #c0c0c0);
+    border: 2px solid var(--text-color, #000000);
     box-shadow:
-        0 0 0 1px #ffffff inset,
-        0 0 0 2px #808080 inset,
+        0 0 0 1px var(--border-light, #ffffff) inset,
+        0 0 0 2px var(--border-dark, #808080) inset,
         0 0 0 3px #404040 inset;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-}
-.dialog-titlebar {
-    height: 18px;
-    background-color: #000080;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 2px 4px;
-    box-sizing: border-box;
-    font-size: 11px;
 }
 .dialog-content {
     padding: 6px;
@@ -551,13 +555,14 @@ html, body {
 
 /* Inspect dialog – larger sprite box + flavor */
 .inspect-body {
-    background-color: #ffffff;
-    border: 1px solid #808080;
+    background-color: var(--border-light, #ffffff);
+    border: 1px solid var(--border-dark, #808080);
     box-shadow:
-        1px 1px 0 #ffffff inset,
+        1px 1px 0 var(--border-light, #ffffff) inset,
         -1px -1px 0 #404040 inset;
     padding: 4px;
     font-size: 11px;
+    color: var(--text-color, #000000);
 }
 .inspect-layout {
     display: flex;
@@ -566,9 +571,9 @@ html, body {
 .inspect-sprite {
     width: 128px;
     height: 192px;
-    border: 1px solid #808080;
+    border: 1px solid var(--border-dark, #808080);
     box-shadow:
-        1px 1px 0 #ffffff inset,
+        1px 1px 0 var(--border-light, #ffffff) inset,
         -1px -1px 0 #404040 inset;
     background-color: #000000;
     background-repeat: no-repeat;
@@ -592,13 +597,14 @@ html, body {
 
 /* Shop dialog */
 .shop-body {
-    background-color: #ffffff;
-    border: 1px solid #808080;
+    background-color: var(--border-light, #ffffff);
+    border: 1px solid var(--border-dark, #808080);
     box-shadow:
-        1px 1px 0 #ffffff inset,
+        1px 1px 0 var(--border-light, #ffffff) inset,
         -1px -1px 0 #404040 inset;
     padding: 4px;
     font-size: 11px;
+    color: var(--text-color, #000000);
 }
 .shop-row {
     margin-bottom: 4px;
@@ -610,13 +616,14 @@ html, body {
 
 /* Formation dialog */
 .formation-body {
-    background-color: #ffffff;
-    border: 1px solid #808080;
+    background-color: var(--border-light, #ffffff);
+    border: 1px solid var(--border-dark, #808080);
     box-shadow:
-        1px 1px 0 #ffffff inset,
+        1px 1px 0 var(--border-light, #ffffff) inset,
         -1px -1px 0 #404040 inset;
     padding: 4px;
     font-size: 11px;
+    color: var(--text-color, #000000);
 }
 .formation-grid {
     display: grid;
@@ -633,18 +640,18 @@ html, body {
     overflow-y: auto;
 }
 .formation-slot {
-    border: 1px solid #808080;
+    border: 1px solid var(--border-dark, #808080);
     padding: 2px;
     font-size: 10px;
-    background-color: #c0c0c0;
+    background-color: var(--window-bg, #c0c0c0);
     box-shadow:
-        1px 1px 0 #ffffff inset,
+        1px 1px 0 var(--border-light, #ffffff) inset,
         -1px -1px 0 #404040 inset;
     cursor: pointer;
 }
 .formation-slot.selected {
-    background-color: #000080;
-    color: #ffffff;
+    background-color: var(--header-bg, #000080);
+    color: var(--header-text, #ffffff);
 }
 .formation-label {
     font-size: 10px;
@@ -653,16 +660,17 @@ html, body {
 
 /* Event dialog */
 .event-body {
-    background-color: #ffffff;
-    border: 1px solid #808080;
+    background-color: var(--border-light, #ffffff);
+    border: 1px solid var(--border-dark, #808080);
     box-shadow:
-        1px 1px 0 #ffffff inset,
+        1px 1px 0 var(--border-light, #ffffff) inset,
         -1px -1px 0 #404040 inset;
     padding: 4px;
     font-size: 11px;
     display: flex;
     flex-direction: column;
     gap: 4px;
+    color: var(--text-color, #000000);
 }
 .event-description {
     font-size: 11px;
@@ -677,7 +685,7 @@ html, body {
 /* ===== Tooltip ================================================== */
 #tooltip {
     position: absolute;
-    background-color: #ffffe1;
+    background-color: #ffffe1; /* Tooltips often stay yellow */
     border: 1px solid #000000;
     padding: 4px;
     box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
@@ -695,28 +703,28 @@ html, body {
 .tooltip-text {
     font-size: 10px;
 }
-.tile-npc { color: #2040D0; }
 
 /* Evolution Window */
 .evolution-body {
-    background-color: #c0c0c0;
-    border: 1px solid #808080;
-    box-shadow: 1px 1px 0 #ffffff inset, -1px -1px 0 #404040 inset;
+    background-color: var(--window-bg, #c0c0c0);
+    border: 1px solid var(--border-dark, #808080);
+    box-shadow: 1px 1px 0 var(--border-light, #ffffff) inset, -1px -1px 0 #404040 inset;
     padding: 4px;
     font-size: 11px;
 }
 
 .evolution-pane {
-    background-color: #ffffff;
-    border: 1px solid #808080;
-    box-shadow: 1px 1px 0 #ffffff inset, -1px -1px 0 #404040 inset;
+    background-color: var(--border-light, #ffffff);
+    border: 1px solid var(--border-dark, #808080);
+    box-shadow: 1px 1px 0 var(--border-light, #ffffff) inset, -1px -1px 0 #404040 inset;
     padding: 4px;
+    color: var(--text-color, #000000);
 }
 
 .evolution-arrow {
     font-size: 24px;
     margin: 0 10px;
-    color: #000;
+    color: var(--text-color, #000000);
 }
 
 /* Updated dialog buttons positioning */
@@ -730,8 +738,8 @@ html, body {
     gap: 2px;
     margin-bottom: 4px;
     padding-bottom: 4px;
-    border-bottom: 1px solid #808080;
-    box-shadow: 0 1px 0 #ffffff;
+    border-bottom: 1px solid var(--border-dark, #808080);
+    box-shadow: 0 1px 0 var(--border-light, #ffffff);
 }
 
 .tab-btn {
@@ -739,16 +747,17 @@ html, body {
     font-family: inherit;
     font-size: 11px;
     padding: 2px 4px;
-    background-color: #c0c0c0;
+    background-color: var(--window-bg, #c0c0c0);
     border-width: 2px;
     border-style: solid;
-    border-color: #ffffff #404040 #404040 #ffffff;
+    border-color: var(--border-light, #ffffff) #404040 #404040 var(--border-light, #ffffff);
     cursor: pointer;
     text-align: center;
+    color: var(--text-color, #000000);
 }
 
 .tab-btn:active, .tab-btn.active {
-    border-color: #404040 #ffffff #ffffff #404040;
+    border-color: #404040 var(--border-light, #ffffff) var(--border-light, #ffffff) #404040;
     background-color: #e0e0e0;
     font-weight: bold;
 }
