@@ -173,6 +173,129 @@ export function createInteractiveLabel(data, type, options = {}) {
 }
 
 /**
+ * Creates a standard party member slot (used in HUD, Formation, Inventory).
+ * @param {import("./objects.js").Game_Battler} battler - The battler.
+ * @param {number} index - The index in the list.
+ * @param {Object} options - Configuration options.
+ * @param {Function} [options.onClick] - Click handler.
+ * @param {boolean} [options.draggable] - Enable drag attributes.
+ * @param {Function} [options.onDragStart]
+ * @param {Function} [options.onDragOver]
+ * @param {Function} [options.onDrop]
+ * @param {Function} [options.onDragEnd]
+ * @param {string} [options.className] - Additional class.
+ * @param {string} [options.testId] - Test ID attribute.
+ */
+export function createPartySlot(battler, index, options = {}) {
+    const slot = document.createElement("div");
+    slot.className = "party-slot";
+    if (options.className) slot.classList.add(options.className);
+    slot.dataset.index = index;
+    if (options.testId) slot.dataset.testid = options.testId;
+
+    if (options.draggable) {
+        slot.draggable = true;
+        if (options.onDragStart) slot.addEventListener("dragstart", (e) => options.onDragStart(e, index));
+        if (options.onDragOver) slot.addEventListener("dragover", options.onDragOver);
+        if (options.onDrop) slot.addEventListener("drop", (e) => options.onDrop(e, index));
+        if (options.onDragEnd) slot.addEventListener("dragend", options.onDragEnd);
+    }
+
+    if (options.onClick) {
+        slot.addEventListener("click", (e) => options.onClick(battler, index, e));
+    }
+
+    // Portrait
+    const portrait = document.createElement("div");
+    portrait.className = "party-slot-portrait";
+    if (battler) {
+        portrait.style.backgroundImage = `url('assets/portraits/${battler.spriteKey || "pixie"}.png')`;
+    } else {
+        portrait.style.backgroundColor = "#222";
+    }
+    slot.appendChild(portrait);
+
+    // Info
+    const info = document.createElement("div");
+    info.className = "party-slot-info";
+    slot.appendChild(info);
+
+    if (battler) {
+        // Name
+        const nameEl = document.createElement("div");
+        nameEl.className = "party-slot-name";
+        nameEl.style.display = "flex";
+        nameEl.style.alignItems = "center";
+        if (battler.elements) {
+            nameEl.appendChild(createElementIcon(battler.elements));
+        }
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = battler.name;
+        nameEl.appendChild(nameSpan);
+        info.appendChild(nameEl);
+
+        // Stats
+        const hpLabel = document.createElement("div");
+        let rowStr = "";
+        if (index <= 1) rowStr = " (Front)";
+        else if (index <= 3) rowStr = " (Back)";
+
+        hpLabel.textContent = `Lv${battler.level}${rowStr} HP ${battler.hp}/${battler.maxHp}`;
+        info.appendChild(hpLabel);
+
+        // HP Gauge
+        const { container: hpGauge, fill: hpFill } = createGauge({ height: "6px", color: "var(--gauge-hp)" });
+        hpGauge.style.marginTop = "1px";
+        hpFill.style.width = `${Math.max(0, (battler.hp / battler.maxHp) * 100)}%`;
+        hpFill.classList.add('hp-fill');
+        info.appendChild(hpGauge);
+
+        // XP Gauge
+        const xpNeeded = battler.xpNeeded(battler.level);
+        const xpPercent = Math.min(100, Math.max(0, ((battler.xp || 0) / xpNeeded) * 100));
+        const { container: xpGauge, fill: xpFill } = createGauge({
+            height: "4px",
+            color: "#60a0ff",
+            bgColor: "#333"
+        });
+        xpGauge.style.marginTop = "1px";
+        xpFill.style.width = `${xpPercent}%`;
+        info.appendChild(xpGauge);
+
+        // Equipped
+        const equipLine = document.createElement("div");
+        equipLine.style.marginTop = "2px";
+        equipLine.style.fontSize = "10px";
+        equipLine.style.display = "flex";
+        equipLine.style.alignItems = "center";
+
+        const eqLabel = document.createElement("span");
+        eqLabel.textContent = "Eq: ";
+        eqLabel.style.marginRight = "4px";
+        equipLine.appendChild(eqLabel);
+
+        if (battler.equipmentItem) {
+            const itemLabel = createInteractiveLabel(battler.equipmentItem, 'item');
+            equipLine.appendChild(itemLabel);
+        } else {
+            const none = document.createElement("span");
+            none.textContent = "-";
+            equipLine.appendChild(none);
+        }
+        info.appendChild(equipLine);
+    } else {
+        const emptyLabel = document.createElement("div");
+        emptyLabel.textContent = "(Empty)";
+        emptyLabel.style.textAlign = "center";
+        emptyLabel.style.marginTop = "auto";
+        emptyLabel.style.marginBottom = "auto";
+        info.appendChild(emptyLabel);
+    }
+
+    return slot;
+}
+
+/**
  * @class WindowLayer
  * @description A container that manages all game windows. This is a key component
  * for decoupling the UI from the main HTML file. The WindowLayer is appended to the
@@ -1150,16 +1273,13 @@ export class Window_Formation extends Window_Base {
     if (!this.party) return;
 
     this.party.members.forEach((m, index) => {
-      const slot = document.createElement("div");
-      slot.className = "formation-slot";
-      slot.dataset.index = index;
-      slot.textContent = m ? `${m.name} (Lv${m.level})` : "(empty)";
-      slot.draggable = true;
-
-      slot.addEventListener("dragstart", this.onDragStart.bind(this));
-      slot.addEventListener("dragover", this.onDragOver.bind(this));
-      slot.addEventListener("drop", this.onDrop.bind(this));
-      slot.addEventListener("dragend", this.onDragEnd.bind(this));
+      const slot = createPartySlot(m, index, {
+          draggable: true,
+          onDragStart: this.onDragStart.bind(this),
+          onDragOver: this.onDragOver.bind(this),
+          onDrop: this.onDrop.bind(this),
+          onDragEnd: this.onDragEnd.bind(this)
+      });
 
       if (index < 4) {
         this.gridEl.appendChild(slot);
@@ -1169,22 +1289,22 @@ export class Window_Formation extends Window_Base {
     });
   }
 
-  onDragStart(e) {
-    this.draggedIndex = parseInt(e.target.dataset.index, 10);
-    e.target.classList.add("dragging");
+  onDragStart(e, index) {
+    this.draggedIndex = index;
+    const slot = e.target.closest(".party-slot");
+    if (slot) slot.classList.add("dragging");
   }
 
   onDragOver(e) {
     e.preventDefault();
-    const target = e.target.closest(".formation-slot");
+    const target = e.target.closest(".party-slot");
     if (target) {
       target.classList.add("drag-over");
     }
   }
 
-  onDrop(e) {
+  onDrop(e, targetIndex) {
     e.preventDefault();
-    const targetIndex = parseInt(e.target.dataset.index, 10);
     if (this.draggedIndex === null || this.draggedIndex === targetIndex) return;
 
     if (this.party.reorderMembers(this.draggedIndex, targetIndex)) {
@@ -1196,7 +1316,7 @@ export class Window_Formation extends Window_Base {
   }
 
   onDragEnd(e) {
-    const allSlots = this.element.querySelectorAll(".formation-slot");
+    const allSlots = this.element.querySelectorAll(".party-slot");
     allSlots.forEach((s) => s.classList.remove("dragging", "drag-over"));
   }
 }
@@ -1381,17 +1501,14 @@ export class Window_Inventory extends Window_Base {
     header.style.textAlign = "center";
     this.listEl.appendChild(header);
 
-    this.party.members.forEach((m) => {
-      const btn = document.createElement("button");
-      btn.className = "win-btn";
-      btn.style.display = 'block';
-      btn.style.width = '90%';
-      btn.style.margin = '5px auto';
-      btn.textContent = `${m.name} (HP ${m.hp}/${m.maxHp})`;
-      btn.addEventListener("click", () => {
-        if (this.onUse) this.onUse(item, m);
+    this.party.members.forEach((m, index) => {
+      const slot = createPartySlot(m, index, {
+          onClick: () => {
+              if (this.onUse) this.onUse(item, m);
+          }
       });
-      this.listEl.appendChild(btn);
+      slot.style.marginBottom = "4px";
+      this.listEl.appendChild(slot);
     });
 
     const backBtn = document.createElement("button");
@@ -1851,54 +1968,28 @@ export class Window_HUD {
     updateParty(party, onInspect) {
         this.partyGridEl.innerHTML = "";
         party.members.slice(0, 4).forEach((member, index) => {
-            const slot = document.createElement("div");
-            slot.className = "party-slot";
-            slot.dataset.index = index;
-            slot.dataset.testid = `party-slot-${index}`;
-
-            const portrait = document.createElement("div");
-            portrait.className = "party-slot-portrait";
-            portrait.style.backgroundImage = `url('assets/portraits/${member.spriteKey || "pixie"}.png')`;
-
-            const info = document.createElement("div");
-            info.className = "party-slot-info";
-
-            const nameEl = document.createElement("div");
-            nameEl.className = "party-slot-name";
-            const elementIcon = createElementIcon(member.elements);
-            nameEl.appendChild(elementIcon);
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = member.name;
-            nameEl.appendChild(nameSpan);
-
-            const hpLabel = document.createElement("div");
-            const row = index <= 1 ? "Front" : "Back";
-            hpLabel.textContent = `Lv${member.level} (${row})  HP ${member.hp}/${member.maxHp}`;
-
-            const { container: gauge, fill: gaugeFill } = createGauge({
-                height: "6px"
+            const slot = createPartySlot(member, index, {
+                onClick: onInspect,
+                testId: `party-slot-${index}`
             });
-            gauge.style.marginTop = "1px";
 
-            gaugeFill.style.width = `${Math.max(0, ((member.prevHp || member.hp) / member.maxHp) * 100)}%`;
+            // Handle HP animation
+            const gaugeFill = slot.querySelector('.hp-fill');
+            if (gaugeFill) {
+                // Set initial state to previous HP for animation
+                const startHp = member.prevHp !== undefined ? member.prevHp : member.hp;
+                gaugeFill.style.width = `${Math.max(0, (startHp / member.maxHp) * 100)}%`;
 
-            this.animateGauge(
-                gaugeFill,
-                member.prevHp || member.hp,
-                member.hp,
-                member.maxHp,
-                500
-            );
+                this.animateGauge(
+                    gaugeFill,
+                    startHp,
+                    member.hp,
+                    member.maxHp,
+                    500
+                );
+            }
             member.prevHp = member.hp;
 
-            info.appendChild(nameEl);
-            info.appendChild(hpLabel);
-            info.appendChild(gauge);
-
-            slot.appendChild(portrait);
-            slot.appendChild(info);
-
-            slot.addEventListener("click", () => onInspect(member, index));
             this.partyGridEl.appendChild(slot);
         });
     }
