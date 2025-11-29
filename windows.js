@@ -3,144 +3,154 @@ import { tooltip } from "./tooltip.js";
 import { SoundManager } from "./managers.js";
 
 /**
- * Creates a DOM element representing an icon for a set of elements.
- * @param {string[]} elements - The elements.
- * @returns {HTMLElement} The icon container element.
+ * @class UI
+ * @description A static utility class for generating common UI components.
  */
-export function createElementIcon(elements) {
-    const primaryElements = getPrimaryElements(elements);
-    const container = document.createElement('div');
+export class UI {
+    /**
+     * Creates a DOM element representing an icon for a set of elements.
+     * @param {string[]} elements - The elements.
+     * @returns {HTMLElement} The icon container element.
+     */
+    static createElementIcon(elements) {
+        const primaryElements = getPrimaryElements(elements);
+        const container = document.createElement('div');
 
-    if (primaryElements.length <= 1) {
-        container.className = 'element-icon-container-name';
-        const icon = document.createElement('div');
-        icon.className = 'icon';
-        if (primaryElements.length === 1) {
-            const iconId = elementToIconId(primaryElements[0]);
+        if (primaryElements.length <= 1) {
+            container.className = 'element-icon-container-name';
+            const icon = document.createElement('div');
+            icon.className = 'icon';
+            if (primaryElements.length === 1) {
+                const iconId = elementToIconId(primaryElements[0]);
+                if (iconId > 0) {
+                    icon.style.backgroundPosition = getIconStyle(iconId);
+                }
+            }
+            container.appendChild(icon);
+        } else {
+            container.className = 'element-icon-container';
+            const positions = [
+                { top: '0px', left: '0px' },
+                { top: '6px', left: '6px' },
+                { top: '0px', left: '6px' },
+                { top: '6px', left: '0px' },
+            ];
+            primaryElements.forEach((element, index) => {
+                if (index < 4) {
+                    const icon = document.createElement('div');
+                    icon.className = 'element-icon';
+                    const iconId = elementToIconId('l_' + element);
+                    if (iconId > 0) {
+                        icon.style.backgroundPosition = getIconStyle(iconId);
+                        icon.style.top = positions[index].top;
+                        icon.style.left = positions[index].left;
+                        container.appendChild(icon);
+                    }
+                }
+            });
+        }
+        return container;
+    }
+
+    /**
+     * Creates an interactive label for a game object (Skill, Passive, Item).
+     * @param {Object} data - The object data (must have name, and optionally icon/elements).
+     * @param {string} type - 'skill' | 'passive' | 'item' | 'generic'.
+     * @param {Object} options - { tooltipText, showTooltip, className, elements }.
+     * @returns {HTMLElement} The span element.
+     */
+    static createInteractiveLabel(data, type, options = {}) {
+        const el = document.createElement("span");
+        el.className = "interactive-label";
+        el.style.display = "inline-flex";
+        el.style.alignItems = "center";
+        el.style.marginRight = "5px";
+
+        if (options.className) {
+            el.classList.add(options.className);
+        }
+
+        // Icon / Elements
+        let iconId = data.icon;
+        if (!iconId && type === 'item') {
+            iconId = 6; // Default placeholder for items
+        }
+
+        if (type === 'skill' || (data.element || data.elements)) {
+            // Use element icon logic if available
+            let elements = data.elements || (data.element ? [data.element] : []);
+            if (options.elements) elements = options.elements;
+
+            if (elements.length > 0) {
+                const iconEl = UI.createElementIcon(elements);
+                el.appendChild(iconEl);
+            } else if (iconId) {
+                 const icon = document.createElement("span");
+                 icon.className = "icon";
+                 if (iconId > 0) {
+                     icon.style.backgroundPosition = getIconStyle(iconId);
+                 }
+                 icon.style.marginRight = "4px";
+                 el.appendChild(icon);
+            }
+        } else if (iconId) {
+            const icon = document.createElement("span");
+            icon.className = "icon";
             if (iconId > 0) {
                 icon.style.backgroundPosition = getIconStyle(iconId);
             }
+            icon.style.marginRight = "4px";
+            el.appendChild(icon);
         }
-        container.appendChild(icon);
-    } else {
-        container.className = 'element-icon-container';
-        const positions = [
-            { top: '0px', left: '0px' },
-            { top: '6px', left: '6px' },
-            { top: '0px', left: '6px' },
-            { top: '6px', left: '0px' },
-        ];
-        primaryElements.forEach((element, index) => {
-            if (index < 4) {
-                const icon = document.createElement('div');
-                icon.className = 'element-icon';
-                const iconId = elementToIconId('l_' + element);
-                if (iconId > 0) {
-                    icon.style.backgroundPosition = getIconStyle(iconId);
-                    icon.style.top = positions[index].top;
-                    icon.style.left = positions[index].left;
-                    container.appendChild(icon);
-                }
+
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = data.name;
+        // Inspect window styles
+        if (type === 'skill' || type === 'passive') {
+             nameSpan.style.textDecoration = "underline";
+             nameSpan.style.textDecorationStyle = "dotted";
+        }
+        el.appendChild(nameSpan);
+
+        // Tooltip
+        if (options.showTooltip !== false) {
+            let text = options.tooltipText || data.description || "";
+
+            // Append extra info if not provided in text
+            if (!options.tooltipText) {
+                 let extra = "";
+                 if (type === 'passive' && data.effect) {
+                     extra = data.effect;
+                 }
+
+                 if (extra) {
+                     text += `<br/><span class="text-functional">${extra}</span>`;
+                 }
             }
-        });
-    }
-    return container;
-}
 
-/**
- * Creates an interactive label for a game object (Skill, Passive, Item).
- * @param {Object} data - The object data (must have name, and optionally icon/elements).
- * @param {string} type - 'skill' | 'passive' | 'item' | 'generic'.
- * @param {Object} options - { tooltipText, showTooltip, className, elements }.
- * @returns {HTMLElement} The span element.
- */
-export function createInteractiveLabel(data, type, options = {}) {
-    const el = document.createElement("span");
-    el.className = "interactive-label";
-    el.style.display = "inline-flex";
-    el.style.alignItems = "center";
-    el.style.marginRight = "5px";
-
-    if (options.className) {
-        el.classList.add(options.className);
-    }
-
-    // Icon / Elements
-    let iconId = data.icon;
-    if (!iconId && type === 'item') {
-        iconId = 6; // Default placeholder for items
-    }
-
-    if (type === 'skill' || (data.element || data.elements)) {
-        // Use element icon logic if available
-        let elements = data.elements || (data.element ? [data.element] : []);
-        if (options.elements) elements = options.elements;
-
-        if (elements.length > 0) {
-            const iconEl = createElementIcon(elements);
-            el.appendChild(iconEl);
-        } else if (iconId) {
-             const icon = document.createElement("span");
-             icon.className = "icon";
-             if (iconId > 0) {
-                 icon.style.backgroundPosition = getIconStyle(iconId);
-             }
-             icon.style.marginRight = "4px";
-             el.appendChild(icon);
-        }
-    } else if (iconId) {
-        const icon = document.createElement("span");
-        icon.className = "icon";
-        if (iconId > 0) {
-            icon.style.backgroundPosition = getIconStyle(iconId);
-        }
-        icon.style.marginRight = "4px";
-        el.appendChild(icon);
-    }
-
-    const nameSpan = document.createElement("span");
-    nameSpan.textContent = data.name;
-    // Inspect window styles
-    if (type === 'skill' || type === 'passive') {
-         nameSpan.style.textDecoration = "underline";
-         nameSpan.style.textDecorationStyle = "dotted";
-    }
-    el.appendChild(nameSpan);
-
-    // Tooltip
-    if (options.showTooltip !== false) {
-        let text = options.tooltipText || data.description || "";
-
-        // Append extra info if not provided in text
-        if (!options.tooltipText) {
-             let extra = "";
-             if (type === 'passive' && data.effect) {
-                 extra = data.effect;
-             }
-
-             if (extra) {
-                 text += `<br/><span style="color:#478174; font-size: 0.9em;">${extra}</span>`;
-             }
-        }
-
-        if (text) {
-             el.style.cursor = "help";
-             el.addEventListener("mouseenter", (e) => {
-                tooltip.show(e.clientX, e.clientY, null, text);
-            });
-            el.addEventListener("mouseleave", () => {
-                tooltip.hide();
-            });
-            el.addEventListener("mousemove", (e) => {
-                if (tooltip.visible) {
+            if (text) {
+                 el.style.cursor = "help";
+                 el.addEventListener("mouseenter", (e) => {
                     tooltip.show(e.clientX, e.clientY, null, text);
-                }
-            });
+                });
+                el.addEventListener("mouseleave", () => {
+                    tooltip.hide();
+                });
+                el.addEventListener("mousemove", (e) => {
+                    if (tooltip.visible) {
+                        tooltip.show(e.clientX, e.clientY, null, text);
+                    }
+                });
+            }
         }
-    }
 
-    return el;
+        return el;
+    }
 }
+
+// Proxies for backward compatibility
+export const createElementIcon = UI.createElementIcon;
+export const createInteractiveLabel = UI.createInteractiveLabel;
 
 /**
  * @class WindowLayer
@@ -485,6 +495,10 @@ export class Window_Battle extends Window_Base {
     buttons.appendChild(this.btnVictory);
   }
 
+  /**
+   * Handles user attempt to close the window.
+   * Overrides default behavior to shake instead of closing.
+   */
   onUserClose() {
       this.element.classList.add("shake");
       setTimeout(() => this.element.classList.remove("shake"), 500);
@@ -599,14 +613,32 @@ export class Window_Battle extends Window_Base {
     return `[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
   }
 
+  /**
+   * Generates the DOM ID for a battler based on index and type.
+   * @param {number} index - The battler's index.
+   * @param {boolean} isEnemy - Whether the battler is an enemy.
+   * @returns {string} The DOM ID.
+   */
   getBattlerId(index, isEnemy) {
       return isEnemy ? `battler-enemy-${index}` : `battler-party-${index}`;
   }
 
+  /**
+   * Retrieves the DOM element for a battler.
+   * @param {number} index - The battler's index.
+   * @param {boolean} isEnemy - Whether the battler is an enemy.
+   * @returns {HTMLElement|null} The DOM element.
+   */
   getBattlerElement(index, isEnemy) {
       return this.viewportEl.querySelector(`#${this.getBattlerId(index, isEnemy)}`);
   }
 
+  /**
+   * Retrieves the HP gauge element for a battler.
+   * @param {number} index - The battler's index.
+   * @param {boolean} isEnemy - Whether the battler is an enemy.
+   * @returns {HTMLElement|null} The HP gauge element.
+   */
   getHpElement(index, isEnemy) {
       const el = this.getBattlerElement(index, isEnemy);
       if (!el) return null;
@@ -1139,11 +1171,19 @@ export class Window_Formation extends Window_Base {
     });
   }
 
+  /**
+   * Handles drag start event.
+   * @param {DragEvent} e
+   */
   onDragStart(e) {
     this.draggedIndex = parseInt(e.target.dataset.index, 10);
     e.target.classList.add("dragging");
   }
 
+  /**
+   * Handles drag over event.
+   * @param {DragEvent} e
+   */
   onDragOver(e) {
     e.preventDefault();
     const target = e.target.closest(".formation-slot");
@@ -1152,6 +1192,10 @@ export class Window_Formation extends Window_Base {
     }
   }
 
+  /**
+   * Handles drop event.
+   * @param {DragEvent} e
+   */
   onDrop(e) {
     e.preventDefault();
     const targetIndex = parseInt(e.target.dataset.index, 10);
@@ -1165,6 +1209,10 @@ export class Window_Formation extends Window_Base {
     }
   }
 
+  /**
+   * Handles drag end event.
+   * @param {DragEvent} e
+   */
   onDragEnd(e) {
     const allSlots = this.element.querySelectorAll(".formation-slot");
     allSlots.forEach((s) => s.classList.remove("dragging", "drag-over"));
@@ -1245,6 +1293,17 @@ export class Window_Inventory extends Window_Base {
     this.showItemList();
   }
 
+  /**
+   * Renders the list of items in the inventory.
+   */
+   */
+  refresh(party, onUse, onDiscard) {
+    this.party = party;
+    this.onUse = onUse;
+    this.onDiscard = onDiscard;
+    this.showItemList();
+  }
+
   showItemList() {
     this.listEl.innerHTML = "";
     const inventory = this.party.inventory;
@@ -1282,7 +1341,7 @@ export class Window_Inventory extends Window_Base {
         }
 
         if (effectsText) {
-             tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
+             tooltipText += `<br/><span class="text-functional">${effectsText}</span>`;
         }
 
         const label = createInteractiveLabel(item, 'item', { tooltipText });
@@ -1308,6 +1367,19 @@ export class Window_Inventory extends Window_Base {
       });
     }
   }
+
+  /**
+   * Renders the target selection view for an item.
+   * @param {Object} item - The item being used.
+   */
+  showTargetSelection(item) {
+    this.listEl.innerHTML = "";
+
+    const header = document.createElement("div");
+    header.textContent = `Use ${item.name} on:`;
+    header.style.marginBottom = "10px";
+    header.style.textAlign = "center";
+    this.listEl.appendChild(header);
 
   showTargetSelection(item) {
     this.listEl.innerHTML = "";
@@ -1427,10 +1499,6 @@ export class Window_Event extends Window_Base {
     // Image Container
     this.imageContainer = document.createElement("div");
     this.imageContainer.className = "event-image-container";
-    this.imageContainer.style.textAlign = "center";
-    this.imageContainer.style.marginBottom = "8px";
-    this.imageContainer.style.backgroundColor = "#222";
-    this.imageContainer.style.display = "none"; // Hidden by default until shown
 
     this.imageEl = document.createElement("img");
     this.imageEl.style.maxWidth = "100%";
@@ -1634,6 +1702,9 @@ export class Window_HUD {
         this.getDomElements();
     }
 
+    /**
+     * Generates the HTML structure for the HUD.
+     */
     createUI() {
         this.container.innerHTML = `
       <div class="stack-nav panel">
@@ -1740,6 +1811,9 @@ export class Window_HUD {
     `;
     }
 
+    /**
+     * Caches references to DOM elements.
+     */
     getDomElements() {
         this.explorationGridEl = document.getElementById("exploration-grid");
         this.cardTitleEl = document.getElementById("card-title");
@@ -1762,6 +1836,12 @@ export class Window_HUD {
         this.btnInventory = document.getElementById("btn-inventory");
     }
 
+    /**
+     * Updates the card header information.
+     * @param {Object} floor - The current floor object.
+     * @param {number} index - The current floor index.
+     * @param {number} total - The total number of floors.
+     */
     updateCardHeader(floor, index, total) {
         this.cardTitleEl.textContent = floor.title;
         this.cardIndexLabelEl.textContent = `${index + 1} / ${total}`;
@@ -1770,6 +1850,13 @@ export class Window_HUD {
         this.statusCardsEl.textContent = total;
     }
 
+    /**
+     * Updates the list of floor cards.
+     * @param {Array} floors - Array of floor objects.
+     * @param {number} currentIndex - The current floor index.
+     * @param {number} maxReachedIndex - The max reached floor index.
+     * @param {Function} onSelect - Callback when a card is selected.
+     */
     updateCardList(floors, currentIndex, maxReachedIndex, onSelect) {
         this.cardListEl.innerHTML = "";
         floors.forEach((f, idx) => {
@@ -1788,6 +1875,11 @@ export class Window_HUD {
         });
     }
 
+    /**
+     * Updates the party status display.
+     * @param {import("./objects.js").Game_Party} party - The party object.
+     * @param {Function} onInspect - Callback when a member is clicked.
+     */
     updateParty(party, onInspect) {
         this.partyGridEl.innerHTML = "";
         party.members.slice(0, 4).forEach((member, index) => {
@@ -1842,6 +1934,14 @@ export class Window_HUD {
         });
     }
 
+    /**
+     * Animates the HP gauge width.
+     * @param {HTMLElement} element - The gauge element.
+     * @param {number} startHp - Starting HP.
+     * @param {number} endHp - Target HP.
+     * @param {number} maxHp - Max HP.
+     * @param {number} duration - Duration in ms.
+     */
     animateHpGauge(element, startHp, endHp, maxHp, duration) {
         const startTime = performance.now();
         const startWidth = (startHp / maxHp) * 100;

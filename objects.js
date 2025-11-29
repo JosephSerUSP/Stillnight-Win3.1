@@ -536,6 +536,14 @@ export class Game_Map {
     this.maxReachedFloorIndex = 0;
   }
 
+  /**
+   * Generates a floor data object procedurally.
+   * @param {Object} meta - The metadata from maps.json.
+   * @param {number} index - The floor index.
+   * @param {Array} eventDefs - The event definitions.
+   * @param {Array} npcData - The NPC definitions.
+   * @returns {Object} The generated floor object.
+   */
   generateFloor(meta, index, eventDefs, npcData = []) {
     const tiles = Array.from({ length: this.MAX_H }, () =>
       Array.from({ length: this.MAX_W }, () => "#")
@@ -651,6 +659,12 @@ export class Game_Map {
     };
   }
 
+  /**
+   * Removes an event from the map at specific coordinates.
+   * @param {number} floorIndex - The floor index.
+   * @param {number} x - The X coordinate.
+   * @param {number} y - The Y coordinate.
+   */
   removeEvent(floorIndex, x, y) {
     if (floorIndex < 0 || floorIndex >= this.floors.length) return;
     const floor = this.floors[floorIndex];
@@ -660,6 +674,9 @@ export class Game_Map {
     }
   }
 
+  /**
+   * Reveals tiles around the player's current position (Fog of War).
+   */
   revealAroundPlayer() {
     const floor = this.floors[this.floorIndex];
     const r = 1;

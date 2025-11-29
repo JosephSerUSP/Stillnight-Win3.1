@@ -806,6 +806,11 @@ class Game_Interpreter {
     get party() { return this.scene.party; }
     get map() { return this.scene.map; }
 
+    /**
+     * Executes a game action triggered by an event.
+     * @param {Object} action - The action object (e.g. { type: 'BATTLE' }).
+     * @param {import("./objects.js").Game_Event} event - The source event.
+     */
     execute(action, event) {
         switch(action.type) {
             case 'BATTLE':
@@ -847,6 +852,9 @@ class Game_Interpreter {
         }
     }
 
+    /**
+     * Heals the entire party and logs the event.
+     */
     healParty() {
         this.party.members.forEach((m) => (m.hp = m.maxHp));
         this.scene.logMessage("[Recover] A soft glow restores your party.");
@@ -865,6 +873,9 @@ class Game_Interpreter {
         this.scene.updateAll();
     }
 
+    /**
+     * Descends to the next dungeon floor if available.
+     */
     descendStairs() {
         if (this.map.floorIndex + 1 >= this.map.floors.length) {
             this.scene.logMessage("[Floor] You find no further descent. The run ends here.");
@@ -889,6 +900,9 @@ class Game_Interpreter {
         this.scene.updateAll();
     }
 
+    /**
+     * Opens the Shrine interaction window.
+     */
     openShrineEvent() {
         const scenarios = this.dataManager.events.filter(e => e.type === 'shrine_scenario');
         if (scenarios.length === 0) {
@@ -922,6 +936,11 @@ class Game_Interpreter {
         SoundManager.beep(700, 150);
     }
 
+    /**
+     * Applies the effect of a Shrine choice.
+     * @param {Object} effect - The effect object.
+     * @async
+     */
     async applyEventEffect(effect) {
         const log = (msg) => this.scene.logMessage(msg);
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -977,6 +996,10 @@ class Game_Interpreter {
         this.scene.updateAll();
     }
 
+    /**
+     * Displays a trap event window.
+     * @param {Object} action - The trap action data.
+     */
     triggerTrap(action) {
         this.scene.eventWindow.show({
             title: "Trap!",
@@ -992,6 +1015,11 @@ class Game_Interpreter {
         SoundManager.beep(150, 300);
     }
 
+    /**
+     * Resolves the trap damage and updates state.
+     * @param {Object} action - The trap action data.
+     * @async
+     */
     async resolveTrap(action) {
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         try {
@@ -1018,6 +1046,9 @@ class Game_Interpreter {
         }
     }
 
+    /**
+     * Opens a treasure chest event.
+     */
     openTreasureEvent() {
         const floor = this.map.floors[this.map.floorIndex];
         let possibleItems = floor.treasures || [];
@@ -1066,11 +1097,17 @@ class Game_Interpreter {
         this.scene.updateAll();
     }
 
+    /**
+     * Closes the active event window.
+     */
     closeEvent() {
         this.windowManager.close(this.scene.eventWindow);
         this.scene.updateAll();
     }
 
+    /**
+     * Opens the recruit interaction window.
+     */
     openRecruitEvent() {
         const availableCreatures = this.dataManager.actors.filter(creature => !creature.isEnemy);
         if (availableCreatures.length === 0) {
@@ -1218,11 +1255,18 @@ class Game_Interpreter {
         SoundManager.beep(400, 100);
     }
 
+    /**
+     * Closes the recruit window.
+     */
     closeRecruitEvent() {
         this.windowManager.close(this.scene.recruitWindow);
         this.scene.setStatus("Exploration");
     }
 
+    /**
+     * Opens a dialogue window with an NPC.
+     * @param {string} npcId - The ID of the NPC.
+     */
     openNpcEvent(npcId) {
         const npc = this.dataManager.npcs.find(n => n.id === npcId);
         if (!npc) return;
@@ -1247,6 +1291,9 @@ class Game_Interpreter {
         SoundManager.beep(400, 100);
     }
 
+    /**
+     * Clears the event currently being interacted with from the map.
+     */
     clearEventTile() {
         if (this.scene.currentInteractionEvent) {
             this.map.removeEvent(this.map.floorIndex, this.scene.currentInteractionEvent.x, this.scene.currentInteractionEvent.y);
@@ -1255,6 +1302,10 @@ class Game_Interpreter {
         this.scene.updateGrid();
     }
 
+    /**
+     * Attempts to recruit a creature to the party.
+     * @param {Object} recruit - The recruit data.
+     */
     attemptRecruit(recruit) {
         if (this.party.members.length < this.party.MAX_MEMBERS) {
             this.party.members.push(new Game_Battler(recruit));
@@ -1289,6 +1340,14 @@ class Game_Interpreter {
         this.scene.recruitWindow.buttonsEl.appendChild(cancelBtn);
     }
 
+  /**
+   * Replaces an existing party member with the recruit.
+   * @param {number} index - The index of the member to replace.
+   * @param {Object} recruit - The recruit data.
+   */
+    replaceMemberWithRecruit(index, recruit) {
+        const replaced = this.party.members[index];
+    this.scene.logMessage(
     replaceMemberWithRecruit(index, recruit) {
         const replaced = this.party.members[index];
         this.scene.logMessage(
@@ -2151,7 +2210,7 @@ renderElements(elements) {
 
                 let tooltipText = skill.description;
                 if (effectsText) {
-                    tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
+                    tooltipText += `<br/><span class="text-functional">${effectsText}</span>`;
                 }
 
                 const el = createInteractiveLabel(skill, 'skill', { tooltipText });
@@ -2300,7 +2359,7 @@ renderElements(elements) {
         }
 
         if (effectsText) {
-             tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
+             tooltipText += `<br/><span class="text-functional">${effectsText}</span>`;
         }
 
         const label = createInteractiveLabel(item, 'item', { tooltipText });
