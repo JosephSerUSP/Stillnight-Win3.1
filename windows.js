@@ -459,7 +459,7 @@ export class Window_Battle extends Window_Base {
     this.element.style.flexDirection = 'column';
 
     const titleBar = document.createElement("div");
-    titleBar.className = "dialog-titlebar";
+    titleBar.className = "window-header";
     this.element.appendChild(titleBar);
     this.makeDraggable(titleBar);
 
@@ -661,7 +661,7 @@ export class Window_Inspect extends Window_Base {
     this.element.style.flexDirection = 'column';
 
     const titleBar = document.createElement("div");
-    titleBar.className = "dialog-titlebar";
+    titleBar.className = "window-header";
     this.element.appendChild(titleBar);
     this.makeDraggable(titleBar);
 
@@ -802,7 +802,7 @@ export class Window_Evolution extends Window_Base {
     this.element.style.flexDirection = 'column';
 
     const titleBar = document.createElement("div");
-    titleBar.className = "dialog-titlebar";
+    titleBar.className = "window-header";
     this.element.appendChild(titleBar);
     this.makeDraggable(titleBar);
 
@@ -950,7 +950,7 @@ export class Window_Shop extends Window_Base {
     this.element.style.flexDirection = 'column';
 
     const titleBar = document.createElement("div");
-    titleBar.className = "dialog-titlebar";
+    titleBar.className = "window-header";
     this.element.appendChild(titleBar);
     this.makeDraggable(titleBar);
 
@@ -1064,7 +1064,7 @@ export class Window_Formation extends Window_Base {
     this.element.style.flexDirection = 'column';
 
     const titleBar = document.createElement("div");
-    titleBar.className = "dialog-titlebar";
+    titleBar.className = "window-header";
     this.element.appendChild(titleBar);
     this.makeDraggable(titleBar);
 
@@ -1216,7 +1216,7 @@ export class Window_Inventory extends Window_Base {
     this.element.style.flexDirection = 'column';
 
     const titleBar = document.createElement("div");
-    titleBar.className = "dialog-titlebar";
+    titleBar.className = "window-header";
     this.element.appendChild(titleBar);
     this.makeDraggable(titleBar);
 
@@ -1419,7 +1419,7 @@ export class Window_Recruit extends Window_Base {
     this.element.style.flexDirection = 'column';
 
     const titleBar = document.createElement("div");
-    titleBar.className = "dialog-titlebar";
+    titleBar.className = "window-header";
     this.element.appendChild(titleBar);
     this.makeDraggable(titleBar);
 
@@ -1465,7 +1465,7 @@ export class Window_Event extends Window_Base {
     this.element.style.maxHeight = '90vh';
 
     const titleBar = document.createElement("div");
-    titleBar.className = "dialog-titlebar";
+    titleBar.className = "window-header";
     this.element.appendChild(titleBar);
     this.makeDraggable(titleBar);
 
@@ -1645,7 +1645,7 @@ export class Window_Confirm extends Window_Base {
     this.element.style.height = 'fit-content';
 
     const titleBar = document.createElement("div");
-    titleBar.className = "dialog-titlebar";
+    titleBar.className = "window-header";
     this.element.appendChild(titleBar);
     this.makeDraggable(titleBar);
 
@@ -1704,6 +1704,9 @@ export class Window_HUD {
           <div class="stack-nav-buttons">
             <button class="win-btn" id="btn-new-run">New Run</button>
             <button class="win-btn" id="btn-reveal-all">Reveal</button>
+          </div>
+          <div style="margin-top:2px;">
+             <button class="win-btn" id="btn-settings" style="width:100%">Settings</button>
           </div>
           <div style="margin-top:4px;">
             <div>Card: <span id="card-index-label">1 / 1</span></div>
@@ -1818,6 +1821,7 @@ export class Window_HUD {
         this.modeLabelEl = document.getElementById("mode-label");
         this.btnNewRun = document.getElementById("btn-new-run");
         this.btnRevealAll = document.getElementById("btn-reveal-all");
+        this.btnSettings = document.getElementById("btn-settings");
         this.btnClearLog = document.getElementById("btn-clear-log");
         this.btnFormation = document.getElementById("btn-formation");
         this.btnInventory = document.getElementById("btn-inventory");
@@ -1996,7 +2000,7 @@ export class Window_EquipConfirm extends Window_Base {
         this.element.style.flexDirection = 'column';
 
         const titleBar = document.createElement("div");
-        titleBar.className = "dialog-titlebar";
+    titleBar.className = "window-header";
         this.element.appendChild(titleBar);
         this.makeDraggable(titleBar);
 
@@ -2157,4 +2161,124 @@ export class Window_EquipConfirm extends Window_Base {
         }
         return diffs;
     }
+}
+
+/**
+ * @class Window_Options
+ * @description A general-purpose settings window that can render various types of options.
+ * Currently supports 'select' (dropdown) type.
+ * @extends Window_Base
+ */
+export class Window_Options extends Window_Base {
+  /**
+   * Creates a new Window_Options instance.
+   */
+  constructor() {
+    super('center', 'center', 300, 400);
+    this.element.id = "options-window";
+    this.element.style.display = 'flex';
+    console.log("Window_Options instantiated");
+    this.element.style.flexDirection = 'column';
+
+    const titleBar = document.createElement("div");
+    titleBar.className = "window-header";
+    this.element.appendChild(titleBar);
+    this.makeDraggable(titleBar);
+
+    const titleText = document.createElement("span");
+    titleText.textContent = "Settings";
+    titleBar.appendChild(titleText);
+
+    this.btnClose = document.createElement("button");
+    this.btnClose.className = "win-btn";
+    this.btnClose.textContent = "X";
+    this.btnClose.onclick = () => this.onUserClose();
+    titleBar.appendChild(this.btnClose);
+
+    const content = document.createElement("div");
+    content.className = "dialog-content";
+    content.style.flexGrow = "1";
+    content.style.overflowY = "auto";
+    this.element.appendChild(content);
+
+    this.bodyEl = document.createElement('div');
+    this.bodyEl.className = 'inspect-body';
+    content.appendChild(this.bodyEl);
+
+    const buttons = document.createElement("div");
+    buttons.className = "dialog-buttons";
+    this.element.appendChild(buttons);
+
+    this.btnOk = document.createElement("button");
+    this.btnOk.className = "win-btn";
+    this.btnOk.textContent = "Close";
+    this.btnOk.onclick = () => this.onUserClose();
+    buttons.appendChild(this.btnOk);
+
+    this.options = [];
+  }
+
+  /**
+   * Sets up the options to be displayed.
+   * @param {Array} options - Array of option objects.
+   * @param {string} options[].label - Label text.
+   * @param {string} options[].type - Type of option (e.g., 'select').
+   * @param {any} options[].value - Current value.
+   * @param {Array} [options[].options] - List of choices for 'select' type ({label, value}).
+   * @param {Function} options[].onChange - Callback when value changes.
+   */
+  setup(options) {
+    this.options = options;
+    this.refresh();
+  }
+
+  refresh() {
+    this.bodyEl.innerHTML = "";
+
+    if (!this.options || this.options.length === 0) {
+        this.bodyEl.textContent = "No options available.";
+        return;
+    }
+
+    this.options.forEach(opt => {
+        const row = document.createElement("div");
+        row.className = "shop-row";
+        row.style.marginBottom = "8px";
+        row.style.alignItems = "center";
+
+        const label = document.createElement("span");
+        label.textContent = opt.label + ": ";
+        label.style.width = "100px";
+        row.appendChild(label);
+
+        if (opt.type === 'select') {
+            const select = document.createElement("select");
+            select.style.flex = "1";
+
+            opt.options.forEach(choice => {
+                const option = document.createElement("option");
+                option.value = choice.value;
+                option.textContent = choice.label;
+                if (choice.value === opt.value) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+
+            select.addEventListener("change", (e) => {
+                if (opt.onChange) {
+                    opt.onChange(e.target.value);
+                }
+            });
+
+            row.appendChild(select);
+        } else if (opt.type === 'text') {
+             const val = document.createElement("span");
+             val.textContent = opt.value;
+             row.appendChild(val);
+        }
+
+        this.bodyEl.appendChild(row);
+    });
+  }
 }

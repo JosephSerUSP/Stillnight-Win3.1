@@ -1,6 +1,6 @@
 import { Game_Map, Game_Party, Game_Battler, Game_Event } from "./objects.js";
 import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula } from "./core.js";
-import { BattleManager, SoundManager } from "./managers.js";
+import { BattleManager, SoundManager, ThemeManager } from "./managers.js";
 import {
   Window_Battle,
   Window_Shop,
@@ -12,6 +12,7 @@ import {
   Window_Confirm,
   Window_Evolution,
   Window_EquipConfirm,
+  Window_Options,
   Window_HUD,
   WindowLayer,
   createInteractiveLabel,
@@ -93,6 +94,7 @@ export class Scene_Boot extends Scene_Base {
      */
     async start() {
         await this.dataManager.loadData();
+        ThemeManager.init(this.dataManager.themes);
         this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager));
     }
 }
@@ -1334,6 +1336,7 @@ export class Scene_Map extends Scene_Base {
 
     this.windowLayer = new WindowLayer();
     const gameContainer = document.querySelector(".right-side");
+    console.log("Scene_Map instantiated");
     this.windowLayer.appendTo(gameContainer);
 
     this.inventoryWindow = new Window_Inventory();
@@ -1353,12 +1356,15 @@ export class Scene_Map extends Scene_Base {
     this.windowLayer.addChild(this.confirmWindow);
     this.equipConfirmWindow = new Window_EquipConfirm();
     this.windowLayer.addChild(this.equipConfirmWindow);
+    this.optionsWindow = new Window_Options();
+    this.windowLayer.addChild(this.optionsWindow);
 
     this.recruitWindow.onUserClose = this.interpreter.closeRecruitEvent.bind(this.interpreter);
     this.evolutionWindow.onUserClose = () => this.windowManager.close(this.evolutionWindow);
     this.formationWindow.onUserClose = this.closeFormation.bind(this);
     this.confirmWindow.onUserClose = () => this.windowManager.close(this.confirmWindow);
     this.equipConfirmWindow.onUserClose = () => this.windowManager.close(this.equipConfirmWindow);
+    this.optionsWindow.onUserClose = () => this.windowManager.close(this.optionsWindow);
 
     this.inventoryWindow.onUserClose = this.closeInventory.bind(this);
   }
@@ -1430,6 +1436,7 @@ export class Scene_Map extends Scene_Base {
   addEventListeners() {
     this.btnNewRun.addEventListener("click", this.startNewRun.bind(this));
     this.btnRevealAll.addEventListener("click", this.revealAllFloors.bind(this));
+    this.hud.btnSettings.addEventListener("click", this.openSettings.bind(this));
     this.btnClearLog.addEventListener("click", () => {
       this.logEl.textContent = "";
       this.setStatus("Log cleared.");
@@ -2005,6 +2012,31 @@ renderElements(elements) {
    */
   closeInventory() {
     this.windowManager.close(this.inventoryWindow);
+  }
+
+  openSettings() {
+    if (this.sceneManager.currentScene() !== this) return;
+
+    const themes = ThemeManager.getThemes().map(t => ({
+        label: t.name,
+        value: t.id
+    }));
+
+    const options = [
+        {
+            label: "Theme",
+            type: "select",
+            value: ThemeManager.getCurrentThemeId(),
+            options: themes,
+            onChange: (val) => {
+                ThemeManager.applyTheme(val);
+                SoundManager.beep(400, 50);
+            }
+        }
+    ];
+
+    this.optionsWindow.setup(options);
+    this.windowManager.push(this.optionsWindow);
   }
 
   openEquipConfirm(target, item) {

@@ -1,14 +1,55 @@
 /* ===== Global Windows 3.1 look ================================== */
+:root {
+    /* Desktop */
+    --desktop-bg: #008080;
+
+    /* Window Frame */
+    --window-bg: #c0c0c0;
+    --window-text: #000000;
+    --window-border: #000000;
+
+    /* Title Bar */
+    --window-header-bg-start: #000080;
+    --window-header-bg-end: #0000a8;
+    --window-header-text: #ffffff;
+
+    /* Buttons */
+    --button-bg: #c0c0c0;
+
+    /* Terminal */
+    --terminal-bg: #000000;
+    --terminal-text: #00ff00;
+
+    /* Tiles */
+    --tile-bg: #c0c0c0;
+    --tile-fog-bg: #808080;
+    --tile-fog-text: #c0c0c0;
+    --tile-player-bg: #e8e8ff;
+
+    /* Functional Text Colors */
+    --text-danger: #800000;
+    --text-highlight: #000080;
+    --text-success: #008000;
+    --text-mystic: #400040;
+    --text-warning: #804000;
+    --text-special: #600060;
+    --text-info: #2040D0;
+
+    /* Selection */
+    --selection-bg: #000080;
+    --selection-text: #ffffff;
+}
+
 html, body {
     margin: 0;
     padding: 0;
     height: 100%;
     width: 100%;
     overflow: hidden;
-    background-color: #008080; /* teal desktop */
+    background-color: var(--desktop-bg);
     font-family: "MS Sans Serif", "Microsoft Sans Serif", Tahoma, sans-serif;
     font-size: 11px;
-    color: #000000;
+    color: var(--window-text);
 }
 
 /* Simple tiled wallpaper using gradients; center the window */
@@ -30,9 +71,9 @@ html, body {
 .win-window {
     width: 960px;
     height: 560px;
-    background-color: #c0c0c0;
+    background-color: var(--window-bg);
     box-sizing: border-box;
-    border: 2px solid #000000;
+    border: 2px solid var(--window-border);
     box-shadow:
         0 0 0 1px #ffffff inset,
         0 0 0 2px #808080 inset,
@@ -41,16 +82,31 @@ html, body {
     flex-direction: column;
 }
 
-.title-bar {
+/* Generic Window Header (Replaces .title-bar and .dialog-titlebar) */
+.window-header {
     height: 20px;
-    background: linear-gradient(90deg, #000080, #0000a8);
-    color: #ffffff;
+    background: linear-gradient(90deg, var(--window-header-bg-start), var(--window-header-bg-end));
+    color: var(--window-header-text);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 2px 4px;
     box-sizing: border-box;
 }
+
+/* Legacy support until JS is fully updated */
+.title-bar, .dialog-titlebar {
+    height: 20px;
+    background: linear-gradient(90deg, var(--window-header-bg-start), var(--window-header-bg-end));
+    color: var(--window-header-text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px 4px;
+    box-sizing: border-box;
+    font-size: 11px;
+}
+
 .title-group {
     display: flex;
     align-items: center;
@@ -59,8 +115,8 @@ html, body {
     width: 14px;
     height: 14px;
     margin-right: 4px;
-    background-color: #c0c0c0;
-    border: 1px solid #000000;
+    background-color: var(--window-bg);
+    border: 1px solid var(--window-border);
     box-shadow:
         1px 1px 0 #ffffff inset,
         -1px -1px 0 #808080 inset;
@@ -114,12 +170,13 @@ html, body {
     min-width: 18px;
     padding: 0 4px;
     height: 18px;
-    background-color: #c0c0c0;
+    background-color: var(--button-bg);
     border-width: 2px;
     border-style: solid;
     border-color: #ffffff #404040 #404040 #ffffff;
     box-sizing: border-box;
     cursor: pointer;
+    color: var(--window-text);
 }
 .win-btn:active {
     border-color: #404040 #ffffff #ffffff #404040;
@@ -136,7 +193,7 @@ html, body {
 }
 
 .panel {
-    background-color: #c0c0c0;
+    background-color: var(--window-bg);
     border: 2px solid #808080;
     box-shadow:
         1px 1px 0 #ffffff inset,
@@ -172,7 +229,7 @@ html, body {
     top: -7px;
     left: 8px;
     padding: 0 4px;
-    background-color: #c0c0c0;
+    background-color: var(--window-bg);
     font-size: 11px;
 }
 
@@ -207,8 +264,8 @@ html, body {
     color: #ffffff;
 }
 .card-item.selected {
-    background-color: #000080;
-    color: #ffffff;
+    background-color: var(--selection-bg);
+    color: var(--selection-text);
 }
 .card-item.disabled {
     color: #808080;
@@ -232,8 +289,8 @@ html, body {
 
 /* ===== Terminal Look for Battle Window ===== */
 .terminal {
-    background-color: #000000;
-    color: #00ff00;
+    background-color: var(--terminal-bg);
+    color: var(--terminal-text);
     font-family: "Fixedsys", "Lucida Console", "Courier New", monospace;
     font-size: 11px;
     border: 1px solid #808080;
@@ -253,7 +310,7 @@ html, body {
     height: 80px;
     overflow-y: auto;
     white-space: pre-wrap;
-    border-top: 1px solid #00ff00;
+    border-top: 1px solid var(--terminal-text);
     padding-top: 4px;
 }
 
@@ -348,7 +405,7 @@ html, body {
 }
 
 .tile {
-    background-color: #c0c0c0;
+    background-color: var(--tile-bg);
     border: 1px solid #808080;
     box-shadow:
         1px 1px 0 #ffffff inset,
@@ -367,20 +424,32 @@ html, body {
     background-color: #e0e0e0;
 }
 .tile-fog {
-    background-color: #808080;
-    color: #c0c0c0;
+    background-color: var(--tile-fog-bg);
+    color: var(--tile-fog-text);
 }
 .tile-player {
     font-weight: bold;
     box-shadow: 0 0 0 2px #ffffff, 0 0 0 3px #000000 inset;
-    background-color: #e8e8ff;
+    background-color: var(--tile-player-bg);
 }
-.tile-enemy   { color: #800000; }
-.tile-stairs  { color: #000080; }
-.tile-recovery{ color: #008000; }
-.tile-shrine  { color: #400040; }
-.tile-shop    { color: #804000; }
-    .tile-recruit { color: #600060; }
+
+/* Mapping Semantic Classes to Functional Variables */
+.tile-enemy   { color: var(--text-danger); }
+.tile-stairs  { color: var(--text-highlight); }
+.tile-recovery{ color: var(--text-success); }
+.tile-shrine  { color: var(--text-mystic); }
+.tile-shop    { color: var(--text-warning); }
+.tile-recruit { color: var(--text-special); }
+.tile-npc     { color: var(--text-info); }
+
+/* Functional Utility Classes */
+.text-danger { color: var(--text-danger); }
+.text-highlight { color: var(--text-highlight); }
+.text-success { color: var(--text-success); }
+.text-mystic { color: var(--text-mystic); }
+.text-warning { color: var(--text-warning); }
+.text-special { color: var(--text-special); }
+.text-info { color: var(--text-info); }
 
 .legend {
     font-size: 10px;
@@ -414,7 +483,7 @@ html, body {
 }
 
 .party-slot {
-    background-color: #c0c0c0;
+    background-color: var(--window-bg);
     border: 1px solid #808080;
     box-shadow: 1px 1px 0 #ffffff inset, -1px -1px 0 #404040 inset;
     display: flex;
@@ -457,8 +526,8 @@ html, body {
 
 /* Log = Fixedsys-style console */
 .log-content {
-    background-color: #000000;
-    color: #00ff00;
+    background-color: var(--terminal-bg);
+    color: var(--terminal-text);
     border: 1px solid #808080;
     box-shadow:
         1px 1px 0 #ffffff inset,
@@ -514,7 +583,7 @@ html, body {
 }
 .dialog {
     width: 520px;
-    background-color: #c0c0c0;
+    background-color: var(--window-bg);
     border: 2px solid #000000;
     box-shadow:
         0 0 0 1px #ffffff inset,
@@ -524,17 +593,7 @@ html, body {
     display: flex;
     flex-direction: column;
 }
-.dialog-titlebar {
-    height: 18px;
-    background-color: #000080;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 2px 4px;
-    box-sizing: border-box;
-    font-size: 11px;
-}
+
 .dialog-content {
     padding: 6px;
     box-sizing: border-box;
@@ -636,15 +695,15 @@ html, body {
     border: 1px solid #808080;
     padding: 2px;
     font-size: 10px;
-    background-color: #c0c0c0;
+    background-color: var(--window-bg);
     box-shadow:
         1px 1px 0 #ffffff inset,
         -1px -1px 0 #404040 inset;
     cursor: pointer;
 }
 .formation-slot.selected {
-    background-color: #000080;
-    color: #ffffff;
+    background-color: var(--selection-bg);
+    color: var(--selection-text);
 }
 .formation-label {
     font-size: 10px;
@@ -695,11 +754,10 @@ html, body {
 .tooltip-text {
     font-size: 10px;
 }
-.tile-npc { color: #2040D0; }
 
 /* Evolution Window */
 .evolution-body {
-    background-color: #c0c0c0;
+    background-color: var(--window-bg);
     border: 1px solid #808080;
     box-shadow: 1px 1px 0 #ffffff inset, -1px -1px 0 #404040 inset;
     padding: 4px;
@@ -739,7 +797,7 @@ html, body {
     font-family: inherit;
     font-size: 11px;
     padding: 2px 4px;
-    background-color: #c0c0c0;
+    background-color: var(--button-bg);
     border-width: 2px;
     border-style: solid;
     border-color: #ffffff #404040 #404040 #ffffff;
