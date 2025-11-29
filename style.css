@@ -446,7 +446,7 @@ html, body {
     font-weight: bold;
 }
 .hp-bar {
-    height: 6px;
+    height: 3px;
     border: 1px solid #000000;
     background-color: #808080;
     margin-top: 1px;
@@ -884,4 +884,47 @@ body.night-theme {
     border-color: #404040 #ffffff #ffffff #404040;
     background-color: #e0e0e0;
     font-weight: bold;
+}
+
+/* Compact party slot for lists/reserves */
+.party-slot.compact {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-height: 32px;
+    height: auto;
+}
+
+.party-slot.compact .icon {
+    flex-shrink: 0;
+}
+
+/* Ensure party select window grids don't force fill height */
+#party-select-window .party-grid {
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 120px; /* Approximate height for 2 rows */
+}
+
+/* Party Slot XP & Equip */
+.xp-bar {
+    height: 3px;
+    border: 1px solid #000000;
+    background-color: #808080;
+    margin-top: 1px;
+    overflow: hidden;
+}
+.xp-fill {
+    height: 100%;
+    background-color: #c0c0c0;
+}
+.party-slot-equip {
+    font-size: 9px;
+    color: #222;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
 }
