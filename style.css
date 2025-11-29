@@ -885,3 +885,23 @@ body.night-theme {
     background-color: #e0e0e0;
     font-weight: bold;
 }
+
+/* Compact party slot for lists/reserves */
+.party-slot.compact {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-height: 32px;
+    height: auto;
+}
+
+.party-slot.compact .icon {
+    flex-shrink: 0;
+}
+
+/* Ensure party select window grids don't force fill height */
+#party-select-window .party-grid {
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 120px; /* Approximate height for 2 rows */
+}
