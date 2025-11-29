@@ -473,6 +473,11 @@ export class Window_Battle extends Window_Base {
     this.btnRound.textContent = "Resolve Round";
     buttons.appendChild(this.btnRound);
 
+    this.btnTalk = document.createElement("button");
+    this.btnTalk.className = "win-btn";
+    this.btnTalk.textContent = "Talk";
+    buttons.appendChild(this.btnTalk);
+
     this.btnFlee = document.createElement("button");
     this.btnFlee.className = "win-btn";
     this.btnFlee.textContent = "Flee";
@@ -1476,8 +1481,12 @@ export class Window_Event extends Window_Base {
       this.titleEl.textContent = data.title || "Event";
 
       // Handle Image
-      const imgName = data.image || "default.png";
-      this.imageEl.src = `assets/eventArt/${imgName}`;
+      if (data.imagePath) {
+          this.imageEl.src = data.imagePath;
+      } else {
+          const imgName = data.image || "default.png";
+          this.imageEl.src = `assets/eventArt/${imgName}`;
+      }
       this.imageContainer.style.display = "block";
 
       // Handle Style

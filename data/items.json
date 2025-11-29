@@ -41,7 +41,11 @@
     "icon": 6,
     "description": "Sharpened steel blade. +1 damage.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 1
+      }
     ]
   },
   {
@@ -53,7 +57,11 @@
     "icon": 6,
     "description": "Sturdy bone harness. +3 max HP.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 3 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "maxHp",
+        "value": 3
+      }
     ]
   },
   {
@@ -65,8 +73,16 @@
     "icon": 6,
     "description": "A charm of rushing air. +1 damage, +1 max HP.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 },
-      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 1 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 1
+      },
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "maxHp",
+        "value": 1
+      }
     ]
   },
   {
@@ -78,7 +94,31 @@
     "icon": 6,
     "description": "Glowing amulet. +2 max HP, faintly warms your hands.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 2 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "maxHp",
+        "value": 2
+      }
     ]
+  },
+  {
+    "id": "life_stone",
+    "name": "Life Stone",
+    "type": "consumable",
+    "cost": 50,
+    "description": "Restores 10 HP.",
+    "icon": 6,
+    "effects": {
+      "hp": 10
+    }
+  },
+  {
+    "id": "chakra_drop",
+    "name": "Chakra Drop",
+    "type": "consumable",
+    "cost": 100,
+    "description": "Restores MP (Unused in Phase 1).",
+    "icon": 6,
+    "effects": {}
   }
 ]

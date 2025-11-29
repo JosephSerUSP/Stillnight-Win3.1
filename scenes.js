@@ -130,8 +130,20 @@ export class Scene_Battle extends Scene_Base {
     this.windowLayer.addChild(this.battleWindow);
 
     this.battleWindow.btnRound.addEventListener("click", this.resolveBattleRound.bind(this));
+    this.battleWindow.btnTalk.addEventListener("click", this.onTalkClick.bind(this));
     this.battleWindow.btnFlee.addEventListener("click", this.attemptFlee.bind(this));
     this.battleWindow.btnVictory.addEventListener("click", this.onBattleVictoryClick.bind(this));
+
+    this.eventWindow = new Window_Event();
+    this.eventWindow.onUserClose = () => {
+        this.windowManager.close(this.eventWindow);
+        if (!this.battleManager.isBattleFinished) {
+            this.battleWindow.btnRound.disabled = false;
+            this.battleWindow.btnTalk.disabled = false;
+            this.battleWindow.btnFlee.disabled = false;
+        }
+    };
+    this.windowLayer.addChild(this.eventWindow);
   }
 
   /**
@@ -191,6 +203,7 @@ export class Scene_Battle extends Scene_Base {
     this.battleWindow.logEl.textContent = "";
     this.battleWindow.btnVictory.style.display = "none";
     this.battleWindow.btnRound.disabled = false;
+    this.battleWindow.btnTalk.disabled = false;
     this.battleWindow.btnFlee.disabled = false;
 
     this.battleWindow.logEnemyEmergence(enemies, this.dataManager.terms.battle);
@@ -232,6 +245,7 @@ export class Scene_Battle extends Scene_Base {
 
     this.battleBusy = true;
     this.battleWindow.btnRound.disabled = true;
+    this.battleWindow.btnTalk.disabled = true;
     this.battleWindow.btnFlee.disabled = true;
 
     // Start a new round in the BattleManager
@@ -277,11 +291,122 @@ export class Scene_Battle extends Scene_Base {
 
     if (!this.battleManager.isBattleFinished) {
       this.battleWindow.btnRound.disabled = false;
+      this.battleWindow.btnTalk.disabled = false;
       this.battleWindow.btnFlee.disabled = false;
-      this.battleWindow.appendLog("Use Resolve Round or Flee.");
+      this.battleWindow.appendLog("Use Resolve Round, Talk, or Flee.");
     }
 
     this.battleBusy = false;
+  }
+
+  /**
+   * Handles the Talk button click (Demon Negotiation).
+   * @method onTalkClick
+   */
+  onTalkClick() {
+      if (this.battleBusy) return;
+      const target = this.battleManager.enemies.find(e => e.hp > 0);
+      if (!target) return;
+
+      this.battleWindow.btnRound.disabled = true;
+      this.battleWindow.btnTalk.disabled = true;
+      this.battleWindow.btnFlee.disabled = true;
+
+      const spriteKey = target.spriteKey || "pixie";
+      const imagePath = `assets/portraits/${spriteKey}.png`;
+
+      // Personality based logic (Placeholder)
+      const greeting = target.actorData.flavor || "The demon stares at you.";
+
+      this.eventWindow.show({
+          title: `Talk: ${target.name}`,
+          description: [greeting, "", "The demon waits for your words."],
+          imagePath: imagePath,
+          style: 'terminal',
+          choices: [
+              { label: "Offer Gold (10G)", onClick: () => this.negotiateOffer(target, 'gold', 10) },
+              { label: "Offer Life (HP)", onClick: () => this.negotiateOffer(target, 'hp', 5) },
+              { label: "Threaten", onClick: () => this.negotiateThreaten(target) },
+              { label: "Stop", onClick: () => this.eventWindow.onUserClose() }
+          ]
+      });
+      this.windowManager.push(this.eventWindow);
+  }
+
+  negotiateOffer(target, type, amount) {
+      this.eventWindow.appendLog(`> You offer ${amount} ${type.toUpperCase()}.`);
+
+      const roll = Math.random();
+      if (type === 'gold' && this.party.gold < amount) {
+          this.eventWindow.appendLog(`"You don't even have that!"`);
+          return;
+      }
+
+      if (type === 'gold') this.party.gold -= amount;
+      if (type === 'hp') this.party.members[0].hp = Math.max(1, this.party.members[0].hp - amount);
+
+      this.sceneManager.previous().updateAll(); // Update HUD
+
+      setTimeout(() => {
+          if (roll < 0.4) {
+              this.eventWindow.appendLog(`"${target.name} is pleased!"`);
+              this.negotiateSuccess(target);
+          } else if (roll < 0.7) {
+              this.eventWindow.appendLog(`"More!"`);
+               this.eventWindow.updateChoices([
+                  { label: "Offer More", onClick: () => this.negotiateOffer(target, type, amount) },
+                  { label: "Refuse", onClick: () => this.negotiateFail(target) }
+              ]);
+          } else {
+              this.eventWindow.appendLog(`"Boring."`);
+              this.negotiateFail(target);
+          }
+      }, 500);
+  }
+
+  negotiateThreaten(target) {
+       this.eventWindow.appendLog(`> You threaten the demon.`);
+       setTimeout(() => {
+           if (Math.random() < 0.3) {
+               this.eventWindow.appendLog(`It cowered!`);
+               this.negotiateSuccess(target);
+           } else {
+               this.eventWindow.appendLog(`It attacks!`);
+               this.negotiateFail(target, true);
+           }
+       }, 500);
+  }
+
+  negotiateSuccess(target) {
+      this.eventWindow.appendLog(`The demon joins you!`);
+      this.eventWindow.updateChoices([{
+          label: "Welcome",
+          onClick: () => {
+              this.party.members.push(new Game_Battler(target.actorData));
+              // Remove enemy from battle
+              target.hp = 0; // Kill it so it doesn't fight
+              this.renderBattleAscii();
+              this.eventWindow.onUserClose();
+              // Check victory if it was the last one
+              if (this.battleManager.enemies.every(e => e.hp <= 0)) {
+                   this.battleManager.isVictoryPending = true;
+                   this.battleWindow.btnVictory.style.display = "inline-block";
+              }
+          }
+      }]);
+  }
+
+  negotiateFail(target, attack = false) {
+      if (attack) {
+           // Free attack?
+           this.eventWindow.appendLog(`The negotiation turns violent.`);
+      } else {
+           this.eventWindow.appendLog(`The negotiation failed.`);
+      }
+       this.eventWindow.updateChoices([{
+          label: "Close",
+          onClick: () => this.eventWindow.onUserClose()
+      }]);
   }
 
   /**

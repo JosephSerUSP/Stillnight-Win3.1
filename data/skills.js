@@ -134,5 +134,68 @@ export const skills = {
         element: 'Red',
         description: "Rise from the ashes.",
         effects: []
-    }
+    },
+
+    // SMT Skills
+    stoneThrow: {
+        id: 'stoneThrow',
+        name: 'Stone Throw',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "Throws a rock.",
+        effects: [
+            { type: 'hp_damage', formula: '4 + 1.0 * a.level' }
+        ]
+    },
+    poisonClaw: {
+        id: 'poisonClaw',
+        name: 'Poison Claw',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "A toxic scratch.",
+        effects: [
+            { type: 'hp_damage', formula: '3 + 1.1 * a.level' },
+            { type: 'add_status', status: 'poison', chance: 0.4 }
+        ]
+    },
+    agi: {
+        id: 'agi',
+        name: 'Agi',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "Light fire damage.",
+        effects: [
+            { type: 'hp_damage', formula: '8 + 1.5 * a.level' }
+        ]
+    },
+    bufu: {
+        id: 'bufu',
+        name: 'Bufu',
+        target: 'enemy-any',
+        element: 'Blue',
+        description: "Light ice damage.",
+        effects: [
+            { type: 'hp_damage', formula: '8 + 1.5 * a.level' }
+        ]
+    },
+    zio: {
+        id: 'zio',
+        name: 'Zio',
+        target: 'enemy-any',
+        element: 'Green',
+        description: "Light elec damage.",
+        effects: [
+            { type: 'hp_damage', formula: '8 + 1.5 * a.level' }
+        ]
+    },
+    dia: {
+        id: 'dia',
+        name: 'Dia',
+        target: 'ally-any',
+        element: 'White',
+        description: "Heals an ally.",
+        effects: [
+            { type: 'hp_heal', formula: '15 + 2.0 * a.level' }
+        ]
+    },
 };
