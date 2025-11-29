@@ -75,7 +75,9 @@ export function createGauge(options = {}) {
 
     const fill = document.createElement("div");
     fill.className = "gauge-fill";
-    fill.style.backgroundColor = options.color || "#00a000";
+    if (options.color) {
+        fill.style.backgroundColor = options.color;
+    }
 
     container.appendChild(fill);
 
@@ -147,7 +149,7 @@ export function createInteractiveLabel(data, type, options = {}) {
              }
 
              if (extra) {
-                 text += `<br/><span style="color:#478174; font-size: 0.9em;">${extra}</span>`;
+                 text += `<br/><span class="text-functional" style="font-size: 0.9em;">${extra}</span>`;
              }
         }
 
@@ -1342,7 +1344,7 @@ export class Window_Inventory extends Window_Base {
         }
 
         if (effectsText) {
-             tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
+             tooltipText += `<br/><span class="text-functional" style="font-size: 0.9em;">${effectsText}</span>`;
         }
 
         const label = createInteractiveLabel(item, 'item', { tooltipText });
@@ -1496,7 +1498,7 @@ export class Window_Event extends Window_Base {
     this.imageEl = document.createElement("img");
     this.imageEl.style.maxWidth = "100%";
     this.imageEl.style.maxHeight = "208px";
-    this.imageEl.style.border = "1px solid #478174";
+    this.imageEl.style.border = "1px solid var(--text-functional)";
     this.imageEl.style.imageRendering = "pixelated";
     this.imageEl.onerror = () => {
         if (this.imageEl.src.indexOf("default.png") === -1) {
@@ -1544,14 +1546,7 @@ export class Window_Event extends Window_Base {
       // Handle Style
       if (data.style === 'terminal') {
           this.descriptionEl.className = "event-description terminal-style";
-          this.descriptionEl.style.fontFamily = "monospace";
-          this.descriptionEl.style.backgroundColor = "#000";
-          this.descriptionEl.style.color = "#ccc";
-          this.descriptionEl.style.padding = "10px";
-          this.descriptionEl.style.height = "150px";
-          this.descriptionEl.style.overflowY = "auto";
-          this.descriptionEl.style.whiteSpace = "pre-wrap";
-          this.descriptionEl.style.border = "1px inset #444";
+          this.descriptionEl.removeAttribute("style"); // Clear inline styles
           this.descriptionEl.textContent = ""; // Start clean for log
           if (data.description) {
               if (Array.isArray(data.description)) {
@@ -1562,7 +1557,7 @@ export class Window_Event extends Window_Base {
           }
       } else {
           this.descriptionEl.className = "event-description";
-          this.descriptionEl.style = ""; // Reset inline styles
+          this.descriptionEl.removeAttribute("style"); // Reset inline styles
           this.descriptionEl.style.marginBottom = "10px";
           this.descriptionEl.innerHTML = "";
           if (data.description) {
@@ -1881,8 +1876,7 @@ export class Window_HUD {
             hpLabel.textContent = `Lv${member.level} (${row})  HP ${member.hp}/${member.maxHp}`;
 
             const { container: gauge, fill: gaugeFill } = createGauge({
-                height: "6px",
-                color: "#00a000"
+                height: "6px"
             });
             gauge.style.marginTop = "1px";
 
@@ -2177,7 +2171,6 @@ export class Window_Options extends Window_Base {
     super('center', 'center', 300, 400);
     this.element.id = "options-window";
     this.element.style.display = 'flex';
-    console.log("Window_Options instantiated");
     this.element.style.flexDirection = 'column';
 
     const titleBar = document.createElement("div");
