@@ -434,6 +434,56 @@ export function createReserveSlot(battler, index, options = {}) {
     return slot;
 }
 
+/**
+ * @class WindowAnimator
+ * @description Handles procedural animations for windows.
+ */
+export class WindowAnimator {
+    constructor() {
+        this.activeAnimations = new Map();
+    }
+
+    /**
+     * Shakes a window element.
+     * @param {HTMLElement} element - The element to shake.
+     * @param {number} [intensity=5] - Max pixel offset.
+     * @param {number} [duration=300] - Duration in ms.
+     */
+    shake(element, intensity = 5, duration = 300) {
+        if (!element) return;
+        if (this.activeAnimations.has(element)) {
+            cancelAnimationFrame(this.activeAnimations.get(element));
+        }
+
+        const startTime = performance.now();
+
+        const animate = (time) => {
+            const elapsed = time - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            if (progress < 1) {
+                // Damping shake
+                const currentIntensity = intensity * (1 - progress);
+                const x = (Math.random() * 2 - 1) * currentIntensity;
+                const y = (Math.random() * 2 - 1) * currentIntensity;
+
+                // Snap to integer to fit Win 3.1 aesthetic
+                const intX = Math.round(x);
+                const intY = Math.round(y);
+
+                element.style.transform = `translate(${intX}px, ${intY}px)`;
+
+                this.activeAnimations.set(element, requestAnimationFrame(animate));
+            } else {
+                element.style.transform = "";
+                this.activeAnimations.delete(element);
+            }
+        };
+
+        this.activeAnimations.set(element, requestAnimationFrame(animate));
+    }
+}
+
 export class WindowLayer {
   constructor() {
     this.element = document.createElement("div");
@@ -521,6 +571,7 @@ export class Window_Base {
      */
     constructor(x, y, width, height, options = {}) {
         this.embedded = options.embedded || false;
+        this.animator = new WindowAnimator();
 
         if (this.embedded) {
             this.element = document.createElement("div");
@@ -532,6 +583,11 @@ export class Window_Base {
         } else {
             this.overlay = document.createElement("div");
             this.overlay.className = "modal-overlay";
+            this.overlay.addEventListener("mousedown", (e) => {
+                if (e.target === this.overlay) {
+                    this.onUserClose();
+                }
+            });
 
             this.element = document.createElement("div");
             this.element.className = "window-frame";
@@ -822,8 +878,7 @@ export class Window_Battle extends Window_Base {
   }
 
   onUserClose() {
-      this.element.classList.add("shake");
-      setTimeout(() => this.element.classList.remove("shake"), 500);
+      this.animator.shake(this.element);
   }
 
   appendLog(msg) {
@@ -1855,6 +1910,7 @@ export class Window_HUD {
         this.container = document.getElementById("game-container");
         this.container.style.width = "960px";
         this.container.style.height = "560px";
+        this.container.style.position = "relative";
         this.container.style.display = "flex";
         this.container.style.flexDirection = "row";
 

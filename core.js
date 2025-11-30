@@ -141,7 +141,7 @@ export const Graphics = {
    */
   _initialize() {
     if (!this._container && typeof document !== 'undefined') {
-      this._container = document.querySelector(".right-side");
+      this._container = document.getElementById("game-container");
     }
   },
 

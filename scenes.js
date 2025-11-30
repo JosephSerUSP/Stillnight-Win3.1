@@ -1338,7 +1338,7 @@ export class Scene_Map extends Scene_Base {
     this.addEventListeners();
 
     this.windowLayer = new WindowLayer();
-    const gameContainer = document.querySelector(".right-side");
+    const gameContainer = document.getElementById("game-container");
     this.windowLayer.appendTo(gameContainer);
 
     this.inventoryWindow = new Window_Inventory();
