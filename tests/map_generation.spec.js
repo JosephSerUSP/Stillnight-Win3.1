@@ -47,7 +47,7 @@ test.describe('Map Generation', () => {
         expect(floorData.hasStairs).toBe(true);
         expect(floorData.hasStart).toBe(true);
         expect(floorData.hasFloor).toBe(true);
-        expect(floorData.width).toBe(16);
-        expect(floorData.height).toBe(16);
+        expect(floorData.width).toBe(20);
+        expect(floorData.height).toBe(20);
     });
 });

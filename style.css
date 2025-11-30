@@ -80,7 +80,7 @@ html, body {
 
 /* ===== Window frame ============================================= */
 .win-window {
-    width: 960px;
+    width: 980px;
     height: 560px;
     background-color: var(--window-bg);
     box-sizing: border-box;
@@ -404,13 +404,13 @@ html, body {
     flex-direction: column;
 }
 
-/* 16x16 grid, centered map */
+/* 20x20 grid, centered map */
 .exploration-grid {
-    width: 380px;  /* 16*20 + 15*4 */
-    height: 380px;
+    width: 476px;  /* 20*20 + 19*4 */
+    height: 476px;
     display: grid;
-    grid-template-columns: repeat(16, 1fr);
-    grid-template-rows: repeat(16, 1fr);
+    grid-template-columns: repeat(20, 1fr);
+    grid-template-rows: repeat(20, 1fr);
     gap: 4px;
     margin: auto;
     margin-bottom: 4px;
