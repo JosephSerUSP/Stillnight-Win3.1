@@ -592,47 +592,11 @@ html, body {
 .window--dimmed {
     pointer-events: none;
 }
-.window--dimmed .dialog {
+.window--dimmed .window-frame {
     filter: brightness(0.7);
-}
-.dialog {
-    width: 520px;
-    background-color: var(--window-bg);
-    border: 2px solid var(--window-border);
-    box-shadow:
-        0 0 0 1px var(--bezel-light) inset,
-        0 0 0 2px var(--bezel-shadow) inset,
-        0 0 0 3px var(--bezel-dark) inset;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-}
-
-.dialog-content {
-    padding: 6px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-.dialog-buttons {
-    margin-top: 4px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 4px;
 }
 
 /* Inspect dialog – larger sprite box + flavor */
-.inspect-body {
-    background-color: var(--content-bg);
-    border: 1px solid var(--bezel-shadow);
-    box-shadow:
-        1px 1px 0 var(--bezel-light) inset,
-        -1px -1px 0 var(--bezel-dark) inset;
-    padding: 4px;
-    font-size: 11px;
-    color: var(--window-text);
-}
 .inspect-layout {
     display: flex;
     gap: 10px;
@@ -665,49 +629,9 @@ html, body {
 }
 
 /* Shop dialog */
-.shop-body {
-    background-color: var(--content-bg);
-    border: 1px solid var(--bezel-shadow);
-    box-shadow:
-        1px 1px 0 var(--bezel-light) inset,
-        -1px -1px 0 var(--bezel-dark) inset;
-    padding: 4px;
-    font-size: 11px;
-    color: var(--window-text);
-}
-.shop-row {
-    margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-}
-.shop-row button { margin-left: 4px; }
 .shop-gold { font-weight: bold; }
 
 /* Formation dialog */
-.formation-body {
-    background-color: var(--content-bg);
-    border: 1px solid var(--bezel-shadow);
-    box-shadow:
-        1px 1px 0 var(--bezel-light) inset,
-        -1px -1px 0 var(--bezel-dark) inset;
-    padding: 4px;
-    font-size: 11px;
-    color: var(--window-text);
-}
-.formation-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-    margin-bottom: 4px;
-}
-.formation-reserve-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-    margin-bottom: 4px;
-    max-height: 200px;
-    overflow-y: auto;
-}
 .formation-slot {
     border: 1px solid var(--bezel-shadow);
     padding: 2px;
@@ -728,27 +652,9 @@ html, body {
 }
 
 /* Event dialog */
-.event-body {
-    background-color: var(--content-bg);
-    border: 1px solid var(--bezel-shadow);
-    box-shadow:
-        1px 1px 0 var(--bezel-light) inset,
-        -1px -1px 0 var(--bezel-dark) inset;
-    padding: 4px;
-    font-size: 11px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    color: var(--window-text);
-}
 .event-description {
     font-size: 11px;
     line-height: 1.4;
-}
-.event-choices {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
 }
 
 .terminal-style {
@@ -785,32 +691,12 @@ html, body {
 }
 
 /* Evolution Window */
-.evolution-body {
-    background-color: var(--window-bg);
-    border: 1px solid var(--bezel-shadow);
-    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
-    padding: 4px;
-    font-size: 11px;
-}
-
-.evolution-pane {
-    background-color: var(--content-bg);
-    border: 1px solid var(--bezel-shadow);
-    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
-    padding: 4px;
-    color: var(--window-text);
-}
-
 .evolution-arrow {
     font-size: 24px;
     margin: 0 10px;
     color: var(--window-text);
 }
 
-/* Updated dialog buttons positioning */
-.dialog-buttons {
-    padding: 0 4px 4px 4px; /* Move buttons 4px inwards */
-}
 
 /* Tab navigation for inventory */
 .tab-nav {
@@ -842,21 +728,6 @@ html, body {
 }
 /* ... (existing styles) */
 
-/* Updated Formation Grid for wider slots */
-.formation-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 4px;
-    margin-bottom: 4px;
-}
-.formation-reserve-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 4px;
-    margin-bottom: 4px;
-    max-height: 200px;
-    overflow-y: auto;
-}
 
 /* Dragging styles for party-slot */
 .party-slot.dragging {
@@ -931,4 +802,55 @@ html, body {
     border: 1px solid var(--bezel-shadow);
     background-color: var(--tile-bg);
     font-size: 13px;
+}
+
+/* ===== Refactored Window System ===== */
+.window-frame {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--window-bg);
+    border: 2px solid var(--window-border);
+    box-shadow:
+        0 0 0 1px var(--bezel-light) inset,
+        0 0 0 2px var(--bezel-shadow) inset,
+        0 0 0 3px var(--bezel-dark) inset;
+    box-sizing: border-box;
+}
+
+.window-content {
+    flex: 1;
+    padding: 6px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+}
+
+.window-footer {
+    padding: 0 4px 4px 4px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.window-panel {
+    background-color: var(--content-bg);
+    border: 1px solid var(--bezel-shadow);
+    box-shadow:
+        1px 1px 0 var(--bezel-light) inset,
+        -1px -1px 0 var(--bezel-dark) inset;
+    padding: 4px;
+    font-size: 11px;
+    color: var(--window-text);
+    display: flex;
+    flex-direction: column;
+}
+
+.window-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 2px;
 }
