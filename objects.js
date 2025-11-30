@@ -203,10 +203,20 @@ export class Game_Battler extends Game_Base {
       return base + bonus;
   }
 
+  /**
+   * Calculates the XP needed to reach the next level.
+   * @param {number} level - The current level.
+   * @returns {number} XP needed.
+   */
   xpNeeded(level) {
     return Math.floor(level * (this.expGrowth * 0.5) + 10);
   }
 
+  /**
+   * Adds XP to the battler and handles leveling up.
+   * @param {number} amount - The amount of XP to gain.
+   * @returns {Object} Result object { leveledUp, hpGain, newLevel }.
+   */
   gainXp(amount) {
     if (amount <= 0) return { leveledUp: false, hpGain: 0, newLevel: this.level };
 
@@ -236,6 +246,11 @@ export class Game_Battler extends Game_Base {
     };
   }
 
+  /**
+   * Gets the value of a specific passive code from traits.
+   * @param {string} code - The trait code (e.g., 'HRG').
+   * @returns {number} The aggregated value.
+   */
   getPassiveValue(code) {
     // New implementation using traits
     // First, check direct traits with this code
@@ -310,6 +325,11 @@ export class Game_Battler extends Game_Base {
       return removed;
   }
 
+  /**
+   * Executes an action on a target. (Placeholder / Debug)
+   * @param {Object} action - The action object.
+   * @param {Game_Battler} target - The target battler.
+   */
   executeAction(action, target) {
     console.log(`${this.name} uses an action on ${target.name}.`);
   }
@@ -414,16 +434,42 @@ export class Game_Battler extends Game_Base {
 
 /**
  * @class Game_Party
- * @description Manages the party.
+ * @description Manages the party, inventory, and gold.
  */
 export class Game_Party {
+  /**
+   * Creates a new Game_Party instance.
+   */
   constructor() {
+    /**
+     * Maximum number of party members.
+     * @type {number}
+     */
     this.MAX_MEMBERS = 24;
+
+    /**
+     * The list of party members.
+     * @type {Game_Battler[]}
+     */
     this.members = [];
+
+    /**
+     * The party's gold.
+     * @type {number}
+     */
     this.gold = 0;
+
+    /**
+     * The party's inventory.
+     * @type {Array}
+     */
     this.inventory = [];
   }
 
+  /**
+   * Initializes the party members based on starting data.
+   * @param {import("./managers.js").DataManager} dataManager - The data manager.
+   */
   createInitialMembers(dataManager) {
     const { startingParty, actors, items } = dataManager;
 
@@ -501,6 +547,12 @@ export class Game_Party {
  * @description Represents an interactive entity on the map.
  */
 export class Game_Event {
+  /**
+   * Creates a new Game_Event.
+   * @param {number} x - The x-coordinate.
+   * @param {number} y - The y-coordinate.
+   * @param {Object} data - The event data.
+   */
   constructor(x, y, data) {
     this.x = x;
     this.y = y;
@@ -517,9 +569,12 @@ export class Game_Event {
 
 /**
  * @class Game_Map
- * @description Represents the game map.
+ * @description Represents the game map and handles floor generation.
  */
 export class Game_Map {
+  /**
+   * Creates a new Game_Map instance.
+   */
   constructor() {
     this.MAX_W = 16;
     this.MAX_H = 16;
@@ -530,12 +585,26 @@ export class Game_Map {
     this.playerY = 0;
   }
 
+  /**
+   * Initializes floors based on map data.
+   * @param {Array} mapData - Data for all floors.
+   * @param {Array} eventDefs - Event definitions.
+   * @param {Array} [npcData=[]] - NPC definitions.
+   */
   initFloors(mapData, eventDefs, npcData = []) {
     this.floors = mapData.map((meta, i) => this.generateFloor(meta, i, eventDefs, npcData));
     this.floors[0].discovered = true;
     this.maxReachedFloorIndex = 0;
   }
 
+  /**
+   * Generates a single floor layout.
+   * @param {Object} meta - Floor metadata.
+   * @param {number} index - Floor index.
+   * @param {Array} eventDefs - Event definitions.
+   * @param {Array} npcData - NPC definitions.
+   * @returns {Object} The generated floor object.
+   */
   generateFloor(meta, index, eventDefs, npcData = []) {
     const tiles = Array.from({ length: this.MAX_H }, () =>
       Array.from({ length: this.MAX_W }, () => "#")
@@ -651,6 +720,12 @@ export class Game_Map {
     };
   }
 
+  /**
+   * Removes an event from the specified floor.
+   * @param {number} floorIndex - The index of the floor.
+   * @param {number} x - The x-coordinate.
+   * @param {number} y - The y-coordinate.
+   */
   removeEvent(floorIndex, x, y) {
     if (floorIndex < 0 || floorIndex >= this.floors.length) return;
     const floor = this.floors[floorIndex];
@@ -660,6 +735,9 @@ export class Game_Map {
     }
   }
 
+  /**
+   * Reveals tiles around the player (fog of war).
+   */
   revealAroundPlayer() {
     const floor = this.floors[this.floorIndex];
     const r = 1;

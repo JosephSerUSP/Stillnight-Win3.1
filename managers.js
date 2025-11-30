@@ -686,7 +686,7 @@ export class SceneManager {
    */
   previous() {
     return this._stack[this._stack.length - 1];
-    }
+  }
 }
 
 /**

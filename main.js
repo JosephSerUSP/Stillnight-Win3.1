@@ -4,8 +4,10 @@ import { WindowManager } from "./windows.js";
 
 /**
  * The main entry point for the game application.
- * Initializes managers and pushes the initial scene.
+ * Initializes managers (Scene, Data, Window) and pushes the initial boot scene.
+ * Sets up global input handling via the document keydown event.
  * @async
+ * @returns {Promise<void>}
  */
 async function main() {
   const gameContainer = document.getElementById("game-container");
