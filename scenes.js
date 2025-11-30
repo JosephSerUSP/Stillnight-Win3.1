@@ -14,6 +14,7 @@ import {
   Window_EquipConfirm,
   Window_Options,
   Window_HUD,
+  Window_Help,
   WindowLayer,
   createInteractiveLabel,
   createElementIcon
