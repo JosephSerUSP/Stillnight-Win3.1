@@ -9,18 +9,6 @@ export function randInt(min, max) {
 }
 
 /**
- * Probabilistically rounds a floating point number.
- * For example, 1.25 becomes 1 (75% chance) or 2 (25% chance).
- * @param {number} value - The value to round.
- * @returns {number} The rounded integer.
- */
-export function probabilisticRound(value) {
-    const floor = Math.floor(value);
-    const fraction = value - floor;
-    return Math.random() < fraction ? floor + 1 : floor;
-}
-
-/**
  * Shuffles an array in place using the Fisher-Yates shuffle algorithm.
  * @param {Array} arr - The array to shuffle.
  * @returns {Array} The shuffled array.
@@ -179,4 +167,16 @@ export function evaluateFormula(formula, a, b = {}) {
         console.error("Formula error:", formula, e);
         return 0;
     }
+}
+
+/**
+ * Probabilistically rounds a floating-point number to an integer.
+ * e.g., 1.25 becomes 1 (75%) or 2 (25%).
+ * @param {number} value - The value to round.
+ * @returns {number} The rounded integer.
+ */
+export function probabilisticRound(value) {
+    const floor = Math.floor(value);
+    const decimal = value - floor;
+    return floor + (Math.random() < decimal ? 1 : 0);
 }

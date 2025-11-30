@@ -325,7 +325,9 @@ export class BattleManager {
     this.round++;
     // Create a turn order list: Party then Enemies
     this.turnQueue = [
-        ...this.party.members.slice(0, 4).map((b, i) => ({ battler: b, index: i, isEnemy: false })),
+        ...this.party.members.slice(0, 4)
+            .map((b, i) => ({ battler: b, index: i, isEnemy: false }))
+            .filter(item => item.battler !== null),
         ...this.enemies.map((b, i) => ({ battler: b, index: i, isEnemy: true }))
     ];
   }
@@ -354,7 +356,7 @@ export class BattleManager {
    */
   startTurn(battlerContext) {
       const { battler, isEnemy } = battlerContext;
-      const allies = isEnemy ? this.enemies : this.party.members.slice(0, 4);
+      const allies = isEnemy ? this.enemies : this.party.members.slice(0, 4).filter(b => b !== null);
       const events = battler.onTurnStart(allies, null, this.dataManager);
       this._checkBattleEnd(events);
       return events;
@@ -383,8 +385,8 @@ export class BattleManager {
       // "Enemy" means "The opposing team"
       // "Ally" means "My team"
 
-      const myTeam = isEnemy ? this.enemies : this.party.members.slice(0, 4);
-      const opposingTeam = isEnemy ? this.party.members.slice(0, 4) : this.enemies;
+      const myTeam = isEnemy ? this.enemies : this.party.members.slice(0, 4).filter(b => b !== null);
+      const opposingTeam = isEnemy ? this.party.members.slice(0, 4).filter(b => b !== null) : this.enemies;
 
       if (scope.includes('ally')) {
           targetSide = myTeam;
@@ -574,7 +576,7 @@ export class BattleManager {
    */
   _checkBattleEnd(events) {
     const anyEnemyAlive = this.enemies.some((e) => e.hp > 0);
-    const anyPartyAlive = this.party.members.slice(0, 4).some((p) => p.hp > 0);
+    const anyPartyAlive = this.party.members.slice(0, 4).some((p) => p && p.hp > 0);
 
     if (!anyPartyAlive) {
       this.isBattleFinished = true;

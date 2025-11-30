@@ -420,24 +420,24 @@ export class Scene_Battle extends Scene_Base {
     if (!this.battleManager || !this.battleManager.isVictoryPending) return;
     const enemies = this.battleManager.enemies;
     let totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
-    const totalXp = enemies.reduce((sum, e) => sum + probabilisticRound(e.level * (e.expGrowth * 0.5) + 8), 0);
+    const totalXp = enemies.reduce((sum, e) => sum + Math.floor(e.level * (e.expGrowth * 0.5) + 8), 0);
 
-    const living = this.party.activeMembers.filter((p) => p.hp > 0);
-    living.forEach((m) => {
+    const activeMembers = this.party.members.slice(0, 4).filter((p) => p && p.hp > 0);
+    const reserveMembers = this.party.members.slice(4).filter((p) => p && p.hp > 0);
+
+    activeMembers.forEach((m) => {
       const goldBonus = m.getPassiveValue("GOLD_DIGGER");
       if (goldBonus > 0) {
         totalGold += goldBonus;
         this.sceneManager.previous().logMessage(`[Passive] ${m.name} finds an extra ${goldBonus}G!`);
       }
     });
-    const share =
-      living.length > 0 ? Math.max(1, totalXp / living.length) : 0;
-    living.forEach((m) => this.sceneManager.previous().gainXp(m, share));
 
-    const reserveShare = Math.max(1, totalXp / 20);
-    this.party.reserveMembers.forEach((m) => {
-        if (m.hp > 0) this.sceneManager.previous().gainXp(m, reserveShare, true);
-    });
+    const activeShareRaw = activeMembers.length > 0 ? totalXp / activeMembers.length : 0;
+    const reserveShareRaw = activeShareRaw / 20;
+
+    activeMembers.forEach((m) => this.sceneManager.previous().gainXp(m, probabilisticRound(activeShareRaw)));
+    reserveMembers.forEach((m) => this.sceneManager.previous().gainXp(m, probabilisticRound(reserveShareRaw), true));
 
     this.party.gold += totalGold;
     this.sceneManager.previous().logMessage(
@@ -758,9 +758,8 @@ export class Scene_Shop extends Scene_Base {
 
         this.shopWindow.onUserClose = this.closeShop.bind(this);
         this.shopWindow.btnLeave.addEventListener("click", this.closeShop.bind(this));
-
-        this.shopWindow.setHandler('mode_buy', () => this.startBuy());
-        this.shopWindow.setHandler('mode_sell', () => this.startSell());
+        this.shopWindow.btnMode.addEventListener("click", this.toggleMode.bind(this));
+        this.mode = 'buy';
     }
 
     /**
@@ -768,41 +767,37 @@ export class Scene_Shop extends Scene_Base {
      * @method start
      */
     start() {
-        this.startBuy();
+        this.mode = 'buy';
+        this.refreshShop();
         this.windowManager.push(this.shopWindow);
         document.getElementById("mode-label").textContent = "Shop";
         SoundManager.beep(650, 150);
     }
 
-    startBuy() {
-        this.shopWindow.setupBuy(
-            this.party.gold,
-            this.dataManager.terms.shop.vendor_message,
-            this.dataManager.items,
-            (itemId) => this.buyItem(itemId)
-        );
+    toggleMode() {
+        this.mode = this.mode === 'buy' ? 'sell' : 'buy';
+        this.refreshShop();
+        SoundManager.beep(400, 50);
     }
 
-    startSell() {
-        this.shopWindow.setupSell(
-            this.party.gold,
-            this.party.inventory,
-            (item) => this.sellItem(item)
-        );
-    }
-
-    sellItem(item) {
-        const index = this.party.inventory.indexOf(item);
-        if (index > -1) {
-            this.party.inventory.splice(index, 1);
-            const price = Math.floor(item.cost / 2);
-            this.party.gold += price;
-
-            this.startSell();
-
-            this.sceneManager.previous().logMessage(`[Shop] Sold ${item.name} for ${price}G.`);
-            SoundManager.beep(600, 80);
-            this.sceneManager.previous().updateAll();
+    refreshShop() {
+        if (this.mode === 'buy') {
+            this.shopWindow.setup(
+                this.party.gold,
+                this.dataManager.terms.shop.vendor_message,
+                this.dataManager.items,
+                (item) => this.buyItem(item.id),
+                'buy'
+            );
+        } else {
+            const sellItems = this.party.inventory.map(i => ({ ...i, cost: Math.floor((i.cost || 0) / 2) }));
+            this.shopWindow.setup(
+                this.party.gold,
+                "Select an item to sell.",
+                sellItems,
+                (item) => this.sellItem(item),
+                'sell'
+            );
         }
     }
 
@@ -844,17 +839,33 @@ export class Scene_Shop extends Scene_Base {
         this.party.gold -= item.cost;
         this.party.inventory.push(item);
 
-        // Update window state to refresh button availability
-        this.shopWindow.gold = this.party.gold;
-        this.shopWindow.goldLabelEl.textContent = `${this.party.gold}G`;
-        this.shopWindow.refresh();
-
         this.shopWindow.messageEl.textContent = this.dataManager.terms.shop.purchased + item.name + ".";
-    this.sceneManager.previous().logMessage(
+        this.sceneManager.previous().logMessage(
             `[Shop] ${this.dataManager.terms.shop.purchased}${item.name}.`
         );
-    this.sceneManager.previous().updateAll();
+        this.sceneManager.previous().updateAll();
+        this.refreshShop();
         SoundManager.beep(600, 80);
+    }
+
+    sellItem(item) {
+        const index = this.party.inventory.findIndex(i => i.id === item.id); // Simple ID check? Or strict object check?
+        // sellItems are COPIES (mapped). So strict object equality fails.
+        // We should map with original reference or find by index if possible.
+        // Let's rely on ID for now, or improve refreshShop to pass original.
+        // Better: Find FIRST instance of item.id in inventory.
+        const realIndex = this.party.inventory.findIndex(i => i.id === item.id);
+
+        if (realIndex > -1) {
+            this.party.inventory.splice(realIndex, 1);
+            this.party.gold += item.cost; // item.cost here is the halved cost from setupSell
+
+            this.shopWindow.messageEl.textContent = `Sold ${item.name} for ${item.cost}G.`;
+            this.sceneManager.previous().logMessage(`[Shop] Sold ${item.name}.`);
+            this.sceneManager.previous().updateAll();
+            this.refreshShop();
+            SoundManager.beep(600, 80);
+        }
     }
 }
 
@@ -1348,8 +1359,7 @@ class Game_Interpreter {
     }
 
     attemptRecruit(recruit) {
-        if (this.party.members.length < this.party.MAX_MEMBERS) {
-            this.party.members.push(Game_Battler.create(recruit));
+        if (this.party.addMember(Game_Battler.create(recruit))) {
             this.scene.logMessage(`[Recruit] ${recruit.name} joins your party.`);
             this.scene.setStatus(
                 this.dataManager.terms.recruit.recruited.replace("{0}", recruit.name)
@@ -1369,6 +1379,7 @@ class Game_Interpreter {
             this.dataManager.terms.recruit.party_full;
         this.scene.recruitWindow.buttonsEl.innerHTML = "";
         this.party.members.forEach((m, idx) => {
+            if (!m) return;
             const btn = document.createElement("button");
             btn.className = "win-btn";
             btn.textContent = m.name;
@@ -1653,7 +1664,7 @@ export class Scene_Map extends Scene_Base {
     // Iterate backwards to safely splice
     for (let i = this.party.members.length - 1; i >= 0; i--) {
         const member = this.party.members[i];
-        if (member.hp <= 0) {
+        if (member && member.hp <= 0) {
             deadFound = true;
             // Check for ON_PERMADEATH traits
             const permadeathTraits = member.traits.filter(t => t.code === 'ON_PERMADEATH');
@@ -1684,7 +1695,7 @@ export class Scene_Map extends Scene_Base {
 
                  this.logMessage(`${member.name} returned at Lv${member.level}.`);
             } else {
-                this.party.members.splice(i, 1);
+                this.party.members[i] = null;
                 this.logMessage(`[Death] ${member.name} has fallen and is lost forever.`);
             }
         }
@@ -1958,6 +1969,7 @@ export class Scene_Map extends Scene_Base {
    * @method gainXp
    * @param {import("./objects.js").Game_Battler} member - The member to give XP to.
    * @param {number} amount - The amount of XP.
+   * @param {boolean} [silent=false] - If true, suppresses level up log.
    */
   gainXp(member, amount, silent = false) {
     const result = member.gainXp(amount);

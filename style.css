@@ -861,5 +861,4 @@ html, body {
 .party-slot.selected {
     background-color: var(--selection-bg);
     color: var(--selection-text);
-    border-color: var(--selection-text);
 }

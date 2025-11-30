@@ -22,8 +22,7 @@ export function createBattlerNameLabel(battler, options = {}) {
 
     const levelSpan = document.createElement("span");
     levelSpan.textContent = `Lv.${battler.level}`;
-    levelSpan.style.margin = "0 4px";
-    levelSpan.style.fontSize = "10px";
+    levelSpan.style.marginRight = "4px";
     container.appendChild(levelSpan);
 
     const nameSpan = document.createElement("span");
@@ -330,19 +329,15 @@ export function createPartySlot(battler, index, options = {}) {
 }
 
 /**
- * @class WindowLayer
- */
-/**
- * Creates a compact slot for reserve members.
+ * Creates a compact reserve member slot.
  */
 export function createReserveSlot(battler, index, options = {}) {
     const slot = document.createElement("div");
     slot.className = "party-slot";
-    slot.style.width = "100%";
-    slot.style.height = "54px"; // 48px + padding/border
+    slot.style.width = "124px";
+    slot.style.height = "54px";
     slot.style.display = "flex";
     slot.style.boxSizing = "border-box";
-    slot.style.padding = "2px";
     slot.style.alignItems = "center";
 
     if (options.className) slot.classList.add(options.className);
@@ -354,14 +349,12 @@ export function createReserveSlot(battler, index, options = {}) {
     }
 
     if (!battler) {
-        const empty = document.createElement("div");
-        empty.textContent = "(Empty)";
-        empty.style.margin = "auto";
-        slot.appendChild(empty);
+        slot.style.justifyContent = "center";
+        slot.style.color = "#808080";
+        slot.textContent = "(Empty)";
         return slot;
     }
 
-    // Portrait
     const portrait = document.createElement("div");
     portrait.className = "party-slot-portrait";
     portrait.style.backgroundImage = `url('assets/portraits/${battler.spriteKey || "pixie"}.png')`;
@@ -370,34 +363,36 @@ export function createReserveSlot(battler, index, options = {}) {
     portrait.style.flexShrink = "0";
     slot.appendChild(portrait);
 
-    // Info
     const info = document.createElement("div");
+    info.style.marginLeft = "4px";
+    info.style.flexGrow = "1";
+    info.style.overflow = "hidden";
     info.style.display = "flex";
     info.style.flexDirection = "column";
-    info.style.marginLeft = "6px";
     info.style.justifyContent = "center";
-    info.style.overflow = "hidden";
-    info.style.flexGrow = "1";
-    info.style.whiteSpace = "nowrap";
+    info.style.fontSize = "10px";
 
-    // Label (Icon + Level + Name + Evo)
-    const label = createBattlerNameLabel(battler, { evolutionStatus: options.evolutionStatus });
-    label.style.overflow = "hidden";
-    label.style.textOverflow = "ellipsis";
-    info.appendChild(label);
+    const nameEl = document.createElement("div");
+    nameEl.textContent = battler.name;
+    nameEl.style.whiteSpace = "nowrap";
+    nameEl.style.overflow = "hidden";
+    nameEl.style.textOverflow = "ellipsis";
+    nameEl.style.fontWeight = "bold";
+    nameEl.style.marginBottom = "2px";
+    info.appendChild(nameEl);
 
-    // HP (Max only)
-    const hpText = document.createElement("div");
-    hpText.textContent = `Max HP: ${battler.maxHp}`;
-    hpText.style.fontSize = "10px";
-    hpText.style.marginTop = "2px";
-    info.appendChild(hpText);
+    const hpEl = document.createElement("div");
+    hpEl.textContent = `Max HP: ${battler.maxHp}`;
+    info.appendChild(hpEl);
 
     slot.appendChild(info);
 
     return slot;
 }
 
+/**
+ * @class WindowLayer
+ */
 export class WindowLayer {
   constructor() {
     this.element = document.createElement("div");
@@ -817,9 +812,8 @@ export class Window_Battle extends Window_Base {
     this.viewportEl.appendChild(header);
 
     battlers.forEach((e, idx) => {
-        if (!e) return;
-        const top = 30 + Math.floor(idx / 2) * 40;
-        const left = 20 + (idx % 2) * 220;
+        const top = 30 + (idx % 2) * 40;
+        const left = 20 + Math.floor(idx / 2) * 220;
         const hp = e.hp;
 
         const primaryElements = getPrimaryElements(e.elements);
@@ -837,7 +831,6 @@ export class Window_Battle extends Window_Base {
     });
 
     party.forEach((p, idx) => {
-        if (!p) return;
         const top = 140 + Math.floor(idx / 2) * 40;
         const left = 20 + (idx % 2) * 220;
         const hp = p.hp;
@@ -1057,27 +1050,10 @@ export class Window_Evolution extends Window_Base {
  */
 export class Window_Shop extends Window_Selectable {
   constructor() {
-    super('center', 'center', 420, 360, { title: "Shop – Stillnight", id: "shop-window" });
+    super('center', 'center', 420, 320, { title: "Shop – Stillnight", id: "shop-window" });
 
     const shopBody = this.createPanel();
     shopBody.style.flexGrow = "1";
-
-    this.tabNav = document.createElement("div");
-    this.tabNav.className = "tab-nav";
-
-    this.btnBuy = document.createElement("button");
-    this.btnBuy.className = "tab-btn active";
-    this.btnBuy.textContent = "Buy";
-    this.btnBuy.onclick = () => this.callHandler('mode_buy');
-    this.tabNav.appendChild(this.btnBuy);
-
-    this.btnSell = document.createElement("button");
-    this.btnSell.className = "tab-btn";
-    this.btnSell.textContent = "Sell";
-    this.btnSell.onclick = () => this.callHandler('mode_sell');
-    this.tabNav.appendChild(this.btnSell);
-
-    shopBody.appendChild(this.tabNav);
 
     const goldRow = document.createElement('div');
     goldRow.className = 'window-row';
@@ -1088,8 +1064,6 @@ export class Window_Shop extends Window_Selectable {
     shopBody.appendChild(goldRow);
 
     this.listContainer = document.createElement('div');
-    this.listContainer.style.flex = "1";
-    this.listContainer.style.overflowY = "auto";
     shopBody.appendChild(this.listContainer);
 
     this.messageEl = document.createElement('div');
@@ -1098,54 +1072,28 @@ export class Window_Shop extends Window_Selectable {
     this.messageEl.style.fontSize = '10px';
     shopBody.appendChild(this.messageEl);
 
+    this.btnMode = this.addButton("Sell", () => {});
     this.btnLeave = this.addButton("Leave", () => {});
-
-    this.mode = 'buy';
   }
 
-  setMode(mode) {
-      this.mode = mode;
-      this.btnBuy.classList.toggle('active', mode === 'buy');
-      this.btnSell.classList.toggle('active', mode === 'sell');
-  }
-
-  setupBuy(gold, message, items, buyCallback) {
-    this.setMode('buy');
+  setup(gold, message, items, callback, mode = 'buy') {
     this.gold = gold;
     this.goldLabelEl.textContent = `${gold}G`;
     this.messageEl.textContent = message;
+    this.mode = mode;
 
-    this.setHandler('buy', (item) => {
-        if (item.cost > this.gold) return;
-        if (buyCallback) buyCallback(item.id);
+    this.btnMode.textContent = mode === 'buy' ? "Sell" : "Buy";
+
+    this.setHandler('action', (item) => {
+        if (mode === 'buy' && item.cost > this.gold) return;
+        if (callback) callback(item);
     });
 
     this.setData(items);
   }
 
-  setupSell(gold, inventory, sellCallback) {
-      this.setMode('sell');
-      this.gold = gold;
-      this.goldLabelEl.textContent = `${gold}G`;
-      this.messageEl.textContent = "Select an item to sell.";
-
-      this.setHandler('sell', (item) => {
-          if (sellCallback) sellCallback(item);
-      });
-
-      this.setData(inventory);
-  }
-
   refresh() {
     this.listContainer.innerHTML = "";
-    if (this._data.length === 0) {
-        const p = document.createElement("div");
-        p.textContent = this.mode === 'buy' ? "No items for sale." : "Nothing to sell.";
-        p.style.padding = "4px";
-        this.listContainer.appendChild(p);
-        return;
-    }
-
     this._data.forEach((tpl, index) => {
       const row = document.createElement("div");
       row.className = "window-row";
@@ -1154,29 +1102,19 @@ export class Window_Shop extends Window_Selectable {
       const label = createInteractiveLabel(tpl, 'item');
       row.appendChild(label);
 
-      let price = tpl.cost;
-      if (this.mode === 'sell') {
-          price = Math.floor(tpl.cost / 2);
-      }
-
       const costSpan = document.createElement("span");
-      costSpan.textContent = ` (${price}G)`;
+      costSpan.textContent = ` (${tpl.cost}G)`;
       costSpan.style.marginRight = "auto";
       row.appendChild(costSpan);
 
       const btn = document.createElement("button");
       btn.className = "win-btn";
+      btn.textContent = this.mode === 'sell' ? "Sell" : "Buy";
+      btn.dataset.action = "action";
 
-      if (this.mode === 'buy') {
-          btn.textContent = "Buy";
-          btn.dataset.action = "buy";
-          if (price > this.gold) {
-              btn.disabled = true;
-              btn.classList.add("disabled");
-          }
-      } else {
-          btn.textContent = "Sell";
-          btn.dataset.action = "sell";
+      if (this.mode === 'buy' && tpl.cost > this.gold) {
+          btn.disabled = true;
+          btn.classList.add("disabled");
       }
 
       row.appendChild(btn);
@@ -1198,7 +1136,7 @@ export class Window_Formation extends Window_Base {
 
     const label = document.createElement('div');
     label.className = 'formation-label';
-    label.textContent = 'Click a member to select, then another to swap. Active party is the first 4.';
+    label.textContent = 'Select a member to move, then select the destination. Active party is the first 4 members.';
     formationBody.appendChild(label);
 
     this.gridEl = document.createElement('div');
@@ -1227,7 +1165,6 @@ export class Window_Formation extends Window_Base {
     this.btnOk = this.addButton("OK", () => this.onUserClose());
     this.btnCancel = this.addButton("Cancel", () => this.onUserClose());
 
-    this.selectedSlotIndex = null;
     this.party = null;
     this.onChange = null;
     this.context = null;
@@ -1237,7 +1174,6 @@ export class Window_Formation extends Window_Base {
       this.party = party;
       this.context = context;
       if (onChange) this.onChange = onChange;
-      this.selectedSlotIndex = null;
       this.renderFormationGrid();
   }
 
@@ -1256,44 +1192,43 @@ export class Window_Formation extends Window_Base {
           }
       }
 
-      const isReserve = index >= 4;
-      const options = {
+      let slot;
+      const opts = {
           onClick: this.onSlotClick.bind(this),
           evolutionStatus: evolutionStatus
       };
 
-      let slot;
-      if (isReserve) {
-          slot = createReserveSlot(m, index, options);
-      } else {
-          slot = createPartySlot(m, index, options);
-      }
-
-      if (this.selectedSlotIndex === index) {
-          slot.classList.add('selected');
+      if (index === this.selectedSlotIndex) {
+          opts.className = "selected";
       }
 
       if (index < 4) {
-        this.gridEl.appendChild(slot);
+          slot = createPartySlot(m, index, opts);
+          this.gridEl.appendChild(slot);
       } else {
-        this.reserveGridEl.appendChild(slot);
+          slot = createReserveSlot(m, index, opts);
+          this.reserveGridEl.appendChild(slot);
       }
     });
   }
 
-  onSlotClick(battler, index) {
+  onSlotClick(battler, index, e) {
       if (this.selectedSlotIndex === null) {
           this.selectedSlotIndex = index;
+          this.renderFormationGrid();
       } else {
-          if (this.selectedSlotIndex !== index) {
+          if (this.selectedSlotIndex === index) {
+              this.selectedSlotIndex = null;
+              this.renderFormationGrid();
+          } else {
               if (this.party.reorderMembers(this.selectedSlotIndex, index)) {
+                  this.selectedSlotIndex = null;
+                  this.renderFormationGrid();
                   SoundManager.beep(500, 80);
                   if (this.onChange) this.onChange();
               }
           }
-          this.selectedSlotIndex = null;
       }
-      this.renderFormationGrid();
   }
 }
 
@@ -1735,9 +1670,9 @@ export class Window_PartyPanel extends Window_Base {
 
     updateParty(party, onInspect, context = null) {
         this.partyGridEl.innerHTML = "";
-        party.slots.slice(0, 4).forEach((member, index) => {
+        party.members.slice(0, 4).forEach((member, index) => {
             let evolutionStatus = null;
-            if (member && context) {
+            if (context) {
                 const statusObj = member.getEvolutionStatus(context.inventory, context.floorDepth, context.gold);
                 if (statusObj.status !== 'NONE') {
                     evolutionStatus = statusObj.status;
@@ -1749,21 +1684,19 @@ export class Window_PartyPanel extends Window_Base {
                 testId: `party-slot-${index}`,
                 evolutionStatus: evolutionStatus
             });
-            if (member) {
-                const gaugeFill = slot.querySelector('.hp-fill');
-                if (gaugeFill) {
-                    const startHp = member.prevHp !== undefined ? member.prevHp : member.hp;
-                    gaugeFill.style.width = `${Math.max(0, (startHp / member.maxHp) * 100)}%`;
-                    this.animateGauge(
-                        gaugeFill,
-                        startHp,
-                        member.hp,
-                        member.maxHp,
-                        500
-                    );
-                }
-                member.prevHp = member.hp;
+            const gaugeFill = slot.querySelector('.hp-fill');
+            if (gaugeFill) {
+                const startHp = member.prevHp !== undefined ? member.prevHp : member.hp;
+                gaugeFill.style.width = `${Math.max(0, (startHp / member.maxHp) * 100)}%`;
+                this.animateGauge(
+                    gaugeFill,
+                    startHp,
+                    member.hp,
+                    member.maxHp,
+                    500
+                );
             }
+            member.prevHp = member.hp;
             this.partyGridEl.appendChild(slot);
         });
     }
@@ -1996,6 +1929,7 @@ export class Window_PartySelect extends Window_Selectable {
         this.gridEl.innerHTML = "";
         if (!this.party) return;
         this.party.members.forEach((m, index) => {
+            if (!m) return;
             let evolutionStatus = null;
             if (this.context) {
                 const statusObj = m.getEvolutionStatus(this.context.inventory, this.context.floorDepth, this.context.gold);
@@ -2004,8 +1938,7 @@ export class Window_PartySelect extends Window_Selectable {
                 }
             }
 
-            const isReserve = index >= 4;
-            const options = {
+            const opts = {
                 onClick: (member, idx) => {
                     if (this.onSelect) this.onSelect(member, idx);
                 },
@@ -2013,10 +1946,10 @@ export class Window_PartySelect extends Window_Selectable {
             };
 
             let slot;
-            if (isReserve) {
-                slot = createReserveSlot(m, index, options);
+            if (index < 4) {
+                slot = createPartySlot(m, index, opts);
             } else {
-                slot = createPartySlot(m, index, options);
+                slot = createReserveSlot(m, index, opts);
             }
             this.gridEl.appendChild(slot);
         });
@@ -2400,5 +2333,4 @@ if (typeof window !== 'undefined' && window.location.search.includes("test=true"
     window.Window_ConfirmEffect = Window_ConfirmEffect;
     window.Window_PartySelect = Window_PartySelect;
     window.Window_EquipItemSelect = Window_EquipItemSelect;
-    window.Window_Battle = Window_Battle;
 }

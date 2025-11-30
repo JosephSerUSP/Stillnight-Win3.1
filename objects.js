@@ -1,4 +1,4 @@
-import { randInt, shuffleArray, probabilisticRound } from "./core.js";
+import { randInt, shuffleArray } from "./core.js";
 import { passives as passivesData } from "./data/passives.js";
 import { states as statesData } from "./data/states.js";
 
@@ -220,8 +220,7 @@ export class Game_Battler extends Game_Base {
   gainXp(amount) {
     if (amount <= 0) return { leveledUp: false, hpGain: 0, newLevel: this.level };
 
-    const actualAmount = probabilisticRound(amount);
-    this.xp = (this.xp || 0) + actualAmount;
+    this.xp = (this.xp || 0) + amount;
     let leveledUp = false;
     let totalHpGain = 0;
 
@@ -509,10 +508,10 @@ export class Game_Party {
     this.MAX_MEMBERS = 24;
 
     /**
-     * The slots for party members. Can contain nulls.
-     * @type {Array<Game_Battler|null>}
+     * The list of party members.
+     * @type {Game_Battler[]}
      */
-    this.slots = new Array(this.MAX_MEMBERS).fill(null);
+    this.members = new Array(this.MAX_MEMBERS).fill(null);
 
     /**
      * The party's gold.
@@ -528,22 +527,6 @@ export class Game_Party {
   }
 
   /**
-   * Gets the list of active (non-null) members.
-   * @type {Game_Battler[]}
-   */
-  get members() {
-      return this.slots.filter(m => m !== null);
-  }
-
-  get activeMembers() {
-      return this.slots.slice(0, 4).filter(m => m !== null);
-  }
-
-  get reserveMembers() {
-      return this.slots.slice(4).filter(m => m !== null);
-  }
-
-  /**
    * Initializes the party members based on starting data.
    * @param {import("./managers.js").DataManager} dataManager - The data manager.
    */
@@ -554,35 +537,40 @@ export class Game_Party {
     this.inventory = startingParty.getInventory(items);
 
     const memberConfigs = startingParty.getMembers(actors);
-    const initialMembers = memberConfigs.map(config => {
-      const actorData = actors.find(a => a.id === config.id);
-      if (!actorData) {
-        console.error(`Actor data not found for ID: ${config.id}`);
-        return null;
-      }
-      return Game_Battler.create(actorData, config.level);
-    }).filter(member => member !== null);
-
-    initialMembers.forEach((m, i) => {
-        if (i < this.MAX_MEMBERS) {
-            this.slots[i] = m;
+    memberConfigs.forEach((config, i) => {
+        if (i >= this.MAX_MEMBERS) return;
+        const actorData = actors.find(a => a.id === config.id);
+        if (actorData) {
+            this.members[i] = Game_Battler.create(actorData, config.level);
         }
     });
   }
 
   /**
-   * Reorders a party member/slot from one index to another.
-   * @param {number} fromIndex - The current index of the member.
-   * @param {number} toIndex - The target index.
+   * Adds a new member to the first available slot.
+   * @param {Game_Battler} battler - The battler to add.
+   * @returns {boolean} True if added, false if full.
+   */
+  addMember(battler) {
+      const index = this.members.findIndex(m => m === null);
+      if (index === -1) return false;
+      this.members[index] = battler;
+      return true;
+  }
+
+  /**
+   * Swaps two party slots.
+   * @param {number} index1
+   * @param {number} index2
    * @returns {boolean} True if successful.
    */
-  reorderMembers(fromIndex, toIndex) {
-      if (fromIndex < 0 || fromIndex >= this.MAX_MEMBERS) return false;
-      if (toIndex < 0 || toIndex >= this.MAX_MEMBERS) return false;
+  reorderMembers(index1, index2) {
+      if (index1 < 0 || index1 >= this.MAX_MEMBERS) return false;
+      if (index2 < 0 || index2 >= this.MAX_MEMBERS) return false;
 
-      const temp = this.slots[fromIndex];
-      this.slots[fromIndex] = this.slots[toIndex];
-      this.slots[toIndex] = temp;
+      const temp = this.members[index1];
+      this.members[index1] = this.members[index2];
+      this.members[index2] = temp;
       return true;
   }
 
