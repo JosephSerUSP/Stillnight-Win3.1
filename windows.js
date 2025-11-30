@@ -20,6 +20,12 @@ export function createBattlerNameLabel(battler, options = {}) {
         container.appendChild(createElementIcon(battler.elements));
     }
 
+    const levelSpan = document.createElement("span");
+    levelSpan.textContent = `Lv.${battler.level}`;
+    levelSpan.style.margin = "0 4px";
+    levelSpan.style.fontSize = "10px";
+    container.appendChild(levelSpan);
+
     const nameSpan = document.createElement("span");
     nameSpan.textContent = battler.name;
     container.appendChild(nameSpan);
@@ -326,6 +332,72 @@ export function createPartySlot(battler, index, options = {}) {
 /**
  * @class WindowLayer
  */
+/**
+ * Creates a compact slot for reserve members.
+ */
+export function createReserveSlot(battler, index, options = {}) {
+    const slot = document.createElement("div");
+    slot.className = "party-slot";
+    slot.style.width = "100%";
+    slot.style.height = "54px"; // 48px + padding/border
+    slot.style.display = "flex";
+    slot.style.boxSizing = "border-box";
+    slot.style.padding = "2px";
+    slot.style.alignItems = "center";
+
+    if (options.className) slot.classList.add(options.className);
+    slot.dataset.index = index;
+    if (options.testId) slot.dataset.testid = options.testId;
+
+    if (options.onClick) {
+        slot.addEventListener("click", (e) => options.onClick(battler, index, e));
+    }
+
+    if (!battler) {
+        const empty = document.createElement("div");
+        empty.textContent = "(Empty)";
+        empty.style.margin = "auto";
+        slot.appendChild(empty);
+        return slot;
+    }
+
+    // Portrait
+    const portrait = document.createElement("div");
+    portrait.className = "party-slot-portrait";
+    portrait.style.backgroundImage = `url('assets/portraits/${battler.spriteKey || "pixie"}.png')`;
+    portrait.style.width = "48px";
+    portrait.style.height = "48px";
+    portrait.style.flexShrink = "0";
+    slot.appendChild(portrait);
+
+    // Info
+    const info = document.createElement("div");
+    info.style.display = "flex";
+    info.style.flexDirection = "column";
+    info.style.marginLeft = "6px";
+    info.style.justifyContent = "center";
+    info.style.overflow = "hidden";
+    info.style.flexGrow = "1";
+    info.style.whiteSpace = "nowrap";
+
+    // Label (Icon + Level + Name + Evo)
+    const label = createBattlerNameLabel(battler, { evolutionStatus: options.evolutionStatus });
+    label.style.overflow = "hidden";
+    label.style.textOverflow = "ellipsis";
+    info.appendChild(label);
+
+    // HP (Max only)
+    const hpText = document.createElement("div");
+    hpText.textContent = `Max HP: ${battler.maxHp}`;
+    hpText.style.fontSize = "10px";
+    hpText.style.marginTop = "2px";
+    info.appendChild(hpText);
+
+    slot.appendChild(info);
+
+    return slot;
+}
+
 export class WindowLayer {
   constructor() {
     this.element = document.createElement("div");
@@ -745,8 +817,8 @@ export class Window_Battle extends Window_Base {
     this.viewportEl.appendChild(header);
 
     battlers.forEach((e, idx) => {
-        const top = 30 + (idx % 2) * 40;
-        const left = 20 + Math.floor(idx / 2) * 220;
+        const top = 30 + Math.floor(idx / 2) * 40;
+        const left = 20 + (idx % 2) * 220;
         const hp = e.hp;
 
         const primaryElements = getPrimaryElements(e.elements);
@@ -764,8 +836,8 @@ export class Window_Battle extends Window_Base {
     });
 
     party.forEach((p, idx) => {
-        const top = 140 + (idx % 2) * 40;
-        const left = 20 + Math.floor(idx / 2) * 220;
+        const top = 140 + Math.floor(idx / 2) * 40;
+        const left = 20 + (idx % 2) * 220;
         const hp = p.hp;
 
         const primaryElements = getPrimaryElements(p.elements);
@@ -1066,7 +1138,7 @@ export class Window_Formation extends Window_Base {
 
     const label = document.createElement('div');
     label.className = 'formation-label';
-    label.textContent = 'Drag and drop to rearrange. Active party is the first 4 members.';
+    label.textContent = 'Click a member to select, then another to swap. Active party is the first 4.';
     formationBody.appendChild(label);
 
     this.gridEl = document.createElement('div');
@@ -1095,7 +1167,7 @@ export class Window_Formation extends Window_Base {
     this.btnOk = this.addButton("OK", () => this.onUserClose());
     this.btnCancel = this.addButton("Cancel", () => this.onUserClose());
 
-    this.draggedIndex = null;
+    this.selectedSlotIndex = null;
     this.party = null;
     this.onChange = null;
     this.context = null;
@@ -1105,6 +1177,7 @@ export class Window_Formation extends Window_Base {
       this.party = party;
       this.context = context;
       if (onChange) this.onChange = onChange;
+      this.selectedSlotIndex = null;
       this.renderFormationGrid();
   }
 
@@ -1123,14 +1196,22 @@ export class Window_Formation extends Window_Base {
           }
       }
 
-      const slot = createPartySlot(m, index, {
-          draggable: true,
-          onDragStart: this.onDragStart.bind(this),
-          onDragOver: this.onDragOver.bind(this),
-          onDrop: this.onDrop.bind(this),
-          onDragEnd: this.onDragEnd.bind(this),
+      const isReserve = index >= 4;
+      const options = {
+          onClick: this.onSlotClick.bind(this),
           evolutionStatus: evolutionStatus
-      });
+      };
+
+      let slot;
+      if (isReserve) {
+          slot = createReserveSlot(m, index, options);
+      } else {
+          slot = createPartySlot(m, index, options);
+      }
+
+      if (this.selectedSlotIndex === index) {
+          slot.classList.add('selected');
+      }
 
       if (index < 4) {
         this.gridEl.appendChild(slot);
@@ -1140,29 +1221,19 @@ export class Window_Formation extends Window_Base {
     });
   }
 
-  onDragStart(e, index) {
-    this.draggedIndex = index;
-    const slot = e.target.closest(".party-slot");
-    if (slot) slot.classList.add("dragging");
-  }
-  onDragOver(e) {
-    e.preventDefault();
-    const target = e.target.closest(".party-slot");
-    if (target) target.classList.add("drag-over");
-  }
-  onDrop(e, targetIndex) {
-    e.preventDefault();
-    if (this.draggedIndex === null || this.draggedIndex === targetIndex) return;
-    if (this.party.reorderMembers(this.draggedIndex, targetIndex)) {
-        this.draggedIndex = null;
-        this.renderFormationGrid();
-        SoundManager.beep(500, 80);
-        if (this.onChange) this.onChange();
-    }
-  }
-  onDragEnd(e) {
-    const allSlots = this.element.querySelectorAll(".party-slot");
-    allSlots.forEach((s) => s.classList.remove("dragging", "drag-over"));
+  onSlotClick(battler, index) {
+      if (this.selectedSlotIndex === null) {
+          this.selectedSlotIndex = index;
+      } else {
+          if (this.selectedSlotIndex !== index) {
+              if (this.party.reorderMembers(this.selectedSlotIndex, index)) {
+                  SoundManager.beep(500, 80);
+                  if (this.onChange) this.onChange();
+              }
+          }
+          this.selectedSlotIndex = null;
+      }
+      this.renderFormationGrid();
   }
 }
 
@@ -1871,12 +1942,20 @@ export class Window_PartySelect extends Window_Selectable {
                 }
             }
 
-            const slot = createPartySlot(m, index, {
+            const isReserve = index >= 4;
+            const options = {
                 onClick: (member, idx) => {
                     if (this.onSelect) this.onSelect(member, idx);
                 },
                 evolutionStatus: evolutionStatus
-            });
+            };
+
+            let slot;
+            if (isReserve) {
+                slot = createReserveSlot(m, index, options);
+            } else {
+                slot = createPartySlot(m, index, options);
+            }
             this.gridEl.appendChild(slot);
         });
     }
@@ -2259,4 +2338,5 @@ if (typeof window !== 'undefined' && window.location.search.includes("test=true"
     window.Window_ConfirmEffect = Window_ConfirmEffect;
     window.Window_PartySelect = Window_PartySelect;
     window.Window_EquipItemSelect = Window_EquipItemSelect;
+    window.Window_Battle = Window_Battle;
 }
