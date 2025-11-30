@@ -511,7 +511,7 @@ export class Game_Party {
      * The list of party members.
      * @type {Game_Battler[]}
      */
-    this.members = [];
+    this.members = new Array(this.MAX_MEMBERS).fill(null);
 
     /**
      * The party's gold.
@@ -536,36 +536,44 @@ export class Game_Party {
     this.gold = startingParty.getGold();
     this.inventory = startingParty.getInventory(items);
 
+    console.log(`[Game_Party] Initializing. Max: ${this.MAX_MEMBERS}, Current Len: ${this.members.length}`);
+
     const memberConfigs = startingParty.getMembers(actors);
-    this.members = memberConfigs.map(config => {
-      const actorData = actors.find(a => a.id === config.id);
-      if (!actorData) {
-        console.error(`Actor data not found for ID: ${config.id}`);
-        return null;
-      }
-      return Game_Battler.create(actorData, config.level);
-    }).filter(member => member !== null);
+    memberConfigs.forEach((config, i) => {
+        if (i >= this.MAX_MEMBERS) return;
+        const actorData = actors.find(a => a.id === config.id);
+        if (actorData) {
+            this.members[i] = Game_Battler.create(actorData, config.level);
+        }
+    });
+    console.log(`[Game_Party] Members initialized. Len: ${this.members.length}`);
   }
 
   /**
-   * Reorders a party member from one index to another.
-   * @param {number} fromIndex - The current index of the member.
-   * @param {number} toIndex - The target index.
+   * Adds a new member to the first available slot.
+   * @param {Game_Battler} battler - The battler to add.
+   * @returns {boolean} True if added, false if full.
+   */
+  addMember(battler) {
+      const index = this.members.findIndex(m => m === null);
+      if (index === -1) return false;
+      this.members[index] = battler;
+      return true;
+  }
+
+  /**
+   * Swaps two party slots.
+   * @param {number} index1
+   * @param {number} index2
    * @returns {boolean} True if successful.
    */
-  reorderMembers(fromIndex, toIndex) {
-      if (fromIndex < 0 || fromIndex >= this.members.length) return false;
-      // Allow dropping at the end of the list? The logic in Scene_Map limited it to valid slots.
-      // But Scene_Map rendered slots for all members.
-      if (toIndex < 0) return false; // toIndex can be >= length if we append?
-      // For now, stick to existing logic which seemed to assume swapping within existing slots.
-      // But Scene_Map rendered "Reserve" slots too.
+  reorderMembers(index1, index2) {
+      if (index1 < 0 || index1 >= this.MAX_MEMBERS) return false;
+      if (index2 < 0 || index2 >= this.MAX_MEMBERS) return false;
 
-      // Safety check
-      if (toIndex >= this.members.length) toIndex = this.members.length - 1;
-
-      const [moved] = this.members.splice(fromIndex, 1);
-      this.members.splice(toIndex, 0, moved);
+      const temp = this.members[index1];
+      this.members[index1] = this.members[index2];
+      this.members[index2] = temp;
       return true;
   }
 
