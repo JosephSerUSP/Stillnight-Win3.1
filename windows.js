@@ -1901,15 +1901,15 @@ export class Window_HUD {
             <div class="exploration-frame panel">
               <div class="exploration-grid" id="exploration-grid"></div>
               <div class="legend">
-                <span>☺ = Party</span>
-                <span>█ = Wall</span>
-                <span>E = Enemy</span>
-                <span>R = Recovery</span>
-                <span>S = Stairs</span>
-                <span>♱ = Shrine</span>
-                <span>¥ = Shop</span>
-                <span>? = Unseen</span>
-                <span>U = Recruit</span>
+                <span>☺: Party</span>
+                <span>█: Wall</span>
+                <span>E: Enemy</span>
+                <span>R: Recovery</span>
+                <span>S: Stairs</span>
+                <span>♱: Shrine</span>
+                <span>¥: Shop</span>
+                <span>?: Unseen</span>
+                <span>U: Recruit</span>
               </div>
             </div>
           </div>
