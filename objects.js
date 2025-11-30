@@ -521,8 +521,8 @@ export class Game_Event {
  */
 export class Game_Map {
   constructor() {
-    this.MAX_W = 16;
-    this.MAX_H = 16;
+    this.MAX_W = 20;
+    this.MAX_H = 20;
     this.floors = [];
     this.floorIndex = 0;
     this.maxReachedFloorIndex = 0;
@@ -648,6 +648,8 @@ export class Game_Map {
       startX,
       startY,
       discovered: false,
+      revealableCount: tiles.reduce((acc, row) => acc + row.filter(t => t === '.').length, 0),
+      revealedCount: 0
     };
   }
 
@@ -668,7 +670,20 @@ export class Game_Map {
         const nx = this.playerX + dx;
         const ny = this.playerY + dy;
         if (ny >= 0 && ny < this.MAX_H && nx >= 0 && nx < this.MAX_W) {
-          floor.visited[ny][nx] = true;
+          if (!floor.visited[ny][nx]) {
+            floor.visited[ny][nx] = true;
+            if (floor.tiles[ny][nx] === '.') {
+              floor.revealedCount++;
+            }
+          }
+        }
+      }
+    }
+
+    if (floor.revealedCount >= floor.revealableCount) {
+      for (let y = 0; y < this.MAX_H; y++) {
+        for (let x = 0; x < this.MAX_W; x++) {
+          floor.visited[y][x] = true;
         }
       }
     }
