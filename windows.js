@@ -1762,7 +1762,7 @@ export class Window_HUD {
           <div class="card-side-panels">
             <div class="party-panel panel">
               <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span>Party Status (click to inspect)</span>
+                <span>Party Status</span>
                 <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-formation">
                   Formation...
                 </button>
