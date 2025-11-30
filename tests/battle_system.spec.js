@@ -209,4 +209,35 @@ test.describe('Battle System', () => {
         expect(result.heroHp).toBe(50 + result.drainValue);
         expect(result.allyHp).toBe(100 - result.drainValue);
     });
+
+    test('Reserve party members do not enter battle (Active Members only)', async ({ page }) => {
+        const queueLength = await page.evaluate(() => {
+            const { BattleManager, Game_Battler, Game_Party } = window;
+            const dataManager = window.dataManager;
+            const party = new Game_Party();
+
+            // Add 4 active members
+            for(let i=0; i<4; i++) {
+                const m = new Game_Battler({ name: `Member${i}`, maxHp: 100, level: 1 });
+                party.addMember(m);
+            }
+
+            // Add 1 reserve member
+            const reserve = new Game_Battler({ name: "Reserve", maxHp: 100, level: 1 });
+            party.addMember(reserve);
+
+            // Create a gap to test robust active member logic
+            party.removeMember(party.slots[1]); // Remove Member1 (Slot 1)
+
+            const bm = new BattleManager(party, dataManager);
+            const enemy = new Game_Battler({ name: "Slime", maxHp: 10, level: 1 }, 1, true);
+
+            bm.setup([enemy], 0, 0);
+            bm.startRound();
+
+            return bm.turnQueue.filter(t => !t.isEnemy).length;
+        });
+
+        expect(queueLength).toBe(3);
+    });
 });
