@@ -576,8 +576,8 @@ export class Game_Map {
    * Creates a new Game_Map instance.
    */
   constructor() {
-    this.MAX_W = 16;
-    this.MAX_H = 16;
+    this.MAX_W = 20;
+    this.MAX_H = 20;
     this.floors = [];
     this.floorIndex = 0;
     this.maxReachedFloorIndex = 0;
