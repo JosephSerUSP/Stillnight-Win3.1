@@ -24,7 +24,7 @@ test.describe('Battle System', () => {
             // Mock party members
             const heroData = dataManager.actors.find(a => a.id === "hero");
             const hero = new Game_Battler({...heroData, level: 1});
-            party.members.push(hero);
+            party.addMember(hero);
 
             const bm = new BattleManager(party, dataManager);
 
@@ -124,7 +124,7 @@ test.describe('Battle System', () => {
             const dataManager = window.dataManager;
             const party = new Game_Party();
             const hero = new Game_Battler({ name: "Hero", maxHp: 100, level: 1 });
-            party.members.push(hero);
+            party.addMember(hero);
 
             const bm = new BattleManager(party, dataManager);
 
@@ -184,11 +184,11 @@ test.describe('Battle System', () => {
             }
 
             hero.hp = 50;
-            party.members.push(hero);
+            party.addMember(hero);
 
             const ally = new Game_Battler({ name: "Ally", maxHp: 100, level: 1 });
             ally.hp = 100;
-            party.members.push(ally);
+            party.addMember(ally);
 
             const bm = new BattleManager(party, dataManager);
             bm.setup([], 0, 0);

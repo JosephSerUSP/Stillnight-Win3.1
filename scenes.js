@@ -1,29 +1,10 @@
 import { Game_Map, Game_Party, Game_Battler, Game_Event } from "./objects.js";
+import { Game_Interpreter } from "./interpreter.js";
 import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula, probabilisticRound } from "./core.js";
 import { BattleManager, SoundManager, ThemeManager } from "./managers.js";
-import {
-  Window_Battle,
-  Window_Shop,
-  Window_Event,
-  Window_Recruit,
-  Window_Formation,
-  Window_Inventory,
-  Window_Inspect,
-  Window_Confirm,
-  Window_Evolution,
-  Window_ConfirmEffect,
-  Window_PartySelect,
-  Window_EquipItemSelect,
-  Window_Options,
-  Window_HUD,
-  Window_Help,
-  WindowLayer,
-  createInteractiveLabel,
-  createElementIcon,
-  createBattlerNameLabel,
-  renderCreatureInfo,
-  renderElements
-} from "./windows.js";
+import { Window_Battle, Window_Shop } from "./windows.js";
+import { InputController } from "./input.js";
+import { MapUIManager } from "./map_ui.js";
 import { tooltip } from "./tooltip.js";
 
 /**
@@ -135,7 +116,7 @@ export class Scene_Battle extends Scene_Base {
     this.tileY = tileY;
     this.battleBusy = false;
 
-    this.battleWindow = new Window_Battle();
+    this.battleWindow = new Window_Battle_Refactored();
     this.windowLayer.addChild(this.battleWindow);
 
     this.battleWindow.btnRound.addEventListener("click", this.resolveBattleRound.bind(this));
@@ -227,7 +208,7 @@ export class Scene_Battle extends Scene_Base {
   renderBattleAscii() {
     if (!this.battleManager) return;
     const enemies = this.battleManager.enemies;
-    this.battleWindow.refresh(enemies, this.party.members.slice(0, 4));
+    this.battleWindow.refresh(enemies, this.party.slots.slice(0, 4));
   }
 
   /**
@@ -860,454 +841,6 @@ export class Scene_Shop extends Scene_Base {
     }
 }
 
-/**
- * @class Game_Interpreter
- * @description Handles event execution logic decoupled from Scene_Map.
- */
-class Game_Interpreter {
-    /**
-     * @param {Scene_Map} scene - The scene instance.
-     */
-    constructor(scene) {
-        this.scene = scene;
-    }
-
-    get dataManager() { return this.scene.dataManager; }
-    get windowManager() { return this.scene.windowManager; }
-    get sceneManager() { return this.scene.sceneManager; }
-    get party() { return this.scene.party; }
-    get map() { return this.scene.map; }
-
-    /**
-     * Executes a map event action.
-     * @param {Object} action - The action object.
-     * @param {import("./objects.js").Game_Event} event - The source event.
-     */
-    execute(action, event) {
-        switch(action.type) {
-            case 'BATTLE':
-                this.scene.setStatus("Enemy encountered!");
-                this.scene.logMessage("[Battle] Shapes uncoil from the dark.");
-                this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.scene.battleManager, this.scene.windowLayer, this.map, event.x, event.y));
-                break;
-            case 'SHOP':
-                this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.windowManager, this.party, this.scene.windowLayer));
-                break;
-            case 'SHRINE':
-                this.scene.logMessage("[Shrine] You encounter a shrine.");
-                this.openShrineEvent();
-                break;
-            case 'RECRUIT':
-                this.openRecruitEvent();
-                break;
-            case 'NPC_DIALOGUE':
-                this.openNpcEvent(action.id);
-                this.scene.updateAll();
-                break;
-            case 'DESCEND':
-                this.descendStairs();
-                SoundManager.beep(800, 150);
-                break;
-            case 'HEAL_PARTY':
-                this.healParty();
-                break;
-            case 'MESSAGE':
-                if (action.text) this.scene.logMessage(action.text);
-                this.scene.updateAll();
-                break;
-            case 'TREASURE':
-                this.openTreasureEvent();
-                break;
-            case 'TRAP_TRIGGER':
-                this.triggerTrap(action);
-                break;
-        }
-    }
-
-    /**
-     * Fully heals the party.
-     */
-    healParty() {
-        this.party.members.forEach((m) => (m.hp = m.maxHp));
-        this.scene.logMessage("[Recover] A soft glow restores your party.");
-        this.party.members.forEach((member) => {
-            const xpBonus = member.getPassiveValue("RECOVERY_XP_BONUS");
-            if (xpBonus > 0) {
-            this.scene.gainXp(member, xpBonus);
-            this.scene.logMessage(
-                `[Passive] ${member.name} gains ${xpBonus} bonus XP.`
-            );
-            }
-        });
-        this.scene.setStatus("Recovered HP.");
-        SoundManager.beep(600, 80);
-        this.scene.applyMovePassives();
-        this.scene.updateAll();
-    }
-
-    /**
-     * Handles descending to the next floor.
-     */
-    descendStairs() {
-        if (this.map.floorIndex + 1 >= this.map.floors.length) {
-            this.scene.logMessage("[Floor] You find no further descent. The run ends here.");
-            this.scene.runActive = false;
-            this.scene.setStatus("No deeper floors. Run over (for now).");
-            this.scene.updateAll();
-            return;
-        }
-        this.map.floorIndex++;
-        if (this.map.floorIndex > this.map.maxReachedFloorIndex) {
-            this.map.maxReachedFloorIndex = this.map.floorIndex;
-        }
-        const f = this.map.floors[this.map.floorIndex];
-        f.discovered = true;
-        this.map.playerX = f.startX;
-        this.map.playerY = f.startY;
-        this.map.revealAroundPlayer();
-        this.scene.logMessage(`[Floor] You descend to: ${f.title}`);
-        this.scene.logMessage(`[Floor] ${f.intro}`);
-        this.scene.setStatus("Descending.");
-        SoundManager.beep(800, 150);
-        this.scene.updateAll();
-    }
-
-    openShrineEvent() {
-        const scenarios = this.dataManager.events.filter(e => e.type === 'shrine_scenario');
-        if (scenarios.length === 0) {
-            this.scene.logMessage(this.dataManager.terms.shrine.silent);
-            return;
-        }
-        const ev = scenarios[randInt(0, scenarios.length - 1)];
-
-        const choices = ev.choices.map(ch => ({
-            label: ch.label,
-            onClick: async () => {
-                this.scene.eventWindow.appendLog(`> ${ch.label}`);
-                await this.applyEventEffect(ch.effect);
-                this.scene.eventWindow.updateChoices([{
-                    label: "Exit Shrine",
-                    onClick: () => this.closeEvent()
-                }]);
-            }
-        }));
-
-        this.scene.eventWindow.show({
-            title: ev.title,
-            description: ev.description,
-            image: ev.image || "shrine.png",
-            style: 'terminal',
-            choices: choices
-        });
-        this.windowManager.push(this.scene.eventWindow);
-
-        this.scene.setStatus("Shrine event.");
-        SoundManager.beep(700, 150);
-    }
-
-    async applyEventEffect(effect) {
-        const log = (msg) => this.scene.logMessage(msg);
-        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-        await delay(300);
-
-        switch (effect.type) {
-        case "hp":
-            this.party.members.forEach((m) => {
-                m.hp += effect.value;
-                if (m.hp > m.maxHp) m.hp = m.maxHp;
-                if (m.hp < 0) m.hp = 0;
-            });
-            log(this.dataManager.terms.shrine.hp_change.replace("{0}", effect.value));
-            break;
-        case "maxHp":
-            this.party.members.forEach((m) => (m.maxHp += effect.value));
-            log(this.dataManager.terms.shrine.max_hp_change.replace("{0}", effect.value));
-            break;
-        case "xp":
-            this.party.members.forEach((m) => this.scene.gainXp(m, effect.value));
-            log(this.dataManager.terms.shrine.xp_gain.replace("{0}", effect.value));
-            break;
-        case "gold":
-            this.party.gold += effect.value;
-            log(this.dataManager.terms.shrine.gold_gain.replace("{0}", effect.value));
-            if (effect.onSuccess) {
-            await this.applyEventEffect(effect.onSuccess);
-            }
-            break;
-        case "message":
-            log(effect.value);
-            break;
-        case "random":
-            const roll = Math.random();
-            let outcome;
-            for (const o of effect.outcomes) {
-            if (roll < o.chance) {
-                outcome = o;
-                break;
-            }
-            }
-            if (outcome) {
-            await this.applyEventEffect(outcome.effect);
-            }
-            break;
-        case "multi":
-            for (const e of effect.effects) {
-                await this.applyEventEffect(e);
-            }
-            break;
-        }
-        this.scene.updateAll();
-    }
-
-    triggerTrap(action) {
-        this.scene.eventWindow.show({
-            title: "Trap!",
-            description: action.message || "You triggered a trap!",
-            image: "trap.png",
-            style: 'terminal',
-            choices: [{
-                label: "Ouch...",
-                onClick: () => this.resolveTrap(action)
-            }]
-        });
-        this.windowManager.push(this.scene.eventWindow);
-        SoundManager.beep(150, 300);
-    }
-
-    async resolveTrap(action) {
-        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-        try {
-            const dmg = action.damage || 5;
-            this.scene.eventWindow.appendLog(`> Ouch...`);
-            await delay(500);
-
-            this.party.members.forEach(m => {
-                m.hp = Math.max(0, m.hp - dmg);
-            });
-
-            this.scene.logMessage(`The party takes ${dmg} damage.`);
-            this.scene.checkPermadeath();
-            SoundManager.beep(150, 300);
-            this.scene.updateAll();
-
-            this.scene.eventWindow.updateChoices([{
-                label: "Close",
-                onClick: () => this.scene.eventWindow.onUserClose()
-            }]);
-        } catch (e) {
-            console.error(e);
-            this.scene.eventWindow.appendLog("Error in resolveTrap: " + e);
-        }
-    }
-
-    openTreasureEvent() {
-        const floor = this.map.floors[this.map.floorIndex];
-        let possibleItems = floor.treasures || [];
-
-        if (!possibleItems || possibleItems.length === 0) {
-            possibleItems = this.dataManager.items.filter(i => i.type !== 'key').map(i => i.id);
-        }
-
-        let itemId;
-        if (typeof possibleItems[0] === 'string') {
-            itemId = possibleItems[randInt(0, possibleItems.length - 1)];
-        } else {
-            const picked = pickWeighted(possibleItems);
-            itemId = picked ? picked.id : null;
-        }
-
-        if (!itemId && possibleItems.length > 0) {
-            if (typeof possibleItems[0] === 'string') itemId = possibleItems[0];
-            else itemId = possibleItems[0].id;
-        }
-
-        const item = this.dataManager.items.find(i => i.id === itemId) || this.dataManager.items[0];
-
-        this.party.inventory.push(item);
-        this.clearEventTile();
-
-        const itemLabel = createInteractiveLabel(item, 'item');
-
-        this.scene.eventWindow.show({
-            title: "Treasure Found!",
-            description: [
-                "You found:",
-                itemLabel,
-                "",
-                item.description
-            ],
-            image: "treasure.png",
-            style: 'terminal',
-            choices: [{
-                label: "Take",
-                onClick: () => this.closeEvent()
-            }]
-        });
-        this.windowManager.push(this.scene.eventWindow);
-        SoundManager.beep(800, 100);
-        this.scene.updateAll();
-    }
-
-    closeEvent() {
-        this.windowManager.close(this.scene.eventWindow);
-        this.scene.updateAll();
-    }
-
-    openRecruitEvent(options = {}) {
-        const { forcedId, cost: forcedCost, onRecruit } = options;
-        this._onRecruitCallback = onRecruit;
-
-        let recruit;
-        if (forcedId) {
-             recruit = this.dataManager.actors.find(a => a.id === forcedId);
-        }
-
-        if (!recruit) {
-            const availableCreatures = this.dataManager.actors.filter(creature => !creature.isEnemy);
-            if (availableCreatures.length === 0) {
-                this.scene.logMessage(this.dataManager.terms.recruit.no_one_here);
-                return;
-            }
-            recruit = availableCreatures[randInt(0, availableCreatures.length - 1)];
-        }
-
-        const cost = forcedCost !== undefined ? forcedCost : randInt(25, 75);
-
-        renderCreatureInfo(this.scene.recruitWindow.bodyEl, recruit, {
-            showElement: true,
-            showEquipment: true,
-            showPassives: true,
-            showSkills: true,
-            showFlavor: true,
-            dataManager: this.dataManager
-        });
-
-        this.scene.recruitWindow.buttonsEl.innerHTML = "";
-        const joinBtn = document.createElement("button");
-        joinBtn.className = "win-btn";
-        joinBtn.textContent = `Pay ${cost} Gold`;
-        joinBtn.addEventListener("click", () => {
-            if (this.party.gold >= cost) {
-                this.party.gold -= cost;
-                this.attemptRecruit(recruit);
-            } else {
-                this.scene.logMessage(`[Recruit] You don't have enough gold.`);
-                this.closeRecruitEvent();
-            }
-        });
-        const declineBtn = document.createElement("button");
-        declineBtn.className = "win-btn";
-        declineBtn.textContent = "Decline";
-        declineBtn.addEventListener("click", () => {
-            this.scene.logMessage(`[Recruit] You decline ${recruit.name}'s offer.`);
-            this.closeRecruitEvent();
-        });
-        this.scene.recruitWindow.buttonsEl.appendChild(joinBtn);
-        this.scene.recruitWindow.buttonsEl.appendChild(declineBtn);
-
-        this.windowManager.push(this.scene.recruitWindow);
-        this.scene.setStatus("Recruit encountered.");
-        SoundManager.beep(400, 100);
-    }
-
-    closeRecruitEvent() {
-        this._onRecruitCallback = null;
-        this.windowManager.close(this.scene.recruitWindow);
-        this.scene.setStatus("Exploration");
-    }
-
-    openNpcEvent(npcId) {
-        const npc = this.dataManager.npcs.find(n => n.id === npcId);
-        if (!npc) return;
-
-        let text = "";
-        if (typeof npc.dialogue === 'string') {
-            text = npc.dialogue;
-        }
-
-        this.scene.eventWindow.show({
-            title: npc.name,
-            description: `"${text}"`,
-            style: 'terminal',
-            choices: [{
-                label: "Leave",
-                onClick: () => this.closeEvent()
-            }]
-        });
-        this.windowManager.push(this.scene.eventWindow);
-
-        this.scene.setStatus(`Talking to ${npc.name}.`);
-        SoundManager.beep(400, 100);
-    }
-
-    clearEventTile() {
-        if (this.scene.currentInteractionEvent) {
-            this.map.removeEvent(this.map.floorIndex, this.scene.currentInteractionEvent.x, this.scene.currentInteractionEvent.y);
-            this.scene.currentInteractionEvent = null;
-        }
-        this.scene.updateGrid();
-    }
-
-    attemptRecruit(recruit) {
-        if (this.party.hasEmptySlot()) {
-            this.party.addMember(Game_Battler.create(recruit));
-            this.scene.logMessage(`[Recruit] ${recruit.name} joins your party.`);
-            this.scene.setStatus(
-                this.dataManager.terms.recruit.recruited.replace("{0}", recruit.name)
-            );
-
-            if (this._onRecruitCallback) {
-                this._onRecruitCallback();
-                this._onRecruitCallback = null;
-            }
-
-            this.clearEventTile();
-            this.closeRecruitEvent();
-            this.scene.updateParty();
-            return;
-        }
-        this.scene.recruitWindow.bodyEl.innerHTML =
-            this.dataManager.terms.recruit.party_full;
-        this.scene.recruitWindow.buttonsEl.innerHTML = "";
-        this.party.members.forEach((m, idx) => {
-            const btn = document.createElement("button");
-            btn.className = "win-btn";
-            btn.textContent = m.name;
-            btn.addEventListener("click", () => {
-                this.replaceMemberWithRecruit(idx, recruit);
-            });
-            this.scene.recruitWindow.buttonsEl.appendChild(btn);
-        });
-        const cancelBtn = document.createElement("button");
-        cancelBtn.className = "win-btn";
-        cancelBtn.textContent = "Cancel";
-        cancelBtn.addEventListener("click", () => {
-            this.scene.logMessage(this.dataManager.terms.recruit.decide_not_to_replace);
-            this.closeRecruitEvent();
-        });
-        this.scene.recruitWindow.buttonsEl.appendChild(cancelBtn);
-    }
-
-    replaceMemberWithRecruit(index, recruit) {
-        const replaced = this.party.members[index];
-        this.scene.logMessage(
-            this.dataManager.terms.recruit.replace_member
-                .replace("{0}", replaced.name)
-                .replace("{1}", recruit.name)
-        );
-        this.party.replaceMember(index, Game_Battler.create(recruit));
-
-        if (this._onRecruitCallback) {
-            this._onRecruitCallback();
-            this._onRecruitCallback = null;
-        }
-
-        this.clearEventTile();
-        this.scene.updateParty();
-        this.closeRecruitEvent();
-    }
-}
 
 /**
  * @class Scene_Map
@@ -1333,66 +866,46 @@ export class Scene_Map extends Scene_Base {
     this.draggedIndex = null;
     this.currentInteractionEvent = null;
 
-    this.hud = new Window_HUD();
-    this.getDomElements();
-    this.addEventListeners();
-
-    this.windowLayer = new WindowLayer();
-    const gameContainer = document.getElementById("game-container");
-    this.windowLayer.appendTo(gameContainer);
-
-    this.inventoryWindow = new Window_Inventory();
-    this.windowLayer.addChild(this.inventoryWindow);
-    this.eventWindow = new Window_Event();
-    this.eventWindow.onUserClose = this.interpreter.closeEvent.bind(this.interpreter);
-    this.windowLayer.addChild(this.eventWindow);
-    this.recruitWindow = new Window_Recruit();
-    this.windowLayer.addChild(this.recruitWindow)
-    this.formationWindow = new Window_Formation();
-    this.windowLayer.addChild(this.formationWindow)
-    this.inspectWindow = new Window_Inspect();
-    this.windowLayer.addChild(this.inspectWindow)
-    this.evolutionWindow = new Window_Evolution();
-    this.windowLayer.addChild(this.evolutionWindow);
-    this.confirmWindow = new Window_Confirm();
-    this.windowLayer.addChild(this.confirmWindow);
-    this.confirmEffectWindow = new Window_ConfirmEffect();
-    this.windowLayer.addChild(this.confirmEffectWindow);
-    this.partySelectWindow = new Window_PartySelect();
-    this.windowLayer.addChild(this.partySelectWindow);
-    this.equipItemSelectWindow = new Window_EquipItemSelect();
-    this.windowLayer.addChild(this.equipItemSelectWindow);
-    this.optionsWindow = new Window_Options();
-    this.windowLayer.addChild(this.optionsWindow);
-    this.helpWindow = new Window_Help();
-    this.windowLayer.addChild(this.helpWindow);
-
-    this.recruitWindow.onUserClose = this.interpreter.closeRecruitEvent.bind(this.interpreter);
-    this.evolutionWindow.onUserClose = () => this.windowManager.close(this.evolutionWindow);
-    this.formationWindow.onUserClose = this.closeFormation.bind(this);
-    this.confirmWindow.onUserClose = () => this.windowManager.close(this.confirmWindow);
-    this.confirmEffectWindow.onUserClose = () => this.windowManager.close(this.confirmEffectWindow);
-    this.partySelectWindow.onUserClose = () => this.windowManager.close(this.partySelectWindow);
-    this.equipItemSelectWindow.onUserClose = () => this.windowManager.close(this.equipItemSelectWindow);
-    this.optionsWindow.onUserClose = () => this.windowManager.close(this.optionsWindow);
-    this.helpWindow.onUserClose = () => this.windowManager.close(this.helpWindow);
-
-    this.inventoryWindow.onUserClose = this.closeInventory.bind(this);
+    this.input = new InputController();
+    this.ui = new MapUIManager(this);
   }
 
+  // Getters for Interpreter compatibility
+  get eventWindow() { return this.ui.eventWindow; }
+  get recruitWindow() { return this.ui.recruitWindow; }
+  get inventoryWindow() { return this.ui.inventoryWindow; }
+  get windowLayer() { return this.ui.windowLayer; }
 
-  /**
-   * Starts the map scene by initiating a new run.
-   * @method start
-   */
+  // UI Delegation
+  logMessage(msg) { this.ui.logMessage(msg); }
+  setStatus(msg) { this.ui.setStatus(msg); }
+  updateAll() { this.ui.updateAll(); }
+  updateGrid() { this.ui.updateGrid(this.map); }
+  updateParty() { this.ui.updateParty(); }
+  openFormation() { this.ui.openFormation(); }
+  openInventory() { this.ui.openInventory(); }
+  openHelp() { this.ui.openHelp(); }
+  openSettings() { this.ui.openSettings(); }
+  openInspect(member, index) { this.ui.openInspect(member, index); }
+  closeInspect() { this.ui.closeInspect(); }
+  openEquipmentScreen() { this.ui.openEquipmentScreen(this.ui.inspectWindow.member); }
+  openEvolution(member, evoData) { this.ui.openEvolution(member, evoData); }
+
+  // Game Logic / Scene Transitions
+  startBattle(x, y) {
+      this.setStatus("Enemy encountered!");
+      this.logMessage("[Battle] Shapes uncoil from the dark.");
+      this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.battleManager, this.windowLayer, this.map, x, y));
+  }
+
+  startShop() {
+      this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.windowManager, this.party, this.windowLayer));
+  }
+
   start() {
     this.startNewRun();
   }
 
-  /**
-   * Resets game state and starts a fresh dungeon run.
-   * @method startNewRun
-   */
   startNewRun() {
     if (this.sceneManager.currentScene() !== this) return;
     this.map.initFloors(this.dataManager.maps, this.dataManager.events, this.dataManager.npcs);
@@ -1404,7 +917,9 @@ export class Scene_Map extends Scene_Base {
     this.map.playerY = f.startY;
     this.map.revealAroundPlayer();
 
-    this.logEl.textContent = "";
+    // Clear log via UI
+    if (this.ui.logEl) this.ui.logEl.textContent = "";
+
     this.logMessage(this.dataManager.terms.log.new_run);
     this.logMessage(this.dataManager.terms.log.floor_intro + f.intro);
     this.setStatus(
@@ -1414,73 +929,17 @@ export class Scene_Map extends Scene_Base {
     this.updateAll();
   }
 
-  /**
-   * Caches references to DOM elements created in createUI.
-   * @method getDomElements
-   */
-  getDomElements() {
-    this.explorationGridEl = document.getElementById("exploration-grid");
-    // Other DOM elements are cached for dynamic updates, but buttons are now accessed via HUD.
-    this.logEl = document.getElementById("log-content");
-    this.statusMessageEl = document.getElementById("status-message");
-    this.statusGoldEl = document.getElementById("status-gold");
-    this.statusFloorEl = document.getElementById("status-floor");
-    this.statusCardsEl = document.getElementById("status-cards");
-    this.statusRunEl = document.getElementById("status-run");
-    this.statusItemsEl = document.getElementById("status-items");
-    this.modeLabelEl = document.getElementById("mode-label");
-  }
-
-  /**
-   * Sets up global event listeners for the map scene.
-   * @method addEventListeners
-   */
-  addEventListeners() {
-    this.hud.btnNewRun.addEventListener("click", this.startNewRun.bind(this));
-    this.hud.btnRevealAll.addEventListener("click", this.revealAllFloors.bind(this));
-    this.hud.btnSettings.addEventListener("click", this.openSettings.bind(this));
-    this.hud.btnHelp.addEventListener("click", this.openHelp.bind(this));
-    this.hud.btnClearLog.addEventListener("click", () => {
-      this.logEl.textContent = "";
-      this.setStatus("Log cleared.");
-      SoundManager.beep(300, 80);
-    });
-    this.hud.btnFormation.addEventListener("click", this.openFormation.bind(this));
-    this.hud.btnInventory.addEventListener("click", this.openInventory.bind(this));
-  }
-
-  /**
-   * Handles keyboard input for player movement.
-   * @method onKeyDown
-   * @param {KeyboardEvent} e - The keyboard event.
-   */
   onKeyDown(e) {
     if (!this.runActive) return;
     if (this.windowManager.stack.length > 0) return;
 
-    let dx = 0;
-    let dy = 0;
+    const action = this.input.getAction(e);
+    let dx = 0, dy = 0;
 
-    switch (e.key) {
-      case "ArrowUp":
-      case "w":
-        dy = -1;
-        break;
-      case "ArrowDown":
-      case "s":
-        dy = 1;
-        break;
-      case "ArrowLeft":
-      case "a":
-        dx = -1;
-        break;
-      case "ArrowRight":
-      case "d":
-        dx = 1;
-        break;
-      default:
-        return;
-    }
+    if (action === 'up') dy = -1;
+    else if (action === 'down') dy = 1;
+    else if (action === 'left') dx = -1;
+    else if (action === 'right') dx = 1;
 
     if (dx !== 0 || dy !== 0) {
       e.preventDefault();
@@ -1488,12 +947,6 @@ export class Scene_Map extends Scene_Base {
     }
   }
 
-  /**
-   * Attempts to move the player by the given delta.
-   * @method movePlayer
-   * @param {number} dx - X delta.
-   * @param {number} dy - Y delta.
-   */
   movePlayer(dx, dy) {
     const newX = this.map.playerX + dx;
     const newY = this.map.playerY + dy;
@@ -1504,7 +957,7 @@ export class Scene_Map extends Scene_Base {
       newY >= 0 &&
       newY < this.map.MAX_H
     ) {
-      const tileEl = this.explorationGridEl.querySelector(
+      const tileEl = this.ui.explorationGridEl.querySelector(
         `[data-x='${newX}'][data-y='${newY}']`
       );
       if (tileEl) {
@@ -1513,43 +966,10 @@ export class Scene_Map extends Scene_Base {
     }
   }
 
-  /**
-   * Returns a promise that resolves after the given milliseconds.
-   * @method delay
-   * @param {number} ms
-   * @returns {Promise}
-   */
   delay(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  /**
-   * Appends a message to the event log.
-   * @method logMessage
-   * @param {string} msg - The message to log.
-   */
-  logMessage(msg) {
-    this.logEl.textContent += msg + "\n";
-    this.logEl.scrollTop = this.logEl.scrollHeight;
-
-    if (this.windowManager.stack.includes(this.eventWindow)) {
-        this.eventWindow.appendLog(msg);
-    }
-  }
-
-  /**
-   * Updates the status bar message.
-   * @method setStatus
-   * @param {string} msg - The status message.
-   */
-  setStatus(msg) {
-    this.statusMessageEl.textContent = msg;
-  }
-
-  /**
-   * Checks for party members with 0 HP and handles permadeath or rebirth traits.
-   * @method checkPermadeath
-   */
   checkPermadeath() {
     let deadFound = false;
     const members = [...this.party.members];
@@ -1589,127 +1009,6 @@ export class Scene_Map extends Scene_Base {
     }
   }
 
-  /**
-   * Triggers a full update of all UI components.
-   * @method updateAll
-   */
-  updateAll() {
-    this.updateGrid();
-    this.updateCardHeader();
-    this.updateCardList();
-    this.updateParty();
-    this.statusGoldEl.textContent = this.party.gold;
-    this.statusItemsEl.textContent = this.party.inventory.length;
-    this.statusRunEl.textContent = this.runActive ? "Active" : "Over";
-    this.modeLabelEl.textContent = "Exploration";
-  }
-
-  /**
-   * Re-renders the map grid based on current state (fog, player pos, etc).
-   * @method updateGrid
-   */
-  updateGrid() {
-    const floor = this.map.floors[this.map.floorIndex];
-    this.explorationGridEl.innerHTML = "";
-    for (let y = 0; y < this.map.MAX_H; y++) {
-      for (let x = 0; x < this.map.MAX_W; x++) {
-        const tileEl = document.createElement("div");
-        tileEl.className = "tile";
-        tileEl.dataset.x = x;
-        tileEl.dataset.y = y;
-
-        const isPlayer = x === this.map.playerX && y === this.map.playerY;
-        const visited = floor.visited[y][x];
-        const ch = floor.tiles[y][x];
-        const event = floor.events ? floor.events.find(e => e.x === x && e.y === y) : null;
-
-        if (!visited && !isPlayer) {
-          tileEl.classList.add("tile-fog");
-          tileEl.textContent = "?";
-        } else {
-          let symbol = " ";
-
-          if (event) {
-              let visible = true;
-              if (event.hidden) {
-                  let maxSee = 0;
-                  this.party.members.forEach(m => {
-                      const v = m.getPassiveValue("SEE_TRAPS");
-                      if (v > maxSee) maxSee = v;
-                  });
-                  if (maxSee <= event.trapValue) {
-                      visible = false;
-                  }
-              }
-
-              if (visible) {
-                  symbol = event.symbol;
-                  if (event.cssClass) tileEl.classList.add(event.cssClass);
-              }
-          }
-
-          if (symbol === " ") {
-            switch (ch) {
-              case "#":
-                symbol = "█";
-                break;
-              case ".":
-                symbol = " ";
-                break;
-              default:
-                symbol = " ";
-                break;
-            }
-          }
-
-          if (isPlayer) {
-            symbol = "☺";
-            tileEl.classList.add("tile-player");
-          }
-          tileEl.textContent = symbol;
-        }
-
-        tileEl.addEventListener("click", this.onTileClick.bind(this));
-        this.explorationGridEl.appendChild(tileEl);
-      }
-    }
-  }
-
-  /**
-   * Updates the floor title and depth labels.
-   * @method updateCardHeader
-   */
-  updateCardHeader() {
-    const floor = this.map.floors[this.map.floorIndex];
-    this.hud.updateCardHeader(floor, this.map.floorIndex, this.map.floors.length);
-  }
-
-  /**
-   * Updates the side list of floor cards.
-   * @method updateCardList
-   */
-  updateCardList() {
-    this.hud.updateCardList(
-        this.map.floors,
-        this.map.floorIndex,
-        this.map.maxReachedFloorIndex,
-        (idx) => {
-            this.map.floorIndex = idx;
-            const floor = this.map.floors[this.map.floorIndex];
-            this.map.playerX = floor.startX;
-            this.map.playerY = floor.startY;
-            this.map.revealAroundPlayer();
-            this.logMessage(`[Navigate] You flip to card ${idx + 1} (${floor.title}).`);
-            SoundManager.beep(550, 120);
-            this.updateAll();
-        }
-    );
-  }
-
-  /**
-   * Gets the current game context for evolution checks.
-   * @returns {Object} { inventory, floorDepth, gold }
-   */
   getContext() {
     return {
         inventory: this.party.inventory,
@@ -1718,20 +1017,6 @@ export class Scene_Map extends Scene_Base {
     };
   }
 
-  /**
-   * Updates the party status panel.
-   * @method updateParty
-   */
-  updateParty() {
-    this.hud.updateParty(this.party, (member, index) => this.openInspect(member, index), this.getContext());
-  }
-
-  /**
-   * Handles interaction when clicking on a map tile.
-   * Manages movement, collisions, and triggering events (battles, shops, etc).
-   * @method onTileClick
-   * @param {MouseEvent} e - The click event.
-   */
   onTileClick(e) {
     if (!this.runActive) {
       this.setStatus("The run has ended. Start a new run.");
@@ -1792,7 +1077,6 @@ export class Scene_Map extends Scene_Base {
            this.executeEvent(event);
            return;
        } else {
-           // If it's a trap, we still move onto it (triggering it)
            if (event.type === 'trap') {
                this.map.playerX = x;
                this.map.playerY = y;
@@ -1816,22 +1100,12 @@ export class Scene_Map extends Scene_Base {
     this.updateAll();
   }
 
-  /**
-   * Executes a map event.
-   * @method executeEvent
-   * @param {import("./objects.js").Game_Event} event - The event to execute.
-   */
   executeEvent(event) {
       if (event.actions) {
           event.actions.forEach(action => this.interpreter.execute(action, event));
       }
   }
 
-
-  /**
-   * Debug command to reveal the entire map.
-   * @method revealAllFloors
-   */
   revealAllFloors() {
     if (this.sceneManager.currentScene() !== this) return;
     this.map.floors.forEach((f) => {
@@ -1847,12 +1121,17 @@ export class Scene_Map extends Scene_Base {
     SoundManager.beep(1000, 100);
   }
 
-  /**
-   * Adds XP to a member and handles level-up logging.
-   * @method gainXp
-   * @param {import("./objects.js").Game_Battler} member - The member to give XP to.
-   * @param {number} amount - The amount of XP.
-   */
+  navigateToFloor(idx) {
+      this.map.floorIndex = idx;
+      const floor = this.map.floors[this.map.floorIndex];
+      this.map.playerX = floor.startX;
+      this.map.playerY = floor.startY;
+      this.map.revealAroundPlayer();
+      this.logMessage(`[Navigate] You flip to card ${idx + 1} (${floor.title}).`);
+      SoundManager.beep(550, 120);
+      this.updateAll();
+  }
+
   gainXp(member, amount, silent = false) {
     const result = member.gainXp(amount);
     if (result.leveledUp && !silent) {
@@ -1864,10 +1143,6 @@ export class Scene_Map extends Scene_Base {
     }
   }
 
-  /**
-   * Applies passive effects triggered by movement (e.g., regeneration).
-   * @method applyMovePassives
-   */
   applyMovePassives() {
     this.party.members.forEach((member) => {
       if (member.hp > 0) {
@@ -1883,11 +1158,6 @@ export class Scene_Map extends Scene_Base {
     this.updateParty();
   }
 
-  /**
-   * Calculates the party's chance to flee from battle.
-   * @method getFleeChance
-   * @returns {number} The chance (0-1).
-   */
   getFleeChance() {
     let baseChance = 0.5;
     this.party.members.forEach((member) => {
@@ -1896,151 +1166,8 @@ export class Scene_Map extends Scene_Base {
     return Math.max(0, Math.min(1, baseChance));
   }
 
-
-  /**
-   * Formats a skill name with its elemental icon.
-   * @method formatSkillName
-   * @param {string} skillId - The skill ID.
-   * @returns {string} The formatted HTML string.
-   */
-  formatSkillName(skillId) {
-      const skill = this.dataManager.skills[skillId];
-      if (!skill) return "";
-      const elementIcon = this.createElementIcon([skill.element]);
-      return `${elementIcon.innerHTML}${skill.name}`;
-  }
-
-
-
-  /**
-   * Determines if a party member is in the "Front" or "Back" row.
-   * @method partyRow
-   * @param {number} index - Member index.
-   * @returns {string} "Front" or "Back".
-   */
   partyRow(index) {
     return index <= 1 ? "Front" : "Back";
-  }
-
-  /**
-   * Opens the formation management window.
-   * @method openFormation
-   */
-  openFormation() {
-    if (this.sceneManager.currentScene() !== this) return;
-    this.windowManager.push(this.formationWindow);
-    this.formationWindow.refresh(this.party, () => {
-        this.updateParty();
-        this.logMessage("[Formation] Party order changed.");
-    }, this.getContext());
-  }
-
-  /**
-   * Closes the formation window.
-   * @method closeFormation
-   */
-  closeFormation() {
-    this.windowManager.close(this.formationWindow);
-  }
-
-  /**
-   * Opens the inventory window.
-   * @method openInventory
-   */
-  openInventory() {
-    if (this.sceneManager.currentScene() !== this) return;
-    this.windowManager.push(this.inventoryWindow);
-    this.inventoryWindow.setup(
-        this.party,
-        (item, action) => this.onInventoryAction(item, action),
-        (item) => this.discardItem(item)
-    );
-  }
-
-  /**
-   * Closes the inventory window.
-   * @method closeInventory
-   */
-  closeInventory() {
-    this.windowManager.close(this.inventoryWindow);
-  }
-
-  openHelp() {
-    if (this.sceneManager.currentScene() !== this) return;
-    this.windowManager.push(this.helpWindow);
-  }
-
-  openSettings() {
-    if (this.sceneManager.currentScene() !== this) return;
-
-    const themes = ThemeManager.getThemes().map(t => ({
-        label: t.name,
-        value: t.id
-    }));
-
-    const options = [
-        {
-            label: "Theme",
-            type: "select",
-            value: ThemeManager.getCurrentThemeId(),
-            options: themes,
-            onChange: (val) => {
-                ThemeManager.applyTheme(val);
-                SoundManager.beep(400, 50);
-            }
-        }
-    ];
-
-    this.optionsWindow.setup(options);
-    this.windowManager.push(this.optionsWindow);
-  }
-
-  onInventoryAction(item, action) {
-      if (action === 'use') {
-          if (item.type === 'equipment') return;
-
-          if (item.effects && item.effects.recruit_egg) {
-              const recruitId = item.effects.recruit_egg;
-              this.windowManager.close(this.inventoryWindow);
-              this.interpreter.openRecruitEvent({
-                  forcedId: recruitId,
-                  cost: 0,
-                  onRecruit: () => this.discardItem(item)
-              });
-              return;
-          }
-
-          this.partySelectWindow.setup(this.party, `Use ${item.name} on:`, (target) => {
-              this.windowManager.close(this.partySelectWindow);
-              this.confirmEffectWindow.setupUse(target, item, () => {
-                  this.windowManager.close(this.confirmEffectWindow);
-                  this.useItem(item, target);
-              });
-              this.windowManager.push(this.confirmEffectWindow);
-          }, this.getContext());
-          this.windowManager.push(this.partySelectWindow);
-      } else if (action === 'equip') {
-          this.partySelectWindow.setup(this.party, `Equip ${item.name} on:`, (target) => {
-              this.windowManager.close(this.partySelectWindow);
-              this.checkEquip(target, item);
-          }, this.getContext());
-          this.windowManager.push(this.partySelectWindow);
-      }
-  }
-
-  checkEquip(target, item) {
-      const oldItem = target.equipmentItem;
-      let swapMsg = null;
-      if (item && item.equippedMember && item.equippedMember !== target) {
-          swapMsg = `Swapping with ${item.equippedMember.name}.`;
-      } else if (!item) {
-          swapMsg = "Unequipping.";
-      }
-      this.confirmEffectWindow.setupEquip(target, item, oldItem, "Held Item", () => {
-          this.windowManager.close(this.confirmEffectWindow);
-          this.equipItem(target, item);
-      }, swapMsg);
-      this.windowManager.push(this.confirmEffectWindow);
   }
 
   useItem(item, target) {
@@ -2054,7 +1181,7 @@ export class Scene_Map extends Scene_Base {
              }
           });
           this.updateParty();
-          this.inventoryWindow.updateList();
+          this.ui.inventoryWindow.updateList();
           this.updateAll();
           SoundManager.beep(700, 100);
       } else {
@@ -2066,269 +1193,26 @@ export class Scene_Map extends Scene_Base {
       const index = this.party.inventory.indexOf(item);
       if (index > -1) {
           this.party.inventory.splice(index, 1);
-          this.inventoryWindow.updateList();
+          this.ui.inventoryWindow.updateList();
           this.updateAll();
           this.logMessage(`[Inventory] Discarded ${item.name}.`);
           SoundManager.beep(300, 80);
       }
   }
 
-  /**
-   * Opens the inspection window for a specific party member.
-   * @method openInspect
-   * @param {import("./objects.js").Game_Battler} member - The member to inspect.
-   * @param {number} index - The member's index.
-   */
-  openInspect(member, index) {
-    this.inspectWindow.member = member;
-    const need = member.xpNeeded(member.level);
-    const spriteKey = member.spriteKey || 'pixie';
-    this.inspectWindow.spriteEl.style.backgroundImage = `url('assets/portraits/${spriteKey}.png')`;
-
-    // Evolution Check & Name Rendering
-    const floor = this.map.floors[this.map.floorIndex];
-    const evoStatus = member.getEvolutionStatus(this.party.inventory, floor ? floor.depth : 1, this.party.gold);
-
-    this.inspectWindow.nameEl.innerHTML = "";
-    // Use the centralized helper
-    this.inspectWindow.nameEl.appendChild(createBattlerNameLabel(member, {
-        evolutionStatus: evoStatus.status
-    }));
-
-    if (evoStatus.status === 'AVAILABLE') {
-         this.inspectWindow.btnEvolve.style.display = "inline-block";
-         this.inspectWindow.btnEvolve.onclick = () => {
-             this.openEvolution(member, evoStatus.evolution);
-         };
-    } else {
-         this.inspectWindow.btnEvolve.style.display = "none";
-    }
-
-    this.inspectWindow.levelEl.textContent = member.level;
-    this.inspectWindow.rowPosEl.textContent = this.partyRow(index);
-    this.inspectWindow.hpEl.textContent = `${member.hp} / ${member.maxHp}`;
-    this.inspectWindow.xpEl.textContent = `${member.xp || 0} / ${need}`;
-
-    this.inspectWindow.elementEl.innerHTML = "";
-    if (member.elements && member.elements.length > 0) {
-        this.inspectWindow.elementEl.appendChild(renderElements(member.elements));
-    } else {
-        this.inspectWindow.elementEl.textContent = "—";
-    }
-
-    if (member.equipmentItem) {
-      this.inspectWindow.equipEl.textContent = member.equipmentItem.name;
-    } else if (member.baseEquipment) {
-      this.inspectWindow.equipEl.textContent = member.baseEquipment;
-    } else {
-      this.inspectWindow.equipEl.textContent = "—";
-    }
-
-    // Passives
-    this.inspectWindow.passiveEl.innerHTML = "";
-    if (member.passives && member.passives.length > 0) {
-        member.passives.forEach((pData, i) => {
-            const code = pData.code || pData.id;
-            let def = null;
-            if (this.dataManager.passives) {
-                def = Object.values(this.dataManager.passives).find(p => p.id === code || p.code === code);
-            }
-            if (!def) def = pData;
-
-            const el = createInteractiveLabel(def, 'passive');
-            this.inspectWindow.passiveEl.appendChild(el);
-
-            if (i < member.passives.length - 1) {
-                this.inspectWindow.passiveEl.appendChild(document.createTextNode(", "));
-            }
-        });
-    } else {
-        this.inspectWindow.passiveEl.textContent = "—";
-    }
-
-    // Skills
-    this.inspectWindow.skillsEl.innerHTML = "";
-    if (member.skills && member.skills.length > 0) {
-        member.skills.forEach((sId, i) => {
-            const skill = this.dataManager.skills[sId];
-            if (skill) {
-                // Calculate dynamic effects
-                let effectsText = "";
-                if (skill.effects && skill.effects.length > 0) {
-                    const descriptions = [];
-                    skill.effects.forEach(eff => {
-                         if (eff.type === 'hp_damage') {
-                             const val = Math.round(evaluateFormula(eff.formula, member));
-                             descriptions.push(`Deals ~${val} Damage`);
-                         } else if (eff.type === 'hp_heal') {
-                             const val = Math.round(evaluateFormula(eff.formula, member));
-                             descriptions.push(`Heals ~${val} HP`);
-                         } else if (eff.type === 'add_status') {
-                             const chance = Math.round((eff.chance || 1) * 100);
-                             descriptions.push(`${chance}% chance to add ${eff.status}`);
-                         }
-                    });
-                    if (descriptions.length > 0) {
-                        effectsText = descriptions.join(", ");
-                    }
-                }
-
-                let tooltipText = skill.description;
-                if (effectsText) {
-                    tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
-                }
-
-                const el = createInteractiveLabel(skill, 'skill', { tooltipText });
-                this.inspectWindow.skillsEl.appendChild(el);
-            } else {
-                this.inspectWindow.skillsEl.appendChild(document.createTextNode(sId));
-            }
-
-            if (i < member.skills.length - 1) {
-                this.inspectWindow.skillsEl.appendChild(document.createTextNode(", "));
-            }
-        });
-    } else {
-        this.inspectWindow.skillsEl.textContent = "—";
-    }
-
-    this.inspectWindow.flavorEl.textContent = member.flavor || "—";
-    this.inspectWindow.notesEl.textContent = "Row is determined by the 2×2 formation grid.";
-
-    this.windowManager.push(this.inspectWindow);
-    this.setStatus(`Inspecting ${member.name}`);
-    this.logMessage(`[Inspect] ${member.name} – Lv${member.level}, ${this.partyRow(index)}, HP ${member.hp}/${member.maxHp}.`);
-
-    // Sacrifice Setup
-    const sacrificeValue = member.level * (member.hp + member.maxHp);
-    this.inspectWindow.btnSacrifice.textContent = `Sacrifice (${sacrificeValue}G)`;
-    this.inspectWindow.btnSacrifice.style.display = "block";
-    this.inspectWindow.btnSacrifice.onclick = () => {
-        this.confirmWindow.titleEl.textContent = "Sacrifice Unit";
-        this.confirmWindow.messageEl.textContent = `Sacrifice ${member.name} for ${sacrificeValue} Gold? This cannot be undone.`;
-        this.windowManager.push(this.confirmWindow);
-        this.confirmWindow.btnOk.onclick = () => {
-            this.windowManager.close(this.confirmWindow);
-            this.sacrificeMember(member, sacrificeValue);
-        };
-    };
-
-    this.inspectWindow.onUserClose = () => this.closeInspect();
-    this.inspectWindow.btnOk.onclick = () => this.closeInspect();
-    this.inspectWindow.equipEl.onclick = () => this.openEquipmentScreen();
-  }
-
-  /**
-   * Sacrifices a party member for gold.
-   * @method sacrificeMember
-   * @param {import("./objects.js").Game_Battler} member - The member to sacrifice.
-   * @param {number} value - The gold value.
-   */
   sacrificeMember(member, value) {
+      console.log("Scene_Map.sacrificeMember called for", member.name);
       if (this.party.removeMember(member)) {
           this.party.gold += value;
           this.logMessage(`[Sacrifice] ${member.name} was sacrificed for ${value}G.`);
           SoundManager.beep(150, 400);
-          this.closeInspect();
+          this.ui.closeInspect();
           this.updateAll();
+      } else {
+          console.log("removeMember returned false");
       }
   }
 
-  /**
-   * Closes the inspect window.
-   * @method closeInspect
-   */
-  closeInspect() {
-    this.inspectWindow.btnSacrifice.style.display = "none";
-    this.windowManager.close(this.inspectWindow);
-    this.setStatus("Exploration");
-  }
-
-  /**
-   * Opens the equipment selection screen within the inspect window.
-   * @method openEquipmentScreen
-   */
-  openEquipmentScreen() {
-    const member = this.inspectWindow.member;
-    const inventoryItems = this.party.inventory.filter(i => i.type === "equipment");
-    const otherMemberItems = this.party.members
-      .filter((m) => m !== member && m.equipmentItem)
-      .map((m) => ({
-        ...m.equipmentItem,
-        equippedBy: m.name,
-        equippedMember: m,
-      }));
-    const allItems = [...inventoryItems, ...otherMemberItems];
-
-    this.equipItemSelectWindow.setup(allItems, member.equipmentItem, "Equipment", (item) => {
-        this.windowManager.close(this.equipItemSelectWindow);
-        this.checkEquip(member, item);
-    });
-    this.windowManager.push(this.equipItemSelectWindow);
-  }
-
-  /**
-   * Opens the evolution preview window.
-   * @method openEvolution
-   * @param {import("./objects.js").Game_Battler} member - The member to evolve.
-   * @param {Object} evolutionData - The evolution definition.
-   */
-  openEvolution(member, evolutionData) {
-      this.closeInspect();
-      const nextId = evolutionData.evolvesTo;
-      const nextData = this.dataManager.actors.find(a => a.id === nextId);
-      if (!nextData) return;
-
-      const nextBattler = new Game_Battler({ ...nextData, level: member.level });
-      this.evolutionWindow.setup(member, nextBattler);
-
-      this.evolutionWindow.btnConfirm.onclick = () => {
-          this.confirmEvolution(member, nextBattler, evolutionData);
-      };
-
-      this.windowManager.push(this.evolutionWindow);
-  }
-
-  /**
-   * Prompts to confirm evolution (and resource consumption).
-   * @method confirmEvolution
-   * @param {import("./objects.js").Game_Battler} member - The member to evolve.
-   * @param {import("./objects.js").Game_Battler} nextBattler - The evolved form.
-   * @param {Object} evolutionData - The evolution definition.
-   */
-  confirmEvolution(member, nextBattler, evolutionData) {
-      let msg = `Evolve ${member.name} into ${nextBattler.name}?`;
-      if (evolutionData.item) {
-          const item = this.dataManager.items.find(i => i.id === evolutionData.item);
-          if (item) {
-              msg += `\nConsumes ${item.name}.`;
-          }
-      }
-      if (evolutionData.gold) {
-          msg += `\nCosts ${evolutionData.gold} Gold.`;
-      }
-
-      this.confirmWindow.titleEl.textContent = "Confirm Evolution";
-      this.confirmWindow.messageEl.innerText = msg;
-
-      this.windowManager.push(this.confirmWindow);
-
-      this.confirmWindow.btnOk.onclick = () => {
-          this.windowManager.close(this.confirmWindow);
-          this.executeEvolution(member, nextBattler, evolutionData);
-      };
-      this.confirmWindow.btnCancel.onclick = () => {
-          this.windowManager.close(this.confirmWindow);
-      };
-  }
-
-  /**
-   * Executes the evolution, updating the party and consuming items.
-   * @method executeEvolution
-   * @param {import("./objects.js").Game_Battler} member - The member to evolve.
-   * @param {import("./objects.js").Game_Battler} nextBattler - The evolved form.
-   * @param {Object} evolutionData - The evolution definition.
-   */
   executeEvolution(member, nextBattler, evolutionData) {
       if (evolutionData.item) {
           const idx = this.party.inventory.findIndex(i => i.id === evolutionData.item);
@@ -2356,17 +1240,11 @@ export class Scene_Map extends Scene_Base {
           this.logMessage(`[Evolution] ${member.name} evolved into ${nextBattler.name}!`);
           SoundManager.beep(800, 300);
 
-          this.windowManager.close(this.evolutionWindow);
+          this.windowManager.close(this.ui.evolutionWindow);
           this.updateAll();
       }
   }
 
-  /**
-   * Equips an item to a member, handling swaps if necessary.
-   * @method equipItem
-   * @param {import("./objects.js").Game_Battler} member - The member.
-   * @param {Object} item - The item to equip.
-   */
   equipItem(member, item) {
       if (!item) {
           if (member.equipmentItem) {
@@ -2397,9 +1275,69 @@ export class Scene_Map extends Scene_Base {
           this.logMessage(`[Equip] ${member.name} equipped ${item.name}.`);
           SoundManager.beep(800, 100);
       }
-      this.openInspect(member, this.party.members.indexOf(member));
+      // Update Inspect View (because it's underneath)
+      const index = this.party.members.indexOf(member);
+      this.ui.openInspect(member, index);
+
+      // Re-open equipment screen to allow further changes (UX Pattern)
+      this.ui.openEquipmentScreen(member);
       this.updateAll();
   }
+}
+
+class Window_Battle_Refactored extends Window_Battle {
+    refresh(battlers, party) {
+        this.viewportEl.innerHTML = "";
+
+        const header = document.createElement("div");
+        header.textContent = "== BATTLE ==";
+        header.style.textAlign = "center";
+        header.style.padding = "5px 0";
+        this.viewportEl.appendChild(header);
+
+        // Enemies (Reversed/Mirrored Grid)
+        battlers.forEach((e, idx) => {
+            if (!e) return;
+            // Reversed: 0 is TR, 1 is TL.
+            const col = (idx % 2 === 0) ? 1 : 0;
+            const row = Math.floor(idx / 2);
+
+            const left = 20 + col * 220;
+            const top = 30 + row * 40;
+
+            this._renderBattler(e, idx, top, left, true);
+        });
+
+        // Party (Standard Grid)
+        party.forEach((p, idx) => {
+            if (!p) return;
+            // Standard: 0 TL, 1 TR.
+            const col = idx % 2;
+            const row = Math.floor(idx / 2);
+
+            const left = 20 + col * 220;
+            const top = 140 + row * 40;
+
+            this._renderBattler(p, idx, top, left, false);
+        });
+    }
+
+    _renderBattler(battler, idx, top, left, isEnemy) {
+        const hp = battler.hp;
+        const primaryElements = getPrimaryElements(battler.elements);
+        const elementAscii = primaryElements.map(el => elementToAscii(el)).join('');
+        const id = this.getBattlerId(idx, isEnemy);
+        const nameStr = `<span id="${id}">${battler.name}</span>`;
+
+        const el = document.createElement("div");
+        el.className = 'battler-container';
+        el.style.position = "absolute";
+        el.style.top = `${top}px`;
+        el.style.left = `${left}px`;
+        el.style.whiteSpace = "pre";
+        el.innerHTML = `<div class="battler-name">${elementAscii}${nameStr} (HP ${hp}/${battler.maxHp})</div><div class="battler-hp">${this.createHpGauge(hp, battler.maxHp)}</div>`;
+        this.viewportEl.appendChild(el);
+    }
 }
 
 if (window.location.search.includes("test=true")) {

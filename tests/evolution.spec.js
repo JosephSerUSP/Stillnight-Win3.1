@@ -19,7 +19,7 @@ test('Verify Evolution System', async ({ page }) => {
     // Add Pixie
     const pixieData = window.dataManager.actors.find(a => a.id === 'pixie');
     const pixie = new window.Game_Battler(pixieData);
-    scene.party.members.push(pixie);
+    scene.party.addMember(pixie);
 
     // Level up to 6
     pixie.level = 6;

@@ -1,4 +1,5 @@
 import { randInt, shuffleArray, probabilisticRound } from "./core.js";
+import { EffectManager } from "./effects.js";
 import { passives as passivesData } from "./data/passives.js";
 import { states as statesData } from "./data/states.js";
 
@@ -350,55 +351,9 @@ export class Game_Battler extends Game_Base {
           events.push({ type: 'state_remove', target: this, msg: `${this.name}'s ${state ? state.name : sId} wore off.` });
       });
 
-      // HRG: HP Regeneration
-      const hrg = this.getPassiveValue('HRG');
-      if (hrg !== 0) {
-          const amount = Math.floor(this.maxHp * hrg);
-          if (amount > 0) {
-              const hpBefore = this.hp;
-              this.hp = Math.min(this.maxHp, this.hp + amount);
-              events.push({
-                  type: 'heal',
-                  battler: this,
-                  target: this,
-                  value: amount,
-                  hpBefore: hpBefore,
-                  hpAfter: this.hp,
-                  msg: `${this.name} regenerates ${amount} HP.`,
-                  animation: 'healing_sparkle'
-              });
-          }
-      }
-
-      // PARASITE: Drains HP from ally
-      const parasiteDrain = this.getPassiveValue("PARASITE");
-      if (parasiteDrain > 0 && allies) {
-           const myIndex = allies.indexOf(this);
-           if (myIndex !== -1) {
-               const targetIndex = myIndex % 2 === 0 ? myIndex + 1 : myIndex - 1;
-               if (targetIndex >= 0 && targetIndex < allies.length) {
-                   const target = allies[targetIndex];
-                   if (target && target.hp > 0) {
-                       const hpBeforeTarget = target.hp;
-                       const hpBeforeSource = this.hp;
-                       target.hp = Math.max(0, target.hp - parasiteDrain);
-                       this.hp = Math.min(this.maxHp, this.hp + parasiteDrain);
-
-                       events.push({
-                          type: 'passive_drain',
-                          source: this,
-                          target: target,
-                          value: parasiteDrain,
-                          hpBeforeTarget: hpBeforeTarget,
-                          hpAfterTarget: target.hp,
-                          hpBeforeSource: hpBeforeSource,
-                          hpAfterSource: this.hp,
-                          msg: `[Passive] ${this.name} drains ${parasiteDrain} HP from ${target.name}.`
-                       });
-                   }
-               }
-           }
-      }
+      // Delegate trait effects to EffectManager
+      const traitEvents = EffectManager.processTrigger('turnStart', this, { allies, enemies, dataManager });
+      events.push(...traitEvents);
 
       return events;
   }
