@@ -11,7 +11,9 @@ import {
   Window_Inspect,
   Window_Confirm,
   Window_Evolution,
-  Window_EquipConfirm,
+  Window_ConfirmEffect,
+  Window_PartySelect,
+  Window_EquipItemSelect,
   Window_Options,
   Window_HUD,
   Window_Help,
@@ -1393,8 +1395,12 @@ export class Scene_Map extends Scene_Base {
     this.windowLayer.addChild(this.evolutionWindow);
     this.confirmWindow = new Window_Confirm();
     this.windowLayer.addChild(this.confirmWindow);
-    this.equipConfirmWindow = new Window_EquipConfirm();
-    this.windowLayer.addChild(this.equipConfirmWindow);
+    this.confirmEffectWindow = new Window_ConfirmEffect();
+    this.windowLayer.addChild(this.confirmEffectWindow);
+    this.partySelectWindow = new Window_PartySelect();
+    this.windowLayer.addChild(this.partySelectWindow);
+    this.equipItemSelectWindow = new Window_EquipItemSelect();
+    this.windowLayer.addChild(this.equipItemSelectWindow);
     this.optionsWindow = new Window_Options();
     this.windowLayer.addChild(this.optionsWindow);
     this.helpWindow = new Window_Help();
@@ -1404,7 +1410,9 @@ export class Scene_Map extends Scene_Base {
     this.evolutionWindow.onUserClose = () => this.windowManager.close(this.evolutionWindow);
     this.formationWindow.onUserClose = this.closeFormation.bind(this);
     this.confirmWindow.onUserClose = () => this.windowManager.close(this.confirmWindow);
-    this.equipConfirmWindow.onUserClose = () => this.windowManager.close(this.equipConfirmWindow);
+    this.confirmEffectWindow.onUserClose = () => this.windowManager.close(this.confirmEffectWindow);
+    this.partySelectWindow.onUserClose = () => this.windowManager.close(this.partySelectWindow);
+    this.equipItemSelectWindow.onUserClose = () => this.windowManager.close(this.equipItemSelectWindow);
     this.optionsWindow.onUserClose = () => this.windowManager.close(this.optionsWindow);
     this.helpWindow.onUserClose = () => this.windowManager.close(this.helpWindow);
 
@@ -2042,7 +2050,11 @@ renderElements(elements) {
   openInventory() {
     if (this.sceneManager.currentScene() !== this) return;
     this.windowManager.push(this.inventoryWindow);
-    this.refreshInventoryWindow();
+    this.inventoryWindow.setup(
+        this.party,
+        (item, action) => this.onInventoryAction(item, action),
+        (item) => this.discardItem(item)
+    );
   }
 
   /**
@@ -2083,65 +2095,68 @@ renderElements(elements) {
     this.windowManager.push(this.optionsWindow);
   }
 
-  openEquipConfirm(target, item) {
-      if (this.sceneManager.currentScene() !== this) return;
-
-      const oldItem = target.equipmentItem; // Assuming single slot for now
-
-      this.equipConfirmWindow.setup(
-          target,
-          item,
-          oldItem,
-          "Held Item",
-          () => {
-              this.windowManager.close(this.equipConfirmWindow);
-              this.equipItem(target, item);
-              this.refreshInventoryWindow();
-          }
-      );
-      this.windowManager.push(this.equipConfirmWindow);
+  onInventoryAction(item, action) {
+      if (action === 'use') {
+          if (item.type === 'equipment') return;
+          this.partySelectWindow.setup(this.party, `Use ${item.name} on:`, (target) => {
+              this.windowManager.close(this.partySelectWindow);
+              this.confirmEffectWindow.setupUse(target, item, () => {
+                  this.windowManager.close(this.confirmEffectWindow);
+                  this.useItem(item, target);
+              });
+              this.windowManager.push(this.confirmEffectWindow);
+          });
+          this.windowManager.push(this.partySelectWindow);
+      } else if (action === 'equip') {
+          this.partySelectWindow.setup(this.party, `Equip ${item.name} on:`, (target) => {
+              this.windowManager.close(this.partySelectWindow);
+              this.checkEquip(target, item);
+          });
+          this.windowManager.push(this.partySelectWindow);
+      }
   }
 
-  /**
-   * Refreshes the content of the inventory window.
-   * @method refreshInventoryWindow
-   */
-  refreshInventoryWindow() {
-    this.inventoryWindow.setup(
-      this.party,
-      (item, target) => {
-          if (item.type === 'equipment') {
-              this.openEquipConfirm(target, item);
-          } else {
-              const result = this.party.useItem(item, target);
-              if (result.success) {
-                  this.logMessage(`[Inventory] Used ${item.name} on ${target.name}.`);
-                  result.outcomes.forEach(o => {
-                     if (o.type === 'xp' && o.result.leveledUp) {
-                         this.logMessage(`[Level] ${target.name} grows to Lv${o.result.newLevel}! HP +${o.result.hpGain}.`);
-                         SoundManager.beep(900, 150);
-                     }
-                  });
-                  this.updateParty();
-                  this.refreshInventoryWindow();
-                  this.updateAll();
-                  SoundManager.beep(700, 100);
-              } else {
-                  this.logMessage(result.msg);
-              }
-          }
-      },
-      (item) => {
-          const index = this.party.inventory.indexOf(item);
-          if (index > -1) {
-              this.party.inventory.splice(index, 1);
-              this.refreshInventoryWindow();
-              this.updateAll();
-              this.logMessage(`[Inventory] Discarded ${item.name}.`);
-              SoundManager.beep(300, 80);
-          }
+  checkEquip(target, item) {
+      const oldItem = target.equipmentItem;
+      let swapMsg = null;
+      if (item.equippedMember && item.equippedMember !== target) {
+          swapMsg = `Swapping with ${item.equippedMember.name}.`;
       }
-    );
+      this.confirmEffectWindow.setupEquip(target, item, oldItem, "Held Item", () => {
+          this.windowManager.close(this.confirmEffectWindow);
+          this.equipItem(target, item);
+      }, swapMsg);
+      this.windowManager.push(this.confirmEffectWindow);
+  }
+
+  useItem(item, target) {
+      const result = this.party.useItem(item, target);
+      if (result.success) {
+          this.logMessage(`[Inventory] Used ${item.name} on ${target.name}.`);
+          result.outcomes.forEach(o => {
+             if (o.type === 'xp' && o.result.leveledUp) {
+                 this.logMessage(`[Level] ${target.name} grows to Lv${o.result.newLevel}! HP +${o.result.hpGain}.`);
+                 SoundManager.beep(900, 150);
+             }
+          });
+          this.updateParty();
+          this.inventoryWindow.updateList();
+          this.updateAll();
+          SoundManager.beep(700, 100);
+      } else {
+          this.logMessage(result.msg);
+      }
+  }
+
+  discardItem(item) {
+      const index = this.party.inventory.indexOf(item);
+      if (index > -1) {
+          this.party.inventory.splice(index, 1);
+          this.inventoryWindow.updateList();
+          this.updateAll();
+          this.logMessage(`[Inventory] Discarded ${item.name}.`);
+          SoundManager.beep(300, 80);
+      }
   }
 
   /**
@@ -2321,8 +2336,6 @@ renderElements(elements) {
    */
   closeInspect() {
     this.inspectWindow.btnSacrifice.style.display = "none";
-    this.inspectWindow.equipmentListContainerEl.style.display = "none";
-    this.inspectWindow.equipmentListEl.innerHTML = "";
     this.windowManager.close(this.inspectWindow);
     this.setStatus("Exploration");
   }
@@ -2332,120 +2345,22 @@ renderElements(elements) {
    * @method openEquipmentScreen
    */
   openEquipmentScreen() {
-    this.inspectWindow.equipmentListContainerEl.style.display = "block";
-    this.renderEquipmentList("All");
-  }
-
-  /**
-   * Renders the list of available equipment.
-   * @method renderEquipmentList
-   * @param {string} filter - Filter by type ("All", "Weapon", etc).
-   */
-  renderEquipmentList(filter) {
-    const listEl = this.inspectWindow.equipmentListEl;
-    const filterEl = this.inspectWindow.equipmentFilterEl;
-    listEl.innerHTML = "";
-    filterEl.innerHTML = "";
     const member = this.inspectWindow.member;
-
-    const itemTypes = ["All", "Weapon", "Armor", "Accessory"];
-    itemTypes.forEach(type => {
-      const btn = document.createElement("button");
-      btn.className = "win-btn";
-      btn.textContent = type;
-      if (filter === type) {
-        btn.disabled = true;
-      }
-      btn.onclick = () => this.renderEquipmentList(type);
-      filterEl.appendChild(btn);
-    });
-
-    const inventoryItems = this.party.inventory.filter(
-      (i) => i.type === "equipment" && (filter === "All" || i.equipType === filter)
-    );
+    const inventoryItems = this.party.inventory.filter(i => i.type === "equipment");
     const otherMemberItems = this.party.members
-      .filter((m) => m !== member && m.equipmentItem && (filter === "All" || m.equipmentItem.equipType === filter))
+      .filter((m) => m !== member && m.equipmentItem)
       .map((m) => ({
         ...m.equipmentItem,
         equippedBy: m.name,
         equippedMember: m,
       }));
+    const allItems = [...inventoryItems, ...otherMemberItems];
 
-    const allEquipable = [...inventoryItems, ...otherMemberItems];
-
-    if (allEquipable.length > 0) {
-      allEquipable.forEach((item) => {
-        const row = document.createElement("div");
-        row.className = "shop-row";
-
-        let tooltipText = item.description;
-        // Add item effects to tooltip
-        let effectsText = "";
-        const effects = [];
-        if (item.effects) {
-             if (item.effects.hp) effects.push(`Restores ${item.effects.hp} HP`);
-             if (item.effects.maxHp) effects.push(`Max HP +${item.effects.maxHp}`);
-             if (item.effects.xp) effects.push(`Grants ${item.effects.xp} XP`);
-        }
-        // Equipment stats
-        if (item.traits) {
-             item.traits.forEach(t => {
-                 if (t.code === 'PARAM_PLUS') {
-                     if (t.dataId === 'atk') effects.push(`Damage +${t.value}`);
-                     if (t.dataId === 'maxHp') effects.push(`Max HP +${t.value}`);
-                 }
-             });
-        }
-        if (item.damageBonus) effects.push(`Damage +${item.damageBonus}`);
-
-        if (effects.length > 0) {
-            effectsText = effects.join(", ");
-        }
-
-        if (effectsText) {
-             tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
-        }
-
-        const label = createInteractiveLabel(item, 'item', { tooltipText });
-        row.appendChild(label);
-
-        const extraSpan = document.createElement("span");
-        let text = "";
-        if (item.traits) {
-             const dmg = item.traits.find(t => t.code === 'PARAM_PLUS' && t.dataId === 'atk');
-             if (dmg) text += ` (+${dmg.value} DMG)`;
-        } else if (item.damageBonus) {
-             text += ` (+${item.damageBonus} DMG)`;
-        }
-        if (item.equippedBy) {
-          text += ` (on ${item.equippedBy})`;
-        }
-        extraSpan.textContent = text;
-        extraSpan.style.flexGrow = "1";
-        row.appendChild(extraSpan);
-
-        const btn = document.createElement("button");
-        btn.className = "win-btn";
-        btn.textContent = item.equippedBy ? "Swap" : "Equip";
-        btn.addEventListener("click", () => {
-          this.equipItem(member, item);
-        });
-        row.appendChild(btn);
-        listEl.appendChild(row);
-      });
-    } else {
-      listEl.innerHTML = "<p>No equipable items of this type.</p>";
-    }
-
-    const closeBtn = document.createElement("button");
-    closeBtn.className = "win-btn";
-    closeBtn.textContent = "Close";
-    closeBtn.onclick = () => {
-      this.inspectWindow.equipmentListContainerEl.style.display = "none";
-      this.inspectWindow.equipmentListEl.innerHTML = "";
-      this.inspectWindow.equipmentFilterEl.innerHTML = "";
-    };
-    listEl.appendChild(closeBtn);
+    this.equipItemSelectWindow.setup(allItems, member.equipmentItem, "Equipment", (item) => {
+        this.windowManager.close(this.equipItemSelectWindow);
+        this.checkEquip(member, item);
+    });
+    this.windowManager.push(this.equipItemSelectWindow);
   }
 
   /**
@@ -2537,51 +2452,29 @@ renderElements(elements) {
    * @param {Object} item - The item to equip.
    */
   equipItem(member, item) {
-    const doEquip = () => {
-      // Unequip current item if one exists
-      if (member.equipmentItem) {
-        this.party.inventory.push(member.equipmentItem);
-        SoundManager.beep(600, 80); // Unequip sound
+      if (item.equippedMember) {
+          const otherMember = item.equippedMember;
+          const currentItem = member.equipmentItem;
+          otherMember.equipmentItem = currentItem;
+          member.equipmentItem = item;
+          this.logMessage(`[Equip] ${member.name} swapped ${item.name} with ${otherMember.name}.`);
+          SoundManager.beep(700, 150);
+      } else {
+          // Unequip current item if one exists
+          if (member.equipmentItem) {
+              this.party.inventory.push(member.equipmentItem);
+              SoundManager.beep(600, 80);
+          }
+          member.equipmentItem = item;
+          const invIndex = this.party.inventory.findIndex((i) => i.id === item.id);
+          if (invIndex > -1) {
+              this.party.inventory.splice(invIndex, 1);
+          }
+          this.logMessage(`[Equip] ${member.name} equipped ${item.name}.`);
+          SoundManager.beep(800, 100);
       }
-      // Equip the new item
-      member.equipmentItem = item;
-      // Remove the new item from inventory
-      const invIndex = this.party.inventory.findIndex((i) => i.id === item.id);
-      if (invIndex > -1) {
-        this.party.inventory.splice(invIndex, 1);
-      }
-      this.logMessage(`[Equip] ${member.name} equipped ${item.name}.`);
-      this.openInspect(member, this.party.members.indexOf(member)); // Refresh inspect window
-      this.openEquipmentScreen(); // Re-open equipment list
+      this.openInspect(member, this.party.members.indexOf(member));
       this.updateAll();
-      SoundManager.beep(800, 100); // Equip sound
-    };
-
-    // If the item is equipped by another member, show confirmation
-    if (item.equippedMember) {
-      const otherMember = item.equippedMember;
-      this.confirmWindow.titleEl.textContent = "Confirm Swap";
-      this.confirmWindow.messageEl.textContent = `Swap ${item.name} from ${otherMember.name} to ${member.name}?`;
-      this.windowManager.push(this.confirmWindow);
-      this.confirmWindow.btnOk.onclick = () => {
-        const currentItem = member.equipmentItem;
-        otherMember.equipmentItem = currentItem;
-        member.equipmentItem = item;
-        this.logMessage(
-          `[Equip] ${member.name} swapped ${item.name} with ${otherMember.name}.`
-        );
-        this.windowManager.close(this.confirmWindow);
-        this.openInspect(member, this.party.members.indexOf(member)); // Refresh inspect window
-        this.openEquipmentScreen(); // Re-open equipment list
-        this.updateAll();
-        SoundManager.beep(700, 150); // Swap sound
-      };
-      this.confirmWindow.btnCancel.onclick = () => {
-        this.windowManager.close(this.confirmWindow);
-      };
-    } else {
-      doEquip();
-    }
   }
 }
 
