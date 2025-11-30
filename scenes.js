@@ -805,7 +805,7 @@ export class Scene_Shop extends Scene_Base {
 
         this.party.gold -= item.cost;
         this.party.inventory.push(item);
-        this.shopWindow.goldLabelEl.textContent = this.party.gold;
+        this.shopWindow.goldLabelEl.textContent = `${this.party.gold}G`;
         this.shopWindow.messageEl.textContent = this.dataManager.terms.shop.purchased + item.name + ".";
     this.sceneManager.previous().logMessage(
             `[Shop] ${this.dataManager.terms.shop.purchased}${item.name}.`
