@@ -454,6 +454,42 @@ export class Game_Battler extends Game_Base {
 
       return { status: 'LOCKED', evolution: null };
   }
+
+  /**
+   * Simulates growth from current level to target level.
+   * @param {number} targetLevel
+   */
+  growToLevel(targetLevel) {
+      if (targetLevel <= this.level) return;
+      while (this.level < targetLevel) {
+          this.xp = 0;
+          this.level++;
+          const hpGain = randInt(2, 4);
+          this._baseMaxHp += hpGain;
+      }
+      this.hp = this.maxHp;
+  }
+
+  /**
+   * Factory method to create a battler and scale it to a target level.
+   * @param {Object} actorData - The actor definition.
+   * @param {number} [targetLevel] - The desired level.
+   * @returns {Game_Battler}
+   */
+  static create(actorData, targetLevel) {
+      // Determine the final target level: explicit > intrinsic > 1
+      const finalLevel = targetLevel || actorData.level || 1;
+
+      // Force initialization at Level 1 to ensure base stats are treated as Lv 1 stats
+      // and growth is applied correctly up to the target level.
+      const baseData = { ...actorData, level: 1 };
+      const battler = new Game_Battler(baseData);
+
+      if (finalLevel > battler.level) {
+          battler.growToLevel(finalLevel);
+      }
+      return battler;
+  }
 }
 
 /**
@@ -507,8 +543,7 @@ export class Game_Party {
         console.error(`Actor data not found for ID: ${config.id}`);
         return null;
       }
-      const newActorData = { ...actorData, level: config.level };
-      return new Game_Battler(newActorData);
+      return Game_Battler.create(actorData, config.level);
     }).filter(member => member !== null);
   }
 

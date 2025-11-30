@@ -1117,14 +1117,25 @@ class Game_Interpreter {
         this.scene.updateAll();
     }
 
-    openRecruitEvent() {
-        const availableCreatures = this.dataManager.actors.filter(creature => !creature.isEnemy);
-        if (availableCreatures.length === 0) {
-            this.scene.logMessage(this.dataManager.terms.recruit.no_one_here);
-            return;
+    openRecruitEvent(options = {}) {
+        const { forcedId, cost: forcedCost, onRecruit } = options;
+        this._onRecruitCallback = onRecruit;
+
+        let recruit;
+        if (forcedId) {
+             recruit = this.dataManager.actors.find(a => a.id === forcedId);
         }
-        const recruit = availableCreatures[randInt(0, availableCreatures.length - 1)];
-        const cost = randInt(25, 75);
+
+        if (!recruit) {
+            const availableCreatures = this.dataManager.actors.filter(creature => !creature.isEnemy);
+            if (availableCreatures.length === 0) {
+                this.scene.logMessage(this.dataManager.terms.recruit.no_one_here);
+                return;
+            }
+            recruit = availableCreatures[randInt(0, availableCreatures.length - 1)];
+        }
+
+        const cost = forcedCost !== undefined ? forcedCost : randInt(25, 75);
 
         this.scene.recruitWindow.bodyEl.innerHTML = "";
 
@@ -1264,6 +1275,7 @@ class Game_Interpreter {
     }
 
     closeRecruitEvent() {
+        this._onRecruitCallback = null;
         this.windowManager.close(this.scene.recruitWindow);
         this.scene.setStatus("Exploration");
     }
@@ -1302,11 +1314,17 @@ class Game_Interpreter {
 
     attemptRecruit(recruit) {
         if (this.party.members.length < this.party.MAX_MEMBERS) {
-            this.party.members.push(new Game_Battler(recruit));
+            this.party.members.push(Game_Battler.create(recruit));
             this.scene.logMessage(`[Recruit] ${recruit.name} joins your party.`);
             this.scene.setStatus(
                 this.dataManager.terms.recruit.recruited.replace("{0}", recruit.name)
             );
+
+            if (this._onRecruitCallback) {
+                this._onRecruitCallback();
+                this._onRecruitCallback = null;
+            }
+
             this.clearEventTile();
             this.closeRecruitEvent();
             this.scene.updateParty();
@@ -1341,7 +1359,13 @@ class Game_Interpreter {
                 .replace("{0}", replaced.name)
                 .replace("{1}", recruit.name)
         );
-        this.party.members[index] = new Game_Battler(recruit);
+        this.party.members[index] = Game_Battler.create(recruit);
+
+        if (this._onRecruitCallback) {
+            this._onRecruitCallback();
+            this._onRecruitCallback = null;
+        }
+
         this.clearEventTile();
         this.scene.updateParty();
         this.closeRecruitEvent();
@@ -2110,6 +2134,18 @@ renderElements(elements) {
   onInventoryAction(item, action) {
       if (action === 'use') {
           if (item.type === 'equipment') return;
+
+          if (item.effects && item.effects.recruit_egg) {
+              const recruitId = item.effects.recruit_egg;
+              this.windowManager.close(this.inventoryWindow);
+              this.interpreter.openRecruitEvent({
+                  forcedId: recruitId,
+                  cost: 0,
+                  onRecruit: () => this.discardItem(item)
+              });
+              return;
+          }
+
           this.partySelectWindow.setup(this.party, `Use ${item.name} on:`, (target) => {
               this.windowManager.close(this.partySelectWindow);
               this.confirmEffectWindow.setupUse(target, item, () => {
@@ -2444,8 +2480,14 @@ renderElements(elements) {
 
       const index = this.party.members.indexOf(member);
       if (index !== -1) {
+          const currentSpeciesBase = member.actorData.maxHp;
+          const nextSpeciesBase = nextBattler.actorData.maxHp;
+          const newBaseMaxHp = member._baseMaxHp - currentSpeciesBase + nextSpeciesBase;
+
+          nextBattler._baseMaxHp = Math.max(1, newBaseMaxHp);
           nextBattler.xp = member.xp;
           nextBattler.equipmentItem = member.equipmentItem;
+          nextBattler.hp = nextBattler.maxHp;
 
           this.party.members[index] = nextBattler;
 
