@@ -168,3 +168,15 @@ export function evaluateFormula(formula, a, b = {}) {
         return 0;
     }
 }
+
+/**
+ * Probabilistically rounds a floating-point number to an integer.
+ * e.g., 1.25 becomes 1 (75%) or 2 (25%).
+ * @param {number} value - The value to round.
+ * @returns {number} The rounded integer.
+ */
+export function probabilisticRound(value) {
+    const floor = Math.floor(value);
+    const decimal = value - floor;
+    return floor + (Math.random() < decimal ? 1 : 0);
+}

@@ -1,5 +1,5 @@
 import { Game_Map, Game_Party, Game_Battler, Game_Event } from "./objects.js";
-import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula } from "./core.js";
+import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula, probabilisticRound } from "./core.js";
 import { BattleManager, SoundManager, ThemeManager } from "./managers.js";
 import {
   Window_Battle,
@@ -422,21 +422,26 @@ export class Scene_Battle extends Scene_Base {
     let totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
     const totalXp = enemies.reduce((sum, e) => sum + Math.floor(e.level * (e.expGrowth * 0.5) + 8), 0);
 
-    const living = this.party.members.slice(0, 4).filter((p) => p.hp > 0);
-    living.forEach((m) => {
+    const activeMembers = this.party.members.slice(0, 4).filter((p) => p && p.hp > 0);
+    const reserveMembers = this.party.members.slice(4).filter((p) => p && p.hp > 0);
+
+    activeMembers.forEach((m) => {
       const goldBonus = m.getPassiveValue("GOLD_DIGGER");
       if (goldBonus > 0) {
         totalGold += goldBonus;
         this.sceneManager.previous().logMessage(`[Passive] ${m.name} finds an extra ${goldBonus}G!`);
       }
     });
-    const share =
-      living.length > 0 ? Math.max(1, Math.floor(totalXp / living.length)) : 0;
-    living.forEach((m) => this.sceneManager.previous().gainXp(m, share));
+
+    const activeShareRaw = activeMembers.length > 0 ? totalXp / activeMembers.length : 0;
+    const reserveShareRaw = activeShareRaw / 20;
+
+    activeMembers.forEach((m) => this.sceneManager.previous().gainXp(m, probabilisticRound(activeShareRaw)));
+    reserveMembers.forEach((m) => this.sceneManager.previous().gainXp(m, probabilisticRound(reserveShareRaw), true));
 
     this.party.gold += totalGold;
     this.sceneManager.previous().logMessage(
-      `[Battle] Victory! Gained ${totalGold}G and ${totalXp} XP (split).`
+      `[Battle] Victory! Gained ${totalGold}G and ${totalXp} XP.`
     );
 
     // Process Drops
@@ -753,6 +758,8 @@ export class Scene_Shop extends Scene_Base {
 
         this.shopWindow.onUserClose = this.closeShop.bind(this);
         this.shopWindow.btnLeave.addEventListener("click", this.closeShop.bind(this));
+        this.shopWindow.btnMode.addEventListener("click", this.toggleMode.bind(this));
+        this.mode = 'buy';
     }
 
     /**
@@ -760,15 +767,38 @@ export class Scene_Shop extends Scene_Base {
      * @method start
      */
     start() {
-        this.shopWindow.setup(
-            this.party.gold,
-            this.dataManager.terms.shop.vendor_message,
-            this.dataManager.items,
-            (itemId) => this.buyItem(itemId)
-        );
+        this.mode = 'buy';
+        this.refreshShop();
         this.windowManager.push(this.shopWindow);
         document.getElementById("mode-label").textContent = "Shop";
         SoundManager.beep(650, 150);
+    }
+
+    toggleMode() {
+        this.mode = this.mode === 'buy' ? 'sell' : 'buy';
+        this.refreshShop();
+        SoundManager.beep(400, 50);
+    }
+
+    refreshShop() {
+        if (this.mode === 'buy') {
+            this.shopWindow.setup(
+                this.party.gold,
+                this.dataManager.terms.shop.vendor_message,
+                this.dataManager.items,
+                (item) => this.buyItem(item.id),
+                'buy'
+            );
+        } else {
+            const sellItems = this.party.inventory.map(i => ({ ...i, cost: Math.floor((i.cost || 0) / 2) }));
+            this.shopWindow.setup(
+                this.party.gold,
+                "Select an item to sell.",
+                sellItems,
+                (item) => this.sellItem(item),
+                'sell'
+            );
+        }
     }
 
     /**
@@ -809,17 +839,33 @@ export class Scene_Shop extends Scene_Base {
         this.party.gold -= item.cost;
         this.party.inventory.push(item);
 
-        // Update window state to refresh button availability
-        this.shopWindow.gold = this.party.gold;
-        this.shopWindow.goldLabelEl.textContent = `${this.party.gold}G`;
-        this.shopWindow.refresh();
-
         this.shopWindow.messageEl.textContent = this.dataManager.terms.shop.purchased + item.name + ".";
-    this.sceneManager.previous().logMessage(
+        this.sceneManager.previous().logMessage(
             `[Shop] ${this.dataManager.terms.shop.purchased}${item.name}.`
         );
-    this.sceneManager.previous().updateAll();
+        this.sceneManager.previous().updateAll();
+        this.refreshShop();
         SoundManager.beep(600, 80);
+    }
+
+    sellItem(item) {
+        const index = this.party.inventory.findIndex(i => i.id === item.id); // Simple ID check? Or strict object check?
+        // sellItems are COPIES (mapped). So strict object equality fails.
+        // We should map with original reference or find by index if possible.
+        // Let's rely on ID for now, or improve refreshShop to pass original.
+        // Better: Find FIRST instance of item.id in inventory.
+        const realIndex = this.party.inventory.findIndex(i => i.id === item.id);
+
+        if (realIndex > -1) {
+            this.party.inventory.splice(realIndex, 1);
+            this.party.gold += item.cost; // item.cost here is the halved cost from setupSell
+
+            this.shopWindow.messageEl.textContent = `Sold ${item.name} for ${item.cost}G.`;
+            this.sceneManager.previous().logMessage(`[Shop] Sold ${item.name}.`);
+            this.sceneManager.previous().updateAll();
+            this.refreshShop();
+            SoundManager.beep(600, 80);
+        }
     }
 }
 
@@ -1313,8 +1359,7 @@ class Game_Interpreter {
     }
 
     attemptRecruit(recruit) {
-        if (this.party.members.length < this.party.MAX_MEMBERS) {
-            this.party.members.push(Game_Battler.create(recruit));
+        if (this.party.addMember(Game_Battler.create(recruit))) {
             this.scene.logMessage(`[Recruit] ${recruit.name} joins your party.`);
             this.scene.setStatus(
                 this.dataManager.terms.recruit.recruited.replace("{0}", recruit.name)
@@ -1330,18 +1375,33 @@ class Game_Interpreter {
             this.scene.updateParty();
             return;
         }
-        this.scene.recruitWindow.bodyEl.innerHTML =
-            this.dataManager.terms.recruit.party_full;
-        this.scene.recruitWindow.buttonsEl.innerHTML = "";
+        this.scene.recruitWindow.bodyEl.innerHTML = "";
+        const msg = document.createElement("div");
+        msg.textContent = this.dataManager.terms.recruit.party_full;
+        this.scene.recruitWindow.bodyEl.appendChild(msg);
+
+        const list = document.createElement("div");
+        list.className = "recruit-replace-list";
+        list.style.maxHeight = "200px";
+        list.style.overflowY = "auto";
+        list.style.display = "flex";
+        list.style.flexDirection = "column";
+        list.style.gap = "2px";
+        list.style.marginTop = "4px";
+
         this.party.members.forEach((m, idx) => {
+            if (!m) return;
             const btn = document.createElement("button");
             btn.className = "win-btn";
-            btn.textContent = m.name;
+            btn.textContent = `Replace ${m.name} (Lv${m.level})`;
             btn.addEventListener("click", () => {
                 this.replaceMemberWithRecruit(idx, recruit);
             });
-            this.scene.recruitWindow.buttonsEl.appendChild(btn);
+            list.appendChild(btn);
         });
+        this.scene.recruitWindow.bodyEl.appendChild(list);
+
+        this.scene.recruitWindow.buttonsEl.innerHTML = "";
         const cancelBtn = document.createElement("button");
         cancelBtn.className = "win-btn";
         cancelBtn.textContent = "Cancel";
@@ -1618,7 +1678,7 @@ export class Scene_Map extends Scene_Base {
     // Iterate backwards to safely splice
     for (let i = this.party.members.length - 1; i >= 0; i--) {
         const member = this.party.members[i];
-        if (member.hp <= 0) {
+        if (member && member.hp <= 0) {
             deadFound = true;
             // Check for ON_PERMADEATH traits
             const permadeathTraits = member.traits.filter(t => t.code === 'ON_PERMADEATH');
@@ -1649,7 +1709,7 @@ export class Scene_Map extends Scene_Base {
 
                  this.logMessage(`${member.name} returned at Lv${member.level}.`);
             } else {
-                this.party.members.splice(i, 1);
+                this.party.members[i] = null;
                 this.logMessage(`[Death] ${member.name} has fallen and is lost forever.`);
             }
         }
@@ -1923,10 +1983,11 @@ export class Scene_Map extends Scene_Base {
    * @method gainXp
    * @param {import("./objects.js").Game_Battler} member - The member to give XP to.
    * @param {number} amount - The amount of XP.
+   * @param {boolean} [silent=false] - If true, suppresses level up log.
    */
-  gainXp(member, amount) {
+  gainXp(member, amount, silent = false) {
     const result = member.gainXp(amount);
-    if (result.leveledUp) {
+    if (result.leveledUp && !silent) {
       this.logMessage(
         `[Level] ${member.name} grows to Lv${result.newLevel}! HP +${result.hpGain}.`
       );
