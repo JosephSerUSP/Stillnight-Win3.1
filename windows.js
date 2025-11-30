@@ -3,6 +3,41 @@ import { tooltip } from "./tooltip.js";
 import { SoundManager } from "./managers.js";
 
 /**
+ * Creates a standardized label for a battler's name, including elemental icons and status indicators.
+ * @param {import("./objects.js").Game_Battler} battler - The battler.
+ * @param {Object} [options] - Configuration options.
+ * @param {string} [options.evolutionStatus] - 'AVAILABLE', 'LOCKED', or 'NONE'.
+ * @returns {HTMLElement} The container element.
+ */
+export function createBattlerNameLabel(battler, options = {}) {
+    const container = document.createElement("div");
+    container.className = "battler-name-label";
+    container.style.display = "flex";
+    container.style.alignItems = "center";
+    container.style.whiteSpace = "nowrap";
+
+    if (battler.elements) {
+        container.appendChild(createElementIcon(battler.elements));
+    }
+
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = battler.name;
+    container.appendChild(nameSpan);
+
+    if (options.evolutionStatus && options.evolutionStatus !== 'NONE') {
+        const evoIcon = document.createElement("span");
+        evoIcon.className = "icon";
+        const iconId = options.evolutionStatus === 'AVAILABLE' ? 102 : 101;
+        evoIcon.style.backgroundPosition = getIconStyle(iconId);
+        evoIcon.style.marginLeft = "4px";
+        evoIcon.title = options.evolutionStatus === 'AVAILABLE' ? "Evolution Available" : "Evolution Locked";
+        container.appendChild(evoIcon);
+    }
+
+    return container;
+}
+
+/**
  * Creates a DOM element representing an icon for a set of elements.
  * @param {string[]} elements - The elements.
  * @returns {HTMLElement} The icon container element.
@@ -208,15 +243,10 @@ export function createPartySlot(battler, index, options = {}) {
     nameEl.style.justifyContent = "flex-start";
     nameEl.style.flexGrow = "1";
     nameEl.style.overflow = "hidden";
-    nameEl.style.whiteSpace = "nowrap";
 
-    const nameSpan = document.createElement('span');
-    nameSpan.textContent = battler.name;
-
-    if (battler.elements) {
-        nameEl.appendChild(createElementIcon(battler.elements));
-    }
-    nameEl.appendChild(nameSpan);
+    const label = createBattlerNameLabel(battler, { evolutionStatus: options.evolutionStatus });
+    label.style.overflow = "hidden";
+    nameEl.appendChild(label);
 
     const rowIndicator = document.createElement("div");
     let rowText = "";
@@ -915,10 +945,7 @@ export class Window_Evolution extends Window_Base {
 
       // Name
       const nameVal = document.createElement('span');
-      if (battler.elements) {
-          nameVal.appendChild(createElementIcon(battler.elements));
-      }
-      nameVal.appendChild(document.createTextNode(battler.name));
+      nameVal.appendChild(createBattlerNameLabel(battler));
       createRow('Name', nameVal);
 
       // Level
@@ -1564,12 +1591,21 @@ export class Window_PartyPanel extends Window_Base {
         this.content.appendChild(this.partyGridEl);
     }
 
-    updateParty(party, onInspect) {
+    updateParty(party, onInspect, context = null) {
         this.partyGridEl.innerHTML = "";
         party.members.slice(0, 4).forEach((member, index) => {
+            let evolutionStatus = null;
+            if (context) {
+                const statusObj = member.getEvolutionStatus(context.inventory, context.floorDepth, context.gold);
+                if (statusObj.status !== 'NONE') {
+                    evolutionStatus = statusObj.status;
+                }
+            }
+
             const slot = createPartySlot(member, index, {
                 onClick: onInspect,
-                testId: `party-slot-${index}`
+                testId: `party-slot-${index}`,
+                evolutionStatus: evolutionStatus
             });
             const gaugeFill = slot.querySelector('.hp-fill');
             if (gaugeFill) {
@@ -1727,8 +1763,8 @@ export class Window_HUD {
         this.stackNav.updateCardList(floors, currentIndex, maxReachedIndex, onSelect);
     }
 
-    updateParty(party, onInspect) {
-        this.partyPanel.updateParty(party, onInspect);
+    updateParty(party, onInspect, context = null) {
+        this.partyPanel.updateParty(party, onInspect, context);
     }
 }
 
@@ -1763,10 +1799,7 @@ export function renderCreatureInfo(container, battler, title) {
     };
 
     const nameVal = document.createElement('span');
-    if (battler.elements) {
-        nameVal.appendChild(createElementIcon(battler.elements));
-    }
-    nameVal.appendChild(document.createTextNode(battler.name));
+    nameVal.appendChild(createBattlerNameLabel(battler));
     createRow('Name', nameVal);
 
     const levelVal = document.createElement('span');
