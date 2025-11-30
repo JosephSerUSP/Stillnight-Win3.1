@@ -403,13 +403,14 @@ html, body {
     align-items: center;
 }
 
-/* 20x20 grid, centered map */
+/* 19x19 grid, centered map */
 .exploration-grid {
-    width: 438px;
-    height: 438px;
+    width: 416px;
+    height: 416px;
     display: grid;
-    grid-template-columns: repeat(20, 1fr);
-    grid-template-rows: repeat(20, 1fr);
+    /* Use variables injected by JS, fallback to 19 */
+    grid-template-columns: repeat(var(--grid-cols, 19), 1fr);
+    grid-template-rows: repeat(var(--grid-rows, 19), 1fr);
     gap: 2px;
 }
 
@@ -850,4 +851,9 @@ html, body {
     align-items: center;
     gap: 4px;
     margin-bottom: 2px;
+}
+
+.window-row.selected {
+    background-color: var(--selection-bg);
+    color: var(--selection-text);
 }
