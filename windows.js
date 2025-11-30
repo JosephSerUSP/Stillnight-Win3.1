@@ -3,6 +3,36 @@ import { tooltip } from "./tooltip.js";
 import { SoundManager } from "./managers.js";
 
 /**
+ * Creates a standardized icon element.
+ * @param {number} iconId - The icon ID.
+ * @param {Object} [options] - Configuration options.
+ * @param {string} [options.className='icon'] - Base CSS class.
+ * @param {string} [options.tagName='span'] - HTML tag name.
+ * @param {Object} [options.style] - Inline styles to apply.
+ * @param {string} [options.title] - Tooltip title.
+ * @returns {HTMLElement} The icon element.
+ */
+export function createIcon(iconId, options = {}) {
+    const tagName = options.tagName || "span";
+    const icon = document.createElement(tagName);
+    icon.className = options.className || "icon";
+
+    if (iconId > 0) {
+        icon.style.backgroundPosition = getIconStyle(iconId);
+    }
+
+    if (options.style) {
+        Object.assign(icon.style, options.style);
+    }
+
+    if (options.title) {
+        icon.title = options.title;
+    }
+
+    return icon;
+}
+
+/**
  * Creates a standardized label for a battler's name, including elemental icons and status indicators.
  * @param {import("./objects.js").Game_Battler} battler - The battler.
  * @param {Object} [options] - Configuration options.
@@ -25,15 +55,31 @@ export function createBattlerNameLabel(battler, options = {}) {
     container.appendChild(nameSpan);
 
     if (options.evolutionStatus && options.evolutionStatus !== 'NONE') {
-        const evoIcon = document.createElement("span");
-        evoIcon.className = "icon";
         const iconId = options.evolutionStatus === 'AVAILABLE' ? 102 : 101;
-        evoIcon.style.backgroundPosition = getIconStyle(iconId);
-        evoIcon.style.marginLeft = "4px";
-        evoIcon.title = options.evolutionStatus === 'AVAILABLE' ? "Evolution Available" : "Evolution Locked";
+        const evoIcon = createIcon(iconId, {
+            style: { marginLeft: "4px" },
+            title: options.evolutionStatus === 'AVAILABLE' ? "Evolution Available" : "Evolution Locked"
+        });
         container.appendChild(evoIcon);
     }
 
+    return container;
+}
+
+/**
+ * Renders a row of element icons.
+ * @param {string[]} elements - The elements.
+ * @returns {HTMLElement} The container element.
+ */
+export function renderElements(elements) {
+    const container = document.createElement('div');
+    container.className = 'element-container';
+    elements.forEach(element => {
+        const iconId = elementToIconId(element);
+        if (iconId > 0) {
+            container.appendChild(createIcon(iconId, { tagName: 'div' }));
+        }
+    });
     return container;
 }
 
@@ -48,15 +94,14 @@ export function createElementIcon(elements) {
 
     if (primaryElements.length <= 1) {
         container.className = 'element-icon-container-name';
-        const icon = document.createElement('div');
-        icon.className = 'icon';
         if (primaryElements.length === 1) {
             const iconId = elementToIconId(primaryElements[0]);
-            if (iconId > 0) {
-                icon.style.backgroundPosition = getIconStyle(iconId);
-            }
+            container.appendChild(createIcon(iconId, { tagName: 'div' }));
+        } else {
+             const icon = document.createElement('div');
+             icon.className = 'icon';
+             container.appendChild(icon);
         }
-        container.appendChild(icon);
     } else {
         container.className = 'element-icon-container';
         const positions = [
@@ -67,13 +112,16 @@ export function createElementIcon(elements) {
         ];
         primaryElements.forEach((element, index) => {
             if (index < 4) {
-                const icon = document.createElement('div');
-                icon.className = 'element-icon';
                 const iconId = elementToIconId('l_' + element);
                 if (iconId > 0) {
-                    icon.style.backgroundPosition = getIconStyle(iconId);
-                    icon.style.top = positions[index].top;
-                    icon.style.left = positions[index].left;
+                    const icon = createIcon(iconId, {
+                        className: 'element-icon',
+                        tagName: 'div',
+                        style: {
+                            top: positions[index].top,
+                            left: positions[index].left
+                        }
+                    });
                     container.appendChild(icon);
                 }
             }
@@ -133,21 +181,11 @@ export function createInteractiveLabel(data, type, options = {}) {
             const iconEl = createElementIcon(elements);
             el.appendChild(iconEl);
         } else if (iconId) {
-             const icon = document.createElement("span");
-             icon.className = "icon";
-             if (iconId > 0) {
-                 icon.style.backgroundPosition = getIconStyle(iconId);
-             }
-             icon.style.marginRight = "4px";
+             const icon = createIcon(iconId, { style: { marginRight: "4px" } });
              el.appendChild(icon);
         }
     } else if (iconId) {
-        const icon = document.createElement("span");
-        icon.className = "icon";
-        if (iconId > 0) {
-            icon.style.backgroundPosition = getIconStyle(iconId);
-        }
-        icon.style.marginRight = "4px";
+        const icon = createIcon(iconId, { style: { marginRight: "4px" } });
         el.appendChild(icon);
     }
 
@@ -2259,4 +2297,5 @@ if (typeof window !== 'undefined' && window.location.search.includes("test=true"
     window.Window_ConfirmEffect = Window_ConfirmEffect;
     window.Window_PartySelect = Window_PartySelect;
     window.Window_EquipItemSelect = Window_EquipItemSelect;
+    window.createIcon = createIcon;
 }

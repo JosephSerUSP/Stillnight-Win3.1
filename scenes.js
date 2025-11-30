@@ -20,7 +20,9 @@ import {
   WindowLayer,
   createInteractiveLabel,
   createElementIcon,
-  createBattlerNameLabel
+  createBattlerNameLabel,
+  renderElements,
+  createIcon
 } from "./windows.js";
 import { tooltip } from "./tooltip.js";
 
@@ -1176,7 +1178,7 @@ class Game_Interpreter {
         // Element
         const elementVal = document.createElement('span');
         if (recruit.elements && recruit.elements.length > 0) {
-            elementVal.appendChild(this.scene.renderElements(recruit.elements));
+            elementVal.appendChild(renderElements(recruit.elements));
         } else {
             elementVal.textContent = "—";
         }
@@ -1953,76 +1955,9 @@ export class Scene_Map extends Scene_Base {
   formatSkillName(skillId) {
       const skill = this.dataManager.skills[skillId];
       if (!skill) return "";
-      const elementIcon = this.createElementIcon([skill.element]);
+      const elementIcon = createElementIcon([skill.element]);
       return `${elementIcon.innerHTML}${skill.name}`;
   }
-
-/**
- * Creates a DOM element representing an icon for a set of elements.
- * @method createElementIcon
- * @param {string[]} elements - The elements.
- * @returns {HTMLElement} The icon container element.
- */
-createElementIcon(elements) {
-    const primaryElements = getPrimaryElements(elements);
-    const container = document.createElement('div');
-
-    if (primaryElements.length <= 1) {
-        container.className = 'element-icon-container-name';
-        const icon = document.createElement('div');
-        icon.className = 'icon';
-        if (primaryElements.length === 1) {
-            const iconId = elementToIconId(primaryElements[0]);
-            if (iconId > 0) {
-                icon.style.backgroundPosition = getIconStyle(iconId);
-            }
-        }
-        container.appendChild(icon);
-    } else {
-        container.className = 'element-icon-container';
-        const positions = [
-            { top: '0px', left: '0px' },
-            { top: '6px', left: '6px' },
-            { top: '0px', left: '6px' },
-            { top: '6px', left: '0px' },
-        ];
-        primaryElements.forEach((element, index) => {
-            if (index < 4) {
-                const icon = document.createElement('div');
-                icon.className = 'element-icon';
-                const iconId = elementToIconId('l_' + element);
-                if (iconId > 0) {
-                    icon.style.backgroundPosition = getIconStyle(iconId);
-                    icon.style.top = positions[index].top;
-                    icon.style.left = positions[index].left;
-                    container.appendChild(icon);
-                }
-            }
-        });
-    }
-    return container;
-}
-
-/**
- * Renders a row of element icons.
- * @method renderElements
- * @param {string[]} elements - The elements.
- * @returns {HTMLElement} The container element.
- */
-renderElements(elements) {
-    const container = document.createElement('div');
-    container.className = 'element-container';
-    elements.forEach(element => {
-        const icon = document.createElement('div');
-        icon.className = 'icon';
-        const iconId = elementToIconId(element);
-        if (iconId > 0) {
-            icon.style.backgroundPosition = getIconStyle(iconId);
-        }
-        container.appendChild(icon);
-    });
-    return container;
-}
 
   /**
    * Determines if a party member is in the "Front" or "Back" row.
@@ -2211,7 +2146,7 @@ renderElements(elements) {
 
     this.inspectWindow.elementEl.innerHTML = "";
     if (member.elements && member.elements.length > 0) {
-        this.inspectWindow.elementEl.appendChild(this.renderElements(member.elements));
+        this.inspectWindow.elementEl.appendChild(renderElements(member.elements));
     } else {
         this.inspectWindow.elementEl.textContent = "—";
     }

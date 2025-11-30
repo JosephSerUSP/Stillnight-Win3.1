@@ -857,3 +857,8 @@ html, body {
     background-color: var(--selection-bg);
     color: var(--selection-text);
 }
+
+/* Icon Drop Shadow Update */
+.icon, .element-icon {
+    filter: drop-shadow(2px 2px 0px #4B4B4B);
+}
