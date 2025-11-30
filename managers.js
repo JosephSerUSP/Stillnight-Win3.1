@@ -1,4 +1,4 @@
-import { randInt, elementToAscii, evaluateFormula } from "./core.js";
+import { randInt, elementToAscii, evaluateFormula, probabilisticRound } from "./core.js";
 
 /**
  * @class DataManager
@@ -486,7 +486,7 @@ export class BattleManager {
 
                skill.effects.forEach((effect) => {
                  if (effect.type === "hp_damage") {
-                   let skillDmg = Math.round(evaluateFormula(effect.formula, battler, target) * boost);
+                   let skillDmg = probabilisticRound(evaluateFormula(effect.formula, battler, target) * boost);
                    if (skillDmg < 1) skillDmg = 1;
 
                    const hpBefore = target.hp;
@@ -503,7 +503,7 @@ export class BattleManager {
                    });
                  }
                  if (effect.type === "hp_heal") {
-                    let heal = Math.round(evaluateFormula(effect.formula, battler, target) * boost);
+                    let heal = probabilisticRound(evaluateFormula(effect.formula, battler, target) * boost);
                     if (heal < 1) heal = 1;
 
                     const hpBefore = target.hp;
@@ -544,7 +544,7 @@ export class BattleManager {
            if (base < 1) base = 1;
 
            const mult = this.elementMultiplier(battler.elements, target.elements);
-           let dmg = Math.round(base * mult);
+           let dmg = probabilisticRound(base * mult);
            dmg += battler.getPassiveValue("DEAL_DAMAGE_MOD");
            if (dmg < 1) dmg = 1;
 
