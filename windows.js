@@ -50,12 +50,6 @@ export function createElementIcon(elements) {
 /**
  * Creates a generic gauge element.
  * @param {Object} options - Configuration options.
- * @param {number} [options.width] - Width of the gauge (e.g. 100).
- * @param {string} [options.height='6px'] - Height of the gauge.
- * @param {string} [options.color='#00a000'] - Fill color.
- * @param {string} [options.bgColor] - Background color (overrides CSS if set).
- * @param {string} [options.className] - Additional class names.
- * @returns {Object} { container, fill } - The DOM elements.
  */
 export function createGauge(options = {}) {
     const container = document.createElement("div");
@@ -73,16 +67,11 @@ export function createGauge(options = {}) {
     }
 
     container.appendChild(fill);
-
     return { container, fill };
 }
 
 /**
  * Creates an interactive label for a game object (Skill, Passive, Item).
- * @param {Object} data - The object data (must have name, and optionally icon/elements).
- * @param {string} type - 'skill' | 'passive' | 'item' | 'generic'.
- * @param {Object} options - { tooltipText, showTooltip, className, elements }.
- * @returns {HTMLElement} The span element.
  */
 export function createInteractiveLabel(data, type, options = {}) {
     const el = document.createElement("span");
@@ -102,7 +91,6 @@ export function createInteractiveLabel(data, type, options = {}) {
     }
 
     if (type === 'skill' || (data.element || data.elements)) {
-        // Use element icon logic if available
         let elements = data.elements || (data.element ? [data.element] : []);
         if (options.elements) elements = options.elements;
 
@@ -130,7 +118,6 @@ export function createInteractiveLabel(data, type, options = {}) {
 
     const nameSpan = document.createElement("span");
     nameSpan.textContent = data.name;
-    // Inspect window styles
     if (type === 'skill' || type === 'passive') {
          nameSpan.style.textDecoration = "underline";
          nameSpan.style.textDecorationStyle = "dotted";
@@ -140,14 +127,11 @@ export function createInteractiveLabel(data, type, options = {}) {
     // Tooltip
     if (options.showTooltip !== false) {
         let text = options.tooltipText || data.description || "";
-
-        // Append extra info if not provided in text
         if (!options.tooltipText) {
              let extra = "";
              if (type === 'passive' && data.effect) {
                  extra = data.effect;
              }
-
              if (extra) {
                  text += `<br/><span class="text-functional" style="font-size: 0.9em;">${extra}</span>`;
              }
@@ -173,23 +157,11 @@ export function createInteractiveLabel(data, type, options = {}) {
 }
 
 /**
- * Creates a standard party member slot (used in HUD, Formation, Inventory).
- * @param {import("./objects.js").Game_Battler} battler - The battler.
- * @param {number} index - The index in the list.
- * @param {Object} options - Configuration options.
- * @param {Function} [options.onClick] - Click handler.
- * @param {boolean} [options.draggable] - Enable drag attributes.
- * @param {Function} [options.onDragStart]
- * @param {Function} [options.onDragOver]
- * @param {Function} [options.onDrop]
- * @param {Function} [options.onDragEnd]
- * @param {string} [options.className] - Additional class.
- * @param {string} [options.testId] - Test ID attribute.
+ * Creates a standard party member slot.
  */
 export function createPartySlot(battler, index, options = {}) {
     const slot = document.createElement("div");
     slot.className = "party-slot";
-    // Fixed size container
     slot.style.width = "124px";
     slot.style.height = "116px";
     slot.style.display = "flex";
@@ -222,7 +194,6 @@ export function createPartySlot(battler, index, options = {}) {
         return slot;
     }
 
-    // --- Header (Line 1) ---
     const header = document.createElement("div");
     header.className = "party-slot-header";
     header.style.display = "flex";
@@ -230,12 +201,11 @@ export function createPartySlot(battler, index, options = {}) {
     header.style.alignItems = "center";
     header.style.marginBottom = "2px";
 
-    // Name (Left justified text)
     const nameEl = document.createElement("div");
     nameEl.className = "party-slot-name";
     nameEl.style.display = "flex";
     nameEl.style.alignItems = "center";
-    nameEl.style.justifyContent = "flex-start"; // Left align content
+    nameEl.style.justifyContent = "flex-start";
     nameEl.style.flexGrow = "1";
     nameEl.style.overflow = "hidden";
     nameEl.style.whiteSpace = "nowrap";
@@ -248,26 +218,22 @@ export function createPartySlot(battler, index, options = {}) {
     }
     nameEl.appendChild(nameSpan);
 
-    // Row Indicator (Fr/Bk)
     const rowIndicator = document.createElement("div");
     let rowText = "";
     if (index <= 1) rowText = "Fr";
     else if (index <= 3) rowText = "Bk";
     rowIndicator.textContent = rowText;
-    // rowIndicator.style.fontWeight = "bold"; // Removed bold per request
 
     header.appendChild(nameEl);
     if (rowText) header.appendChild(rowIndicator);
     slot.appendChild(header);
 
-    // --- Body (Line 2: Portrait + Stats) ---
     const body = document.createElement("div");
     body.className = "party-slot-body";
     body.style.display = "flex";
-    body.style.flexGrow = "1"; // Take available space
+    body.style.flexGrow = "1";
     body.style.marginBottom = "2px";
 
-    // Portrait (Left)
     const portrait = document.createElement("div");
     portrait.className = "party-slot-portrait";
     portrait.style.backgroundImage = `url('assets/portraits/${battler.spriteKey || "pixie"}.png')`;
@@ -276,29 +242,25 @@ export function createPartySlot(battler, index, options = {}) {
     portrait.style.flexShrink = "0";
     body.appendChild(portrait);
 
-    // Stats (Right)
     const stats = document.createElement("div");
     stats.className = "party-slot-stats";
     stats.style.display = "flex";
     stats.style.flexDirection = "column";
     stats.style.flexGrow = "1";
     stats.style.marginLeft = "4px";
-    stats.style.justifyContent = "flex-start"; // Align to top of body
+    stats.style.justifyContent = "flex-start";
 
-    // HP Text
     const hpText = document.createElement("div");
     hpText.textContent = `HP ${battler.hp}/${battler.maxHp}`;
     hpText.style.marginBottom = "1px";
     stats.appendChild(hpText);
 
-    // HP Gauge
     const { container: hpGauge, fill: hpFill } = createGauge({ height: "6px", color: "var(--gauge-hp)" });
     hpGauge.style.marginBottom = "1px";
     hpFill.style.width = `${Math.max(0, (battler.hp / battler.maxHp) * 100)}%`;
     hpFill.classList.add('hp-fill');
     stats.appendChild(hpGauge);
 
-    // XP Gauge
     const xpNeeded = battler.xpNeeded(battler.level);
     const xpPercent = Math.min(100, Math.max(0, ((battler.xp || 0) / xpNeeded) * 100));
     const { container: xpGauge, fill: xpFill } = createGauge({
@@ -312,7 +274,6 @@ export function createPartySlot(battler, index, options = {}) {
     body.appendChild(stats);
     slot.appendChild(body);
 
-    // --- Footer (Line 3: Equip) ---
     const footer = document.createElement("div");
     footer.className = "party-slot-footer";
     footer.style.fontSize = "10px";
@@ -334,37 +295,15 @@ export function createPartySlot(battler, index, options = {}) {
 
 /**
  * @class WindowLayer
- * @description A container that manages all game windows. This is a key component
- * for decoupling the UI from the main HTML file. The WindowLayer is appended to the
- * main game container, and all windows are appended to the WindowLayer. This ensures
- * that all windows are children of the game container and can be scaled and positioned
- * correctly. It also provides a single point of control for managing window z-indexing.
  */
 export class WindowLayer {
-  /**
-   * Creates a new WindowLayer instance.
-   */
   constructor() {
-    /**
-     * The main container element for the window layer.
-     * @type {HTMLElement}
-     */
     this.element = document.createElement("div");
     this.element.id = "window-layer";
   }
-
-  /**
-   * Adds a window to the layer.
-   * @param {Window_Base} window - The window to add to the layer.
-   */
   addChild(window) {
     this.element.appendChild(window.overlay);
   }
-
-  /**
-   * Appends the window layer to a given parent element.
-   * @param {HTMLElement} parent - The element to append the layer to.
-   */
   appendTo(parent) {
     parent.appendChild(this.element);
   }
@@ -372,30 +311,12 @@ export class WindowLayer {
 
 /**
  * @class WindowManager
- * @description Manages a stack of active windows to ensure proper input focus
- * and visual hierarchy. Only the top window in the stack receives input,
- * while others are dimmed.
  */
 export class WindowManager {
-  /**
-   * Creates a new WindowManager instance.
-   */
   constructor() {
-    /**
-     * The stack of active windows.
-     * @type {Window_Base[]}
-     */
     this.stack = [];
   }
-
-  /**
-   * Pushes a window onto the stack and opens it.
-   * If the window is already in the stack, it's moved to the top.
-   * @method push
-   * @param {Window_Base} window - The window to open.
-   */
   push(window) {
-    // If the window is already in the stack, move it to the top
     const index = this.stack.indexOf(window);
     if (index > -1) {
       this.stack.splice(index, 1);
@@ -404,12 +325,6 @@ export class WindowManager {
     window.open();
     this.updateState();
   }
-
-  /**
-   * Pops the top window from the stack and closes it.
-   * @method pop
-   * @returns {Window_Base|null} The closed window, or null if stack was empty.
-   */
   pop() {
     if (this.stack.length === 0) return null;
     const window = this.stack.pop();
@@ -417,16 +332,9 @@ export class WindowManager {
     this.updateState();
     return window;
   }
-
-  /**
-   * Closes a specific window. If it's not the top window, it's removed from the stack.
-   * @method close
-   * @param {Window_Base} window - The window to close.
-   */
   close(window) {
     const index = this.stack.indexOf(window);
     if (index === -1) return;
-
     if (index === this.stack.length - 1) {
       this.pop();
     } else {
@@ -435,16 +343,8 @@ export class WindowManager {
       this.updateState();
     }
   }
-
-  /**
-   * Handles global input delegated from main.js.
-   * @method handleInput
-   * @param {KeyboardEvent} e
-   * @returns {boolean} True if input was handled.
-   */
   handleInput(e) {
       if (this.stack.length === 0) return false;
-
       const topWindow = this.stack[this.stack.length - 1];
       if (e.key === "Escape") {
           topWindow.onEscape();
@@ -452,21 +352,11 @@ export class WindowManager {
       }
       return false;
   }
-
-  /**
-   * Updates the visual state of all managed windows (z-index, dimming).
-   * Ensures the top window is active and others are dimmed.
-   * @method updateState
-   */
   updateState() {
     this.stack.forEach((win, index) => {
       const isTop = index === this.stack.length - 1;
-
-      // Update z-index to ensure correct stacking order
-      // Base z-index is 10, increment by 10 for each level
       win.element.style.zIndex = 10 + index * 10;
       win.overlay.style.zIndex = 10 + index * 10;
-
       if (isTop) {
         win.overlay.classList.remove("window--dimmed");
       } else {
@@ -478,31 +368,26 @@ export class WindowManager {
 
 /**
  * @class Window_Base
- * @description The base class for all UI windows. Handles DOM creation, positioning,
- * and drag-and-drop functionality. Windows are rendered into a WindowLayer.
+ * @description The base class for all UI windows. Defines the standard structure
+ * (Frame, Header, Content, Footer) and handles drag/drop and lifecycle.
  */
 export class Window_Base {
     /**
-     * Creates an instance of Window_Base.
-     * @param {number|string} x - The initial x coordinate, relative to the game container. Can be 'center'.
-     * @param {number|string} y - The initial y coordinate, relative to the game container. Can be 'center'.
-     * @param {number} width - The width of the window.
-     * @param {number|string} height - The height of the window. Can be 'auto'.
+     * @param {number|string} x
+     * @param {number|string} y
+     * @param {number} width
+     * @param {number|string} height
+     * @param {Object} options
+     * @param {string} [options.title]
+     * @param {boolean} [options.closeButton=true]
      */
-    constructor(x, y, width, height) {
-        /**
-         * The semi-transparent overlay that covers the game screen.
-         * @type {HTMLElement}
-         */
+    constructor(x, y, width, height, options = {}) {
         this.overlay = document.createElement("div");
         this.overlay.className = "modal-overlay";
 
-        /**
-         * The main window element.
-         * @type {HTMLElement}
-         */
         this.element = document.createElement("div");
-        this.element.className = "dialog";
+        this.element.className = "window-frame";
+        if (options.id) this.element.id = options.id;
         this.element.style.position = "absolute";
 
         const finalX = x === 'center' ? (Graphics.width - width) / 2 : x;
@@ -511,21 +396,52 @@ export class Window_Base {
         this.element.style.left = `${finalX}px`;
         this.element.style.top = `${finalY}px`;
         this.element.style.width = `${width}px`;
-        this.element.style.height = `${height}px`;
+
+        if (height === 'auto') {
+            this.element.style.height = 'auto';
+            this.element.style.maxHeight = '90vh';
+        } else {
+            this.element.style.height = `${height}px`;
+        }
         this.element.style.zIndex = "10";
 
         this.overlay.appendChild(this.element);
+
+        // 1. Header
+        this.header = document.createElement("div");
+        this.header.className = "window-header";
+        this.element.appendChild(this.header);
+
+        this.titleEl = document.createElement("span");
+        this.titleEl.textContent = options.title || "";
+        this.header.appendChild(this.titleEl);
+
+        this.makeDraggable(this.header);
+
+        if (options.closeButton !== false) {
+            this.btnClose = document.createElement("button");
+            this.btnClose.className = "win-btn";
+            this.btnClose.textContent = "X";
+            this.btnClose.onclick = () => this.onUserClose();
+            this.header.appendChild(this.btnClose);
+        }
+
+        // 2. Content
+        this.content = document.createElement("div");
+        this.content.className = "window-content";
+        this.element.appendChild(this.content);
+
+        // 3. Footer
+        this.footer = document.createElement("div");
+        this.footer.className = "window-footer";
+        // Check if footer needs to be visible? CSS handles padding.
+        this.element.appendChild(this.footer);
 
         this._dragStart = null;
         this._onDragHandler = this._onDrag.bind(this);
         this._onDragEndHandler = this._onDragEnd.bind(this);
     }
 
-    /**
-     * Makes the window draggable by a specific element (usually the title bar).
-     * @method makeDraggable
-     * @param {HTMLElement} titleBar - The title bar element that triggers the drag.
-     */
     makeDraggable(titleBar) {
         titleBar.addEventListener("mousedown", (e) => {
             this._dragStart = {
@@ -537,12 +453,6 @@ export class Window_Base {
         });
     }
 
-    /**
-     * Handles the drag movement.
-     * @method _onDrag
-     * @private
-     * @param {MouseEvent} e - The mouse event.
-     */
     _onDrag(e) {
         if (this._dragStart) {
             this.element.style.left = `${e.clientX - this._dragStart.x}px`;
@@ -550,94 +460,65 @@ export class Window_Base {
         }
     }
 
-    /**
-     * Ends the drag operation.
-     * @method _onDragEnd
-     * @private
-     */
     _onDragEnd() {
         this._dragStart = null;
         document.removeEventListener("mousemove", this._onDragHandler);
         document.removeEventListener("mouseup", this._onDragEndHandler);
     }
 
+    open() { this.overlay.classList.add("active"); }
+    close() { this.overlay.classList.remove("active"); }
+    onEscape() { this.onUserClose(); }
+    onUserClose() { this.close(); }
+    refresh() {}
+
     /**
-     * Opens the window by adding the 'active' class to the overlay.
-     * @method open
+     * Updates the window title.
+     * @param {string} text
      */
-    open() {
-        this.overlay.classList.add("active");
+    setTitle(text) {
+        this.titleEl.textContent = text;
     }
 
     /**
-     * Closes the window by removing the 'active' class from the overlay.
-     * @method close
+     * Adds a button to the footer.
+     * @param {string} label
+     * @param {Function} onClick
+     * @returns {HTMLButtonElement}
      */
-    close() {
-        this.overlay.classList.remove("active");
+    addButton(label, onClick) {
+        const btn = document.createElement("button");
+        btn.className = "win-btn";
+        btn.textContent = label;
+        btn.onclick = onClick;
+        this.footer.appendChild(btn);
+        return btn;
     }
 
     /**
-     * Handles the Escape key press.
-     * @method onEscape
+     * Creates a standard panel inside the content.
+     * @returns {HTMLElement}
      */
-    onEscape() {
-        this.onUserClose();
-    }
-
-    /**
-     * Logic for when the user attempts to close the window (via X or Escape).
-     * Defaults to just closing. Can be overridden.
-     * @method onUserClose
-     */
-    onUserClose() {
-        this.close();
-    }
-
-    /**
-     * Refreshes the window's content. Should be overridden by subclasses.
-     * @method refresh
-     */
-    refresh() {
-        // To be implemented by subclasses
+    createPanel() {
+        const panel = document.createElement("div");
+        panel.className = "window-panel";
+        this.content.appendChild(panel);
+        return panel;
     }
 }
 
 /**
  * @class Window_Help
- * @description Displays game help and legend.
- * @extends Window_Base
  */
 export class Window_Help extends Window_Base {
   constructor() {
-    super('center', 'center', 400, 350);
-    this.element.id = "help-window";
-    this.element.style.display = 'flex';
-    this.element.style.flexDirection = 'column';
+    super('center', 'center', 400, 350, { title: "Help – Stillnight", id: "help-window" });
 
-    const titleBar = document.createElement("div");
-    titleBar.className = "window-header";
-    this.element.appendChild(titleBar);
-    this.makeDraggable(titleBar);
-
-    const titleText = document.createElement("span");
-    titleText.textContent = "Help – Stillnight";
-    titleBar.appendChild(titleText);
-
-    this.btnClose = document.createElement("button");
-    this.btnClose.className = "win-btn";
-    this.btnClose.textContent = "X";
-    this.btnClose.onclick = () => this.onUserClose();
-    titleBar.appendChild(this.btnClose);
-
-    const content = document.createElement("div");
-    content.className = "dialog-content";
-    content.style.flexGrow = "1";
-    this.element.appendChild(content);
-
-    const body = document.createElement('div');
-    body.className = 'help-body';
-    content.appendChild(body);
+    // Use a panel for the help content
+    const body = this.createPanel();
+    body.className = "window-panel help-body"; // keep help-body for specific styling if needed
+    body.style.flexGrow = "1";
+    body.style.overflowY = "auto";
 
     body.innerHTML = `
       <div class="help-section">
@@ -668,60 +549,20 @@ export class Window_Help extends Window_Base {
       </div>
     `;
 
-    const buttons = document.createElement("div");
-    buttons.className = "dialog-buttons";
-    this.element.appendChild(buttons);
-
-    this.btnOk = document.createElement("button");
-    this.btnOk.className = "win-btn";
-    this.btnOk.textContent = "Close";
-    this.btnOk.onclick = () => this.onUserClose();
-    buttons.appendChild(this.btnOk);
+    this.btnOk = this.addButton("Close", () => this.onUserClose());
   }
 }
 
 /**
  * @class Window_Battle
- * @description The window for battles. This window is designed to be a flexible,
- * terminal-style display that can be easily extended with new animations and UI
- * elements. The viewport and log are separate elements, allowing for independent
- * scrolling and content updates.
- * @extends Window_Base
  */
 export class Window_Battle extends Window_Base {
-  /**
-   * Creates a new Window_Battle instance.
-   */
   constructor() {
-    super('center', 'center', 528, 360);
-    this.element.style.display = 'flex';
-    this.element.style.flexDirection = 'column';
-
-    const titleBar = document.createElement("div");
-    titleBar.className = "window-header";
-    this.element.appendChild(titleBar);
-    this.makeDraggable(titleBar);
-
-    const titleText = document.createElement("span");
-    titleText.textContent = "Battle – Stillnight";
-    titleBar.appendChild(titleText);
-
-    this.btnClose = document.createElement("button");
-    this.btnClose.className = "win-btn";
-    this.btnClose.textContent = "X";
-    this.btnClose.onclick = () => this.onUserClose();
-    titleBar.appendChild(this.btnClose);
-
-    const content = document.createElement("div");
-    content.className = "dialog-content";
-    content.style.flexGrow = "1";
-    content.style.display = "flex";
-    content.style.flexDirection = "column";
-    this.element.appendChild(content);
+    super('center', 'center', 528, 360, { title: "Battle – Stillnight" });
 
     const terminal = document.createElement("div");
     terminal.className = "terminal";
-    content.appendChild(terminal);
+    this.content.appendChild(terminal);
 
     this.viewportEl = document.createElement("div");
     this.viewportEl.className = "terminal-viewport";
@@ -731,25 +572,10 @@ export class Window_Battle extends Window_Base {
     this.logEl.className = "terminal-log";
     terminal.appendChild(this.logEl);
 
-    const buttons = document.createElement("div");
-    buttons.className = "dialog-buttons";
-    content.appendChild(buttons);
-
-    this.btnRound = document.createElement("button");
-    this.btnRound.className = "win-btn";
-    this.btnRound.textContent = "Resolve Round";
-    buttons.appendChild(this.btnRound);
-
-    this.btnFlee = document.createElement("button");
-    this.btnFlee.className = "win-btn";
-    this.btnFlee.textContent = "Flee";
-    buttons.appendChild(this.btnFlee);
-
-    this.btnVictory = document.createElement("button");
-    this.btnVictory.className = "win-btn";
-    this.btnVictory.textContent = "Claim Spoils";
+    this.btnRound = this.addButton("Resolve Round", () => {});
+    this.btnFlee = this.addButton("Flee", () => {});
+    this.btnVictory = this.addButton("Claim Spoils", () => {});
     this.btnVictory.style.display = "none";
-    buttons.appendChild(this.btnVictory);
   }
 
   onUserClose() {
@@ -757,11 +583,6 @@ export class Window_Battle extends Window_Base {
       setTimeout(() => this.element.classList.remove("shake"), 500);
   }
 
-  /**
-   * Appends a message to the battle log and auto-scrolls to the bottom.
-   * @method appendLog
-   * @param {string} msg - The message to append.
-   */
   appendLog(msg) {
     const div = document.createElement("div");
     div.textContent = msg;
@@ -769,14 +590,8 @@ export class Window_Battle extends Window_Base {
     this.logEl.scrollTop = this.logEl.scrollHeight;
   }
 
-  /**
-   * Logs the initial enemy emergence messages.
-   * @method logEnemyEmergence
-   * @param {Array<import("./objects.js").Game_Battler>} enemies - The enemies in the battle.
-   * @param {Object} terms - The battle terms from the data manager.
-   */
   logEnemyEmergence(enemies, terms) {
-    this.logEl.textContent = ""; // Clear log
+    this.logEl.textContent = "";
     this.appendLog(terms.enemies_emerge);
     enemies.forEach((e) => {
         const primaryElements = getPrimaryElements(e.elements);
@@ -785,14 +600,8 @@ export class Window_Battle extends Window_Base {
     });
   }
 
-  /**
-   * Refreshes the battle view, including battler positions and HP gauges.
-   * @method refresh
-   * @param {Array<import("./objects.js").Game_Battler>} battlers - The enemies to render.
-   * @param {Array<import("./objects.js").Game_Battler>} party - The party members to render.
-   */
   refresh(battlers, party) {
-    this.viewportEl.innerHTML = ""; // Clear previous state
+    this.viewportEl.innerHTML = "";
 
     const header = document.createElement("div");
     header.textContent = "== BATTLE ==";
@@ -807,7 +616,6 @@ export class Window_Battle extends Window_Base {
 
         const primaryElements = getPrimaryElements(e.elements);
         const elementAscii = primaryElements.map(el => elementToAscii(el)).join('');
-        // Unique ID based on index and type (enemy)
         const nameStr = `<span id="battler-enemy-${idx}">${e.name}</span>`;
 
         const el = document.createElement("div");
@@ -827,7 +635,6 @@ export class Window_Battle extends Window_Base {
 
         const primaryElements = getPrimaryElements(p.elements);
         const elementAscii = primaryElements.map(el => elementToAscii(el)).join('');
-        // Unique ID based on index and type (party)
         const nameStr = `<span id="battler-party-${idx}">${p.name}</span>`;
 
         const el = document.createElement("div");
@@ -841,28 +648,13 @@ export class Window_Battle extends Window_Base {
     });
   }
 
-  /**
-   * Creates an ASCII representation of an HP gauge.
-   * @method createHpGauge
-   * @param {number} hp - The current HP.
-   * @param {number} maxHp - The maximum HP.
-   * @returns {string} The ASCII HP gauge.
-   */
   createHpGauge(hp, maxHp) {
     const totalLength = 15;
     let filledCount = Math.round((hp / maxHp) * totalLength);
-    if (hp > 0 && filledCount === 0) {
-      filledCount = 1;
-    }
-    if (filledCount < 0) {
-      filledCount = 0;
-    }
+    if (hp > 0 && filledCount === 0) filledCount = 1;
+    if (filledCount < 0) filledCount = 0;
     const emptyCount = totalLength - filledCount;
-    if (emptyCount < 0) {
-        console.warn(`HP Gauge Overflow: HP=${hp}, MaxHP=${maxHp}, Filled=${filledCount}, Empty=${emptyCount}`);
-        // Clamping for safety
-        return `[${"#".repeat(totalLength)}]`;
-    }
+    if (emptyCount < 0) return `[${"#".repeat(totalLength)}]`;
     return `[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
   }
 
@@ -885,43 +677,13 @@ export class Window_Battle extends Window_Base {
 
 /**
  * @class Window_Inspect
- * @description The window for inspecting creatures (actors or enemies).
- * Displays stats, equipment, and other details.
- * @extends Window_Base
  */
 export class Window_Inspect extends Window_Base {
-  /**
-   * Creates a new Window_Inspect instance.
-   */
   constructor() {
-    super('center', 'center', 480, 320);
-    this.element.id = "inspect-window";
-    this.element.style.display = 'flex';
-    this.element.style.flexDirection = 'column';
+    super('center', 'center', 480, 320, { title: "Creature – Stillnight", id: "inspect-window" });
 
-    const titleBar = document.createElement("div");
-    titleBar.className = "window-header";
-    this.element.appendChild(titleBar);
-    this.makeDraggable(titleBar);
-
-    const titleText = document.createElement("span");
-    titleText.textContent = "Creature – Stillnight";
-    titleBar.appendChild(titleText);
-
-    this.btnClose = document.createElement("button");
-    this.btnClose.className = "win-btn";
-    this.btnClose.textContent = "X";
-    this.btnClose.onclick = () => this.onUserClose();
-    titleBar.appendChild(this.btnClose);
-
-    const content = document.createElement("div");
-    content.className = "dialog-content";
-    content.style.flexGrow = "1";
-    this.element.appendChild(content);
-
-    const inspectBody = document.createElement('div');
-    inspectBody.className = 'inspect-body';
-    content.appendChild(inspectBody);
+    const inspectBody = this.createPanel();
+    // inspectBody.className = "window-panel"; // Already set by createPanel
 
     const layout = document.createElement('div');
     layout.className = 'inspect-layout';
@@ -970,39 +732,16 @@ export class Window_Inspect extends Window_Base {
     this.notesEl.className = 'inspect-notes';
     inspectBody.appendChild(this.notesEl);
 
-    const buttons = document.createElement("div");
-    buttons.className = "dialog-buttons";
-    this.element.appendChild(buttons);
-
-    this.btnSacrifice = document.createElement("button");
-    this.btnSacrifice.className = "win-btn";
+    this.btnSacrifice = this.addButton("Sacrifice", () => {});
     this.btnSacrifice.style.marginRight = "auto";
-    this.btnSacrifice.textContent = "Sacrifice";
     this.btnSacrifice.style.display = "none";
-    buttons.appendChild(this.btnSacrifice);
 
-    this.btnEvolve = document.createElement("button");
-    this.btnEvolve.className = "win-btn";
-    this.btnEvolve.textContent = "Evolution";
+    this.btnEvolve = this.addButton("Evolution", () => {});
     this.btnEvolve.style.display = "none";
-    this.btnEvolve.style.marginRight = "8px";
-    buttons.appendChild(this.btnEvolve);
 
-    this.btnOk = document.createElement("button");
-    this.btnOk.className = "win-btn";
-    this.btnOk.textContent = "OK";
-    buttons.appendChild(this.btnOk);
+    this.btnOk = this.addButton("OK", () => this.onUserClose());
   }
 
-  /**
-   * Helper to create a labeled field in the inspect window.
-   * @method _createField
-   * @private
-   * @param {HTMLElement} parent - The parent element.
-   * @param {string} label - The label text.
-   * @param {boolean} [isButton=false] - Whether the value element should be a button.
-   * @returns {HTMLElement} The value element (span or button).
-   */
   _createField(parent, label, isButton = false) {
     const row = document.createElement('div');
     row.className = 'inspect-row';
@@ -1022,53 +761,24 @@ export class Window_Inspect extends Window_Base {
 
 /**
  * @class Window_Evolution
- * @description The window for previewing and confirming creature evolution.
- * @extends Window_Base
  */
 export class Window_Evolution extends Window_Base {
-  /**
-   * Creates a new Window_Evolution instance.
-   */
   constructor() {
-    super('center', 'center', 700, 400);
-    this.element.id = "evolution-window";
-    this.element.style.display = 'flex';
-    this.element.style.flexDirection = 'column';
+    super('center', 'center', 700, 400, { title: "Evolution – Stillnight", id: "evolution-window" });
 
-    const titleBar = document.createElement("div");
-    titleBar.className = "window-header";
-    this.element.appendChild(titleBar);
-    this.makeDraggable(titleBar);
-
-    const titleText = document.createElement("span");
-    titleText.textContent = "Evolution – Stillnight";
-    titleBar.appendChild(titleText);
-
-    this.btnClose = document.createElement("button");
-    this.btnClose.className = "win-btn";
-    this.btnClose.textContent = "X";
-    this.btnClose.onclick = () => this.onUserClose();
-    titleBar.appendChild(this.btnClose);
-
-    const content = document.createElement("div");
-    content.className = "dialog-content";
-    content.style.flexGrow = "1";
-    content.style.display = "flex";
-    content.style.flexDirection = "column";
-    this.element.appendChild(content);
-
-    // Main Body: Two panes
     const body = document.createElement('div');
-    body.className = 'evolution-body';
+    // Generic flex row
     body.style.display = 'flex';
     body.style.flexGrow = '1';
     body.style.justifyContent = 'space-between';
     body.style.alignItems = 'center';
     body.style.padding = '10px';
-    content.appendChild(body);
+    // Use panel style? Or maybe just background
+    // Since it's a window, the frame is gray. We can use panels for panes.
+    this.content.appendChild(body);
 
     this.leftPane = document.createElement('div');
-    this.leftPane.className = 'evolution-pane';
+    this.leftPane.className = 'window-panel';
     this.leftPane.style.flex = '1';
     body.appendChild(this.leftPane);
 
@@ -1078,31 +788,14 @@ export class Window_Evolution extends Window_Base {
     body.appendChild(arrow);
 
     this.rightPane = document.createElement('div');
-    this.rightPane.className = 'evolution-pane';
+    this.rightPane.className = 'window-panel';
     this.rightPane.style.flex = '1';
     body.appendChild(this.rightPane);
 
-    const buttons = document.createElement("div");
-    buttons.className = "dialog-buttons";
-    this.element.appendChild(buttons);
-
-    this.btnConfirm = document.createElement("button");
-    this.btnConfirm.className = "win-btn";
-    this.btnConfirm.textContent = "Confirm Evolution";
-    buttons.appendChild(this.btnConfirm);
-
-    this.btnReturn = document.createElement("button");
-    this.btnReturn.className = "win-btn";
-    this.btnReturn.textContent = "Return";
-    this.btnReturn.onclick = () => this.onUserClose();
-    buttons.appendChild(this.btnReturn);
+    this.btnConfirm = this.addButton("Confirm Evolution", () => {});
+    this.btnReturn = this.addButton("Return", () => this.onUserClose());
   }
 
-  /**
-   * Sets up the evolution window with data.
-   * @param {Object} current - The current battler.
-   * @param {Object} next - The next battler (preview).
-   */
   setup(current, next) {
       this.renderPane(this.leftPane, current);
       this.renderPane(this.rightPane, next);
@@ -1175,45 +868,16 @@ export class Window_Evolution extends Window_Base {
 
 /**
  * @class Window_Shop
- * @description The window for buying items in the shop.
- * @extends Window_Base
  */
 export class Window_Shop extends Window_Base {
-  /**
-   * Creates a new Window_Shop instance.
-   */
   constructor() {
-    super('center', 'center', 420, 320);
-    this.element.id = "shop-window";
-    this.element.style.display = 'flex';
-    this.element.style.flexDirection = 'column';
+    super('center', 'center', 420, 320, { title: "Shop – Stillnight", id: "shop-window" });
 
-    const titleBar = document.createElement("div");
-    titleBar.className = "window-header";
-    this.element.appendChild(titleBar);
-    this.makeDraggable(titleBar);
-
-    const titleText = document.createElement("span");
-    titleText.textContent = "Shop – Stillnight";
-    titleBar.appendChild(titleText);
-
-    this.btnClose = document.createElement("button");
-    this.btnClose.className = "win-btn";
-    this.btnClose.textContent = "X";
-    this.btnClose.onclick = () => this.onUserClose();
-    titleBar.appendChild(this.btnClose);
-
-    const content = document.createElement("div");
-    content.className = "dialog-content";
-    content.style.flexGrow = "1";
-    this.element.appendChild(content);
-
-    const shopBody = document.createElement('div');
-    shopBody.className = 'shop-body';
-    content.appendChild(shopBody);
+    const shopBody = this.createPanel();
+    shopBody.style.flexGrow = "1";
 
     const goldRow = document.createElement('div');
-    goldRow.className = 'shop-row';
+    goldRow.className = 'window-row';
     goldRow.textContent = 'Current gold: ';
     this.goldLabelEl = document.createElement('span');
     this.goldLabelEl.className = 'shop-gold';
@@ -1224,46 +888,25 @@ export class Window_Shop extends Window_Base {
     shopBody.appendChild(this.listContainer);
 
     this.messageEl = document.createElement('div');
-    this.messageEl.className = 'shop-row';
+    this.messageEl.className = 'window-row';
     this.messageEl.style.marginTop = '6px';
     this.messageEl.style.fontSize = '10px';
     shopBody.appendChild(this.messageEl);
 
-    const buttons = document.createElement("div");
-    buttons.className = "dialog-buttons";
-    this.element.appendChild(buttons);
-
-    this.btnLeave = document.createElement("button");
-    this.btnLeave.className = "win-btn";
-    this.btnLeave.textContent = "Leave";
-    buttons.appendChild(this.btnLeave);
+    this.btnLeave = this.addButton("Leave", () => {});
   }
 
-  /**
-   * Prepares the shop window with data.
-   * @method setup
-   * @param {number} gold - The player's current gold.
-   * @param {string} message - The vendor's message.
-   * @param {Object[]} items - The items available for sale.
-   * @param {Function} buyCallback - The callback function to execute when an item is purchased.
-   */
   setup(gold, message, items, buyCallback) {
     this.goldLabelEl.textContent = `${gold}G`;
     this.messageEl.textContent = message;
     this.renderItems(items, buyCallback);
   }
 
-  /**
-   * Renders the list of items for sale.
-   * @method renderItems
-   * @param {Object[]} items - The items available for sale.
-   * @param {Function} buyCallback - The callback function to execute when an item is purchased.
-   */
   renderItems(items, buyCallback) {
     this.listContainer.innerHTML = "";
     items.forEach((tpl) => {
       const row = document.createElement("div");
-      row.className = "shop-row";
+      row.className = "window-row";
 
       const label = createInteractiveLabel(tpl, 'item');
       row.appendChild(label);
@@ -1288,43 +931,13 @@ export class Window_Shop extends Window_Base {
 
 /**
  * @class Window_Formation
- * @description The window for managing party formation.
- * Allows reordering of party members.
- * @extends Window_Base
  */
 export class Window_Formation extends Window_Base {
-  /**
-   * Creates a new Window_Formation instance.
-   */
   constructor() {
-    super('center', 'center', 420, 320);
-    this.element.id = "formation-window";
-    this.element.style.display = 'flex';
-    this.element.style.flexDirection = 'column';
+    super('center', 'center', 420, 320, { title: "Formation – Stillnight", id: "formation-window" });
 
-    const titleBar = document.createElement("div");
-    titleBar.className = "window-header";
-    this.element.appendChild(titleBar);
-    this.makeDraggable(titleBar);
-
-    const titleText = document.createElement("span");
-    titleText.textContent = "Formation – Stillnight";
-    titleBar.appendChild(titleText);
-
-    this.btnClose = document.createElement("button");
-    this.btnClose.className = "win-btn";
-    this.btnClose.textContent = "X";
-    this.btnClose.onclick = () => this.onUserClose();
-    titleBar.appendChild(this.btnClose);
-
-    const content = document.createElement("div");
-    content.className = "dialog-content";
-    content.style.flexGrow = "1";
-    this.element.appendChild(content);
-
-    const formationBody = document.createElement('div');
-    formationBody.className = 'formation-body';
-    content.appendChild(formationBody);
+    const formationBody = this.createPanel();
+    formationBody.style.flexGrow = "1";
 
     const label = document.createElement('div');
     label.className = 'formation-label';
@@ -1332,7 +945,11 @@ export class Window_Formation extends Window_Base {
     formationBody.appendChild(label);
 
     this.gridEl = document.createElement('div');
-    this.gridEl.className = 'formation-grid';
+    // JS layout
+    this.gridEl.style.display = 'grid';
+    this.gridEl.style.gridTemplateColumns = 'repeat(2, 1fr)'; // Scaled for wider slots
+    this.gridEl.style.gap = '4px';
+    this.gridEl.style.marginBottom = '4px';
     formationBody.appendChild(this.gridEl);
 
     const reserveLabel = document.createElement('div');
@@ -1342,44 +959,28 @@ export class Window_Formation extends Window_Base {
     formationBody.appendChild(reserveLabel);
 
     this.reserveGridEl = document.createElement('div');
-    this.reserveGridEl.className = 'formation-reserve-grid';
+    this.reserveGridEl.style.display = 'grid';
+    this.reserveGridEl.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    this.reserveGridEl.style.gap = '4px';
+    this.reserveGridEl.style.marginBottom = '4px';
+    this.reserveGridEl.style.maxHeight = '200px';
+    this.reserveGridEl.style.overflowY = 'auto';
     formationBody.appendChild(this.reserveGridEl);
 
-    const buttons = document.createElement("div");
-    buttons.className = "dialog-buttons";
-    this.element.appendChild(buttons);
-
-    this.btnOk = document.createElement("button");
-    this.btnOk.className = "win-btn";
-    this.btnOk.textContent = "OK";
-    this.btnOk.onclick = () => this.onUserClose();
-    buttons.appendChild(this.btnOk);
-
-    this.btnCancel = document.createElement("button");
-    this.btnCancel.className = "win-btn";
-    this.btnCancel.textContent = "Cancel";
-    this.btnCancel.onclick = () => this.onUserClose();
-    buttons.appendChild(this.btnCancel);
+    this.btnOk = this.addButton("OK", () => this.onUserClose());
+    this.btnCancel = this.addButton("Cancel", () => this.onUserClose());
 
     this.draggedIndex = null;
     this.party = null;
     this.onChange = null;
   }
 
-  /**
-   * Refreshes the window with the current party data.
-   * @param {import("./objects.js").Game_Party} party - The party to manage.
-   * @param {Function} [onChange] - Callback when formation changes.
-   */
   refresh(party, onChange) {
       this.party = party;
       if (onChange) this.onChange = onChange;
       this.renderFormationGrid();
   }
 
-  /**
-   * Renders the interactive grid for formation dragging.
-   */
   renderFormationGrid() {
     this.gridEl.innerHTML = "";
     this.reserveGridEl.innerHTML = "";
@@ -1408,19 +1009,14 @@ export class Window_Formation extends Window_Base {
     const slot = e.target.closest(".party-slot");
     if (slot) slot.classList.add("dragging");
   }
-
   onDragOver(e) {
     e.preventDefault();
     const target = e.target.closest(".party-slot");
-    if (target) {
-      target.classList.add("drag-over");
-    }
+    if (target) target.classList.add("drag-over");
   }
-
   onDrop(e, targetIndex) {
     e.preventDefault();
     if (this.draggedIndex === null || this.draggedIndex === targetIndex) return;
-
     if (this.party.reorderMembers(this.draggedIndex, targetIndex)) {
         this.draggedIndex = null;
         this.renderFormationGrid();
@@ -1428,7 +1024,6 @@ export class Window_Formation extends Window_Base {
         if (this.onChange) this.onChange();
     }
   }
-
   onDragEnd(e) {
     const allSlots = this.element.querySelectorAll(".party-slot");
     allSlots.forEach((s) => s.classList.remove("dragging", "drag-over"));
@@ -1437,46 +1032,18 @@ export class Window_Formation extends Window_Base {
 
 /**
  * @class Window_Inventory
- * @description The window for viewing and managing the inventory.
- * Supports using and discarding items.
- * @extends Window_Base
  */
 export class Window_Inventory extends Window_Base {
-  /**
-   * Creates a new Window_Inventory instance.
-   */
   constructor() {
-    super('center', 'center', 400, 300); // x, y, width, height
-    this.element.id = "inventory-window";
-    this.element.style.display = 'flex';
-    this.element.style.flexDirection = 'column';
+    super('center', 'center', 400, 300, { title: "Inventory", id: "inventory-window" });
 
-    const titleBar = document.createElement("div");
-    titleBar.className = "window-header";
-    this.element.appendChild(titleBar);
-    this.makeDraggable(titleBar);
-
-    const titleText = document.createElement("span");
-    titleText.textContent = "Inventory";
-    titleBar.appendChild(titleText);
-
-    this.btnClose = document.createElement("button");
-    this.btnClose.className = "win-btn";
-    this.btnClose.textContent = "X";
-    this.btnClose.onclick = () => this.onUserClose();
-    titleBar.appendChild(this.btnClose);
-
-    const content = document.createElement("div");
-    content.className = "dialog-content";
-    content.style.flexGrow = "1";
-    content.style.overflowY = "auto";
-    this.element.appendChild(content);
+    this.content.style.overflowY = "auto";
 
     this.currentTab = 'consumable';
 
     this.tabNav = document.createElement("div");
     this.tabNav.className = "tab-nav";
-    content.appendChild(this.tabNav);
+    this.content.appendChild(this.tabNav);
 
     this.btnTabConsumable = document.createElement("button");
     this.btnTabConsumable.className = "tab-btn active";
@@ -1490,36 +1057,25 @@ export class Window_Inventory extends Window_Base {
     this.btnTabEquipment.onclick = () => this.switchTab('equipment');
     this.tabNav.appendChild(this.btnTabEquipment);
 
+    // List container (using panel style? Or simple div)
     this.listEl = document.createElement("div");
-    content.appendChild(this.listEl);
+    // We can style it as a panel if we want
+    this.listEl.style.flex = "1";
+    this.content.appendChild(this.listEl);
 
     this.emptyMsgEl = document.createElement("p");
     this.emptyMsgEl.textContent = "Your inventory is empty.";
     this.emptyMsgEl.style.textAlign = "center";
     this.emptyMsgEl.style.display = "none";
-    content.appendChild(this.emptyMsgEl);
+    this.content.appendChild(this.emptyMsgEl);
 
-    const buttons = document.createElement("div");
-    buttons.className = "dialog-buttons";
-    this.element.appendChild(buttons);
-
-    this.btnClose2 = document.createElement("button");
-    this.btnClose2.className = "win-btn";
-    this.btnClose2.textContent = "Close";
-    this.btnClose2.onclick = () => this.onUserClose();
-    buttons.appendChild(this.btnClose2);
+    this.btnClose2 = this.addButton("Close", () => this.onUserClose());
 
     this.party = null;
     this.onUse = null;
     this.onDiscard = null;
   }
 
-  /**
-   * Refreshes the inventory list.
-   * @param {import("./objects.js").Game_Party} party - The party object.
-   * @param {Function} onUse - Callback (item, target) => void.
-   * @param {Function} onDiscard - Callback (item) => void.
-   */
   refresh(party, onUse, onDiscard) {
     this.party = party;
     this.onUse = onUse;
@@ -1536,7 +1092,6 @@ export class Window_Inventory extends Window_Base {
 
   showItemList() {
     this.listEl.innerHTML = "";
-
     let inventory = this.party.inventory;
     if (this.currentTab === 'consumable') {
         inventory = inventory.filter(i => i.type !== 'equipment');
@@ -1551,10 +1106,11 @@ export class Window_Inventory extends Window_Base {
       this.emptyMsgEl.style.display = "none";
       inventory.forEach((item, idx) => {
         const row = document.createElement("div");
-        row.className = "shop-row";
+        row.className = "window-row";
+        row.style.borderBottom = "1px solid var(--bezel-shadow)";
+        row.style.paddingBottom = "2px";
 
         let tooltipText = item.description;
-        // Add item effects to tooltip
         let effectsText = "";
         const effects = [];
         if (item.effects) {
@@ -1562,7 +1118,6 @@ export class Window_Inventory extends Window_Base {
              if (item.effects.maxHp) effects.push(`Max HP +${item.effects.maxHp}`);
              if (item.effects.xp) effects.push(`Grants ${item.effects.xp} XP`);
         }
-        // Equipment stats
         if (item.traits) {
              item.traits.forEach(t => {
                  if (t.code === 'PARAM_PLUS') {
@@ -1573,13 +1128,8 @@ export class Window_Inventory extends Window_Base {
         }
         if (item.damageBonus) effects.push(`Damage +${item.damageBonus}`);
 
-        if (effects.length > 0) {
-            effectsText = effects.join(", ");
-        }
-
-        if (effectsText) {
-             tooltipText += `<br/><span class="text-functional" style="font-size: 0.9em;">${effectsText}</span>`;
-        }
+        if (effects.length > 0) effectsText = effects.join(", ");
+        if (effectsText) tooltipText += `<br/><span class="text-functional" style="font-size: 0.9em;">${effectsText}</span>`;
 
         const label = createInteractiveLabel(item, 'item', { tooltipText });
         label.style.flexGrow = "1";
@@ -1607,7 +1157,6 @@ export class Window_Inventory extends Window_Base {
 
   showTargetSelection(item) {
     this.listEl.innerHTML = "";
-
     const action = this.currentTab === 'equipment' ? "Equip" : "Use";
     const header = document.createElement("div");
     header.textContent = `${action} ${item.name} on:`;
@@ -1638,93 +1187,31 @@ export class Window_Inventory extends Window_Base {
 
 /**
  * @class Window_Recruit
- * @description The window for recruiting new party members.
- * @extends Window_Base
  */
 export class Window_Recruit extends Window_Base {
-  /**
-   * Creates a new Window_Recruit instance.
-   */
   constructor() {
-    super('center', 'center', 480, 320);
-    this.element.id = "recruit-window";
-    this.element.style.display = 'flex';
-    this.element.style.flexDirection = 'column';
+    super('center', 'center', 480, 320, { title: "Recruit – Stillnight", id: "recruit-window" });
 
-    const titleBar = document.createElement("div");
-    titleBar.className = "window-header";
-    this.element.appendChild(titleBar);
-    this.makeDraggable(titleBar);
-
-    const titleText = document.createElement("span");
-    titleText.textContent = "Recruit – Stillnight";
-    titleBar.appendChild(titleText);
-
-    this.btnClose = document.createElement("button");
-    this.btnClose.className = "win-btn";
-    this.btnClose.textContent = "X";
-    this.btnClose.onclick = () => this.onUserClose();
-    titleBar.appendChild(this.btnClose);
-
-    const content = document.createElement("div");
-    content.className = "dialog-content";
-    content.style.flexGrow = "1";
-    this.element.appendChild(content);
-
-    this.bodyEl = document.createElement('div');
-    this.bodyEl.className = 'inspect-body';
-    content.appendChild(this.bodyEl);
-
-    this.buttonsEl = document.createElement("div");
-    this.buttonsEl.className = "dialog-buttons";
-    this.element.appendChild(this.buttonsEl);
+    this.bodyEl = this.createPanel(); // used by Scene_Map to populate content
+    this.buttonsEl = this.footer; // used by Scene_Map to populate buttons
+    // Scene_Map appends to buttonsEl.
   }
 }
 
 /**
  * @class Window_Event
- * @description The window for displaying event text and choices.
- * @extends Window_Base
  */
 export class Window_Event extends Window_Base {
-  /**
-   * Creates a new Window_Event instance.
-   */
   constructor() {
-    super('center', 'center', 520, 'auto');
-    this.element.id = "event-window";
-    this.element.style.display = 'flex';
-    this.element.style.flexDirection = 'column';
-    this.element.style.maxHeight = '90vh';
+    // Dynamic height is handled by 'auto'.
+    super('center', 'center', 520, 'auto', { title: "Event", id: "event-window" });
 
-    const titleBar = document.createElement("div");
-    titleBar.className = "window-header";
-    this.element.appendChild(titleBar);
-    this.makeDraggable(titleBar);
-
-    this.titleEl = document.createElement("span");
-    titleBar.appendChild(this.titleEl);
-
-    this.btnClose = document.createElement("button");
-    this.btnClose.className = "win-btn";
-    this.btnClose.textContent = "X";
-    this.btnClose.onclick = () => this.onUserClose();
-    titleBar.appendChild(this.btnClose);
-
-    const content = document.createElement("div");
-    content.className = "dialog-content";
-    content.style.flexGrow = "1";
-    content.style.display = "flex";
-    content.style.flexDirection = "column";
-    this.element.appendChild(content);
-
-    // Image Container
     this.imageContainer = document.createElement("div");
     this.imageContainer.className = "event-image-container";
     this.imageContainer.style.textAlign = "center";
     this.imageContainer.style.marginBottom = "8px";
     this.imageContainer.style.backgroundColor = "#222";
-    this.imageContainer.style.display = "none"; // Hidden by default until shown
+    this.imageContainer.style.display = "none";
 
     this.imageEl = document.createElement("img");
     this.imageEl.style.maxWidth = "100%";
@@ -1737,48 +1224,36 @@ export class Window_Event extends Window_Base {
         }
     };
     this.imageContainer.appendChild(this.imageEl);
-    content.appendChild(this.imageContainer);
+    this.content.appendChild(this.imageContainer);
 
-    const eventBody = document.createElement('div');
-    eventBody.className = 'event-body';
+    // Use a panel for the text/body
+    const eventBody = this.createPanel();
     eventBody.style.flexGrow = "1";
     eventBody.style.display = "flex";
     eventBody.style.flexDirection = "column";
-    content.appendChild(eventBody);
 
     this.descriptionEl = document.createElement('div');
     this.descriptionEl.className = 'event-description';
     this.descriptionEl.style.marginBottom = "10px";
     eventBody.appendChild(this.descriptionEl);
 
-    this.choicesEl = document.createElement('div');
-    this.choicesEl.className = 'event-choices dialog-buttons';
-    this.choicesEl.style.marginTop = "auto";
-    eventBody.appendChild(this.choicesEl);
+    // Choices handled in footer? Scene_Map currently appends choices to `.event-choices`.
+    // I will use footer for choices.
+    this.choicesEl = this.footer;
+    // Scene_Map expects this.choicesEl to clear/add buttons.
   }
 
-  /**
-   * Configures and opens the event window.
-   * @param {Object} data - The event data.
-   * @param {string} [data.title] - Window title.
-   * @param {string} [data.description] - Main text.
-   * @param {string} [data.image] - Image filename (e.g. 'shrine.png').
-   * @param {string} [data.style] - 'terminal' or 'default'.
-   * @param {Array} [data.choices] - Array of choice objects { label, onClick }.
-   */
   show(data) {
-      this.titleEl.textContent = data.title || "Event";
+      this.setTitle(data.title || "Event");
 
-      // Handle Image
       const imgName = data.image || "default.png";
       this.imageEl.src = `assets/eventArt/${imgName}`;
       this.imageContainer.style.display = "block";
 
-      // Handle Style
       if (data.style === 'terminal') {
           this.descriptionEl.className = "event-description terminal-style";
-          this.descriptionEl.removeAttribute("style"); // Clear inline styles
-          this.descriptionEl.textContent = ""; // Start clean for log
+          this.descriptionEl.removeAttribute("style");
+          this.descriptionEl.textContent = "";
           if (data.description) {
               if (Array.isArray(data.description)) {
                   data.description.forEach(line => this.appendLog(line));
@@ -1788,7 +1263,7 @@ export class Window_Event extends Window_Base {
           }
       } else {
           this.descriptionEl.className = "event-description";
-          this.descriptionEl.removeAttribute("style"); // Reset inline styles
+          this.descriptionEl.removeAttribute("style");
           this.descriptionEl.style.marginBottom = "10px";
           this.descriptionEl.innerHTML = "";
           if (data.description) {
@@ -1813,10 +1288,6 @@ export class Window_Event extends Window_Base {
       this.updateChoices(data.choices);
   }
 
-  /**
-   * Appends a message to the description area (useful for terminal style).
-   * @param {string|Node} msg - Message to append.
-   */
   appendLog(msg) {
       const p = document.createElement('div');
       if (msg instanceof Node) {
@@ -1828,27 +1299,15 @@ export class Window_Event extends Window_Base {
       this.descriptionEl.scrollTop = this.descriptionEl.scrollHeight;
   }
 
-  /**
-   * Updates the displayed image dynamically.
-   * @param {string} imageName - The new image filename.
-   */
   updateImage(imageName) {
        this.imageEl.src = `assets/eventArt/${imageName}`;
   }
 
-  /**
-   * Renders the choice buttons.
-   * @param {Array} choices - Array of { label, onClick }.
-   */
   updateChoices(choices) {
-      this.choicesEl.innerHTML = "";
+      this.footer.innerHTML = ""; // Clear footer
       if (choices) {
           choices.forEach(ch => {
-              const btn = document.createElement("button");
-              btn.className = "win-btn";
-              btn.textContent = ch.label;
-              btn.onclick = ch.onClick;
-              this.choicesEl.appendChild(btn);
+              this.addButton(ch.label, ch.onClick);
           });
       }
   }
@@ -1856,57 +1315,17 @@ export class Window_Event extends Window_Base {
 
 /**
  * @class Window_Confirm
- * @description The window for generic confirmation dialogs (OK/Cancel).
- * @extends Window_Base
  */
 export class Window_Confirm extends Window_Base {
-  /**
-   * Creates a new Window_Confirm instance.
-   */
   constructor() {
-    super('center', 'center', 320, 'auto');
-    this.element.id = "confirm-window";
-    this.element.style.display = 'flex';
-    this.element.style.flexDirection = 'column';
-    this.element.style.height = 'fit-content';
-
-    const titleBar = document.createElement("div");
-    titleBar.className = "window-header";
-    this.element.appendChild(titleBar);
-    this.makeDraggable(titleBar);
-
-    this.titleEl = document.createElement("span");
-    titleBar.appendChild(this.titleEl);
-
-    this.btnClose = document.createElement("button");
-    this.btnClose.className = "win-btn";
-    this.btnClose.textContent = "X";
-    this.btnClose.onclick = () => this.onUserClose();
-    titleBar.appendChild(this.btnClose);
-
-    const content = document.createElement("div");
-    content.className = "dialog-content";
-    content.style.flexGrow = "1";
-    this.element.appendChild(content);
+    super('center', 'center', 320, 'auto', { title: "Confirm", id: "confirm-window" });
 
     this.messageEl = document.createElement('div');
     this.messageEl.style.marginBottom = '8px';
-    content.appendChild(this.messageEl);
+    this.content.appendChild(this.messageEl);
 
-    const buttons = document.createElement("div");
-    buttons.className = "dialog-buttons";
-    content.appendChild(buttons);
-
-    this.btnOk = document.createElement("button");
-    this.btnOk.className = "win-btn";
-    this.btnOk.textContent = "OK";
-    buttons.appendChild(this.btnOk);
-
-    this.btnCancel = document.createElement("button");
-    this.btnCancel.className = "win-btn";
-    this.btnCancel.textContent = "Cancel";
-    this.btnCancel.onclick = () => this.onUserClose();
-    buttons.appendChild(this.btnCancel);
+    this.btnOk = this.addButton("OK", () => {});
+    this.btnCancel = this.addButton("Cancel", () => this.onUserClose());
   }
 }
 
@@ -1915,24 +1334,33 @@ export class Window_Confirm extends Window_Base {
  * @description Manages the main static game layout.
  */
 export class Window_HUD {
-    /**
-     * Creates a new Window_HUD instance and initializes the UI.
-     */
     constructor() {
         this.container = document.getElementById("game-container");
+        // Layout defined in JS - moving specificity out of CSS
+        this.container.style.width = "960px";
+        this.container.style.height = "560px";
+        this.container.style.display = "flex";
+        this.container.style.flexDirection = "row";
+
         this.createUI();
         this.getDomElements();
     }
 
-    /**
-     * Injects the main game HTML structure into the container.
-     * @method createUI
-     */
     createUI() {
-        this.container.innerHTML = `
-      <div class="stack-nav panel">
-        <h1>Stillnight Stack</h1>
-        <div class="group-box">
+        this.container.innerHTML = "";
+
+        // --- Left: Stack Nav ---
+        const stackNav = document.createElement("div");
+        stackNav.className = "stack-nav panel";
+
+        const h1 = document.createElement("h1");
+        h1.textContent = "Stillnight Stack";
+        stackNav.appendChild(h1);
+
+        // Group: Run
+        const groupRun = document.createElement("div");
+        groupRun.className = "group-box";
+        groupRun.innerHTML = `
           <legend>Run</legend>
           <div class="stack-nav-buttons">
             <button class="win-btn" id="btn-new-run">New Run</button>
@@ -1946,72 +1374,81 @@ export class Window_HUD {
             <div>Card: <span id="card-index-label">1 / 1</span></div>
             <div>Floor depth: <span id="card-depth-label">1</span></div>
           </div>
-        </div>
+        `;
+        stackNav.appendChild(groupRun);
 
-        <div class="location-art-container">
-             <img id="location-art" class="location-art-img" src="assets/eventArt/default.png">
-        </div>
+        // Location Art
+        const artContainer = document.createElement("div");
+        artContainer.className = "location-art-container";
+        artContainer.innerHTML = `<img id="location-art" class="location-art-img" src="assets/eventArt/default.png">`;
+        stackNav.appendChild(artContainer);
 
-        <div class="group-box">
-          <legend>Cards (Floors)</legend>
-          <div class="card-list" id="card-list"></div>
-        </div>
-      </div>
-      <div class="right-side">
-        <div class="card-area">
-          <div class="card-main panel">
-            <div class="card-header">
-              <div>
-                <span class="card-header-title" id="card-title">Floor 1</span>
-              </div>
-              <div>
-                <span class="label">Mode:</span>
-                <span id="mode-label">Exploration</span>
-              </div>
-            </div>
-            <div class="exploration-frame panel">
-              <div class="exploration-grid" id="exploration-grid"></div>
-              <div class="legend">
-                <span>☺: Party</span>
-                <span>█: Wall</span>
-                <span>E: Enemy</span>
-                <span>R: Recovery</span>
-                <span>S: Stairs</span>
-                <span>♱: Shrine</span>
-                <span>¥: Shop</span>
-                <span>?: Unseen</span>
-                <span>U: Recruit</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-side-panels">
+        // Group: Cards
+        const groupCards = document.createElement("div");
+        groupCards.className = "group-box";
+        groupCards.innerHTML = `<legend>Cards (Floors)</legend><div class="card-list" id="card-list"></div>`;
+        stackNav.appendChild(groupCards);
+
+        this.container.appendChild(stackNav);
+
+        // --- Right Side ---
+        const rightSide = document.createElement("div");
+        rightSide.className = "right-side";
+
+        const cardArea = document.createElement("div");
+        cardArea.className = "card-area";
+
+        // Card Main
+        const cardMain = document.createElement("div");
+        cardMain.className = "card-main panel";
+
+        const cardHeader = document.createElement("div");
+        cardHeader.className = "card-header";
+        cardHeader.innerHTML = `
+          <div><span class="card-header-title" id="card-title">Floor 1</span></div>
+          <div><span class="label">Mode:</span><span id="mode-label">Exploration</span></div>
+        `;
+        cardMain.appendChild(cardHeader);
+
+        // Exploration Frame (Critical for centering)
+        const explorationFrame = document.createElement("div");
+        explorationFrame.className = "exploration-frame panel";
+        const explorationGrid = document.createElement("div");
+        explorationGrid.className = "exploration-grid";
+        explorationGrid.id = "exploration-grid";
+        explorationFrame.appendChild(explorationGrid); // No whitespace here!
+        cardMain.appendChild(explorationFrame);
+
+        cardArea.appendChild(cardMain);
+
+        // Side Panels
+        const sidePanels = document.createElement("div");
+        sidePanels.className = "card-side-panels";
+        sidePanels.innerHTML = `
             <div class="party-panel panel">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span>Party Status</span>
-                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-formation">
-                  Formation...
-                </button>
-                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-inventory">
-                  Inventory...
-                </button>
+                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-formation">Formation...</button>
+                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-inventory">Inventory...</button>
               </div>
               <div class="party-grid" id="party-grid"></div>
             </div>
             <div class="log-panel panel">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span>Event Log</span>
-                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-clear-log">
-                  Clear
-                </button>
+                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-clear-log">Clear</button>
               </div>
               <div class="log-content" id="log-content"></div>
             </div>
-          </div>
-        </div>
-        <div class="status-bar">
-          <div>
-            <span id="status-message">Ready.</span>
-          </div>
+        `;
+        cardArea.appendChild(sidePanels);
+        rightSide.appendChild(cardArea);
+
+        // Status Bar
+        const statusBar = document.createElement("div");
+        statusBar.className = "status-bar";
+        statusBar.innerHTML = `
+          <div><span id="status-message">Ready.</span></div>
           <div>
             <span>Gold: <span id="status-gold">0</span></span>
             <span>| Floor: <span id="status-floor">1</span></span>
@@ -2019,15 +1456,12 @@ export class Window_HUD {
             <span>| Run: <span id="status-run">Active</span></span>
             <span>| Items: <span id="status-items">0</span></span>
           </div>
-        </div>
-      </div>
-    `;
+        `;
+        rightSide.appendChild(statusBar);
+
+        this.container.appendChild(rightSide);
     }
 
-    /**
-     * Caches references to DOM elements created by createUI.
-     * @method getDomElements
-     */
     getDomElements() {
         this.explorationGridEl = document.getElementById("exploration-grid");
         this.cardTitleEl = document.getElementById("card-title");
@@ -2053,37 +1487,19 @@ export class Window_HUD {
         this.btnInventory = document.getElementById("btn-inventory");
     }
 
-    /**
-     * Updates the header information for the current floor card.
-     * @method updateCardHeader
-     * @param {Object} floor - The current floor object.
-     * @param {number} index - The current floor index.
-     * @param {number} total - The total number of floors.
-     */
     updateCardHeader(floor, index, total) {
         this.cardTitleEl.textContent = floor.title;
         this.cardIndexLabelEl.textContent = `${index + 1} / ${total}`;
         this.cardDepthLabelEl.textContent = floor.depth;
         this.statusFloorEl.textContent = floor.depth;
         this.statusCardsEl.textContent = total;
-
-        // Update Location Art if available
         if (floor.image) {
              this.locationArtEl.src = `assets/eventArt/${floor.image}`;
         } else {
-             // Default if no image specified
              this.locationArtEl.src = `assets/eventArt/default.png`;
         }
     }
 
-    /**
-     * Updates the list of available floor cards.
-     * @method updateCardList
-     * @param {Array} floors - The list of floor objects.
-     * @param {number} currentIndex - The index of the current floor.
-     * @param {number} maxReachedIndex - The maximum floor reached.
-     * @param {Function} onSelect - Callback when a floor is clicked.
-     */
     updateCardList(floors, currentIndex, maxReachedIndex, onSelect) {
         this.cardListEl.innerHTML = "";
         floors.forEach((f, idx) => {
@@ -2102,12 +1518,6 @@ export class Window_HUD {
         });
     }
 
-    /**
-     * Updates the party grid display.
-     * @method updateParty
-     * @param {import("./objects.js").Game_Party} party - The party object.
-     * @param {Function} onInspect - Callback when a member is clicked.
-     */
     updateParty(party, onInspect) {
         this.partyGridEl.innerHTML = "";
         party.members.slice(0, 4).forEach((member, index) => {
@@ -2115,14 +1525,10 @@ export class Window_HUD {
                 onClick: onInspect,
                 testId: `party-slot-${index}`
             });
-
-            // Handle HP animation
             const gaugeFill = slot.querySelector('.hp-fill');
             if (gaugeFill) {
-                // Set initial state to previous HP for animation
                 const startHp = member.prevHp !== undefined ? member.prevHp : member.hp;
                 gaugeFill.style.width = `${Math.max(0, (startHp / member.maxHp) * 100)}%`;
-
                 this.animateGauge(
                     gaugeFill,
                     startHp,
@@ -2132,20 +1538,10 @@ export class Window_HUD {
                 );
             }
             member.prevHp = member.hp;
-
             this.partyGridEl.appendChild(slot);
         });
     }
 
-    /**
-     * Animates a gauge element.
-     * @method animateGauge
-     * @param {HTMLElement} element - The gauge fill element.
-     * @param {number} startHp - Starting value.
-     * @param {number} endHp - Ending value.
-     * @param {number} maxHp - Maximum value.
-     * @param {number} duration - Animation duration in ms.
-     */
     animateGauge(element, startHp, endHp, maxHp, duration) {
         const startTime = performance.now();
         const startWidth = (startHp / maxHp) * 100;
@@ -2166,10 +1562,7 @@ export class Window_HUD {
 }
 
 /**
- * Helper to render creature info (Sprite, Name, Level, HP, etc).
- * @param {HTMLElement} container - The container element.
- * @param {import("./objects.js").Game_Battler} battler - The battler.
- * @param {string} [title] - Optional title.
+ * Helper to render creature info.
  */
 export function renderCreatureInfo(container, battler, title) {
     container.innerHTML = "";
@@ -2198,7 +1591,6 @@ export function renderCreatureInfo(container, battler, title) {
         fields.appendChild(row);
     };
 
-    // Name
     const nameVal = document.createElement('span');
     if (battler.elements) {
         nameVal.appendChild(createElementIcon(battler.elements));
@@ -2206,17 +1598,14 @@ export function renderCreatureInfo(container, battler, title) {
     nameVal.appendChild(document.createTextNode(battler.name));
     createRow('Name', nameVal);
 
-    // Level
     const levelVal = document.createElement('span');
     levelVal.textContent = battler.level;
     createRow('Level', levelVal);
 
-    // HP
     const hpVal = document.createElement('span');
     hpVal.textContent = `${battler.hp} / ${battler.maxHp}`;
     createRow('HP', hpVal);
 
-    // Role
     if (battler.role) {
         const roleVal = document.createElement('span');
         roleVal.textContent = battler.role;
@@ -2226,48 +1615,18 @@ export function renderCreatureInfo(container, battler, title) {
 
 /**
  * @class Window_EquipConfirm
- * @description The window for confirming equipment changes.
- * @extends Window_Base
  */
 export class Window_EquipConfirm extends Window_Base {
-    /**
-     * Creates a new Window_EquipConfirm instance.
-     */
     constructor() {
-        super('center', 'center', 500, 420);
-        this.element.id = "equip-confirm-window";
-        this.element.style.display = 'flex';
-        this.element.style.flexDirection = 'column';
+        super('center', 'center', 500, 420, { title: "Equip Item", id: "equip-confirm-window" });
 
-        const titleBar = document.createElement("div");
-        titleBar.className = "window-header";
-        this.element.appendChild(titleBar);
-        this.makeDraggable(titleBar);
-
-        const titleText = document.createElement("span");
-        titleText.textContent = "Equip Item";
-        titleBar.appendChild(titleText);
-
-        this.btnClose = document.createElement("button");
-        this.btnClose.className = "win-btn";
-        this.btnClose.textContent = "X";
-        this.btnClose.onclick = () => this.onUserClose();
-        titleBar.appendChild(this.btnClose);
-
-        const content = document.createElement("div");
-        content.className = "dialog-content";
-        content.style.flexGrow = "1";
-        this.element.appendChild(content);
-
-        this.infoPanel = document.createElement("div");
-        this.infoPanel.className = "inspect-body";
+        this.infoPanel = this.createPanel();
         this.infoPanel.style.marginBottom = "8px";
-        content.appendChild(this.infoPanel);
 
         this.changePanel = document.createElement("div");
         this.changePanel.className = "group-box";
         this.changePanel.style.padding = "10px";
-        content.appendChild(this.changePanel);
+        this.content.appendChild(this.changePanel);
 
         const leg = document.createElement("legend");
         leg.textContent = "Changes";
@@ -2285,30 +1644,10 @@ export class Window_EquipConfirm extends Window_Base {
         this.traitListEl.style.whiteSpace = "pre-wrap";
         this.changePanel.appendChild(this.traitListEl);
 
-        const buttons = document.createElement("div");
-        buttons.className = "dialog-buttons";
-        this.element.appendChild(buttons);
-
-        this.btnConfirm = document.createElement("button");
-        this.btnConfirm.className = "win-btn";
-        this.btnConfirm.textContent = "Confirm";
-        buttons.appendChild(this.btnConfirm);
-
-        this.btnCancel = document.createElement("button");
-        this.btnCancel.className = "win-btn";
-        this.btnCancel.textContent = "Cancel";
-        this.btnCancel.onclick = () => this.onUserClose();
-        buttons.appendChild(this.btnCancel);
+        this.btnConfirm = this.addButton("Confirm", () => {});
+        this.btnCancel = this.addButton("Cancel", () => this.onUserClose());
     }
 
-    /**
-     * Sets up the confirmation window.
-     * @param {import("./objects.js").Game_Battler} member - The member equipping the item.
-     * @param {Object} newItem - The new item.
-     * @param {Object} oldItem - The old item.
-     * @param {string} slotName - The name of the equipment slot.
-     * @param {Function} onConfirm - Callback when confirmed.
-     */
     setup(member, newItem, oldItem, slotName, onConfirm) {
         renderCreatureInfo(this.infoPanel, member);
 
@@ -2321,7 +1660,6 @@ export class Window_EquipConfirm extends Window_Base {
              const span = document.createElement("span");
              span.style.display = "inline-flex";
              span.style.alignItems = "center";
-
              if (item) {
                  span.appendChild(createInteractiveLabel(item, 'item', { showTooltip: true }));
              } else {
@@ -2338,7 +1676,6 @@ export class Window_EquipConfirm extends Window_Base {
         this.slotChangeEl.appendChild(arrow);
         this.slotChangeEl.appendChild(createItemSpan(newItem));
 
-        // Traits Diff
         this.traitListEl.innerHTML = "";
         const diffs = this.calculateDiff(member, newItem, oldItem);
         diffs.forEach(diff => {
@@ -2350,37 +1687,15 @@ export class Window_EquipConfirm extends Window_Base {
         this.btnConfirm.onclick = onConfirm;
     }
 
-    /**
-     * Calculates the statistical differences between equipping the new item vs old.
-     * @method calculateDiff
-     * @param {import("./objects.js").Game_Battler} member
-     * @param {Object} newItem
-     * @param {Object} oldItem
-     * @returns {string[]} List of difference strings.
-     */
     calculateDiff(member, newItem, oldItem) {
         const diffs = [];
         const oldTraits = oldItem ? (oldItem.traits || []) : [];
         const newTraits = newItem ? (newItem.traits || []) : [];
 
-        // Combine traits by code + dataId
         const getTraitVal = (traits, code, dataId) => {
              return traits.filter(t => t.code === code && t.dataId === dataId)
                           .reduce((sum, t) => sum + t.value, 0);
         };
-
-        const checkParam = (name, code, dataId) => {
-             const oldVal = getTraitVal(oldTraits, code, dataId);
-             const newVal = getTraitVal(newTraits, code, dataId);
-             if (oldVal !== newVal) {
-                 const sign = newVal > oldVal ? "+" : "";
-                 const change = newVal - oldVal;
-                 diffs.push(`${name}: ${sign}${change} (${member[dataId]} -> ${member[dataId] + change})`);
-             }
-        };
-
-        // Note: member stats already include oldItem stats if currently equipped.
-        // So member.atk includes oldVal. New Atk = member.atk - oldVal + newVal.
 
         const checkParamDynamic = (name, getterProp, code, dataId) => {
              const oldVal = getTraitVal(oldTraits, code, dataId);
@@ -2397,7 +1712,6 @@ export class Window_EquipConfirm extends Window_Base {
         checkParamDynamic("Max HP", "maxHp", "PARAM_PLUS", "maxHp");
         checkParamDynamic("Atk", "atk", "PARAM_PLUS", "atk");
 
-        // Damage Bonus legacy check
         const oldDmg = oldItem ? (oldItem.damageBonus || 0) : 0;
         const newDmg = newItem ? (newItem.damageBonus || 0) : 0;
         if (oldDmg !== newDmg) {
@@ -2413,67 +1727,18 @@ export class Window_EquipConfirm extends Window_Base {
 
 /**
  * @class Window_Options
- * @description A general-purpose settings window that can render various types of options.
- * Currently supports 'select' (dropdown) type.
- * @extends Window_Base
  */
 export class Window_Options extends Window_Base {
-  /**
-   * Creates a new Window_Options instance.
-   */
   constructor() {
-    super('center', 'center', 300, 400);
-    this.element.id = "options-window";
-    this.element.style.display = 'flex';
-    this.element.style.flexDirection = 'column';
+    super('center', 'center', 300, 400, { title: "Settings", id: "options-window" });
 
-    const titleBar = document.createElement("div");
-    titleBar.className = "window-header";
-    this.element.appendChild(titleBar);
-    this.makeDraggable(titleBar);
+    this.bodyEl = this.createPanel();
+    this.bodyEl.style.flexGrow = "1";
 
-    const titleText = document.createElement("span");
-    titleText.textContent = "Settings";
-    titleBar.appendChild(titleText);
-
-    this.btnClose = document.createElement("button");
-    this.btnClose.className = "win-btn";
-    this.btnClose.textContent = "X";
-    this.btnClose.onclick = () => this.onUserClose();
-    titleBar.appendChild(this.btnClose);
-
-    const content = document.createElement("div");
-    content.className = "dialog-content";
-    content.style.flexGrow = "1";
-    content.style.overflowY = "auto";
-    this.element.appendChild(content);
-
-    this.bodyEl = document.createElement('div');
-    this.bodyEl.className = 'inspect-body';
-    content.appendChild(this.bodyEl);
-
-    const buttons = document.createElement("div");
-    buttons.className = "dialog-buttons";
-    this.element.appendChild(buttons);
-
-    this.btnOk = document.createElement("button");
-    this.btnOk.className = "win-btn";
-    this.btnOk.textContent = "Close";
-    this.btnOk.onclick = () => this.onUserClose();
-    buttons.appendChild(this.btnOk);
-
+    this.btnOk = this.addButton("Close", () => this.onUserClose());
     this.options = [];
   }
 
-  /**
-   * Sets up the options to be displayed.
-   * @param {Array} options - Array of option objects.
-   * @param {string} options[].label - Label text.
-   * @param {string} options[].type - Type of option (e.g., 'select').
-   * @param {any} options[].value - Current value.
-   * @param {Array} [options[].options] - List of choices for 'select' type ({label, value}).
-   * @param {Function} options[].onChange - Callback when value changes.
-   */
   setup(options) {
     this.options = options;
     this.refresh();
@@ -2481,7 +1746,6 @@ export class Window_Options extends Window_Base {
 
   refresh() {
     this.bodyEl.innerHTML = "";
-
     if (!this.options || this.options.length === 0) {
         this.bodyEl.textContent = "No options available.";
         return;
@@ -2489,7 +1753,7 @@ export class Window_Options extends Window_Base {
 
     this.options.forEach(opt => {
         const row = document.createElement("div");
-        row.className = "shop-row";
+        row.className = "window-row";
         row.style.marginBottom = "8px";
         row.style.alignItems = "center";
 
@@ -2501,7 +1765,6 @@ export class Window_Options extends Window_Base {
         if (opt.type === 'select') {
             const select = document.createElement("select");
             select.style.flex = "1";
-
             opt.options.forEach(choice => {
                 const option = document.createElement("option");
                 option.value = choice.value;
@@ -2511,13 +1774,11 @@ export class Window_Options extends Window_Base {
                 }
                 select.appendChild(option);
             });
-
             select.addEventListener("change", (e) => {
                 if (opt.onChange) {
                     opt.onChange(e.target.value);
                 }
             });
-
             row.appendChild(select);
         } else if (opt.type === 'text') {
              const val = document.createElement("span");
