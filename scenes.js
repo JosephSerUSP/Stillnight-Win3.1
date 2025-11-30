@@ -1359,6 +1359,8 @@ export class Scene_Map extends Scene_Base {
     this.windowLayer.addChild(this.equipConfirmWindow);
     this.optionsWindow = new Window_Options();
     this.windowLayer.addChild(this.optionsWindow);
+    this.helpWindow = new Window_Help();
+    this.windowLayer.addChild(this.helpWindow);
 
     this.recruitWindow.onUserClose = this.interpreter.closeRecruitEvent.bind(this.interpreter);
     this.evolutionWindow.onUserClose = () => this.windowManager.close(this.evolutionWindow);
@@ -1366,6 +1368,7 @@ export class Scene_Map extends Scene_Base {
     this.confirmWindow.onUserClose = () => this.windowManager.close(this.confirmWindow);
     this.equipConfirmWindow.onUserClose = () => this.windowManager.close(this.equipConfirmWindow);
     this.optionsWindow.onUserClose = () => this.windowManager.close(this.optionsWindow);
+    this.helpWindow.onUserClose = () => this.windowManager.close(this.helpWindow);
 
     this.inventoryWindow.onUserClose = this.closeInventory.bind(this);
   }
@@ -1438,6 +1441,7 @@ export class Scene_Map extends Scene_Base {
     this.btnNewRun.addEventListener("click", this.startNewRun.bind(this));
     this.btnRevealAll.addEventListener("click", this.revealAllFloors.bind(this));
     this.hud.btnSettings.addEventListener("click", this.openSettings.bind(this));
+    this.hud.btnHelp.addEventListener("click", this.openHelp.bind(this));
     this.btnClearLog.addEventListener("click", () => {
       this.logEl.textContent = "";
       this.setStatus("Log cleared.");
@@ -2013,6 +2017,11 @@ renderElements(elements) {
    */
   closeInventory() {
     this.windowManager.close(this.inventoryWindow);
+  }
+
+  openHelp() {
+    if (this.sceneManager.currentScene() !== this) return;
+    this.windowManager.push(this.helpWindow);
   }
 
   openSettings() {

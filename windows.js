@@ -604,6 +604,83 @@ export class Window_Base {
 }
 
 /**
+ * @class Window_Help
+ * @description Displays game help and legend.
+ * @extends Window_Base
+ */
+export class Window_Help extends Window_Base {
+  constructor() {
+    super('center', 'center', 400, 350);
+    this.element.id = "help-window";
+    this.element.style.display = 'flex';
+    this.element.style.flexDirection = 'column';
+
+    const titleBar = document.createElement("div");
+    titleBar.className = "window-header";
+    this.element.appendChild(titleBar);
+    this.makeDraggable(titleBar);
+
+    const titleText = document.createElement("span");
+    titleText.textContent = "Help – Stillnight";
+    titleBar.appendChild(titleText);
+
+    this.btnClose = document.createElement("button");
+    this.btnClose.className = "win-btn";
+    this.btnClose.textContent = "X";
+    this.btnClose.onclick = () => this.onUserClose();
+    titleBar.appendChild(this.btnClose);
+
+    const content = document.createElement("div");
+    content.className = "dialog-content";
+    content.style.flexGrow = "1";
+    this.element.appendChild(content);
+
+    const body = document.createElement('div');
+    body.className = 'help-body';
+    content.appendChild(body);
+
+    body.innerHTML = `
+      <div class="help-section">
+        <h2>Controls</h2>
+        <div>• Click adjacent tiles (up/down/left/right) or use Arrow/WASD keys to move.</div>
+        <div>• Click 'Formation' to change party order.</div>
+        <div>• Click 'Inventory' to use items.</div>
+      </div>
+      <div class="help-section">
+        <h2>Map Legend</h2>
+        <div class="help-legend-grid">
+           <div class="help-legend-item"><div class="help-legend-icon tile-player">☺</div> Party</div>
+           <div class="help-legend-item"><div class="help-legend-icon">█</div> Wall</div>
+           <div class="help-legend-item"><div class="help-legend-icon tile-enemy">E</div> Enemy</div>
+           <div class="help-legend-item"><div class="help-legend-icon tile-recovery">R</div> Recovery</div>
+           <div class="help-legend-item"><div class="help-legend-icon tile-stairs">S</div> Stairs</div>
+           <div class="help-legend-item"><div class="help-legend-icon tile-shrine">♱</div> Shrine</div>
+           <div class="help-legend-item"><div class="help-legend-icon tile-shop">¥</div> Shop</div>
+           <div class="help-legend-item"><div class="help-legend-icon tile-recruit">U</div> Recruit</div>
+           <div class="help-legend-item"><div class="help-legend-icon tile-fog">?</div> Unseen</div>
+        </div>
+      </div>
+      <div class="help-section">
+        <h2>Tips</h2>
+        <div>• Front row deals more damage but takes more.</div>
+        <div>• Back row is safer but deals less melee damage.</div>
+        <div>• You must reach the stairs to unlock the next floor permanently.</div>
+      </div>
+    `;
+
+    const buttons = document.createElement("div");
+    buttons.className = "dialog-buttons";
+    this.element.appendChild(buttons);
+
+    this.btnOk = document.createElement("button");
+    this.btnOk.className = "win-btn";
+    this.btnOk.textContent = "Close";
+    this.btnOk.onclick = () => this.onUserClose();
+    buttons.appendChild(this.btnOk);
+  }
+}
+
+/**
  * @class Window_Battle
  * @description The window for battles. This window is designed to be a flexible,
  * terminal-style display that can be easily extended with new animations and UI
@@ -1853,6 +1930,7 @@ export class Window_HUD {
           <div class="stack-nav-buttons">
             <button class="win-btn" id="btn-new-run">New Run</button>
             <button class="win-btn" id="btn-reveal-all">Reveal</button>
+            <button class="win-btn" id="btn-help" style="width: 24px; min-width: 24px; padding: 0;">?</button>
           </div>
           <div style="margin-top:2px;">
              <button class="win-btn" id="btn-settings" style="width:100%">Settings</button>
@@ -1862,28 +1940,14 @@ export class Window_HUD {
             <div>Floor depth: <span id="card-depth-label">1</span></div>
           </div>
         </div>
+
+        <div class="location-art-container">
+             <img id="location-art" class="location-art-img" src="assets/eventArt/default.png">
+        </div>
+
         <div class="group-box">
           <legend>Cards (Floors)</legend>
           <div class="card-list" id="card-list"></div>
-        </div>
-        <div class="group-box">
-          <legend>Short Help</legend>
-          <div class="info-box">
-            • Each floor is a card.<br>
-            • ☺ is your party (highlighted).<br>
-            • Click adjacent tiles to move.<br>
-            • E triggers a battle.<br>
-            • R heals, S descends.<br>
-            • ¥ opens a shop.<br>
-            • Front row hits harder,<br>
-            &nbsp;&nbsp;back row is safer.<br>
-            • Floors are reachable only<br>
-            &nbsp;&nbsp;if you've reached their<br>
-            &nbsp;&nbsp;stairs at least once.<br>
-            • Shrines may offer<br>
-            &nbsp;&nbsp;mysterious events.<br>
-            • Boss awaits at the deepest floor.
-          </div>
         </div>
       </div>
       <div class="right-side">
@@ -1968,9 +2032,11 @@ export class Window_HUD {
         this.statusRunEl = document.getElementById("status-run");
         this.statusItemsEl = document.getElementById("status-items");
         this.modeLabelEl = document.getElementById("mode-label");
+        this.locationArtEl = document.getElementById("location-art");
         this.btnNewRun = document.getElementById("btn-new-run");
         this.btnRevealAll = document.getElementById("btn-reveal-all");
         this.btnSettings = document.getElementById("btn-settings");
+        this.btnHelp = document.getElementById("btn-help");
         this.btnClearLog = document.getElementById("btn-clear-log");
         this.btnFormation = document.getElementById("btn-formation");
         this.btnInventory = document.getElementById("btn-inventory");
@@ -1982,6 +2048,14 @@ export class Window_HUD {
         this.cardDepthLabelEl.textContent = floor.depth;
         this.statusFloorEl.textContent = floor.depth;
         this.statusCardsEl.textContent = total;
+
+        // Update Location Art if available
+        if (floor.image) {
+             this.locationArtEl.src = `assets/eventArt/${floor.image}`;
+        } else {
+             // Default if no image specified
+             this.locationArtEl.src = `assets/eventArt/default.png`;
+        }
     }
 
     updateCardList(floors, currentIndex, maxReachedIndex, onSelect) {
@@ -2407,5 +2481,6 @@ export class Window_Options extends Window_Base {
 if (typeof window !== 'undefined' && window.location.search.includes("test=true")) {
     window.Window_Formation = Window_Formation;
     window.Window_Inventory = Window_Inventory;
+    window.Window_Help = Window_Help;
     window.Window_HUD = Window_HUD;
 }
