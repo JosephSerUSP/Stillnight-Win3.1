@@ -20,6 +20,14 @@
 - Same elements (**RGBWK**) but in **mini form**  
 - Designed to be **overlapped diagonally** for composite effects  
 
+### Element Books
+- **IDs 21–26**  
+- (**RGBWK**) elemental books, 26 is the non-elemental book. For teaching abilities.  
+
+### Element Equipment
+- **IDs 41–46**  
+- (**RGBWK**) elemental equipment: 21 = Flame Sword Flavio, 22 = Jolt Dagger Zaster, 23 = Flowing Staff Sephine, 24 = Holy Suit Papulodoulos, 25 = Dark Scythe Lena.  
+
 ## 📊 Icon Positioning
 - Icons are indexed left-to-right, top-to-bottom.  
 - Formula for position:  
