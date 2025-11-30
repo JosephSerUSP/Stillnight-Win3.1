@@ -1902,37 +1902,50 @@ export class Window_LogPanel extends Window_Base {
 }
 
 /**
- * @class Window_HUD
- * @description Manages the main static game layout.
+ * @class Window_Desktop
+ * @description Manages the main static game layout as the root window.
+ * @extends Window_Base
  */
-export class Window_HUD {
+export class Window_Desktop extends Window_Base {
     constructor() {
-        this.container = document.getElementById("game-container");
-        this.container.style.width = "960px";
-        this.container.style.height = "560px";
-        this.container.style.position = "relative";
-        this.container.style.display = "flex";
-        this.container.style.flexDirection = "row";
+        super(0, 0, '100%', '100%', { title: "Desktop", embedded: true, id: "desktop-window" });
+
+        // Desktop specific styling
+        this.element.style.display = "flex";
+        this.element.style.flexDirection = "row";
+        this.element.style.position = "relative";
+        this.element.style.border = "none"; // Remove border for the root window
+        this.element.style.boxShadow = "none"; // Remove shadow
+        this.element.style.backgroundColor = "transparent"; // Let global background show through? Or specific bg.
+
+        // Hide standard window chrome
+        this.header.style.display = "none";
+        this.footer.style.display = "none";
+
+        // Setup content area
+        this.content.style.padding = "0";
+        this.content.style.flexDirection = "row";
+        this.content.style.border = "none"; // Remove internal border/shadow of content if any
 
         this.createUI();
     }
 
     createUI() {
-        this.container.innerHTML = "";
+        const container = this.content;
+        container.innerHTML = "";
 
         // Inject grid dimensions for CSS
-        // The container needs to set these variables so .exploration-grid can use them.
-        this.container.style.setProperty('--grid-cols', '19');
-        this.container.style.setProperty('--grid-rows', '19');
+        this.element.style.setProperty('--grid-cols', '19');
+        this.element.style.setProperty('--grid-rows', '19');
 
         // 1. Stack Nav Window
         this.stackNav = new Window_StackNav();
-        this.container.appendChild(this.stackNav.element);
+        container.appendChild(this.stackNav.element);
 
         // --- Right Side Container ---
         const rightSide = document.createElement("div");
         rightSide.className = "right-side";
-        this.container.appendChild(rightSide);
+        container.appendChild(rightSide);
 
         // --- Card Area Container ---
         const cardArea = document.createElement("div");
@@ -2569,7 +2582,7 @@ if (typeof window !== 'undefined' && window.location.search.includes("test=true"
     window.Window_Inventory = Window_Inventory;
     window.Window_Shop = Window_Shop;
     window.Window_Help = Window_Help;
-    window.Window_HUD = Window_HUD;
+    window.Window_Desktop = Window_Desktop;
     window.Window_ConfirmEffect = Window_ConfirmEffect;
     window.Window_PartySelect = Window_PartySelect;
     window.Window_EquipItemSelect = Window_EquipItemSelect;

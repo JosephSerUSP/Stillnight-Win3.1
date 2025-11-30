@@ -16,7 +16,7 @@ import {
   Window_PartySelect,
   Window_EquipItemSelect,
   Window_Options,
-  Window_HUD,
+  Window_Desktop,
   Window_Help,
   WindowLayer,
   createInteractiveLabel,
@@ -228,7 +228,7 @@ export class Scene_Battle extends Scene_Base {
   renderBattleAscii() {
     if (!this.battleManager) return;
     const enemies = this.battleManager.enemies;
-    this.battleWindow.refresh(enemies, this.party.members.slice(0, 4));
+    this.battleWindow.refresh(enemies, this.party.activeMembers);
   }
 
   /**
@@ -886,12 +886,15 @@ export class Scene_Map extends Scene_Base {
     this.draggedIndex = null;
     this.currentInteractionEvent = null;
 
-    this.hud = new Window_HUD();
+    this.hud = new Window_Desktop();
+    const gameContainer = document.getElementById("game-container");
+    gameContainer.innerHTML = "";
+    gameContainer.appendChild(this.hud.element);
+
     this.getDomElements();
     this.addEventListeners();
 
     this.windowLayer = new WindowLayer();
-    const gameContainer = document.getElementById("game-container");
     this.windowLayer.appendTo(gameContainer);
 
     this.inventoryWindow = new Window_Inventory();
