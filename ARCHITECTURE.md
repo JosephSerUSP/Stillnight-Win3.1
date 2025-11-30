@@ -1,7 +1,7 @@
 # Architectural Documentation
 
 **Project:** Stillnight Engine
-**Version:** 2.0.0 (Refactored)
+**Version:** 2.1.0 (Refactoring Phase)
 
 ## 1. Executive Summary
 
@@ -15,7 +15,7 @@ The core design philosophy separates the **Logic Layer** (Game Objects, Managers
 The engine uses a stack-based Scene Manager (`SceneManager`).
 -   **Scene_Base**: Abstract base class. Handles lifecycle (`create`, `start`, `update`, `stop`) and holds a `WindowManager`.
 -   **Scene_Boot**: Preloads assets and data before launching the game.
--   **Scene_Map**: Handles exploration, tile interactions, and the main game loop.
+-   **Scene_Map**: Handles exploration, tile interactions, and the main game loop. Acts as the central hub for exploration gameplay.
 -   **Scene_Battle**: Dedicated combat state.
 -   **Scene_Shop**: Dedicated shopping interface.
 
@@ -29,6 +29,7 @@ UI is composed of modular `Window` classes that generate their own DOM structure
     -   Handles drag-and-drop functionality.
     -   Uses a relative coordinate system `(x, y)` relative to the `#game-container`.
 -   **WindowLayer**: A DOM container appended to `#game-container` that holds all window elements, ensuring correct z-indexing.
+-   **Window_HUD**: Manages the static "desktop" UI elements (Status bars, Navigation).
 
 ### 2.3. The Manager Layer (`managers.js`)
 Static or Singleton classes that handle global logic.
@@ -37,7 +38,6 @@ Static or Singleton classes that handle global logic.
 -   **DataManager**: Asynchronously loads JSON data from `data/`.
 -   **SoundManager**: Handles audio playback.
 -   **ThemeManager**: Manages CSS variables for dynamic theming (Original, Night, High Contrast).
--   **FusionManager**: Handles demon fusion mechanics.
 
 ### 2.4. The Data Layer (`data/`)
 The engine is data-driven.
@@ -80,18 +80,19 @@ The `index.html` is a minimal container.
 
 ## 5. Refactoring Roadmap (Status: Ongoing)
 
-### Phase 1: The Window System (Completed)
--   Eliminated `index.html` dependency for UI.
--   Implemented `Window_Base` and `WindowLayer`.
+### Phase 1: The Window System (In Progress)
 -   Standardized "Close" behavior via `onUserClose`.
+-   **TODO**: Split the monolithic `windows.js` file into modular files.
+-   **TODO**: Refactor `Window_HUD` to be more modular.
 
-### Phase 2: Logic Extraction (Completed/Ongoing)
+### Phase 2: Logic Extraction (Ongoing)
 -   Extracted battle logic from `Scene_Map` to `BattleManager`.
 -   Implemented `Game_Interpreter` for map events.
+-   **TODO**: Move `onTurnStart` logic from `Game_Battler` to a data-driven system.
 
 ### Phase 3: Scene Segregation (Completed)
 -   Split `Scene_Map` into `Scene_Map`, `Scene_Battle`, `Scene_Shop`.
 
 ### Phase 4: Data-Driven Trait System (Ongoing)
 -   Standardize `traits` array across all data objects.
--   Remove remaining hardcoded effect checks in `BattleManager`.
+-   Remove remaining hardcoded effect checks in `BattleManager` and `Game_Battler`.
