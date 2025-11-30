@@ -80,7 +80,7 @@ html, body {
 
 /* ===== Window frame ============================================= */
 .win-window {
-    width: 960px;
+    width: 980px;
     height: 560px;
     background-color: var(--window-bg);
     box-sizing: border-box;
@@ -404,13 +404,13 @@ html, body {
     flex-direction: column;
 }
 
-/* 16x16 grid, centered map */
+/* 19x19 grid, centered map */
 .exploration-grid {
-    width: 380px;  /* 16*20 + 15*4 */
-    height: 380px;
+    width: 452px;  /* 19*20 + 18*4 */
+    height: 452px;
     display: grid;
-    grid-template-columns: repeat(16, 1fr);
-    grid-template-rows: repeat(16, 1fr);
+    grid-template-columns: repeat(19, 1fr);
+    grid-template-rows: repeat(19, 1fr);
     gap: 4px;
     margin: auto;
     margin-bottom: 4px;
@@ -874,8 +874,9 @@ html, body {
 
 /* Location Art */
 .location-art-container {
-    height: 120px;
-    margin-bottom: 6px;
+    width: 192px;
+    height: 208px;
+    margin: 0 auto 6px auto;
     border: 1px solid var(--bezel-shadow);
     box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
     background-color: #000;

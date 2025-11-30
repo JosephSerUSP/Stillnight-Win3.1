@@ -1942,7 +1942,7 @@ export class Window_HUD {
         </div>
 
         <div class="location-art-container">
-             <img id="location-art" class="location-art-img" src="assets/eventArt/default.png">
+             <img id="location-art" class="location-art-img" src="assets/locationArt/dungeon1.png">
         </div>
 
         <div class="group-box">
@@ -1964,17 +1964,6 @@ export class Window_HUD {
             </div>
             <div class="exploration-frame panel">
               <div class="exploration-grid" id="exploration-grid"></div>
-              <div class="legend">
-                <span>☺: Party</span>
-                <span>█: Wall</span>
-                <span>E: Enemy</span>
-                <span>R: Recovery</span>
-                <span>S: Stairs</span>
-                <span>♱: Shrine</span>
-                <span>¥: Shop</span>
-                <span>?: Unseen</span>
-                <span>U: Recruit</span>
-              </div>
             </div>
           </div>
           <div class="card-side-panels">
@@ -2051,10 +2040,10 @@ export class Window_HUD {
 
         // Update Location Art if available
         if (floor.image) {
-             this.locationArtEl.src = `assets/eventArt/${floor.image}`;
+             this.locationArtEl.src = `assets/locationArt/${floor.image}`;
         } else {
              // Default if no image specified
-             this.locationArtEl.src = `assets/eventArt/default.png`;
+             this.locationArtEl.src = `assets/locationArt/dungeon1.png`;
         }
     }
 
