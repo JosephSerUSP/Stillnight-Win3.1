@@ -19,7 +19,8 @@ import {
   Window_Help,
   WindowLayer,
   createInteractiveLabel,
-  createElementIcon
+  createElementIcon,
+  createBattlerNameLabel
 } from "./windows.js";
 import { tooltip } from "./tooltip.js";
 
@@ -1154,8 +1155,7 @@ class Game_Interpreter {
 
         // Name
         const nameVal = document.createElement('span');
-        nameVal.appendChild(createElementIcon(recruit.elements));
-        nameVal.appendChild(document.createTextNode(recruit.name));
+        nameVal.appendChild(createBattlerNameLabel(recruit));
         createRow('Name', nameVal);
 
         // Level
@@ -1758,7 +1758,12 @@ export class Scene_Map extends Scene_Base {
    * @method updateParty
    */
   updateParty() {
-    this.hud.updateParty(this.party, (member, index) => this.openInspect(member, index));
+    const context = {
+        inventory: this.party.inventory,
+        floorDepth: this.map.floors[this.map.floorIndex] ? this.map.floors[this.map.floorIndex].depth : 1,
+        gold: this.party.gold
+    };
+    this.hud.updateParty(this.party, (member, index) => this.openInspect(member, index), context);
   }
 
   /**
@@ -2173,28 +2178,20 @@ renderElements(elements) {
     const spriteKey = member.spriteKey || 'pixie';
     this.inspectWindow.spriteEl.style.backgroundImage = `url('assets/portraits/${spriteKey}.png')`;
 
-    this.inspectWindow.nameEl.innerHTML = "";
-    this.inspectWindow.nameEl.appendChild(this.createElementIcon(member.elements));
-    const nameSpan = document.createElement('span');
-    nameSpan.textContent = member.name;
-    this.inspectWindow.nameEl.appendChild(nameSpan);
-
-    // Evolution Check
+    // Evolution Check & Name Rendering
     const floor = this.map.floors[this.map.floorIndex];
-    const evolutionData = member.checkEvolution(this.party.inventory, floor ? floor.depth : 1);
+    const evoStatus = member.getEvolutionStatus(this.party.inventory, floor ? floor.depth : 1, this.party.gold);
 
-    if (evolutionData) {
-         const evoIcon = document.createElement("span");
-         evoIcon.className = "icon";
-         evoIcon.style.backgroundPosition = getIconStyle(6);
-         evoIcon.style.display = "inline-block";
-         evoIcon.style.marginLeft = "4px";
-         evoIcon.title = "Evolution Available";
-         this.inspectWindow.nameEl.appendChild(evoIcon);
+    this.inspectWindow.nameEl.innerHTML = "";
+    // Use the centralized helper
+    this.inspectWindow.nameEl.appendChild(createBattlerNameLabel(member, {
+        evolutionStatus: evoStatus.status
+    }));
 
+    if (evoStatus.status === 'AVAILABLE') {
          this.inspectWindow.btnEvolve.style.display = "inline-block";
          this.inspectWindow.btnEvolve.onclick = () => {
-             this.openEvolution(member, evolutionData);
+             this.openEvolution(member, evoStatus.evolution);
          };
     } else {
          this.inspectWindow.btnEvolve.style.display = "none";
@@ -2402,6 +2399,9 @@ renderElements(elements) {
               msg += `\nConsumes ${item.name}.`;
           }
       }
+      if (evolutionData.gold) {
+          msg += `\nCosts ${evolutionData.gold} Gold.`;
+      }
 
       this.confirmWindow.titleEl.textContent = "Confirm Evolution";
       this.confirmWindow.messageEl.innerText = msg;
@@ -2430,6 +2430,9 @@ renderElements(elements) {
           if (idx !== -1) {
               this.party.inventory.splice(idx, 1);
           }
+      }
+      if (evolutionData.gold) {
+          this.party.gold -= evolutionData.gold;
       }
 
       const index = this.party.members.indexOf(member);

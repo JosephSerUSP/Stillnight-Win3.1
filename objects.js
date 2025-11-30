@@ -406,9 +406,10 @@ export class Game_Battler extends Game_Base {
    * Checks if the battler meets any evolution criteria.
    * @param {Array} inventory - The party's inventory.
    * @param {number} floorDepth - The current floor depth.
+   * @param {number} gold - The party's gold.
    * @returns {Object|null} The evolution definition if eligible, or null.
    */
-  checkEvolution(inventory = [], floorDepth = 0) {
+  checkEvolution(inventory = [], floorDepth = 0, gold = 0) {
     if (!this.evolutions || this.evolutions.length === 0) return null;
 
     for (const evo of this.evolutions) {
@@ -426,9 +427,32 @@ export class Game_Battler extends Game_Base {
         // Floor/Depth Requirement
         if (evo.floorDepth && floorDepth < evo.floorDepth) eligible = false;
 
+        // Gold Requirement
+        if (evo.gold && gold < evo.gold) eligible = false;
+
         if (eligible) return evo;
     }
     return null;
+  }
+
+  /**
+   * Gets the current evolution status.
+   * @param {Array} inventory - The party's inventory.
+   * @param {number} floorDepth - The current floor depth.
+   * @param {number} gold - The party's gold.
+   * @returns {Object} Status object { status: 'NONE'|'LOCKED'|'AVAILABLE', evolution: Object|null }
+   */
+  getEvolutionStatus(inventory = [], floorDepth = 0, gold = 0) {
+      if (!this.evolutions || this.evolutions.length === 0) {
+          return { status: 'NONE', evolution: null };
+      }
+
+      const eligible = this.checkEvolution(inventory, floorDepth, gold);
+      if (eligible) {
+          return { status: 'AVAILABLE', evolution: eligible };
+      }
+
+      return { status: 'LOCKED', evolution: null };
   }
 }
 
