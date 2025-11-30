@@ -1,5 +1,5 @@
 import { Game_Map, Game_Party, Game_Battler, Game_Event } from "./objects.js";
-import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula } from "./core.js";
+import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula, probabilisticRound } from "./core.js";
 import { BattleManager, SoundManager, ThemeManager } from "./managers.js";
 import {
   Window_Battle,
@@ -420,9 +420,9 @@ export class Scene_Battle extends Scene_Base {
     if (!this.battleManager || !this.battleManager.isVictoryPending) return;
     const enemies = this.battleManager.enemies;
     let totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
-    const totalXp = enemies.reduce((sum, e) => sum + Math.floor(e.level * (e.expGrowth * 0.5) + 8), 0);
+    const totalXp = enemies.reduce((sum, e) => sum + probabilisticRound(e.level * (e.expGrowth * 0.5) + 8), 0);
 
-    const living = this.party.members.slice(0, 4).filter((p) => p.hp > 0);
+    const living = this.party.activeMembers.filter((p) => p.hp > 0);
     living.forEach((m) => {
       const goldBonus = m.getPassiveValue("GOLD_DIGGER");
       if (goldBonus > 0) {
@@ -431,12 +431,17 @@ export class Scene_Battle extends Scene_Base {
       }
     });
     const share =
-      living.length > 0 ? Math.max(1, Math.floor(totalXp / living.length)) : 0;
+      living.length > 0 ? Math.max(1, totalXp / living.length) : 0;
     living.forEach((m) => this.sceneManager.previous().gainXp(m, share));
+
+    const reserveShare = Math.max(1, totalXp / 20);
+    this.party.reserveMembers.forEach((m) => {
+        if (m.hp > 0) this.sceneManager.previous().gainXp(m, reserveShare, true);
+    });
 
     this.party.gold += totalGold;
     this.sceneManager.previous().logMessage(
-      `[Battle] Victory! Gained ${totalGold}G and ${totalXp} XP (split).`
+      `[Battle] Victory! Gained ${totalGold}G and ${totalXp} XP.`
     );
 
     // Process Drops
@@ -753,6 +758,9 @@ export class Scene_Shop extends Scene_Base {
 
         this.shopWindow.onUserClose = this.closeShop.bind(this);
         this.shopWindow.btnLeave.addEventListener("click", this.closeShop.bind(this));
+
+        this.shopWindow.setHandler('mode_buy', () => this.startBuy());
+        this.shopWindow.setHandler('mode_sell', () => this.startSell());
     }
 
     /**
@@ -760,15 +768,42 @@ export class Scene_Shop extends Scene_Base {
      * @method start
      */
     start() {
-        this.shopWindow.setup(
+        this.startBuy();
+        this.windowManager.push(this.shopWindow);
+        document.getElementById("mode-label").textContent = "Shop";
+        SoundManager.beep(650, 150);
+    }
+
+    startBuy() {
+        this.shopWindow.setupBuy(
             this.party.gold,
             this.dataManager.terms.shop.vendor_message,
             this.dataManager.items,
             (itemId) => this.buyItem(itemId)
         );
-        this.windowManager.push(this.shopWindow);
-        document.getElementById("mode-label").textContent = "Shop";
-        SoundManager.beep(650, 150);
+    }
+
+    startSell() {
+        this.shopWindow.setupSell(
+            this.party.gold,
+            this.party.inventory,
+            (item) => this.sellItem(item)
+        );
+    }
+
+    sellItem(item) {
+        const index = this.party.inventory.indexOf(item);
+        if (index > -1) {
+            this.party.inventory.splice(index, 1);
+            const price = Math.floor(item.cost / 2);
+            this.party.gold += price;
+
+            this.startSell();
+
+            this.sceneManager.previous().logMessage(`[Shop] Sold ${item.name} for ${price}G.`);
+            SoundManager.beep(600, 80);
+            this.sceneManager.previous().updateAll();
+        }
     }
 
     /**
@@ -1924,9 +1959,9 @@ export class Scene_Map extends Scene_Base {
    * @param {import("./objects.js").Game_Battler} member - The member to give XP to.
    * @param {number} amount - The amount of XP.
    */
-  gainXp(member, amount) {
+  gainXp(member, amount, silent = false) {
     const result = member.gainXp(amount);
-    if (result.leveledUp) {
+    if (result.leveledUp && !silent) {
       this.logMessage(
         `[Level] ${member.name} grows to Lv${result.newLevel}! HP +${result.hpGain}.`
       );

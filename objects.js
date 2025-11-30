@@ -1,4 +1,4 @@
-import { randInt, shuffleArray } from "./core.js";
+import { randInt, shuffleArray, probabilisticRound } from "./core.js";
 import { passives as passivesData } from "./data/passives.js";
 import { states as statesData } from "./data/states.js";
 
@@ -220,7 +220,8 @@ export class Game_Battler extends Game_Base {
   gainXp(amount) {
     if (amount <= 0) return { leveledUp: false, hpGain: 0, newLevel: this.level };
 
-    this.xp = (this.xp || 0) + amount;
+    const actualAmount = probabilisticRound(amount);
+    this.xp = (this.xp || 0) + actualAmount;
     let leveledUp = false;
     let totalHpGain = 0;
 
@@ -508,10 +509,10 @@ export class Game_Party {
     this.MAX_MEMBERS = 24;
 
     /**
-     * The list of party members.
-     * @type {Game_Battler[]}
+     * The slots for party members. Can contain nulls.
+     * @type {Array<Game_Battler|null>}
      */
-    this.members = [];
+    this.slots = new Array(this.MAX_MEMBERS).fill(null);
 
     /**
      * The party's gold.
@@ -527,6 +528,22 @@ export class Game_Party {
   }
 
   /**
+   * Gets the list of active (non-null) members.
+   * @type {Game_Battler[]}
+   */
+  get members() {
+      return this.slots.filter(m => m !== null);
+  }
+
+  get activeMembers() {
+      return this.slots.slice(0, 4).filter(m => m !== null);
+  }
+
+  get reserveMembers() {
+      return this.slots.slice(4).filter(m => m !== null);
+  }
+
+  /**
    * Initializes the party members based on starting data.
    * @param {import("./managers.js").DataManager} dataManager - The data manager.
    */
@@ -537,7 +554,7 @@ export class Game_Party {
     this.inventory = startingParty.getInventory(items);
 
     const memberConfigs = startingParty.getMembers(actors);
-    this.members = memberConfigs.map(config => {
+    const initialMembers = memberConfigs.map(config => {
       const actorData = actors.find(a => a.id === config.id);
       if (!actorData) {
         console.error(`Actor data not found for ID: ${config.id}`);
@@ -545,27 +562,27 @@ export class Game_Party {
       }
       return Game_Battler.create(actorData, config.level);
     }).filter(member => member !== null);
+
+    initialMembers.forEach((m, i) => {
+        if (i < this.MAX_MEMBERS) {
+            this.slots[i] = m;
+        }
+    });
   }
 
   /**
-   * Reorders a party member from one index to another.
+   * Reorders a party member/slot from one index to another.
    * @param {number} fromIndex - The current index of the member.
    * @param {number} toIndex - The target index.
    * @returns {boolean} True if successful.
    */
   reorderMembers(fromIndex, toIndex) {
-      if (fromIndex < 0 || fromIndex >= this.members.length) return false;
-      // Allow dropping at the end of the list? The logic in Scene_Map limited it to valid slots.
-      // But Scene_Map rendered slots for all members.
-      if (toIndex < 0) return false; // toIndex can be >= length if we append?
-      // For now, stick to existing logic which seemed to assume swapping within existing slots.
-      // But Scene_Map rendered "Reserve" slots too.
+      if (fromIndex < 0 || fromIndex >= this.MAX_MEMBERS) return false;
+      if (toIndex < 0 || toIndex >= this.MAX_MEMBERS) return false;
 
-      // Safety check
-      if (toIndex >= this.members.length) toIndex = this.members.length - 1;
-
-      const [moved] = this.members.splice(fromIndex, 1);
-      this.members.splice(toIndex, 0, moved);
+      const temp = this.slots[fromIndex];
+      this.slots[fromIndex] = this.slots[toIndex];
+      this.slots[toIndex] = temp;
       return true;
   }
 
