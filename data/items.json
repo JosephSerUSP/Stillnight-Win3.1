@@ -80,5 +80,16 @@
     "traits": [
       { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 2 }
     ]
+  },
+  {
+    "id": "mystic_egg",
+    "name": "Mystic Egg",
+    "type": "consumable",
+    "cost": 500,
+    "icon": 6,
+    "description": "A mysterious egg that pulses with life. Use to hatch.",
+    "effects": {
+      "recruit_egg": "egg"
+    }
   }
 ]

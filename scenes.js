@@ -1,5 +1,5 @@
 import { Game_Map, Game_Party, Game_Battler, Game_Event } from "./objects.js";
-import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula } from "./core.js";
+import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula, probabilisticRound } from "./core.js";
 import { BattleManager, SoundManager, ThemeManager } from "./managers.js";
 import {
   Window_Battle,
@@ -420,9 +420,9 @@ export class Scene_Battle extends Scene_Base {
     if (!this.battleManager || !this.battleManager.isVictoryPending) return;
     const enemies = this.battleManager.enemies;
     let totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
-    const totalXp = enemies.reduce((sum, e) => sum + Math.floor(e.level * (e.expGrowth * 0.5) + 8), 0);
+    const totalXp = enemies.reduce((sum, e) => sum + probabilisticRound(e.level * (e.expGrowth * 0.5) + 8), 0);
 
-    const living = this.party.members.slice(0, 4).filter((p) => p.hp > 0);
+    const living = this.party.activeMembers.filter((p) => p.hp > 0);
     living.forEach((m) => {
       const goldBonus = m.getPassiveValue("GOLD_DIGGER");
       if (goldBonus > 0) {
@@ -431,12 +431,17 @@ export class Scene_Battle extends Scene_Base {
       }
     });
     const share =
-      living.length > 0 ? Math.max(1, Math.floor(totalXp / living.length)) : 0;
+      living.length > 0 ? Math.max(1, totalXp / living.length) : 0;
     living.forEach((m) => this.sceneManager.previous().gainXp(m, share));
+
+    const reserveShare = Math.max(1, totalXp / 20);
+    this.party.reserveMembers.forEach((m) => {
+        if (m.hp > 0) this.sceneManager.previous().gainXp(m, reserveShare, true);
+    });
 
     this.party.gold += totalGold;
     this.sceneManager.previous().logMessage(
-      `[Battle] Victory! Gained ${totalGold}G and ${totalXp} XP (split).`
+      `[Battle] Victory! Gained ${totalGold}G and ${totalXp} XP.`
     );
 
     // Process Drops
@@ -753,6 +758,9 @@ export class Scene_Shop extends Scene_Base {
 
         this.shopWindow.onUserClose = this.closeShop.bind(this);
         this.shopWindow.btnLeave.addEventListener("click", this.closeShop.bind(this));
+
+        this.shopWindow.setHandler('mode_buy', () => this.startBuy());
+        this.shopWindow.setHandler('mode_sell', () => this.startSell());
     }
 
     /**
@@ -760,15 +768,42 @@ export class Scene_Shop extends Scene_Base {
      * @method start
      */
     start() {
-        this.shopWindow.setup(
+        this.startBuy();
+        this.windowManager.push(this.shopWindow);
+        document.getElementById("mode-label").textContent = "Shop";
+        SoundManager.beep(650, 150);
+    }
+
+    startBuy() {
+        this.shopWindow.setupBuy(
             this.party.gold,
             this.dataManager.terms.shop.vendor_message,
             this.dataManager.items,
             (itemId) => this.buyItem(itemId)
         );
-        this.windowManager.push(this.shopWindow);
-        document.getElementById("mode-label").textContent = "Shop";
-        SoundManager.beep(650, 150);
+    }
+
+    startSell() {
+        this.shopWindow.setupSell(
+            this.party.gold,
+            this.party.inventory,
+            (item) => this.sellItem(item)
+        );
+    }
+
+    sellItem(item) {
+        const index = this.party.inventory.indexOf(item);
+        if (index > -1) {
+            this.party.inventory.splice(index, 1);
+            const price = Math.floor(item.cost / 2);
+            this.party.gold += price;
+
+            this.startSell();
+
+            this.sceneManager.previous().logMessage(`[Shop] Sold ${item.name} for ${price}G.`);
+            SoundManager.beep(600, 80);
+            this.sceneManager.previous().updateAll();
+        }
     }
 
     /**
@@ -1117,14 +1152,25 @@ class Game_Interpreter {
         this.scene.updateAll();
     }
 
-    openRecruitEvent() {
-        const availableCreatures = this.dataManager.actors.filter(creature => !creature.isEnemy);
-        if (availableCreatures.length === 0) {
-            this.scene.logMessage(this.dataManager.terms.recruit.no_one_here);
-            return;
+    openRecruitEvent(options = {}) {
+        const { forcedId, cost: forcedCost, onRecruit } = options;
+        this._onRecruitCallback = onRecruit;
+
+        let recruit;
+        if (forcedId) {
+             recruit = this.dataManager.actors.find(a => a.id === forcedId);
         }
-        const recruit = availableCreatures[randInt(0, availableCreatures.length - 1)];
-        const cost = randInt(25, 75);
+
+        if (!recruit) {
+            const availableCreatures = this.dataManager.actors.filter(creature => !creature.isEnemy);
+            if (availableCreatures.length === 0) {
+                this.scene.logMessage(this.dataManager.terms.recruit.no_one_here);
+                return;
+            }
+            recruit = availableCreatures[randInt(0, availableCreatures.length - 1)];
+        }
+
+        const cost = forcedCost !== undefined ? forcedCost : randInt(25, 75);
 
         this.scene.recruitWindow.bodyEl.innerHTML = "";
 
@@ -1264,6 +1310,7 @@ class Game_Interpreter {
     }
 
     closeRecruitEvent() {
+        this._onRecruitCallback = null;
         this.windowManager.close(this.scene.recruitWindow);
         this.scene.setStatus("Exploration");
     }
@@ -1301,12 +1348,18 @@ class Game_Interpreter {
     }
 
     attemptRecruit(recruit) {
-        if (this.party.members.length < this.party.MAX_MEMBERS) {
-            this.party.members.push(new Game_Battler(recruit));
+        if (this.party.hasEmptySlot()) {
+            this.party.addMember(Game_Battler.create(recruit));
             this.scene.logMessage(`[Recruit] ${recruit.name} joins your party.`);
             this.scene.setStatus(
                 this.dataManager.terms.recruit.recruited.replace("{0}", recruit.name)
             );
+
+            if (this._onRecruitCallback) {
+                this._onRecruitCallback();
+                this._onRecruitCallback = null;
+            }
+
             this.clearEventTile();
             this.closeRecruitEvent();
             this.scene.updateParty();
@@ -1341,7 +1394,13 @@ class Game_Interpreter {
                 .replace("{0}", replaced.name)
                 .replace("{1}", recruit.name)
         );
-        this.party.members[index] = new Game_Battler(recruit);
+        this.party.replaceMember(index, Game_Battler.create(recruit));
+
+        if (this._onRecruitCallback) {
+            this._onRecruitCallback();
+            this._onRecruitCallback = null;
+        }
+
         this.clearEventTile();
         this.scene.updateParty();
         this.closeRecruitEvent();
@@ -1591,41 +1650,33 @@ export class Scene_Map extends Scene_Base {
    */
   checkPermadeath() {
     let deadFound = false;
-    // Iterate backwards to safely splice
-    for (let i = this.party.members.length - 1; i >= 0; i--) {
-        const member = this.party.members[i];
+    const members = [...this.party.members];
+    for (const member of members) {
         if (member.hp <= 0) {
             deadFound = true;
-            // Check for ON_PERMADEATH traits
             const permadeathTraits = member.traits.filter(t => t.code === 'ON_PERMADEATH');
 
             if (permadeathTraits.length > 0) {
                  this.logMessage(`[Passive] ${member.name}'s Rebirth activates!`);
 
-                 // Restore 20% HP based on current max (before level loss)
                  const heal = Math.floor(member.maxHp * 0.2) || 1;
                  member.hp = heal;
 
-                 // Lose 2 levels
                  const oldLevel = member.level;
                  const levelsLost = 2;
                  member.level = Math.max(1, member.level - levelsLost);
 
-                 // Reduce max HP roughly if level dropped
                  if (member.level < oldLevel) {
                      const lost = oldLevel - member.level;
-                     // Approximate HP loss (3 per level)
                      member._baseMaxHp = Math.max(1, member._baseMaxHp - (lost * 3));
-                     // Reset XP for new level
                      member.xp = 0;
                  }
 
-                 // Ensure HP is valid against new MaxHP
                  if (member.hp > member.maxHp) member.hp = member.maxHp;
 
                  this.logMessage(`${member.name} returned at Lv${member.level}.`);
             } else {
-                this.party.members.splice(i, 1);
+                this.party.removeMember(member);
                 this.logMessage(`[Death] ${member.name} has fallen and is lost forever.`);
             }
         }
@@ -1900,9 +1951,9 @@ export class Scene_Map extends Scene_Base {
    * @param {import("./objects.js").Game_Battler} member - The member to give XP to.
    * @param {number} amount - The amount of XP.
    */
-  gainXp(member, amount) {
+  gainXp(member, amount, silent = false) {
     const result = member.gainXp(amount);
-    if (result.leveledUp) {
+    if (result.leveledUp && !silent) {
       this.logMessage(
         `[Level] ${member.name} grows to Lv${result.newLevel}! HP +${result.hpGain}.`
       );
@@ -2110,6 +2161,18 @@ renderElements(elements) {
   onInventoryAction(item, action) {
       if (action === 'use') {
           if (item.type === 'equipment') return;
+
+          if (item.effects && item.effects.recruit_egg) {
+              const recruitId = item.effects.recruit_egg;
+              this.windowManager.close(this.inventoryWindow);
+              this.interpreter.openRecruitEvent({
+                  forcedId: recruitId,
+                  cost: 0,
+                  onRecruit: () => this.discardItem(item)
+              });
+              return;
+          }
+
           this.partySelectWindow.setup(this.party, `Use ${item.name} on:`, (target) => {
               this.windowManager.close(this.partySelectWindow);
               this.confirmEffectWindow.setupUse(target, item, () => {
@@ -2325,9 +2388,7 @@ renderElements(elements) {
    * @param {number} value - The gold value.
    */
   sacrificeMember(member, value) {
-      const index = this.party.members.indexOf(member);
-      if (index > -1) {
-          this.party.members.splice(index, 1);
+      if (this.party.removeMember(member)) {
           this.party.gold += value;
           this.logMessage(`[Sacrifice] ${member.name} was sacrificed for ${value}G.`);
           SoundManager.beep(150, 400);
@@ -2442,12 +2503,18 @@ renderElements(elements) {
           this.party.gold -= evolutionData.gold;
       }
 
-      const index = this.party.members.indexOf(member);
-      if (index !== -1) {
+      const slotIndex = this.party.slots.indexOf(member);
+      if (slotIndex !== -1) {
+          const currentSpeciesBase = member.actorData.maxHp;
+          const nextSpeciesBase = nextBattler.actorData.maxHp;
+          const newBaseMaxHp = member._baseMaxHp - currentSpeciesBase + nextSpeciesBase;
+
+          nextBattler._baseMaxHp = Math.max(1, newBaseMaxHp);
           nextBattler.xp = member.xp;
           nextBattler.equipmentItem = member.equipmentItem;
+          nextBattler.hp = nextBattler.maxHp;
 
-          this.party.members[index] = nextBattler;
+          this.party.replaceMember(slotIndex, nextBattler);
 
           this.logMessage(`[Evolution] ${member.name} evolved into ${nextBattler.name}!`);
           SoundManager.beep(800, 300);
