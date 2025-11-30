@@ -20,7 +20,9 @@ import {
   WindowLayer,
   createInteractiveLabel,
   createElementIcon,
-  createBattlerNameLabel
+  createBattlerNameLabel,
+  renderCreatureInfo,
+  renderElements
 } from "./windows.js";
 import { tooltip } from "./tooltip.js";
 
@@ -1172,114 +1174,14 @@ class Game_Interpreter {
 
         const cost = forcedCost !== undefined ? forcedCost : randInt(25, 75);
 
-        this.scene.recruitWindow.bodyEl.innerHTML = "";
-
-        const layout = document.createElement('div');
-        layout.className = 'inspect-layout';
-        this.scene.recruitWindow.bodyEl.appendChild(layout);
-
-        const sprite = document.createElement('div');
-        sprite.className = 'inspect-sprite';
-        sprite.style.backgroundImage = `url('assets/portraits/${recruit.spriteKey || "pixie"}.png')`;
-        layout.appendChild(sprite);
-
-        const fields = document.createElement('div');
-        fields.className = 'inspect-fields';
-        layout.appendChild(fields);
-
-        const createRow = (label, valueEl) => {
-            const row = document.createElement('div');
-            row.className = 'inspect-row';
-            const lbl = document.createElement('span');
-            lbl.className = 'inspect-label';
-            lbl.textContent = label;
-            row.appendChild(lbl);
-            valueEl.classList.add('inspect-value');
-            row.appendChild(valueEl);
-            fields.appendChild(row);
-        };
-
-        // Name
-        const nameVal = document.createElement('span');
-        nameVal.appendChild(createBattlerNameLabel(recruit));
-        createRow('Name', nameVal);
-
-        // Level
-        const levelVal = document.createElement('span');
-        levelVal.textContent = recruit.level;
-        createRow('Level', levelVal);
-
-        // Role
-        const roleVal = document.createElement('span');
-        roleVal.textContent = recruit.role;
-        createRow('Role', roleVal);
-
-        // HP
-        const hpVal = document.createElement('span');
-        hpVal.textContent = `${recruit.maxHp} / ${recruit.maxHp}`;
-        createRow('HP', hpVal);
-
-        // Element
-        const elementVal = document.createElement('span');
-        if (recruit.elements && recruit.elements.length > 0) {
-            elementVal.appendChild(this.scene.renderElements(recruit.elements));
-        } else {
-            elementVal.textContent = "—";
-        }
-        createRow('Element', elementVal);
-
-        // Equipment
-        const equipVal = document.createElement('span');
-        equipVal.textContent = recruit.equipment || "—";
-        createRow('Equipment', equipVal);
-
-        // Passive
-        const passiveVal = document.createElement('span');
-        if (recruit.passives && recruit.passives.length > 0) {
-            recruit.passives.forEach((pData, i) => {
-                const code = pData.code || pData.id;
-                let def = null;
-                if (this.dataManager.passives) {
-                    def = Object.values(this.dataManager.passives).find(p => p.id === code || p.code === code);
-                }
-                if (!def) def = pData;
-
-                const el = createInteractiveLabel(def, 'passive');
-                passiveVal.appendChild(el);
-
-                if (i < recruit.passives.length - 1) {
-                    passiveVal.appendChild(document.createTextNode(", "));
-                }
-            });
-        } else {
-            passiveVal.textContent = "—";
-        }
-        createRow('Passive', passiveVal);
-
-        // Skills
-        const skillVal = document.createElement('span');
-        if (recruit.skills && recruit.skills.length > 0) {
-            recruit.skills.forEach((sId, i) => {
-                const skill = this.dataManager.skills[sId];
-                if (skill) {
-                    const el = createInteractiveLabel(skill, 'skill');
-                    skillVal.appendChild(el);
-                } else {
-                    skillVal.appendChild(document.createTextNode(sId));
-                }
-                if (i < recruit.skills.length - 1) {
-                    skillVal.appendChild(document.createTextNode(", "));
-                }
-            });
-        } else {
-            skillVal.textContent = "—";
-        }
-        createRow('Skills', skillVal);
-
-        // Flavor
-        const flavorVal = document.createElement('span');
-        flavorVal.textContent = recruit.flavor || "—";
-        createRow('Flavor', flavorVal);
+        renderCreatureInfo(this.scene.recruitWindow.bodyEl, recruit, {
+            showElement: true,
+            showEquipment: true,
+            showPassives: true,
+            showSkills: true,
+            showFlavor: true,
+            dataManager: this.dataManager
+        });
 
         this.scene.recruitWindow.buttonsEl.innerHTML = "";
         const joinBtn = document.createElement("button");
@@ -2008,72 +1910,7 @@ export class Scene_Map extends Scene_Base {
       return `${elementIcon.innerHTML}${skill.name}`;
   }
 
-/**
- * Creates a DOM element representing an icon for a set of elements.
- * @method createElementIcon
- * @param {string[]} elements - The elements.
- * @returns {HTMLElement} The icon container element.
- */
-createElementIcon(elements) {
-    const primaryElements = getPrimaryElements(elements);
-    const container = document.createElement('div');
 
-    if (primaryElements.length <= 1) {
-        container.className = 'element-icon-container-name';
-        const icon = document.createElement('div');
-        icon.className = 'icon';
-        if (primaryElements.length === 1) {
-            const iconId = elementToIconId(primaryElements[0]);
-            if (iconId > 0) {
-                icon.style.backgroundPosition = getIconStyle(iconId);
-            }
-        }
-        container.appendChild(icon);
-    } else {
-        container.className = 'element-icon-container';
-        const positions = [
-            { top: '0px', left: '0px' },
-            { top: '6px', left: '6px' },
-            { top: '0px', left: '6px' },
-            { top: '6px', left: '0px' },
-        ];
-        primaryElements.forEach((element, index) => {
-            if (index < 4) {
-                const icon = document.createElement('div');
-                icon.className = 'element-icon';
-                const iconId = elementToIconId('l_' + element);
-                if (iconId > 0) {
-                    icon.style.backgroundPosition = getIconStyle(iconId);
-                    icon.style.top = positions[index].top;
-                    icon.style.left = positions[index].left;
-                    container.appendChild(icon);
-                }
-            }
-        });
-    }
-    return container;
-}
-
-/**
- * Renders a row of element icons.
- * @method renderElements
- * @param {string[]} elements - The elements.
- * @returns {HTMLElement} The container element.
- */
-renderElements(elements) {
-    const container = document.createElement('div');
-    container.className = 'element-container';
-    elements.forEach(element => {
-        const icon = document.createElement('div');
-        icon.className = 'icon';
-        const iconId = elementToIconId(element);
-        if (iconId > 0) {
-            icon.style.backgroundPosition = getIconStyle(iconId);
-        }
-        container.appendChild(icon);
-    });
-    return container;
-}
 
   /**
    * Determines if a party member is in the "Front" or "Back" row.
@@ -2274,7 +2111,7 @@ renderElements(elements) {
 
     this.inspectWindow.elementEl.innerHTML = "";
     if (member.elements && member.elements.length > 0) {
-        this.inspectWindow.elementEl.appendChild(this.renderElements(member.elements));
+        this.inspectWindow.elementEl.appendChild(renderElements(member.elements));
     } else {
         this.inspectWindow.elementEl.textContent = "—";
     }
