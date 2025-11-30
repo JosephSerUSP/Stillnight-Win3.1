@@ -526,7 +526,7 @@ html, body {
     background-color: var(--bezel-light);
 }
 .party-slot-name {
-    font-weight: bold;
+    /* font-weight: bold; Removed per request */
 }
 .gauge {
     border: 1px solid #000000;
@@ -839,4 +839,35 @@ html, body {
     border-color: var(--bezel-dark) var(--bezel-light) var(--bezel-light) var(--bezel-dark);
     background-color: var(--bezel-light);
     font-weight: bold;
+}
+/* ... (existing styles) */
+
+/* Updated Formation Grid for wider slots */
+.formation-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
+}
+.formation-reserve-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Dragging styles for party-slot */
+.party-slot.dragging {
+    opacity: 0.5;
+}
+.party-slot.drag-over {
+    border-color: var(--selection-text);
+    background-color: var(--bezel-light);
+}
+
+/* XP Gauge */
+.gauge-xp {
+    background-color: #60a0ff; /* Fallback if inline style not used */
 }
