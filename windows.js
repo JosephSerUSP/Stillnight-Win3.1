@@ -20,6 +20,11 @@ export function createBattlerNameLabel(battler, options = {}) {
         container.appendChild(createElementIcon(battler.elements));
     }
 
+    const levelSpan = document.createElement("span");
+    levelSpan.textContent = `Lv.${battler.level}`;
+    levelSpan.style.marginRight = "4px";
+    container.appendChild(levelSpan);
+
     const nameSpan = document.createElement("span");
     nameSpan.textContent = battler.name;
     container.appendChild(nameSpan);
@@ -319,6 +324,61 @@ export function createPartySlot(battler, index, options = {}) {
         footer.appendChild(none);
     }
     slot.appendChild(footer);
+
+    return slot;
+}
+
+/**
+ * Creates a compact reserve member slot.
+ */
+export function createReserveSlot(battler, index, options = {}) {
+    const slot = document.createElement("div");
+    slot.className = "party-slot";
+    slot.style.width = "124px";
+    slot.style.height = "54px";
+    slot.style.display = "flex";
+    slot.style.boxSizing = "border-box";
+    slot.style.alignItems = "center";
+
+    if (options.className) slot.classList.add(options.className);
+    slot.dataset.index = index;
+    if (options.testId) slot.dataset.testid = options.testId;
+
+    if (options.onClick) {
+        slot.addEventListener("click", (e) => options.onClick(battler, index, e));
+    }
+
+    const portrait = document.createElement("div");
+    portrait.className = "party-slot-portrait";
+    portrait.style.backgroundImage = `url('assets/portraits/${battler.spriteKey || "pixie"}.png')`;
+    portrait.style.width = "48px";
+    portrait.style.height = "48px";
+    portrait.style.flexShrink = "0";
+    slot.appendChild(portrait);
+
+    const info = document.createElement("div");
+    info.style.marginLeft = "4px";
+    info.style.flexGrow = "1";
+    info.style.overflow = "hidden";
+    info.style.display = "flex";
+    info.style.flexDirection = "column";
+    info.style.justifyContent = "center";
+    info.style.fontSize = "10px";
+
+    const nameEl = document.createElement("div");
+    nameEl.textContent = battler.name;
+    nameEl.style.whiteSpace = "nowrap";
+    nameEl.style.overflow = "hidden";
+    nameEl.style.textOverflow = "ellipsis";
+    nameEl.style.fontWeight = "bold";
+    nameEl.style.marginBottom = "2px";
+    info.appendChild(nameEl);
+
+    const hpEl = document.createElement("div");
+    hpEl.textContent = `Max HP: ${battler.maxHp}`;
+    info.appendChild(hpEl);
+
+    slot.appendChild(info);
 
     return slot;
 }
@@ -764,8 +824,8 @@ export class Window_Battle extends Window_Base {
     });
 
     party.forEach((p, idx) => {
-        const top = 140 + (idx % 2) * 40;
-        const left = 20 + Math.floor(idx / 2) * 220;
+        const top = 140 + Math.floor(idx / 2) * 40;
+        const left = 20 + (idx % 2) * 220;
         const hp = p.hp;
 
         const primaryElements = getPrimaryElements(p.elements);
@@ -1066,7 +1126,7 @@ export class Window_Formation extends Window_Base {
 
     const label = document.createElement('div');
     label.className = 'formation-label';
-    label.textContent = 'Drag and drop to rearrange. Active party is the first 4 members.';
+    label.textContent = 'Select a member to move, then select the destination. Active party is the first 4 members.';
     formationBody.appendChild(label);
 
     this.gridEl = document.createElement('div');
@@ -1095,7 +1155,6 @@ export class Window_Formation extends Window_Base {
     this.btnOk = this.addButton("OK", () => this.onUserClose());
     this.btnCancel = this.addButton("Cancel", () => this.onUserClose());
 
-    this.draggedIndex = null;
     this.party = null;
     this.onChange = null;
     this.context = null;
@@ -1123,46 +1182,43 @@ export class Window_Formation extends Window_Base {
           }
       }
 
-      const slot = createPartySlot(m, index, {
-          draggable: true,
-          onDragStart: this.onDragStart.bind(this),
-          onDragOver: this.onDragOver.bind(this),
-          onDrop: this.onDrop.bind(this),
-          onDragEnd: this.onDragEnd.bind(this),
+      let slot;
+      const opts = {
+          onClick: this.onSlotClick.bind(this),
           evolutionStatus: evolutionStatus
-      });
+      };
+
+      if (index === this.selectedSlotIndex) {
+          opts.className = "selected";
+      }
 
       if (index < 4) {
-        this.gridEl.appendChild(slot);
+          slot = createPartySlot(m, index, opts);
+          this.gridEl.appendChild(slot);
       } else {
-        this.reserveGridEl.appendChild(slot);
+          slot = createReserveSlot(m, index, opts);
+          this.reserveGridEl.appendChild(slot);
       }
     });
   }
 
-  onDragStart(e, index) {
-    this.draggedIndex = index;
-    const slot = e.target.closest(".party-slot");
-    if (slot) slot.classList.add("dragging");
-  }
-  onDragOver(e) {
-    e.preventDefault();
-    const target = e.target.closest(".party-slot");
-    if (target) target.classList.add("drag-over");
-  }
-  onDrop(e, targetIndex) {
-    e.preventDefault();
-    if (this.draggedIndex === null || this.draggedIndex === targetIndex) return;
-    if (this.party.reorderMembers(this.draggedIndex, targetIndex)) {
-        this.draggedIndex = null;
-        this.renderFormationGrid();
-        SoundManager.beep(500, 80);
-        if (this.onChange) this.onChange();
-    }
-  }
-  onDragEnd(e) {
-    const allSlots = this.element.querySelectorAll(".party-slot");
-    allSlots.forEach((s) => s.classList.remove("dragging", "drag-over"));
+  onSlotClick(battler, index, e) {
+      if (this.selectedSlotIndex === null) {
+          this.selectedSlotIndex = index;
+          this.renderFormationGrid();
+      } else {
+          if (this.selectedSlotIndex === index) {
+              this.selectedSlotIndex = null;
+              this.renderFormationGrid();
+          } else {
+              if (this.party.reorderMembers(this.selectedSlotIndex, index)) {
+                  this.selectedSlotIndex = null;
+                  this.renderFormationGrid();
+                  SoundManager.beep(500, 80);
+                  if (this.onChange) this.onChange();
+              }
+          }
+      }
   }
 }
 
@@ -1871,12 +1927,19 @@ export class Window_PartySelect extends Window_Selectable {
                 }
             }
 
-            const slot = createPartySlot(m, index, {
+            const opts = {
                 onClick: (member, idx) => {
                     if (this.onSelect) this.onSelect(member, idx);
                 },
                 evolutionStatus: evolutionStatus
-            });
+            };
+
+            let slot;
+            if (index < 4) {
+                slot = createPartySlot(m, index, opts);
+            } else {
+                slot = createReserveSlot(m, index, opts);
+            }
             this.gridEl.appendChild(slot);
         });
     }

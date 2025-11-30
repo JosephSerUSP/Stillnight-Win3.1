@@ -857,3 +857,8 @@ html, body {
     background-color: var(--selection-bg);
     color: var(--selection-text);
 }
+
+.party-slot.selected {
+    background-color: var(--selection-bg);
+    color: var(--selection-text);
+}
