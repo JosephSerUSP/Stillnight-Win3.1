@@ -1,4 +1,4 @@
-import { getPrimaryElements, Graphics, elementToAscii, getIconStyle, elementToIconId } from "./core.js";
+import { getPrimaryElements, Graphics, elementToAscii, getIconStyle, elementToIconId, evaluateFormula } from "./core.js";
 import { tooltip } from "./tooltip.js";
 import { SoundManager } from "./managers.js";
 
@@ -813,26 +813,6 @@ export class Window_Inspect extends Window_Base {
     this.skillsEl = this._createField(fields, "Skills");
     this.flavorEl = this._createField(fields, "Flavor");
 
-    this.equipmentListContainerEl = document.createElement('div');
-    this.equipmentListContainerEl.style.display = 'none';
-    fields.appendChild(this.equipmentListContainerEl);
-
-    const groupBox = document.createElement('div');
-    groupBox.className = 'group-box';
-    this.equipmentListContainerEl.appendChild(groupBox);
-
-    const legend = document.createElement('legend');
-    legend.textContent = 'Change Equipment';
-    groupBox.appendChild(legend);
-
-    this.equipmentFilterEl = document.createElement('div');
-    this.equipmentFilterEl.className = 'stack-nav-buttons';
-    this.equipmentFilterEl.style.marginBottom = '4px';
-    groupBox.appendChild(this.equipmentFilterEl);
-
-    this.equipmentListEl = document.createElement('div');
-    groupBox.appendChild(this.equipmentListEl);
-
     this.notesEl = document.createElement('div');
     this.notesEl.className = 'inspect-notes';
     inspectBody.appendChild(this.notesEl);
@@ -1052,7 +1032,7 @@ export class Window_Shop extends Window_Selectable {
  */
 export class Window_Formation extends Window_Base {
   constructor() {
-    super('center', 'center', 420, 320, { title: "Formation – Stillnight", id: "formation-window" });
+    super('center', 'center', 300, 320, { title: "Formation – Stillnight", id: "formation-window" });
 
     const formationBody = this.createPanel();
     formationBody.style.flexGrow = "1";
@@ -1188,22 +1168,23 @@ export class Window_Inventory extends Window_Selectable {
     this.btnClose2 = this.addButton("Close", () => this.onUserClose());
 
     this.party = null;
-    this.onUse = null;
+    this.onAction = null;
     this.onDiscard = null;
   }
 
-  setup(party, onUse, onDiscard) {
+  setup(party, onAction, onDiscard) {
     this.party = party;
-    this.onUse = onUse;
+    this.onAction = onAction;
     this.onDiscard = onDiscard;
 
-    this.setHandler('use', (item) => this.showTargetSelection(item));
-    this.setHandler('equip', (item) => this.showTargetSelection(item));
+    this.setHandler('use', (item) => {
+        if (this.onAction) this.onAction(item, 'use');
+    });
+    this.setHandler('equip', (item) => {
+        if (this.onAction) this.onAction(item, 'equip');
+    });
     this.setHandler('discard', (item) => {
         if (this.onDiscard) this.onDiscard(item);
-    });
-    this.setHandler('target', (member) => {
-        if (this.onUse) this.onUse(this.selectedItem, member);
     });
 
     this.updateList();
@@ -1285,39 +1266,6 @@ export class Window_Inventory extends Window_Selectable {
     }
   }
 
-  showTargetSelection(item) {
-    this.selectedItem = item;
-    this.listEl.innerHTML = "";
-
-    this.setData(this.party.members);
-
-    const action = this.currentTab === 'equipment' ? "Equip" : "Use";
-    const header = document.createElement("div");
-    header.textContent = `${action} ${item.name} on:`;
-    header.style.marginBottom = "10px";
-    header.style.textAlign = "center";
-    this.listEl.appendChild(header);
-
-    this._data.forEach((m, index) => {
-      const slot = createPartySlot(m, index, {});
-      slot.style.marginBottom = "4px";
-      slot.dataset.action = "target";
-
-      this.listEl.appendChild(slot);
-    });
-
-    const backBtn = document.createElement("button");
-    backBtn.className = "win-btn";
-    backBtn.style.display = 'block';
-    backBtn.style.width = '90%';
-    backBtn.style.margin = '20px auto 5px auto';
-    backBtn.textContent = "Back";
-    backBtn.onclick = () => {
-        this.selectedItem = null;
-        this.showItemList();
-    };
-    this.listEl.appendChild(backBtn);
-  }
 }
 
 /**
@@ -1837,11 +1785,174 @@ export function renderCreatureInfo(container, battler, title) {
 }
 
 /**
- * @class Window_EquipConfirm
+ * @class Window_PartySelect
  */
-export class Window_EquipConfirm extends Window_Base {
+export class Window_PartySelect extends Window_Selectable {
     constructor() {
-        super('center', 'center', 500, 420, { title: "Equip Item", id: "equip-confirm-window" });
+        super('center', 'center', 300, 320, { title: "Select Target", id: "party-select-window" });
+        const body = this.createPanel();
+        body.style.flexGrow = "1";
+
+        this.msgEl = document.createElement("div");
+        this.msgEl.style.marginBottom = "6px";
+        this.msgEl.style.textAlign = "center";
+        body.appendChild(this.msgEl);
+
+        this.gridEl = document.createElement('div');
+        this.gridEl.style.display = 'grid';
+        this.gridEl.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        this.gridEl.style.gap = '4px';
+        body.appendChild(this.gridEl);
+
+        this.btnCancel = this.addButton("Cancel", () => this.onUserClose());
+    }
+
+    setup(party, message, onSelect) {
+        this.party = party;
+        this.onSelect = onSelect;
+        this.msgEl.textContent = message;
+        this.refresh();
+    }
+
+    refresh() {
+        this.gridEl.innerHTML = "";
+        if (!this.party) return;
+        this.party.members.forEach((m, index) => {
+            const slot = createPartySlot(m, index, {
+                onClick: (member, idx) => {
+                    if (this.onSelect) this.onSelect(member, idx);
+                }
+            });
+            this.gridEl.appendChild(slot);
+        });
+    }
+}
+
+/**
+ * @class Window_EquipItemSelect
+ */
+export class Window_EquipItemSelect extends Window_Selectable {
+    constructor() {
+        super('center', 'center', 420, 320, { title: "Select Equipment", id: "equip-select-window" });
+        const body = this.createPanel();
+        body.style.flexGrow = "1";
+        this.listContainer = document.createElement('div');
+        this.listContainer.style.overflowY = "auto";
+        this.listContainer.style.flex = "1";
+        body.appendChild(this.listContainer);
+        this.btnCancel = this.addButton("Cancel", () => this.onUserClose());
+    }
+
+    setup(items, currentItem, slotName, onSelect) {
+        this.currentItem = currentItem;
+        this.slotName = slotName;
+        this.setHandler('select', (item) => {
+            if (onSelect) onSelect(item);
+        });
+        this.setData(items);
+    }
+
+    refresh() {
+        this.listContainer.innerHTML = "";
+
+        // Unequip Row
+        const unequipRow = document.createElement("div");
+        unequipRow.className = "window-row";
+        unequipRow.style.borderBottom = "1px solid var(--bezel-shadow)";
+        unequipRow.dataset.index = -1;
+
+        const unequipLabel = document.createElement("span");
+        unequipLabel.textContent = "Unequip";
+        unequipLabel.style.flexGrow = "1";
+        unequipLabel.style.paddingLeft = "20px"; // Align roughly with items that have icons
+        unequipRow.appendChild(unequipLabel);
+
+        const unequipBtns = document.createElement("div");
+        const unequipBtn = document.createElement("button");
+        unequipBtn.className = "win-btn";
+        unequipBtn.textContent = "Unequip";
+        unequipBtn.onclick = (e) => {
+             e.stopPropagation();
+             this.callHandler('select', null);
+        };
+        unequipBtns.appendChild(unequipBtn);
+        unequipRow.appendChild(unequipBtns);
+        this.listContainer.appendChild(unequipRow);
+
+        if (this._data.length === 0) {
+            const p = document.createElement("p");
+            p.textContent = "No equipable items found.";
+            p.style.textAlign = "center";
+            p.style.padding = "10px";
+            this.listContainer.appendChild(p);
+            return;
+        }
+
+        this._data.forEach((item, index) => {
+            const row = document.createElement("div");
+            row.className = "window-row";
+            row.dataset.index = index;
+            row.style.borderBottom = "1px solid var(--bezel-shadow)";
+            row.style.paddingBottom = "2px";
+
+            if (this.currentItem && item.id === this.currentItem.id) {
+                row.style.backgroundColor = "var(--bezel-light)";
+            }
+
+            let tooltipText = item.description;
+            let effectsText = "";
+            const effects = [];
+            if (item.effects) {
+                 if (item.effects.hp) effects.push(`Restores ${item.effects.hp} HP`);
+                 if (item.effects.maxHp) effects.push(`Max HP +${item.effects.maxHp}`);
+                 if (item.effects.xp) effects.push(`Grants ${item.effects.xp} XP`);
+            }
+            if (item.traits) {
+                 item.traits.forEach(t => {
+                     if (t.code === 'PARAM_PLUS') {
+                         if (t.dataId === 'atk') effects.push(`Damage +${t.value}`);
+                         if (t.dataId === 'maxHp') effects.push(`Max HP +${t.value}`);
+                     }
+                 });
+            }
+            if (item.damageBonus) effects.push(`Damage +${item.damageBonus}`);
+
+            if (effects.length > 0) effectsText = effects.join(", ");
+            if (effectsText) tooltipText += `<br/><span class="text-functional" style="font-size: 0.9em;">${effectsText}</span>`;
+
+            const label = createInteractiveLabel(item, 'item', { tooltipText });
+            label.style.flexGrow = "1";
+            row.appendChild(label);
+
+            if (item.equippedBy) {
+                const extra = document.createElement("span");
+                extra.textContent = `(on ${item.equippedBy})`;
+                extra.style.fontSize = "10px";
+                extra.style.marginRight = "4px";
+                row.appendChild(extra);
+            }
+
+            const btns = document.createElement("div");
+            const equipBtn = document.createElement("button");
+            equipBtn.className = "win-btn";
+            equipBtn.textContent = "Equip";
+            equipBtn.dataset.action = "select";
+
+            btns.appendChild(equipBtn);
+            row.appendChild(btns);
+
+            this.listContainer.appendChild(row);
+        });
+    }
+}
+
+/**
+ * @class Window_ConfirmEffect
+ * @description Replaces Window_EquipConfirm to handle both item usage and equipment changes with effect previews.
+ */
+export class Window_ConfirmEffect extends Window_Base {
+    constructor() {
+        super('center', 'center', 500, 420, { title: "Confirm Effect", id: "confirm-effect-window" });
 
         this.infoPanel = this.createPanel();
         this.infoPanel.style.marginBottom = "8px";
@@ -1871,7 +1982,8 @@ export class Window_EquipConfirm extends Window_Base {
         this.btnCancel = this.addButton("Cancel", () => this.onUserClose());
     }
 
-    setup(member, newItem, oldItem, slotName, onConfirm) {
+    setupEquip(member, newItem, oldItem, slotName, onConfirm, swapMessage) {
+        this.setTitle(newItem ? "Equip Item" : "Unequip Item");
         renderCreatureInfo(this.infoPanel, member);
 
         this.slotChangeEl.innerHTML = "";
@@ -1900,6 +2012,14 @@ export class Window_EquipConfirm extends Window_Base {
         this.slotChangeEl.appendChild(createItemSpan(newItem));
 
         this.traitListEl.innerHTML = "";
+        if (swapMessage) {
+            const msg = document.createElement("div");
+            msg.textContent = swapMessage;
+            msg.style.color = "var(--text-highlight)";
+            msg.style.marginBottom = "4px";
+            this.traitListEl.appendChild(msg);
+        }
+
         const diffs = this.calculateDiff(member, newItem, oldItem);
         diffs.forEach(diff => {
             const div = document.createElement("div");
@@ -1908,6 +2028,66 @@ export class Window_EquipConfirm extends Window_Base {
         });
 
         this.btnConfirm.onclick = onConfirm;
+    }
+
+    setupUse(member, item, onConfirm) {
+        this.setTitle("Use Item");
+        renderCreatureInfo(this.infoPanel, member);
+
+        this.slotChangeEl.innerHTML = "";
+        const label = document.createElement("span");
+        label.textContent = "Using: ";
+        this.slotChangeEl.appendChild(label);
+        this.slotChangeEl.appendChild(createInteractiveLabel(item, 'item', { showTooltip: true }));
+
+        this.traitListEl.innerHTML = "";
+        const changes = this.calculateUseDiff(member, item);
+        if (changes.length === 0) {
+            this.traitListEl.textContent = "No visible effect.";
+        } else {
+            changes.forEach(c => {
+                const div = document.createElement("div");
+                div.textContent = c;
+                this.traitListEl.appendChild(div);
+            });
+        }
+
+        this.btnConfirm.onclick = onConfirm;
+    }
+
+    calculateUseDiff(member, item) {
+        const changes = [];
+        if (!item.effects) return changes;
+
+        const getVal = (effVal) => {
+            if (typeof effVal === 'string') {
+                return Math.round(evaluateFormula(effVal, member));
+            }
+            return effVal;
+        };
+
+        // HP
+        if (item.effects.hp) {
+            const val = getVal(item.effects.hp);
+            const newHp = Math.min(member.maxHp, member.hp + val);
+            if (newHp !== member.hp) {
+                changes.push(`HP: ${member.hp}/${member.maxHp} -> ${newHp}/${member.maxHp}`);
+            }
+        }
+        // Max HP
+        if (item.effects.maxHp) {
+            const val = getVal(item.effects.maxHp);
+            const newMax = member.maxHp + val;
+            changes.push(`Max HP: ${member.maxHp} -> ${newMax}`);
+        }
+        // XP
+        if (item.effects.xp) {
+            const val = getVal(item.effects.xp);
+            // Simplified, doesn't predict level up exactly but shows XP gain
+            changes.push(`XP: +${val}`);
+        }
+
+        return changes;
     }
 
     calculateDiff(member, newItem, oldItem) {
@@ -1947,6 +2127,8 @@ export class Window_EquipConfirm extends Window_Base {
         return diffs;
     }
 }
+// Alias for backward compatibility if needed, though we will update Scene_Map
+export const Window_EquipConfirm = Window_ConfirmEffect;
 
 /**
  * @class Window_Options
@@ -2020,4 +2202,7 @@ if (typeof window !== 'undefined' && window.location.search.includes("test=true"
     window.Window_Shop = Window_Shop;
     window.Window_Help = Window_Help;
     window.Window_HUD = Window_HUD;
+    window.Window_ConfirmEffect = Window_ConfirmEffect;
+    window.Window_PartySelect = Window_PartySelect;
+    window.Window_EquipItemSelect = Window_EquipItemSelect;
 }
