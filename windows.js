@@ -382,30 +382,41 @@ export class Window_Base {
      * @param {boolean} [options.closeButton=true]
      */
     constructor(x, y, width, height, options = {}) {
-        this.overlay = document.createElement("div");
-        this.overlay.className = "modal-overlay";
+        this.embedded = options.embedded || false;
 
-        this.element = document.createElement("div");
-        this.element.className = "window-frame";
-        if (options.id) this.element.id = options.id;
-        this.element.style.position = "absolute";
-
-        const finalX = x === 'center' ? (Graphics.width - width) / 2 : x;
-        const finalY = y === 'center' ? (Graphics.height - height) / 2 : y;
-
-        this.element.style.left = `${finalX}px`;
-        this.element.style.top = `${finalY}px`;
-        this.element.style.width = `${width}px`;
-
-        if (height === 'auto') {
-            this.element.style.height = 'auto';
-            this.element.style.maxHeight = '90vh';
+        if (this.embedded) {
+            this.element = document.createElement("div");
+            this.element.className = "window-frame";
+            if (options.id) this.element.id = options.id;
+            this.element.style.position = "relative";
+            if (width !== 'auto') this.element.style.width = `${width}px`;
+            if (height !== 'auto') this.element.style.height = `${height}px`;
         } else {
-            this.element.style.height = `${height}px`;
-        }
-        this.element.style.zIndex = "10";
+            this.overlay = document.createElement("div");
+            this.overlay.className = "modal-overlay";
 
-        this.overlay.appendChild(this.element);
+            this.element = document.createElement("div");
+            this.element.className = "window-frame";
+            if (options.id) this.element.id = options.id;
+            this.element.style.position = "absolute";
+
+            const finalX = x === 'center' ? (Graphics.width - width) / 2 : x;
+            const finalY = y === 'center' ? (Graphics.height - height) / 2 : y;
+
+            this.element.style.left = `${finalX}px`;
+            this.element.style.top = `${finalY}px`;
+            this.element.style.width = `${width}px`;
+
+            if (height === 'auto') {
+                this.element.style.height = 'auto';
+                this.element.style.maxHeight = '90vh';
+            } else {
+                this.element.style.height = `${height}px`;
+            }
+            this.element.style.zIndex = "10";
+
+            this.overlay.appendChild(this.element);
+        }
 
         // 1. Header
         this.header = document.createElement("div");
@@ -416,9 +427,11 @@ export class Window_Base {
         this.titleEl.textContent = options.title || "";
         this.header.appendChild(this.titleEl);
 
-        this.makeDraggable(this.header);
+        if (!this.embedded) {
+            this.makeDraggable(this.header);
+        }
 
-        if (options.closeButton !== false) {
+        if (options.closeButton !== false && !this.embedded) {
             this.btnClose = document.createElement("button");
             this.btnClose.className = "win-btn";
             this.btnClose.textContent = "X";
@@ -466,8 +479,8 @@ export class Window_Base {
         document.removeEventListener("mouseup", this._onDragEndHandler);
     }
 
-    open() { this.overlay.classList.add("active"); }
-    close() { this.overlay.classList.remove("active"); }
+    open() { if (this.overlay) this.overlay.classList.add("active"); }
+    close() { if (this.overlay) this.overlay.classList.remove("active"); }
     onEscape() { this.onUserClose(); }
     onUserClose() { this.close(); }
     refresh() {}
@@ -778,7 +791,7 @@ export class Window_Evolution extends Window_Base {
     this.content.appendChild(body);
 
     this.leftPane = document.createElement('div');
-    this.leftPane.className = 'window-panel';
+    this.leftPane.className = 'window-panel evolution-pane';
     this.leftPane.style.flex = '1';
     body.appendChild(this.leftPane);
 
@@ -788,7 +801,7 @@ export class Window_Evolution extends Window_Base {
     body.appendChild(arrow);
 
     this.rightPane = document.createElement('div');
-    this.rightPane.className = 'window-panel';
+    this.rightPane.className = 'window-panel evolution-pane';
     this.rightPane.style.flex = '1';
     body.appendChild(this.rightPane);
 
@@ -1330,37 +1343,18 @@ export class Window_Confirm extends Window_Base {
 }
 
 /**
- * @class Window_HUD
- * @description Manages the main static game layout.
+ * @class Window_StackNav
  */
-export class Window_HUD {
+export class Window_StackNav extends Window_Base {
     constructor() {
-        this.container = document.getElementById("game-container");
-        // Layout defined in JS - moving specificity out of CSS
-        this.container.style.width = "960px";
-        this.container.style.height = "560px";
-        this.container.style.display = "flex";
-        this.container.style.flexDirection = "row";
+        super(0, 0, 210, '100%', { title: "Stillnight Stack", embedded: true });
+        this.element.classList.add("stack-nav");
 
-        this.createUI();
-        this.getDomElements();
-    }
-
-    createUI() {
-        this.container.innerHTML = "";
-
-        // --- Left: Stack Nav ---
-        const stackNav = document.createElement("div");
-        stackNav.className = "stack-nav panel";
-
-        const h1 = document.createElement("h1");
-        h1.textContent = "Stillnight Stack";
-        stackNav.appendChild(h1);
-
-        // Group: Run
-        const groupRun = document.createElement("div");
-        groupRun.className = "group-box";
-        groupRun.innerHTML = `
+        // Content:
+        // Group Run
+        this.groupRun = document.createElement("div");
+        this.groupRun.className = "group-box";
+        this.groupRun.innerHTML = `
           <legend>Run</legend>
           <div class="stack-nav-buttons">
             <button class="win-btn" id="btn-new-run">New Run</button>
@@ -1375,124 +1369,34 @@ export class Window_HUD {
             <div>Floor depth: <span id="card-depth-label">1</span></div>
           </div>
         `;
-        stackNav.appendChild(groupRun);
+        this.content.appendChild(this.groupRun);
 
         // Location Art
-        const artContainer = document.createElement("div");
-        artContainer.className = "location-art-container";
-        artContainer.innerHTML = `<img id="location-art" class="location-art-img" src="assets/eventArt/default.png">`;
-        stackNav.appendChild(artContainer);
+        this.artContainer = document.createElement("div");
+        this.artContainer.className = "location-art-container";
+        this.artContainer.innerHTML = `<img id="location-art" class="location-art-img" src="assets/eventArt/default.png">`;
+        this.content.appendChild(this.artContainer);
 
-        // Group: Cards
-        const groupCards = document.createElement("div");
-        groupCards.className = "group-box";
-        groupCards.innerHTML = `<legend>Cards (Floors)</legend><div class="card-list" id="card-list"></div>`;
-        stackNav.appendChild(groupCards);
+        // Group Cards
+        this.groupCards = document.createElement("div");
+        this.groupCards.className = "group-box";
+        this.groupCards.innerHTML = `<legend>Cards (Floors)</legend><div class="card-list" id="card-list"></div>`;
+        this.content.appendChild(this.groupCards);
 
-        this.container.appendChild(stackNav);
+        // Cache buttons for Window_HUD to expose
+        this.btnSettings = this.groupRun.querySelector("#btn-settings");
+        this.btnHelp = this.groupRun.querySelector("#btn-help");
 
-        // --- Right Side ---
-        const rightSide = document.createElement("div");
-        rightSide.className = "right-side";
-
-        const cardArea = document.createElement("div");
-        cardArea.className = "card-area";
-
-        // Card Main
-        const cardMain = document.createElement("div");
-        cardMain.className = "card-main panel";
-
-        const cardHeader = document.createElement("div");
-        cardHeader.className = "card-header";
-        cardHeader.innerHTML = `
-          <div><span class="card-header-title" id="card-title">Floor 1</span></div>
-          <div><span class="label">Mode:</span><span id="mode-label">Exploration</span></div>
-        `;
-        cardMain.appendChild(cardHeader);
-
-        // Exploration Frame (Critical for centering)
-        const explorationFrame = document.createElement("div");
-        explorationFrame.className = "exploration-frame panel";
-        const explorationGrid = document.createElement("div");
-        explorationGrid.className = "exploration-grid";
-        explorationGrid.id = "exploration-grid";
-        explorationFrame.appendChild(explorationGrid); // No whitespace here!
-        cardMain.appendChild(explorationFrame);
-
-        cardArea.appendChild(cardMain);
-
-        // Side Panels
-        const sidePanels = document.createElement("div");
-        sidePanels.className = "card-side-panels";
-        sidePanels.innerHTML = `
-            <div class="party-panel panel">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span>Party Status</span>
-                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-formation">Formation...</button>
-                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-inventory">Inventory...</button>
-              </div>
-              <div class="party-grid" id="party-grid"></div>
-            </div>
-            <div class="log-panel panel">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span>Event Log</span>
-                <button class="win-btn" style="font-size:10px; padding:0 6px;" id="btn-clear-log">Clear</button>
-              </div>
-              <div class="log-content" id="log-content"></div>
-            </div>
-        `;
-        cardArea.appendChild(sidePanels);
-        rightSide.appendChild(cardArea);
-
-        // Status Bar
-        const statusBar = document.createElement("div");
-        statusBar.className = "status-bar";
-        statusBar.innerHTML = `
-          <div><span id="status-message">Ready.</span></div>
-          <div>
-            <span>Gold: <span id="status-gold">0</span></span>
-            <span>| Floor: <span id="status-floor">1</span></span>
-            <span>| Cards: <span id="status-cards">1</span></span>
-            <span>| Run: <span id="status-run">Active</span></span>
-            <span>| Items: <span id="status-items">0</span></span>
-          </div>
-        `;
-        rightSide.appendChild(statusBar);
-
-        this.container.appendChild(rightSide);
-    }
-
-    getDomElements() {
-        this.explorationGridEl = document.getElementById("exploration-grid");
-        this.cardTitleEl = document.getElementById("card-title");
-        this.cardIndexLabelEl = document.getElementById("card-index-label");
-        this.cardDepthLabelEl = document.getElementById("card-depth-label");
-        this.cardListEl = document.getElementById("card-list");
-        this.partyGridEl = document.getElementById("party-grid");
-        this.logEl = document.getElementById("log-content");
-        this.statusMessageEl = document.getElementById("status-message");
-        this.statusGoldEl = document.getElementById("status-gold");
-        this.statusFloorEl = document.getElementById("status-floor");
-        this.statusCardsEl = document.getElementById("status-cards");
-        this.statusRunEl = document.getElementById("status-run");
-        this.statusItemsEl = document.getElementById("status-items");
-        this.modeLabelEl = document.getElementById("mode-label");
-        this.locationArtEl = document.getElementById("location-art");
-        this.btnNewRun = document.getElementById("btn-new-run");
-        this.btnRevealAll = document.getElementById("btn-reveal-all");
-        this.btnSettings = document.getElementById("btn-settings");
-        this.btnHelp = document.getElementById("btn-help");
-        this.btnClearLog = document.getElementById("btn-clear-log");
-        this.btnFormation = document.getElementById("btn-formation");
-        this.btnInventory = document.getElementById("btn-inventory");
+        // Cache elements for updates
+        this.cardIndexLabelEl = this.groupRun.querySelector("#card-index-label");
+        this.cardDepthLabelEl = this.groupRun.querySelector("#card-depth-label");
+        this.locationArtEl = this.artContainer.querySelector("#location-art");
+        this.cardListEl = this.groupCards.querySelector("#card-list");
     }
 
     updateCardHeader(floor, index, total) {
-        this.cardTitleEl.textContent = floor.title;
         this.cardIndexLabelEl.textContent = `${index + 1} / ${total}`;
         this.cardDepthLabelEl.textContent = floor.depth;
-        this.statusFloorEl.textContent = floor.depth;
-        this.statusCardsEl.textContent = total;
         if (floor.image) {
              this.locationArtEl.src = `assets/eventArt/${floor.image}`;
         } else {
@@ -1516,6 +1420,76 @@ export class Window_HUD {
             }
             this.cardListEl.appendChild(item);
         });
+    }
+}
+
+/**
+ * @class Window_Exploration
+ */
+export class Window_Exploration extends Window_Base {
+    constructor() {
+        super(0, 0, 'auto', 'auto', { title: "Floor 1", embedded: true });
+        this.element.classList.add("card-main");
+
+        // Header extra: "Mode: Exploration"
+        this.modeLabelContainer = document.createElement("div");
+        this.modeLabelContainer.innerHTML = `<span class="label">Mode:</span><span id="mode-label">Exploration</span>`;
+        this.header.appendChild(this.modeLabelContainer);
+
+        // Ensure title element has ID for Scene_Map compatibility
+        this.titleEl.id = "card-title";
+
+        // Content: Exploration Frame
+        this.explorationFrame = document.createElement("div");
+        this.explorationFrame.className = "exploration-frame panel";
+        this.explorationGrid = document.createElement("div");
+        this.explorationGrid.className = "exploration-grid";
+        this.explorationGrid.id = "exploration-grid";
+        this.explorationFrame.appendChild(this.explorationGrid);
+
+        this.content.appendChild(this.explorationFrame);
+    }
+
+    updateTitle(title) {
+        this.setTitle(title);
+    }
+}
+
+/**
+ * @class Window_PartyPanel
+ */
+export class Window_PartyPanel extends Window_Base {
+    constructor() {
+        super(0, 0, '100%', 'auto', { title: "Party Status", embedded: true });
+        this.element.classList.add("party-panel");
+
+        const btnContainer = document.createElement("div");
+        btnContainer.style.display = "flex";
+        btnContainer.style.gap = "2px";
+
+        this.btnFormation = document.createElement("button");
+        this.btnFormation.className = "win-btn";
+        this.btnFormation.style.fontSize = "10px";
+        this.btnFormation.style.padding = "0 6px";
+        this.btnFormation.id = "btn-formation";
+        this.btnFormation.textContent = "Formation...";
+        btnContainer.appendChild(this.btnFormation);
+
+        this.btnInventory = document.createElement("button");
+        this.btnInventory.className = "win-btn";
+        this.btnInventory.style.fontSize = "10px";
+        this.btnInventory.style.padding = "0 6px";
+        this.btnInventory.id = "btn-inventory";
+        this.btnInventory.textContent = "Inventory...";
+        btnContainer.appendChild(this.btnInventory);
+
+        this.header.appendChild(btnContainer);
+
+        // Content
+        this.partyGridEl = document.createElement("div");
+        this.partyGridEl.className = "party-grid";
+        this.partyGridEl.id = "party-grid";
+        this.content.appendChild(this.partyGridEl);
     }
 
     updateParty(party, onInspect) {
@@ -1558,6 +1532,121 @@ export class Window_HUD {
           }
         };
         requestAnimationFrame(frame);
+    }
+}
+
+/**
+ * @class Window_LogPanel
+ */
+export class Window_LogPanel extends Window_Base {
+    constructor() {
+        super(0, 0, '100%', '230', { title: "Event Log", embedded: true });
+        this.element.classList.add("log-panel");
+
+        this.btnClear = document.createElement("button");
+        this.btnClear.className = "win-btn";
+        this.btnClear.style.fontSize = "10px";
+        this.btnClear.style.padding = "0 6px";
+        this.btnClear.id = "btn-clear-log";
+        this.btnClear.textContent = "Clear";
+        this.header.appendChild(this.btnClear);
+
+        this.logEl = document.createElement("div");
+        this.logEl.className = "log-content";
+        this.logEl.id = "log-content";
+        this.content.appendChild(this.logEl);
+    }
+}
+
+/**
+ * @class Window_HUD
+ * @description Manages the main static game layout.
+ */
+export class Window_HUD {
+    constructor() {
+        this.container = document.getElementById("game-container");
+        this.container.style.width = "960px";
+        this.container.style.height = "560px";
+        this.container.style.display = "flex";
+        this.container.style.flexDirection = "row";
+
+        this.createUI();
+    }
+
+    createUI() {
+        this.container.innerHTML = "";
+
+        // 1. Stack Nav Window
+        this.stackNav = new Window_StackNav();
+        this.container.appendChild(this.stackNav.element);
+
+        // --- Right Side Container ---
+        const rightSide = document.createElement("div");
+        rightSide.className = "right-side";
+        this.container.appendChild(rightSide);
+
+        // --- Card Area Container ---
+        const cardArea = document.createElement("div");
+        cardArea.className = "card-area";
+        rightSide.appendChild(cardArea);
+
+        // 2. Exploration Window (Main)
+        this.explorationWindow = new Window_Exploration();
+        cardArea.appendChild(this.explorationWindow.element);
+
+        // --- Side Panels Container ---
+        const sidePanels = document.createElement("div");
+        sidePanels.className = "card-side-panels";
+        cardArea.appendChild(sidePanels);
+
+        // 3. Party Panel
+        this.partyPanel = new Window_PartyPanel();
+        sidePanels.appendChild(this.partyPanel.element);
+
+        // 4. Log Panel
+        this.logPanel = new Window_LogPanel();
+        sidePanels.appendChild(this.logPanel.element);
+
+        // Status Bar
+        this.statusBar = document.createElement("div");
+        this.statusBar.className = "status-bar";
+        this.statusBar.innerHTML = `
+          <div><span id="status-message">Ready.</span></div>
+          <div>
+            <span>Gold: <span id="status-gold">0</span></span>
+            <span>| Floor: <span id="status-floor">1</span></span>
+            <span>| Cards: <span id="status-cards">1</span></span>
+            <span>| Run: <span id="status-run">Active</span></span>
+            <span>| Items: <span id="status-items">0</span></span>
+          </div>
+        `;
+        rightSide.appendChild(this.statusBar);
+
+        // Cache status elements
+        this.statusMessageEl = this.statusBar.querySelector("#status-message");
+        this.statusGoldEl = this.statusBar.querySelector("#status-gold");
+        this.statusFloorEl = this.statusBar.querySelector("#status-floor");
+        this.statusCardsEl = this.statusBar.querySelector("#status-cards");
+        this.statusRunEl = this.statusBar.querySelector("#status-run");
+        this.statusItemsEl = this.statusBar.querySelector("#status-items");
+    }
+
+    get btnSettings() { return this.stackNav.btnSettings; }
+    get btnHelp() { return this.stackNav.btnHelp; }
+
+    updateCardHeader(floor, index, total) {
+        this.stackNav.updateCardHeader(floor, index, total);
+        this.explorationWindow.updateTitle(floor.title);
+        this.statusFloorEl.textContent = floor.depth;
+        this.statusCardsEl.textContent = total;
+    }
+
+    updateCardList(floors, currentIndex, maxReachedIndex, onSelect) {
+        this.stackNav.updateCardList(floors, currentIndex, maxReachedIndex, onSelect);
+    }
+
+    updateParty(party, onInspect) {
+        this.partyPanel.updateParty(party, onInspect);
     }
 }
 
