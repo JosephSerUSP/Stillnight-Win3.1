@@ -403,13 +403,13 @@ html, body {
     align-items: center;
 }
 
-/* 20x20 grid, centered map */
+/* 19x19 grid, centered map */
 .exploration-grid {
-    width: 438px;
-    height: 438px;
+    width: 416px;
+    height: 416px;
     display: grid;
-    grid-template-columns: repeat(20, 1fr);
-    grid-template-rows: repeat(20, 1fr);
+    grid-template-columns: repeat(19, 1fr);
+    grid-template-rows: repeat(19, 1fr);
     gap: 2px;
 }
 
