@@ -1,64 +1,61 @@
-# Codebase Analysis & Refactoring Assessment
+# Codebase Analysis & Refactoring Plan
 
-**Date:** 2024-05-23
-**Assessor:** Agent Jules
+## 1. Code Quality Assessment
 
-## 1. Overview
-The codebase implements a retro Windows 3.1-style RPG engine. While the architecture has moved towards a modular scene-based system, several "God Classes" and monolithic files persist, impeding maintainability and scalability.
+### 1.1. Identified "God Classes"
+A "God Class" is a class that knows too much or does too much, becoming a central point of failure and maintenance nightmare.
 
-## 2. Identified Violations & Problems
+*   **`Scene_Map` (`scenes.js`)**:
+    *   **Responsibilities**: It handles the game loop, user input (movement), UI management (instantiating and managing 10+ windows), event delegation, inventory logic, and even game rules (Sacrifice, Permadeath).
+    *   **Violation**: Massive violation of the **Single Responsibility Principle (SRP)**. It acts as a Mediator, Controller, and View Manager simultaneously.
+    *   **Impact**: Modifying any core mechanic (e.g., how Inventory works) requires modifying `Scene_Map`, increasing the risk of regression in unrelated areas (e.g., Movement).
 
-### 2.1. Monolithic Files ("God Files")
-*   **`windows.js` (~1700 lines)**: This file is the most significant violation. It contains:
-    *   The core window system (`Window_Base`, `WindowManager`, `WindowLayer`).
-    *   **All** specific window implementations (Battle, Shop, Inventory, Formation, Event, etc.).
-    *   UI utility functions (`createIcon`, `createGauge`, `renderCreatureInfo`).
-    *   **Impact**: Navigating this file is difficult. Any UI change requires touching this massive file, increasing merge conflict risks and cognitive load. It violates the **Single Responsibility Principle (SRP)** at the module level.
+*   **`Game_Battler` (`objects.js`)**:
+    *   **Responsibilities**: Stats container, Leveling logic, State management, *and* specific implementation of passive effects (`HRG`, `PARASITE`).
+    *   **Violation**: Violation of **Open/Closed Principle (OCP)**. Adding a new passive effect requires modifying the `onTurnStart` method of this core class.
+    *   **Impact**: The class grows indefinitely as more content is added.
 
-### 2.2. God Classes
-*   **`Scene_Map` (~900 lines)**: This class acts as a catch-all for the exploration state.
-    *   **Responsibilities**: Map movement, Tile interaction, Event delegation, UI management for sub-windows (Inventory, Formation, Inspect, Recruit, Evolution, Settings), Debug logic.
-    *   **Violation**: SRP. It handles both the "Game World" logic and the "Meta UI" logic.
-*   **`Game_Battler`**:
-    *   **Responsibilities**: Stats storage, Stats calculation (getters), Leveling logic, State management, Equipment slot management, *and* Battle Mechanics (`onTurnStart` logic).
-    *   **Violation**: High coupling between Data and Logic.
+*   **`BattleManager` (`managers.js`)**:
+    *   **Responsibilities**: Turn order, Action execution, AI logic, Victory/Defeat checks.
+    *   **Violation**: The `executeAction` and `getAIAction` methods contain hardcoded logic for specific skills and effect types. This violates **OCP**.
+    *   **Impact**: Battle logic is brittle and hard to extend without touching the core loop.
 
-### 2.3. Open/Closed Principle (OCP) Violations
-The code is not easily extensible without modification.
-*   **`Game_Battler.onTurnStart`**: Hardcodes specific passive effects (`HRG`, `PARASITE`). Adding a new start-of-turn effect requires modifying this method directly.
-*   **`BattleManager.executeAction`**: Contains a hardcoded switch/if-else block for skill effects (`hp_damage`, `hp_heal`, `add_status`). Adding a new effect type (e.g., `mp_drain`) requires modifying the core manager.
+### 1.2. Architectural Violations
+*   **Window_HUD Anomaly**: `Window_HUD` in `windows.js` is not a true `Window_Base` subclass. It manually manipulates the global DOM (`#game-container`), breaking the encapsulation of the `WindowManager`.
+*   **Coupled Interpreters**: `Game_Interpreter` is defined inside `scenes.js` and tightly coupled to `Scene_Map`. It should be a standalone module.
+*   **Hardcoded Data Logic**: `Game_Battler` and `BattleManager` contain hardcoded checks for specific IDs (e.g., `passive.code === 'HRG'`). This logic belongs in a data-driven `EffectSystem`.
 
-### 2.4. Data Encapsulation
-*   **`Game_Battler._baseMaxHp`**: This property is modified directly by various systems (Leveling, Permadeath/Rebirth). This makes tracking stat bugs difficult.
+## 2. Refactoring Plan
 
-## 3. Refactoring Plan
+This plan prioritizes decoupling logic from the God Classes and establishing a true data-driven architecture.
 
-### Phase 1: Deconstruct `windows.js` (High Priority)
-Split `windows.js` into a directory structure `js/windows/`:
-1.  **Core**: `Window_Base.js`, `WindowManager.js`, `WindowLayer.js`, `WindowAnimator.js`.
-2.  **Utils**: `ui_utils.js` (for `createIcon`, `renderCreatureInfo`, etc.).
-3.  **Modules**: Individual files for each window class:
-    *   `Window_HUD.js`
-    *   `Window_Battle.js`
-    *   `Window_Shop.js`
-    *   `Window_Inventory.js`
-    *   `Window_Formation.js`
-    *   `Window_Inspect.js` (can include Evolution)
-    *   `Window_Event.js` (can include Recruit)
-    *   `Window_Selectable.js` (Base for lists)
-    *   `Window_Common.js` (Confirm, Alert, Help)
+### Phase 1: Modularization of Logic (High Priority)
+1.  **Extract `Game_Interpreter`**:
+    *   Move `Game_Interpreter` from `scenes.js` to a new file `interpreter.js` (or `managers.js` / `logic.js`).
+    *   Decouple it from `Scene_Map` by passing a context object interface rather than the entire scene instance.
 
-**Action**: Create a `windows/` directory (or just separate files in root if folder structure is constrained) and migrate code. *Note: Given the flat file structure preference in `AGENTS.md` ("There is no src/ folder"), we might need to keep them in root or creating a `windows/` folder is acceptable if we update imports.*
+2.  **Extract `EffectSystem`**:
+    *   Create a new system (e.g., `EffectManager` in `managers.js` or `effects.js`) to handle passive/active effects.
+    *   **Refactor**: Move `HRG`, `PARASITE`, `POST_BATTLE_HEAL` logic out of `Game_Battler` and `Scene_Battle`.
+    *   **Goal**: `Game_Battler.onTurnStart` should iterate over traits and ask the `EffectManager` to execute them, without knowing *what* they do.
 
-### Phase 2: Decouple `Scene_Map`
-1.  **Extract UI Controllers**: Create `MapUIManager` (or similar) to handle the opening/closing and callbacks of the inventory, formation, and inspection windows.
-2.  **Delegate**: `Scene_Map` should instantiate the manager and delegate button clicks to it.
+### Phase 2: Scene_Map Decongestion (Medium Priority)
+1.  **UI Controller Separation**:
+    *   Move the creation and management of auxiliary windows (`Window_Inventory`, `Window_Formation`, etc.) out of `Scene_Map` and into a `MapUIManager` or similar helper class.
+    *   `Scene_Map` should focus on the Game Loop and Player Input.
 
-### Phase 3: Data-Driven Effects System
-1.  **Effect Registry**: Create a system to register effect handlers (e.g., `EffectManager`).
-2.  **Refactor `onTurnStart`**: Instead of hardcoding `HRG`, iterate through traits and look for handlers registered to `ON_TURN_START`.
-3.  **Refactor `executeAction`**: Use the registry to find handlers for `hp_damage`, `hp_heal`, etc.
+2.  **Input Handling**:
+    *   Create a centralized `InputController` (or expand `WindowManager` input handling) to map keys to Actions, rather than having raw `switch(e.key)` in `Scene_Map`.
 
-## 4. Immediate Next Steps
-1.  **Split `windows.js`**: This is the lowest hanging fruit that yields the highest maintainability boost.
-2.  **Update Imports**: Ensure `scenes.js` and `main.js` import from the new locations.
+### Phase 3: Window System Standardization (Low Priority)
+1.  **Refactor `Window_HUD`**:
+    *   Convert `Window_HUD` into `Window_Desktop` (extending `Window_Base`).
+    *   It should render the background and static elements as a "Root Window" at the bottom of the stack.
+
+2.  **Standardize `Window_Selectable`**:
+    *   Ensure all list-based windows (`Window_Inventory`, `Window_Shop`) strictly follow a standardized API for selection and event handling.
+
+## 3. Immediate Action Items
+*   [ ] Extract `Game_Interpreter` to `interpreter.js`.
+*   [ ] Create `EffectManager` to handle `Game_Battler` passives.
+*   [ ] Refactor `BattleManager.executeAction` to use a handler registry instead of `if/else` chains.
