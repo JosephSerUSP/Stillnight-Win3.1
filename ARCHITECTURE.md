@@ -1,7 +1,7 @@
 # Architectural Documentation
 
 **Project:** Stillnight Engine
-**Version:** 2.0.0 (Refactored)
+**Version:** 2.1.0 (Refactoring Phase)
 
 ## 1. Executive Summary
 
@@ -15,7 +15,7 @@ The core design philosophy separates the **Logic Layer** (Game Objects, Managers
 The engine uses a stack-based Scene Manager (`SceneManager`).
 -   **Scene_Base**: Abstract base class. Handles lifecycle (`create`, `start`, `update`, `stop`) and holds a `WindowManager`.
 -   **Scene_Boot**: Preloads assets and data before launching the game.
--   **Scene_Map**: Handles exploration, tile interactions, and the main game loop.
+-   **Scene_Map**: Handles exploration, tile interactions, and the main game loop. **(Currently a God Class candidate - see Refactor Plan)**
 -   **Scene_Battle**: Dedicated combat state.
 -   **Scene_Shop**: Dedicated shopping interface.
 
@@ -27,35 +27,30 @@ UI is composed of modular `Window` classes that generate their own DOM structure
 -   **Window_Base**: The parent class for all UI windows.
     -   Generates the standard "window frame" (Title bar, close button).
     -   Handles drag-and-drop functionality.
-    -   Uses a relative coordinate system `(x, y)` relative to the `#game-container`.
--   **WindowLayer**: A DOM container appended to `#game-container` that holds all window elements, ensuring correct z-indexing.
+-   **WindowLayer**: A DOM container appended to `#game-container` that holds all window elements.
 
 ### 2.3. The Manager Layer (`managers.js`)
 Static or Singleton classes that handle global logic.
 -   **SceneManager**: Manages the scene stack.
--   **BattleManager**: Handles the granular turn-based combat logic (Start Round -> Get Next Battler -> Execute Action).
+-   **BattleManager**: Handles the granular turn-based combat logic.
 -   **DataManager**: Asynchronously loads JSON data from `data/`.
 -   **SoundManager**: Handles audio playback.
--   **ThemeManager**: Manages CSS variables for dynamic theming (Original, Night, High Contrast).
--   **FusionManager**: Handles demon fusion mechanics.
+-   **ThemeManager**: Manages CSS variables for dynamic theming.
 
-### 2.4. The Data Layer (`data/`)
-The engine is data-driven.
--   **JSON Files**: `actors.json`, `items.json`, `maps.json`, `enemies.json` define content.
--   **JS Files**: `skills.js`, `passives.js`, `states.js` define complex logic (formulas, effects).
--   **Traits System**: Entities (Actors, Items, States) possess "Traits" (e.g., `PARAM_PLUS`, `HRG`) that are aggregated to determine stats and behaviors.
+### 2.4. The Logic Layer (`objects.js`, `core.js`)
+-   **Game_Battler**: Represents an entity (Actor/Enemy) with stats and traits.
+-   **Game_Map**: Procedural generation and floor management.
+-   **Game_Party**: Inventory and Party management.
+-   **Game_Interpreter**: (To be extracted) Handles event execution logic.
 
 ## 3. Key Design Patterns
 
-### 3.1. Observer Pattern (Refactoring Target)
-Ideally, game objects should emit events (e.g., `onTurnStart`) that traits subscribe to, rather than hardcoding checks. Currently, `BattleManager` iterates through known traits to apply effects.
+### 3.1. Traits System
+Entities (Actors, Items, States) possess "Traits" (e.g., `PARAM_PLUS`, `HRG`) that are aggregated to determine stats and behaviors.
+*   **Goal**: Move from hardcoded checks in `Game_Battler` to a generic `EffectManager`.
 
 ### 3.2. Command Pattern (Battle Actions)
 Battle actions are encapsulated as objects (e.g., `{ type: 'SKILL', skillId: 'fireball', targetIndex: 1 }`). This allows `BattleManager` to queue and execute actions uniformly.
-
-### 3.3. Factory Pattern
--   **Game_Battler**: Instantiated based on data ID.
--   **Window Creation**: Windows are often instantiated by Scenes on demand.
 
 ## 4. Technical Specifications
 
@@ -64,34 +59,15 @@ Windows use a coordinate system relative to the main game container (`.win-windo
 -   `(0, 0)` is the top-left of the game container.
 -   Windows are positioned absolutely within the container.
 
-### 4.2. DOM Structure
-The `index.html` is a minimal container.
-```html
-<div id="game-container" class="win-window">
-    <!-- Scene Content (e.g., Canvas/Grid) -->
-    <!-- WindowLayer (Appended by WindowManager) -->
-</div>
-```
-
-### 4.3. CSS Architecture
--   **Generalist Classes**: Use `.gauge` instead of `.hp-bar`.
--   **Data-Driven Styling**: Colors and dimensions are passed via JS or CSS variables (`var(--content-bg)`), not hardcoded in CSS classes.
+### 4.2. CSS Architecture
+-   **Data-Driven Styling**: Colors and dimensions are passed via JS or CSS variables (`var(--content-bg)`).
 -   **Atomic Utility Classes**: Use `.text-danger`, `.text-functional` for text formatting.
 
-## 5. Refactoring Roadmap (Status: Ongoing)
+## 5. Refactoring Status
 
-### Phase 1: The Window System (Completed)
--   Eliminated `index.html` dependency for UI.
--   Implemented `Window_Base` and `WindowLayer`.
--   Standardized "Close" behavior via `onUserClose`.
+See `ANALYSIS_REFACTOR.md` for the detailed assessment and roadmap.
 
-### Phase 2: Logic Extraction (Completed/Ongoing)
--   Extracted battle logic from `Scene_Map` to `BattleManager`.
--   Implemented `Game_Interpreter` for map events.
-
-### Phase 3: Scene Segregation (Completed)
--   Split `Scene_Map` into `Scene_Map`, `Scene_Battle`, `Scene_Shop`.
-
-### Phase 4: Data-Driven Trait System (Ongoing)
--   Standardize `traits` array across all data objects.
--   Remove remaining hardcoded effect checks in `BattleManager`.
+### Key Goals:
+1.  **Decompose God Classes**: Break down `Scene_Map` and `Game_Battler`.
+2.  **Enforce OCP**: Replace `if/else` chains in `BattleManager` with a Strategy/Handler pattern.
+3.  **Standardize UI**: Bring `Window_HUD` into the standard Window inheritance hierarchy.
