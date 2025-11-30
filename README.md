@@ -1,41 +1,44 @@
 # Stillnight Engine
 
-A retro Windows 3.1-style RPG engine built with modern JavaScript.
+A retro Windows 3.1-style RPG engine built with modern vanilla JavaScript.
 
 ## Overview
 
-The **Stillnight Engine** is a single-page RPG engine featuring a unique aesthetic inspired by Windows 3.1. It is built using vanilla JavaScript (ES modules) and does not rely on heavy frontend frameworks. The architecture is designed to be scalable and data-driven, similar to engines like RPG Maker MZ.
+The **Stillnight Engine** is a single-page RPG engine featuring a unique aesthetic inspired by Windows 3.1. It is built using ES modules and does not rely on heavy frontend frameworks. The architecture is designed to be scalable and data-driven, separating game logic from the UI presentation layer.
 
-### Key Features
-- **Scene-Based Architecture**: Separation of concerns between Map, Battle, Shop, and Menu states.
-- **Dynamic Window System**: Programmatic generation of UI windows with a focus on modularity.
-- **Data-Driven Gameplay**: Skills, items, and actors are defined in JSON/JS data files.
-- **Retro Aesthetic**: Custom CSS and ASCII/pixel art styling.
+## Key Features
+
+-   **Scene-Based Architecture**: Strict separation of game states (Map, Battle, Shop, Menu) managed by a stack-based `SceneManager`.
+-   **Dynamic Window System**: Programmatic generation of UI windows (`Window_Base`) with a focus on modularity and interactivity.
+-   **Data-Driven Gameplay**: Skills, items, actors, and events are defined in JSON/JS data files, leveraging a flexible Traits system.
+-   **Retro Aesthetic**: Custom CSS variables and pixel-art assets create a cohesive Windows 3.1 look and feel.
+-   **Granular Battle System**: A turn-based combat system managed by `BattleManager`, supporting complex action sequences and event-driven animations.
 
 ## File Structure
 
 ```
 .
-├── core.js           # Core utility functions and constants
-├── main.js           # Entry point, initializes the game
-├── managers.js       # Game logic managers (SceneManager, BattleManager, SoundManager)
-├── objects.js        # Game objects (Game_Battler, Game_Map, Game_Party)
-├── scenes.js         # Scene classes (Scene_Map, Scene_Battle, Scene_Shop)
+├── core.js           # Core utility functions (RNG, Math)
+├── main.js           # Application entry point
+├── managers.js       # Global managers (Scene, Battle, Sound, Theme, Fusion)
+├── objects.js        # Game logic classes (Game_Battler, Game_Map, Game_Party)
+├── scenes.js         # Scene implementations (Map, Battle, Shop)
 ├── windows.js        # UI Window classes
-├── tooltip.js        # Tooltip system
-├── sprites.js        # Sprite handling
-├── data/             # Game data (JSON and JS files)
-├── assets/           # Images and other static assets
-└── tests/            # Playwright tests
+├── sprites.js        # Sprite handling and rendering
+├── tooltip.js        # Global tooltip system
+├── data/             # Game content (JSON/JS)
+├── assets/           # Images, icons, and audio
+└── tests/            # Playwright test suite
 ```
 
-## Setup
+## Setup & Installation
 
 1.  **Install Dependencies**:
     ```bash
     npm install
     ```
-2.  **Install Playwright Browsers** (for testing):
+
+2.  **Install Playwright Browsers** (Required for testing):
     ```bash
     npx playwright install
     npx playwright install-deps
@@ -44,38 +47,38 @@ The **Stillnight Engine** is a single-page RPG engine featuring a unique aesthet
 ## Usage
 
 ### Running the Game
-To run the game locally, you need to serve the files using a web server. Python's built-in HTTP server is a quick way to do this:
+To run the game locally, serve the files using a web server. Python's built-in HTTP server is recommended:
 
 ```bash
 python -m http.server 8080
 ```
 
-Then, open your browser and navigate to `http://localhost:8080`.
+Then, navigate to `http://localhost:8080` in your web browser.
 
 ### Running Tests
-The project uses [Playwright](https://playwright.dev/) for testing. The configuration (`playwright.config.js`) handles starting the web server automatically.
+The project uses **Playwright** for end-to-end and logic testing.
 
-To run all tests:
+To run the full test suite:
 ```bash
 npm test
 ```
 
-#### Testing Strategy & Philosophy
-The engine is currently undergoing a fundamental refactor. As such, the testing strategy prioritizes **logic verification** over **structural rigidity**.
+#### Testing Options
+-   **Debug Mode**: `npx playwright test --debug`
+-   **UI Mode**: `npx playwright test --ui`
 
-*   **Tests as Scaffolding**: Tests are designed to verify that core math (Damage, XP curves, Healing) and game rules (Elemental weakness, Turn order) remain correct. They are *not* intended to lock down the internal class structure.
-*   **Refactoring Priority**: If a test fails because a class was renamed or moved during a refactor—but the game logic remains sound—**update or discard the test**. Do not let test maintenance block architectural improvements.
-*   **Infrastructure**: To facilitate unit-testing of internal logic within the browser context, the application exposes core classes (`Game_Battler`, `BattleManager`, etc.) to the `window` object when the URL query parameter `?test=true` is present.
+#### Testing Philosophy
+Tests act as **scaffolding**. They prioritize verifying core math (XP curves, Damage formulas) and game rules over rigid structural assertions. If a refactor changes class names but preserves logic, update the test to match.
 
 ## Architecture
 
-The engine follows a scene-based state machine pattern managed by `SceneManager`. The UI is handled by `WindowManager`, which manages a stack of `Window_Base` instances.
+For a deep dive into the engine's design, please refer to [ARCHITECTURE.md](ARCHITECTURE.md).
 
-*   **Scenes**: Handle the game loop for specific states (e.g., `Scene_Map`, `Scene_Battle`).
-*   **Windows**: Handle the display and user interaction. They are completely decoupled from the HTML file and generate their own DOM.
-*   **Managers**: Static classes that handle global logic (e.g., `BattleManager` for turn resolution, `DataManager` for loading assets).
-*   **Game Objects**: Classes that represent game entities (e.g., `Game_Battler` for characters).
+-   **Scenes**: Handle the high-level game loop and state transitions.
+-   **Windows**: Handle all UI rendering and user interaction. They are decoupled from the HTML file.
+-   **Managers**: Static singletons that handle global systems (Audio, Themes, Data).
+-   **Game Objects**: Data-rich classes representing entities (Battlers, Maps).
 
 ## Documentation
 
-The codebase is fully documented with JSDoc. You can inspect the source files for detailed descriptions of classes and methods.
+The codebase is fully documented with JSDoc. Inspect the source files for detailed descriptions of classes, methods, and parameters.

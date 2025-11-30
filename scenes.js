@@ -493,6 +493,13 @@ export class Scene_Battle extends Scene_Base {
       return null;
   }
 
+  /**
+   * Animates the HP gauge of a battler.
+   * @param {import("./objects.js").Game_Battler} battler - The battler.
+   * @param {number} startHp - HP at start of animation.
+   * @param {number} endHp - HP at end of animation.
+   * @returns {Promise} Resolves when animation completes.
+   */
   animateBattleHpGauge(battler, startHp, endHp) {
     return new Promise((resolve) => {
       const duration = 500;
@@ -525,6 +532,11 @@ export class Scene_Battle extends Scene_Base {
     });
   }
 
+  /**
+   * Applies a visual animation class to a battler's DOM element.
+   * @param {import("./objects.js").Game_Battler} battler - The battler.
+   * @param {string} animationType - 'flash' or 'shake'.
+   */
   animateBattler(battler, animationType) {
     const ctx = this._getBattlerContext(battler);
     if (!ctx) return;
@@ -555,6 +567,11 @@ export class Scene_Battle extends Scene_Base {
     }
   }
 
+  /**
+   * Animates the battler's name (e.g. text scramble effect).
+   * @param {import("./objects.js").Game_Battler} battler - The battler.
+   * @returns {Promise} Resolves when animation completes.
+   */
   animateBattlerName(battler) {
     return new Promise((resolve) => {
       const originalName = battler.name;
@@ -599,6 +616,12 @@ export class Scene_Battle extends Scene_Base {
     });
   }
 
+  /**
+   * Plays a data-driven animation on a target.
+   * @param {import("./objects.js").Game_Battler} target - The target battler.
+   * @param {string} animationId - The animation ID from data/animations.js.
+   * @returns {Promise} Resolves when animation completes.
+   */
   playAnimation(target, animationId) {
        return new Promise((resolve) => {
            if (!this.dataManager.animations || !this.dataManager.animations[animationId]) {
@@ -810,6 +833,11 @@ class Game_Interpreter {
     get party() { return this.scene.party; }
     get map() { return this.scene.map; }
 
+    /**
+     * Executes a map event action.
+     * @param {Object} action - The action object.
+     * @param {import("./objects.js").Game_Event} event - The source event.
+     */
     execute(action, event) {
         switch(action.type) {
             case 'BATTLE':
@@ -851,6 +879,9 @@ class Game_Interpreter {
         }
     }
 
+    /**
+     * Fully heals the party.
+     */
     healParty() {
         this.party.members.forEach((m) => (m.hp = m.maxHp));
         this.scene.logMessage("[Recover] A soft glow restores your party.");
@@ -869,6 +900,9 @@ class Game_Interpreter {
         this.scene.updateAll();
     }
 
+    /**
+     * Handles descending to the next floor.
+     */
     descendStairs() {
         if (this.map.floorIndex + 1 >= this.map.floors.length) {
             this.scene.logMessage("[Floor] You find no further descent. The run ends here.");
@@ -1337,7 +1371,6 @@ export class Scene_Map extends Scene_Base {
 
     this.windowLayer = new WindowLayer();
     const gameContainer = document.querySelector(".right-side");
-    console.log("Scene_Map instantiated");
     this.windowLayer.appendTo(gameContainer);
 
     this.inventoryWindow = new Window_Inventory();
@@ -1814,6 +1847,11 @@ export class Scene_Map extends Scene_Base {
     this.updateAll();
   }
 
+  /**
+   * Executes a map event.
+   * @method executeEvent
+   * @param {import("./objects.js").Game_Event} event - The event to execute.
+   */
   executeEvent(event) {
       if (event.actions) {
           event.actions.forEach(action => this.interpreter.execute(action, event));
@@ -2415,10 +2453,10 @@ renderElements(elements) {
   }
 
   /**
-   * Equips an item to a member, handling swaps if necessary.
-   * @method equipItem
-   * @param {import("./objects.js").Game_Battler} member - The member.
-   * @param {Object} item - The item to equip.
+   * Opens the evolution preview window.
+   * @method openEvolution
+   * @param {import("./objects.js").Game_Battler} member - The member to evolve.
+   * @param {Object} evolutionData - The evolution definition.
    */
   openEvolution(member, evolutionData) {
       this.closeInspect();
@@ -2436,6 +2474,13 @@ renderElements(elements) {
       this.windowManager.push(this.evolutionWindow);
   }
 
+  /**
+   * Prompts to confirm evolution (and resource consumption).
+   * @method confirmEvolution
+   * @param {import("./objects.js").Game_Battler} member - The member to evolve.
+   * @param {import("./objects.js").Game_Battler} nextBattler - The evolved form.
+   * @param {Object} evolutionData - The evolution definition.
+   */
   confirmEvolution(member, nextBattler, evolutionData) {
       let msg = `Evolve ${member.name} into ${nextBattler.name}?`;
       if (evolutionData.item) {
@@ -2459,6 +2504,13 @@ renderElements(elements) {
       };
   }
 
+  /**
+   * Executes the evolution, updating the party and consuming items.
+   * @method executeEvolution
+   * @param {import("./objects.js").Game_Battler} member - The member to evolve.
+   * @param {import("./objects.js").Game_Battler} nextBattler - The evolved form.
+   * @param {Object} evolutionData - The evolution definition.
+   */
   executeEvolution(member, nextBattler, evolutionData) {
       if (evolutionData.item) {
           const idx = this.party.inventory.findIndex(i => i.id === evolutionData.item);
@@ -2482,6 +2534,12 @@ renderElements(elements) {
       }
   }
 
+  /**
+   * Equips an item to a member, handling swaps if necessary.
+   * @method equipItem
+   * @param {import("./objects.js").Game_Battler} member - The member.
+   * @param {Object} item - The item to equip.
+   */
   equipItem(member, item) {
     const doEquip = () => {
       // Unequip current item if one exists

@@ -48,13 +48,6 @@ export function createElementIcon(elements) {
 }
 
 /**
- * Creates an interactive label for a game object (Skill, Passive, Item).
- * @param {Object} data - The object data (must have name, and optionally icon/elements).
- * @param {string} type - 'skill' | 'passive' | 'item' | 'generic'.
- * @param {Object} options - { tooltipText, showTooltip, className, elements }.
- * @returns {HTMLElement} The span element.
- */
-/**
  * Creates a generic gauge element.
  * @param {Object} options - Configuration options.
  * @param {number} [options.width] - Width of the gauge (e.g. 100).
@@ -84,6 +77,13 @@ export function createGauge(options = {}) {
     return { container, fill };
 }
 
+/**
+ * Creates an interactive label for a game object (Skill, Passive, Item).
+ * @param {Object} data - The object data (must have name, and optionally icon/elements).
+ * @param {string} type - 'skill' | 'passive' | 'item' | 'generic'.
+ * @param {Object} options - { tooltipText, showTooltip, className, elements }.
+ * @returns {HTMLElement} The span element.
+ */
 export function createInteractiveLabel(data, type, options = {}) {
     const el = document.createElement("span");
     el.className = "interactive-label";
@@ -1021,11 +1021,6 @@ export class Window_Inspect extends Window_Base {
 }
 
 /**
- * @class Window_Shop
- * @description The window for buying items in the shop.
- * @extends Window_Base
- */
-/**
  * @class Window_Evolution
  * @description The window for previewing and confirming creature evolution.
  * @extends Window_Base
@@ -1178,6 +1173,11 @@ export class Window_Evolution extends Window_Base {
   }
 }
 
+/**
+ * @class Window_Shop
+ * @description The window for buying items in the shop.
+ * @extends Window_Base
+ */
 export class Window_Shop extends Window_Base {
   /**
    * Creates a new Window_Shop instance.
@@ -1915,12 +1915,19 @@ export class Window_Confirm extends Window_Base {
  * @description Manages the main static game layout.
  */
 export class Window_HUD {
+    /**
+     * Creates a new Window_HUD instance and initializes the UI.
+     */
     constructor() {
         this.container = document.getElementById("game-container");
         this.createUI();
         this.getDomElements();
     }
 
+    /**
+     * Injects the main game HTML structure into the container.
+     * @method createUI
+     */
     createUI() {
         this.container.innerHTML = `
       <div class="stack-nav panel">
@@ -2017,6 +2024,10 @@ export class Window_HUD {
     `;
     }
 
+    /**
+     * Caches references to DOM elements created by createUI.
+     * @method getDomElements
+     */
     getDomElements() {
         this.explorationGridEl = document.getElementById("exploration-grid");
         this.cardTitleEl = document.getElementById("card-title");
@@ -2042,6 +2053,13 @@ export class Window_HUD {
         this.btnInventory = document.getElementById("btn-inventory");
     }
 
+    /**
+     * Updates the header information for the current floor card.
+     * @method updateCardHeader
+     * @param {Object} floor - The current floor object.
+     * @param {number} index - The current floor index.
+     * @param {number} total - The total number of floors.
+     */
     updateCardHeader(floor, index, total) {
         this.cardTitleEl.textContent = floor.title;
         this.cardIndexLabelEl.textContent = `${index + 1} / ${total}`;
@@ -2058,6 +2076,14 @@ export class Window_HUD {
         }
     }
 
+    /**
+     * Updates the list of available floor cards.
+     * @method updateCardList
+     * @param {Array} floors - The list of floor objects.
+     * @param {number} currentIndex - The index of the current floor.
+     * @param {number} maxReachedIndex - The maximum floor reached.
+     * @param {Function} onSelect - Callback when a floor is clicked.
+     */
     updateCardList(floors, currentIndex, maxReachedIndex, onSelect) {
         this.cardListEl.innerHTML = "";
         floors.forEach((f, idx) => {
@@ -2076,6 +2102,12 @@ export class Window_HUD {
         });
     }
 
+    /**
+     * Updates the party grid display.
+     * @method updateParty
+     * @param {import("./objects.js").Game_Party} party - The party object.
+     * @param {Function} onInspect - Callback when a member is clicked.
+     */
     updateParty(party, onInspect) {
         this.partyGridEl.innerHTML = "";
         party.members.slice(0, 4).forEach((member, index) => {
@@ -2105,6 +2137,15 @@ export class Window_HUD {
         });
     }
 
+    /**
+     * Animates a gauge element.
+     * @method animateGauge
+     * @param {HTMLElement} element - The gauge fill element.
+     * @param {number} startHp - Starting value.
+     * @param {number} endHp - Ending value.
+     * @param {number} maxHp - Maximum value.
+     * @param {number} duration - Animation duration in ms.
+     */
     animateGauge(element, startHp, endHp, maxHp, duration) {
         const startTime = performance.now();
         const startWidth = (startHp / maxHp) * 100;
@@ -2189,6 +2230,9 @@ export function renderCreatureInfo(container, battler, title) {
  * @extends Window_Base
  */
 export class Window_EquipConfirm extends Window_Base {
+    /**
+     * Creates a new Window_EquipConfirm instance.
+     */
     constructor() {
         super('center', 'center', 500, 420);
         this.element.id = "equip-confirm-window";
@@ -2196,7 +2240,7 @@ export class Window_EquipConfirm extends Window_Base {
         this.element.style.flexDirection = 'column';
 
         const titleBar = document.createElement("div");
-    titleBar.className = "window-header";
+        titleBar.className = "window-header";
         this.element.appendChild(titleBar);
         this.makeDraggable(titleBar);
 
@@ -2259,11 +2303,11 @@ export class Window_EquipConfirm extends Window_Base {
 
     /**
      * Sets up the confirmation window.
-     * @param {import("./objects.js").Game_Battler} member
-     * @param {Object} newItem
-     * @param {Object} oldItem
-     * @param {string} slotName
-     * @param {Function} onConfirm
+     * @param {import("./objects.js").Game_Battler} member - The member equipping the item.
+     * @param {Object} newItem - The new item.
+     * @param {Object} oldItem - The old item.
+     * @param {string} slotName - The name of the equipment slot.
+     * @param {Function} onConfirm - Callback when confirmed.
      */
     setup(member, newItem, oldItem, slotName, onConfirm) {
         renderCreatureInfo(this.infoPanel, member);
@@ -2306,6 +2350,14 @@ export class Window_EquipConfirm extends Window_Base {
         this.btnConfirm.onclick = onConfirm;
     }
 
+    /**
+     * Calculates the statistical differences between equipping the new item vs old.
+     * @method calculateDiff
+     * @param {import("./objects.js").Game_Battler} member
+     * @param {Object} newItem
+     * @param {Object} oldItem
+     * @returns {string[]} List of difference strings.
+     */
     calculateDiff(member, newItem, oldItem) {
         const diffs = [];
         const oldTraits = oldItem ? (oldItem.traits || []) : [];
