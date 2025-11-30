@@ -44,7 +44,7 @@ test.describe('Game Logic', () => {
 
     // Verify shake class is added to the dialog
     // We need to check the parent dialog element
-    const dialog = page.locator('.dialog').last();
+    const dialog = page.locator('.window-frame').last();
     await expect(dialog).toHaveClass(/shake/);
 
     // Wait a bit and verify shake is removed
