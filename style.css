@@ -863,3 +863,8 @@ html, body {
     color: var(--selection-text);
     border-color: var(--selection-text);
 }
+
+/* Refactor: Icon Drop Shadow */
+.icon, .element-icon {
+    filter: drop-shadow(2px 2px 0px #4B4B4B);
+}

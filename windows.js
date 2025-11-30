@@ -3,6 +3,30 @@ import { tooltip } from "./tooltip.js";
 import { SoundManager } from "./managers.js";
 
 /**
+ * Creates a DOM element representing a standard icon.
+ * @param {number} iconId - The icon ID.
+ * @param {Object} [options] - Configuration options.
+ * @param {string} [options.className] - Additional CSS class.
+ * @param {string} [options.tooltip] - Tooltip text.
+ * @returns {HTMLElement} The icon element.
+ */
+export function createIcon(iconId, options = {}) {
+    const icon = document.createElement("span");
+    icon.className = "icon";
+    if (options.className) icon.classList.add(options.className);
+
+    if (iconId > 0) {
+        icon.style.backgroundPosition = getIconStyle(iconId);
+    }
+
+    if (options.tooltip) {
+        icon.title = options.tooltip;
+    }
+
+    return icon;
+}
+
+/**
  * Creates a standardized label for a battler's name, including elemental icons and status indicators.
  * @param {import("./objects.js").Game_Battler} battler - The battler.
  * @param {Object} [options] - Configuration options.
@@ -31,12 +55,10 @@ export function createBattlerNameLabel(battler, options = {}) {
     container.appendChild(nameSpan);
 
     if (options.evolutionStatus && options.evolutionStatus !== 'NONE') {
-        const evoIcon = document.createElement("span");
-        evoIcon.className = "icon";
         const iconId = options.evolutionStatus === 'AVAILABLE' ? 102 : 101;
-        evoIcon.style.backgroundPosition = getIconStyle(iconId);
+        const tooltip = options.evolutionStatus === 'AVAILABLE' ? "Evolution Available" : "Evolution Locked";
+        const evoIcon = createIcon(iconId, { tooltip });
         evoIcon.style.marginLeft = "4px";
-        evoIcon.title = options.evolutionStatus === 'AVAILABLE' ? "Evolution Available" : "Evolution Locked";
         container.appendChild(evoIcon);
     }
 
@@ -54,15 +76,14 @@ export function createElementIcon(elements) {
 
     if (primaryElements.length <= 1) {
         container.className = 'element-icon-container-name';
-        const icon = document.createElement('div');
-        icon.className = 'icon';
         if (primaryElements.length === 1) {
             const iconId = elementToIconId(primaryElements[0]);
-            if (iconId > 0) {
-                icon.style.backgroundPosition = getIconStyle(iconId);
-            }
+            container.appendChild(createIcon(iconId));
+        } else {
+            const icon = document.createElement('div');
+            icon.className = 'icon';
+            container.appendChild(icon);
         }
-        container.appendChild(icon);
     } else {
         container.className = 'element-icon-container';
         const positions = [
@@ -73,18 +94,31 @@ export function createElementIcon(elements) {
         ];
         primaryElements.forEach((element, index) => {
             if (index < 4) {
-                const icon = document.createElement('div');
-                icon.className = 'element-icon';
                 const iconId = elementToIconId('l_' + element);
-                if (iconId > 0) {
-                    icon.style.backgroundPosition = getIconStyle(iconId);
-                    icon.style.top = positions[index].top;
-                    icon.style.left = positions[index].left;
-                    container.appendChild(icon);
-                }
+                const icon = createIcon(iconId, { className: 'element-icon' });
+                icon.style.top = positions[index].top;
+                icon.style.left = positions[index].left;
+                container.appendChild(icon);
             }
         });
     }
+    return container;
+}
+
+/**
+ * Renders a row of element icons.
+ * @param {string[]} elements - The elements.
+ * @returns {HTMLElement} The container element.
+ */
+export function renderElements(elements) {
+    const container = document.createElement('div');
+    container.className = 'element-container';
+    elements.forEach(element => {
+        const iconId = elementToIconId(element);
+        if (iconId > 0) {
+            container.appendChild(createIcon(iconId));
+        }
+    });
     return container;
 }
 
@@ -139,20 +173,12 @@ export function createInteractiveLabel(data, type, options = {}) {
             const iconEl = createElementIcon(elements);
             el.appendChild(iconEl);
         } else if (iconId) {
-             const icon = document.createElement("span");
-             icon.className = "icon";
-             if (iconId > 0) {
-                 icon.style.backgroundPosition = getIconStyle(iconId);
-             }
+             const icon = createIcon(iconId);
              icon.style.marginRight = "4px";
              el.appendChild(icon);
         }
     } else if (iconId) {
-        const icon = document.createElement("span");
-        icon.className = "icon";
-        if (iconId > 0) {
-            icon.style.backgroundPosition = getIconStyle(iconId);
-        }
+        const icon = createIcon(iconId);
         icon.style.marginRight = "4px";
         el.appendChild(icon);
     }
@@ -1924,8 +1950,17 @@ export class Window_HUD {
 
 /**
  * Helper to render creature info.
+ * @param {HTMLElement} container - Target container.
+ * @param {import("./objects.js").Game_Battler} battler - The creature.
+ * @param {Object} [options] - Options for what to display.
+ * @param {boolean} [options.showSkills=false]
+ * @param {boolean} [options.showPassives=false]
+ * @param {boolean} [options.showEquipment=false]
+ * @param {boolean} [options.showFlavor=false]
+ * @param {boolean} [options.showElement=false]
+ * @param {import("./managers.js").DataManager} [options.dataManager] - Required for skills/passives.
  */
-export function renderCreatureInfo(container, battler, title) {
+export function renderCreatureInfo(container, battler, options = {}) {
     container.innerHTML = "";
     const layout = document.createElement('div');
     layout.className = 'inspect-layout';
@@ -1960,14 +1995,84 @@ export function renderCreatureInfo(container, battler, title) {
     levelVal.textContent = battler.level;
     createRow('Level', levelVal);
 
-    const hpVal = document.createElement('span');
-    hpVal.textContent = `${battler.hp} / ${battler.maxHp}`;
-    createRow('HP', hpVal);
-
     if (battler.role) {
         const roleVal = document.createElement('span');
         roleVal.textContent = battler.role;
         createRow('Role', roleVal);
+    }
+
+    const hpVal = document.createElement('span');
+    if (battler.hp !== undefined) {
+         hpVal.textContent = `${battler.hp} / ${battler.maxHp}`;
+    } else {
+         hpVal.textContent = `${battler.maxHp}`;
+    }
+    createRow('HP', hpVal);
+
+    if (options.showElement) {
+        const elementVal = document.createElement('span');
+        if (battler.elements && battler.elements.length > 0) {
+            elementVal.appendChild(createElementIcon(battler.elements));
+        } else {
+            elementVal.textContent = "—";
+        }
+        createRow('Element', elementVal);
+    }
+
+    if (options.showEquipment) {
+        const equipVal = document.createElement('span');
+        equipVal.textContent = battler.equipment || (battler.equipmentItem ? battler.equipmentItem.name : "—");
+        createRow('Equipment', equipVal);
+    }
+
+    if (options.showPassives) {
+        const passiveVal = document.createElement('span');
+        if (battler.passives && battler.passives.length > 0) {
+            battler.passives.forEach((pData, i) => {
+                let def = pData;
+                if (options.dataManager && options.dataManager.passives) {
+                     const code = pData.code || pData.id;
+                     const found = Object.values(options.dataManager.passives).find(p => p.id === code || p.code === code);
+                     if (found) def = found;
+                }
+                const el = createInteractiveLabel(def, 'passive');
+                passiveVal.appendChild(el);
+                if (i < battler.passives.length - 1) passiveVal.appendChild(document.createTextNode(", "));
+            });
+        } else {
+            passiveVal.textContent = "—";
+        }
+        createRow('Passive', passiveVal);
+    }
+
+    if (options.showSkills) {
+        const skillVal = document.createElement('span');
+        if (battler.skills && battler.skills.length > 0) {
+            battler.skills.forEach((sId, i) => {
+                let skill = null;
+                if (options.dataManager) {
+                     skill = options.dataManager.skills[sId];
+                }
+                if (skill) {
+                    const el = createInteractiveLabel(skill, 'skill');
+                    skillVal.appendChild(el);
+                } else {
+                    skillVal.appendChild(document.createTextNode(sId));
+                }
+                if (i < battler.skills.length - 1) {
+                    skillVal.appendChild(document.createTextNode(", "));
+                }
+            });
+        } else {
+            skillVal.textContent = "—";
+        }
+        createRow('Skills', skillVal);
+    }
+
+    if (options.showFlavor) {
+        const flavorVal = document.createElement('span');
+        flavorVal.textContent = battler.flavor || "—";
+        createRow('Flavor', flavorVal);
     }
 }
 
