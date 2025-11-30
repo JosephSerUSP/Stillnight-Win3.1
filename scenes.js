@@ -330,6 +330,10 @@ export class Scene_Battle extends Scene_Base {
                 this.animateBattler(event.target, 'flash');
                 await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
 
+                if (targetNewHp <= 0) {
+                     await this.animateDeath(event.target);
+                }
+
             } else if (event.type === 'heal' && event.target) {
                 if (event.animation) {
                      await this.playAnimation(event.target, event.animation);
@@ -499,7 +503,7 @@ export class Scene_Battle extends Scene_Base {
   _getBattlerContext(battler) {
       const enemyIndex = this.battleManager.enemies.indexOf(battler);
       if (enemyIndex !== -1) return { index: enemyIndex, isEnemy: true };
-      const partyIndex = this.party.members.indexOf(battler);
+      const partyIndex = this.party.slots.indexOf(battler);
       if (partyIndex !== -1) return { index: partyIndex, isEnemy: false };
       return null;
   }
@@ -541,6 +545,37 @@ export class Scene_Battle extends Scene_Base {
 
       interpolator();
     });
+  }
+
+  /**
+   * Performs the death animation for a battler.
+   * Collapses the HP gauge and flickers the battler before hiding it.
+   * @param {import("./objects.js").Game_Battler} battler - The battler.
+   * @returns {Promise} Resolves when animation completes.
+   */
+  async animateDeath(battler) {
+    const ctx = this._getBattlerContext(battler);
+    if (!ctx) return;
+
+    const hpEl = this.battleWindow.getHpElement(ctx.index, ctx.isEnemy);
+    const battlerEl = this.battleWindow.getBattlerElement(ctx.index, ctx.isEnemy);
+    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+    // Collapse Gauge
+    if (hpEl) {
+      for (let i = 15; i >= 0; i--) {
+        hpEl.textContent = `[${" ".repeat(i)}]`;
+        await delay(30);
+      }
+    }
+
+    // Flicker and Disappear
+    if (battlerEl) {
+      this.animateBattler(battler, 'flash');
+      await delay(200);
+      battler.hidden = true;
+      this.renderBattleAscii();
+    }
   }
 
   /**

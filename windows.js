@@ -909,6 +909,7 @@ export class Window_Battle extends Window_Base {
 
     battlers.forEach((e, idx) => {
         if (!e) return;
+        if (e.hidden) return;
         const top = 30 + Math.floor(idx / 2) * 40;
         const left = 20 + (idx % 2) * 220;
         const hp = e.hp;
@@ -929,6 +930,7 @@ export class Window_Battle extends Window_Base {
 
     party.forEach((p, idx) => {
         if (!p) return;
+        if (p.hidden) return;
         const top = 140 + Math.floor(idx / 2) * 40;
         const left = 20 + (idx % 2) * 220;
         const hp = p.hp;
