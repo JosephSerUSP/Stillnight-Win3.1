@@ -521,6 +521,98 @@ export class Window_Base {
 }
 
 /**
+ * @class Window_Selectable
+ * @extends Window_Base
+ * @description A window that displays a list of selectable items.
+ * Handles event delegation for clicks and manages selection state.
+ */
+export class Window_Selectable extends Window_Base {
+    constructor(x, y, width, height, options = {}) {
+        super(x, y, width, height, options);
+        this._index = -1;
+        this._data = [];
+        this._handlers = {};
+
+        // Event Delegation
+        this.content.addEventListener("click", this.onClick.bind(this));
+    }
+
+    /**
+     * Sets a handler for a specific action.
+     * @param {string} symbol
+     * @param {Function} method
+     */
+    setHandler(symbol, method) {
+        this._handlers[symbol] = method;
+    }
+
+    /**
+     * Calls a handler for the given symbol.
+     * @param {string} symbol
+     * @param {...any} args
+     */
+    callHandler(symbol, ...args) {
+        if (this._handlers[symbol]) {
+            this._handlers[symbol](...args);
+        }
+    }
+
+    /**
+     * Selects an item by index.
+     * @param {number} index
+     */
+    select(index) {
+        if (this._index === index) return;
+
+        if (this._index >= 0) {
+            const prev = this.content.querySelector(`[data-index="${this._index}"]`);
+            if (prev) prev.classList.remove("selected");
+        }
+
+        this._index = index;
+
+        if (this._index >= 0) {
+            const curr = this.content.querySelector(`[data-index="${this._index}"]`);
+            if (curr) curr.classList.add("selected");
+            this.callHandler('select', this.item());
+        }
+    }
+
+    deselect() {
+        this.select(-1);
+    }
+
+    item() {
+        return this._data && this._index >= 0 ? this._data[this._index] : null;
+    }
+
+    onClick(e) {
+        const itemEl = e.target.closest('[data-index]');
+        if (!itemEl) return;
+
+        const index = parseInt(itemEl.dataset.index, 10);
+        this.select(index);
+
+        const actionEl = e.target.closest('[data-action]');
+        if (actionEl && itemEl.contains(actionEl)) {
+            const action = actionEl.dataset.action;
+            this.callHandler(action, this._data[index], index);
+        } else {
+            this.callHandler('click', this._data[index], index);
+        }
+    }
+
+    setData(data) {
+        this._data = data;
+        this.refresh();
+    }
+
+    refresh() {
+        // To be implemented by subclasses
+    }
+}
+
+/**
  * @class Window_Help
  */
 export class Window_Help extends Window_Base {
@@ -882,7 +974,7 @@ export class Window_Evolution extends Window_Base {
 /**
  * @class Window_Shop
  */
-export class Window_Shop extends Window_Base {
+export class Window_Shop extends Window_Selectable {
   constructor() {
     super('center', 'center', 420, 320, { title: "Shop – Stillnight", id: "shop-window" });
 
@@ -910,16 +1002,25 @@ export class Window_Shop extends Window_Base {
   }
 
   setup(gold, message, items, buyCallback) {
+    this.gold = gold; // Store gold for availability checks
     this.goldLabelEl.textContent = `${gold}G`;
     this.messageEl.textContent = message;
-    this.renderItems(items, buyCallback);
+
+    this.setHandler('buy', (item) => {
+        // Prevent buying if too expensive (safety check, though button is disabled)
+        if (item.cost > this.gold) return;
+        if (buyCallback) buyCallback(item.id);
+    });
+
+    this.setData(items);
   }
 
-  renderItems(items, buyCallback) {
+  refresh() {
     this.listContainer.innerHTML = "";
-    items.forEach((tpl) => {
+    this._data.forEach((tpl, index) => {
       const row = document.createElement("div");
       row.className = "window-row";
+      row.dataset.index = index;
 
       const label = createInteractiveLabel(tpl, 'item');
       row.appendChild(label);
@@ -932,9 +1033,13 @@ export class Window_Shop extends Window_Base {
       const btn = document.createElement("button");
       btn.className = "win-btn";
       btn.textContent = "Buy";
-      btn.addEventListener("click", () => {
-        buyCallback(tpl.id);
-      });
+      btn.dataset.action = "buy";
+
+      if (tpl.cost > this.gold) {
+          btn.disabled = true;
+          btn.classList.add("disabled");
+      }
+
       row.appendChild(btn);
 
       this.listContainer.appendChild(row);
@@ -1046,7 +1151,7 @@ export class Window_Formation extends Window_Base {
 /**
  * @class Window_Inventory
  */
-export class Window_Inventory extends Window_Base {
+export class Window_Inventory extends Window_Selectable {
   constructor() {
     super('center', 'center', 400, 300, { title: "Inventory", id: "inventory-window" });
 
@@ -1070,9 +1175,7 @@ export class Window_Inventory extends Window_Base {
     this.btnTabEquipment.onclick = () => this.switchTab('equipment');
     this.tabNav.appendChild(this.btnTabEquipment);
 
-    // List container (using panel style? Or simple div)
     this.listEl = document.createElement("div");
-    // We can style it as a panel if we want
     this.listEl.style.flex = "1";
     this.content.appendChild(this.listEl);
 
@@ -1089,39 +1192,53 @@ export class Window_Inventory extends Window_Base {
     this.onDiscard = null;
   }
 
-  refresh(party, onUse, onDiscard) {
+  setup(party, onUse, onDiscard) {
     this.party = party;
     this.onUse = onUse;
     this.onDiscard = onDiscard;
-    this.showItemList();
+
+    this.setHandler('use', (item) => this.showTargetSelection(item));
+    this.setHandler('equip', (item) => this.showTargetSelection(item));
+    this.setHandler('discard', (item) => {
+        if (this.onDiscard) this.onDiscard(item);
+    });
+    this.setHandler('target', (member) => {
+        if (this.onUse) this.onUse(this.selectedItem, member);
+    });
+
+    this.updateList();
   }
 
   switchTab(tab) {
       this.currentTab = tab;
       this.btnTabConsumable.classList.toggle('active', tab === 'consumable');
       this.btnTabEquipment.classList.toggle('active', tab === 'equipment');
-      this.showItemList();
+      this.updateList();
   }
 
-  showItemList() {
-    this.listEl.innerHTML = "";
+  updateList() {
     let inventory = this.party.inventory;
     if (this.currentTab === 'consumable') {
         inventory = inventory.filter(i => i.type !== 'equipment');
     } else {
         inventory = inventory.filter(i => i.type === 'equipment');
     }
+    this.setData(inventory);
+  }
 
-    if (inventory.length === 0) {
+  refresh() {
+    this.listEl.innerHTML = "";
+    if (!this._data || this._data.length === 0) {
       this.emptyMsgEl.style.display = "block";
       this.emptyMsgEl.textContent = this.currentTab === 'consumable' ? "No consumables." : "No equipment.";
     } else {
       this.emptyMsgEl.style.display = "none";
-      inventory.forEach((item, idx) => {
+      this._data.forEach((item, idx) => {
         const row = document.createElement("div");
         row.className = "window-row";
         row.style.borderBottom = "1px solid var(--bezel-shadow)";
         row.style.paddingBottom = "2px";
+        row.dataset.index = idx;
 
         let tooltipText = item.description;
         let effectsText = "";
@@ -1152,13 +1269,13 @@ export class Window_Inventory extends Window_Base {
         const useBtn = document.createElement("button");
         useBtn.className = "win-btn";
         useBtn.textContent = this.currentTab === 'equipment' ? "Equip" : "Use";
-        useBtn.addEventListener("click", () => this.showTargetSelection(item));
+        useBtn.dataset.action = this.currentTab === 'equipment' ? "equip" : "use";
+
         const discardBtn = document.createElement("button");
         discardBtn.className = "win-btn";
         discardBtn.textContent = "Discard";
-        discardBtn.addEventListener("click", () => {
-            if (this.onDiscard) this.onDiscard(item);
-        });
+        discardBtn.dataset.action = "discard";
+
         btns.appendChild(useBtn);
         btns.appendChild(discardBtn);
 
@@ -1169,7 +1286,11 @@ export class Window_Inventory extends Window_Base {
   }
 
   showTargetSelection(item) {
+    this.selectedItem = item;
     this.listEl.innerHTML = "";
+
+    this.setData(this.party.members);
+
     const action = this.currentTab === 'equipment' ? "Equip" : "Use";
     const header = document.createElement("div");
     header.textContent = `${action} ${item.name} on:`;
@@ -1177,13 +1298,11 @@ export class Window_Inventory extends Window_Base {
     header.style.textAlign = "center";
     this.listEl.appendChild(header);
 
-    this.party.members.forEach((m, index) => {
-      const slot = createPartySlot(m, index, {
-          onClick: () => {
-              if (this.onUse) this.onUse(item, m);
-          }
-      });
+    this._data.forEach((m, index) => {
+      const slot = createPartySlot(m, index, {});
       slot.style.marginBottom = "4px";
+      slot.dataset.action = "target";
+
       this.listEl.appendChild(slot);
     });
 
@@ -1193,7 +1312,10 @@ export class Window_Inventory extends Window_Base {
     backBtn.style.width = '90%';
     backBtn.style.margin = '20px auto 5px auto';
     backBtn.textContent = "Back";
-    backBtn.onclick = () => this.showItemList();
+    backBtn.onclick = () => {
+        this.selectedItem = null;
+        this.showItemList();
+    };
     this.listEl.appendChild(backBtn);
   }
 }
@@ -1384,6 +1506,8 @@ export class Window_StackNav extends Window_Base {
         this.content.appendChild(this.groupCards);
 
         // Cache buttons for Window_HUD to expose
+        this.btnNewRun = this.groupRun.querySelector("#btn-new-run");
+        this.btnRevealAll = this.groupRun.querySelector("#btn-reveal-all");
         this.btnSettings = this.groupRun.querySelector("#btn-settings");
         this.btnHelp = this.groupRun.querySelector("#btn-help");
 
@@ -1576,6 +1700,11 @@ export class Window_HUD {
     createUI() {
         this.container.innerHTML = "";
 
+        // Inject grid dimensions for CSS
+        // The container needs to set these variables so .exploration-grid can use them.
+        this.container.style.setProperty('--grid-cols', '19');
+        this.container.style.setProperty('--grid-rows', '19');
+
         // 1. Stack Nav Window
         this.stackNav = new Window_StackNav();
         this.container.appendChild(this.stackNav.element);
@@ -1633,6 +1762,11 @@ export class Window_HUD {
 
     get btnSettings() { return this.stackNav.btnSettings; }
     get btnHelp() { return this.stackNav.btnHelp; }
+    get btnNewRun() { return this.stackNav.btnNewRun; }
+    get btnRevealAll() { return this.stackNav.btnRevealAll; }
+    get btnFormation() { return this.partyPanel.btnFormation; }
+    get btnInventory() { return this.partyPanel.btnInventory; }
+    get btnClearLog() { return this.logPanel.btnClear; }
 
     updateCardHeader(floor, index, total) {
         this.stackNav.updateCardHeader(floor, index, total);
@@ -1883,6 +2017,7 @@ export class Window_Options extends Window_Base {
 if (typeof window !== 'undefined' && window.location.search.includes("test=true")) {
     window.Window_Formation = Window_Formation;
     window.Window_Inventory = Window_Inventory;
+    window.Window_Shop = Window_Shop;
     window.Window_Help = Window_Help;
     window.Window_HUD = Window_HUD;
 }

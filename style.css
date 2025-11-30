@@ -408,8 +408,9 @@ html, body {
     width: 416px;
     height: 416px;
     display: grid;
-    grid-template-columns: repeat(19, 1fr);
-    grid-template-rows: repeat(19, 1fr);
+    /* Use variables injected by JS, fallback to 19 */
+    grid-template-columns: repeat(var(--grid-cols, 19), 1fr);
+    grid-template-rows: repeat(var(--grid-rows, 19), 1fr);
     gap: 2px;
 }
 
@@ -850,4 +851,9 @@ html, body {
     align-items: center;
     gap: 4px;
     margin-bottom: 2px;
+}
+
+.window-row.selected {
+    background-color: var(--selection-bg);
+    color: var(--selection-text);
 }

@@ -41,11 +41,9 @@ Currently, `Window_Inventory` and `Window_Shop` attach individual `click` listen
 
 ### 3. Standardized `Window_Selectable`
 Create a robust `Window_Selectable` class (extending `Window_Base`) that:
-*   Maintains an `_index` (cursor position).
-*   Handles `ArrowUp` / `ArrowDown` to change the index.
+*   Maintains an `_index` (selection position).
 *   Updates a visual `.selected` CSS class on the corresponding DOM element.
-*   Ensures the selected element is scrolled into view (`element.scrollIntoView()`).
-*   **Usage**: `Window_Inventory`, `Window_Shop`, and `Window_Formation` should all inherit from this to provide uniform keyboard/mouse navigation.
+*   **Usage**: `Window_Inventory`, `Window_Shop`, and `Window_Formation` should all inherit from this to provide uniform mouse navigation.
 
 ### 4. Generic `Window_Command`
 Currently, buttons are added manually via `addButton`.
@@ -63,6 +61,6 @@ The `style.css` contains hardcoded grid sizes (e.g., `.exploration-grid` width).
 
 ## Plan Summary
 1.  **Refactor `Window_HUD`** components to use `Window_Base` structure where appropriate.
-2.  **Implement `Window_Selectable`** with event delegation and keyboard support.
+2.  **Implement `Window_Selectable`** with event delegation.
 3.  **Refactor Lists** (Inventory/Shop) to use `Window_Selectable`.
 4.  **Externalize Grid Dimensions**: Inject CSS variables for map width/height based on `Game_Map` constants.
