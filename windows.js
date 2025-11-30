@@ -346,6 +346,12 @@ export class WindowManager {
   handleInput(e) {
       if (this.stack.length === 0) return false;
       const topWindow = this.stack[this.stack.length - 1];
+
+      // Delegate to window if it handles input
+      if (topWindow.processInput && topWindow.processInput(e)) {
+          return true;
+      }
+
       if (e.key === "Escape") {
           topWindow.onEscape();
           return true;
@@ -504,6 +510,100 @@ export class Window_Base {
         panel.className = "window-panel";
         this.content.appendChild(panel);
         return panel;
+    }
+}
+
+/**
+ * @class Window_Selectable
+ * @extends Window_Base
+ */
+export class Window_Selectable extends Window_Base {
+    constructor(x, y, width, height, options = {}) {
+        super(x, y, width, height, options);
+        this._index = -1;
+        this._listElements = [];
+        this._onOk = null;
+        this._onCancel = null;
+    }
+
+    setHandler(symbol, method) {
+        if (symbol === 'ok') this._onOk = method;
+        if (symbol === 'cancel') this._onCancel = method;
+    }
+
+    setListElements(elements) {
+        this._listElements = elements;
+        // Auto-select first if available
+        if (this._listElements.length > 0) {
+            this.select(0);
+        } else {
+            this._index = -1;
+        }
+    }
+
+    select(index) {
+        if (this._listElements.length === 0) {
+            this._index = -1;
+            return;
+        }
+
+        if (index < 0) index = 0;
+        if (index >= this._listElements.length) index = this._listElements.length - 1;
+
+        if (this._index >= 0 && this._index < this._listElements.length) {
+            this._listElements[this._index].classList.remove('selected');
+        }
+
+        this._index = index;
+
+        const el = this._listElements[this._index];
+        if (el) {
+            el.classList.add('selected');
+            el.scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    processInput(e) {
+        if (this._listElements.length === 0) return false;
+
+        if (e.key === 'ArrowDown') {
+            this.cursorDown();
+            return true;
+        } else if (e.key === 'ArrowUp') {
+            this.cursorUp();
+            return true;
+        } else if (e.key === 'Enter') {
+            this.processOk();
+            return true;
+        }
+        return false;
+    }
+
+    cursorDown() {
+        if (this._index < this._listElements.length - 1) {
+            this.select(this._index + 1);
+            SoundManager.beep(100, 20);
+        }
+    }
+
+    cursorUp() {
+        if (this._index > 0) {
+            this.select(this._index - 1);
+            SoundManager.beep(100, 20);
+        }
+    }
+
+    processOk() {
+        if (this._index >= 0) {
+            // Trigger the primary action button if it exists within the row
+            const el = this._listElements[this._index];
+            const primaryBtn = el.querySelector('button');
+            if (primaryBtn) {
+                primaryBtn.click();
+            } else {
+                el.click();
+            }
+        }
     }
 }
 
@@ -869,7 +969,7 @@ export class Window_Evolution extends Window_Base {
 /**
  * @class Window_Shop
  */
-export class Window_Shop extends Window_Base {
+export class Window_Shop extends Window_Selectable {
   constructor() {
     super('center', 'center', 420, 320, { title: "Shop – Stillnight", id: "shop-window" });
 
@@ -904,6 +1004,7 @@ export class Window_Shop extends Window_Base {
 
   renderItems(items, buyCallback) {
     this.listContainer.innerHTML = "";
+    const listElements = [];
     items.forEach((tpl) => {
       const row = document.createElement("div");
       row.className = "window-row";
@@ -925,7 +1026,9 @@ export class Window_Shop extends Window_Base {
       row.appendChild(btn);
 
       this.listContainer.appendChild(row);
+      listElements.push(row);
     });
+    this.setListElements(listElements);
   }
 }
 
@@ -1033,7 +1136,7 @@ export class Window_Formation extends Window_Base {
 /**
  * @class Window_Inventory
  */
-export class Window_Inventory extends Window_Base {
+export class Window_Inventory extends Window_Selectable {
   constructor() {
     super('center', 'center', 400, 300, { title: "Inventory", id: "inventory-window" });
 
@@ -1090,8 +1193,19 @@ export class Window_Inventory extends Window_Base {
       this.showItemList();
   }
 
+  processInput(e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+          const newTab = this.currentTab === 'consumable' ? 'equipment' : 'consumable';
+          this.switchTab(newTab);
+          SoundManager.beep(200, 50);
+          return true;
+      }
+      return super.processInput(e);
+  }
+
   showItemList() {
     this.listEl.innerHTML = "";
+    const listElements = [];
     let inventory = this.party.inventory;
     if (this.currentTab === 'consumable') {
         inventory = inventory.filter(i => i.type !== 'equipment');
@@ -1151,12 +1265,15 @@ export class Window_Inventory extends Window_Base {
 
         row.appendChild(btns);
         this.listEl.appendChild(row);
+        listElements.push(row);
       });
     }
+    this.setListElements(listElements);
   }
 
   showTargetSelection(item) {
     this.listEl.innerHTML = "";
+    const listElements = [];
     const action = this.currentTab === 'equipment' ? "Equip" : "Use";
     const header = document.createElement("div");
     header.textContent = `${action} ${item.name} on:`;
@@ -1172,6 +1289,7 @@ export class Window_Inventory extends Window_Base {
       });
       slot.style.marginBottom = "4px";
       this.listEl.appendChild(slot);
+      listElements.push(slot);
     });
 
     const backBtn = document.createElement("button");
@@ -1182,6 +1300,8 @@ export class Window_Inventory extends Window_Base {
     backBtn.textContent = "Back";
     backBtn.onclick = () => this.showItemList();
     this.listEl.appendChild(backBtn);
+
+    this.setListElements(listElements);
   }
 }
 

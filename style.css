@@ -40,6 +40,10 @@
     --selection-bg: #000080;
     --selection-text: #ffffff;
 
+    /* Metrics */
+    --window-header-height: 20px;
+    --window-border-width: 2px;
+
     /* New Semantic Variables */
     --content-bg: #ffffff;
     --gauge-hp: #00a000;
@@ -83,7 +87,7 @@ html, body {
     /* Layout handled in JS */
     background-color: var(--window-bg);
     box-sizing: border-box;
-    border: 2px solid var(--window-border);
+    border: var(--window-border-width) solid var(--window-border);
     box-shadow:
         0 0 0 1px var(--bezel-light) inset,
         0 0 0 2px var(--bezel-shadow) inset,
@@ -92,7 +96,7 @@ html, body {
 
 /* Generic Window Header (Replaces .title-bar and .dialog-titlebar) */
 .window-header {
-    height: 20px;
+    height: var(--window-header-height);
     background: linear-gradient(90deg, var(--window-header-bg-start), var(--window-header-bg-end));
     color: var(--window-header-text);
     display: flex;
@@ -104,7 +108,7 @@ html, body {
 
 /* Legacy support until JS is fully updated */
 .title-bar, .dialog-titlebar {
-    height: 20px;
+    height: var(--window-header-height);
     background: linear-gradient(90deg, var(--window-header-bg-start), var(--window-header-bg-end));
     color: var(--window-header-text);
     display: flex;
@@ -202,7 +206,7 @@ html, body {
 
 .panel {
     background-color: var(--window-bg);
-    border: 2px solid var(--bezel-shadow);
+    border: var(--window-border-width) solid var(--bezel-shadow);
     box-shadow:
         1px 1px 0 var(--bezel-light) inset,
         -1px -1px 0 var(--bezel-dark) inset;
@@ -806,7 +810,7 @@ html, body {
     display: flex;
     flex-direction: column;
     background-color: var(--window-bg);
-    border: 2px solid var(--window-border);
+    border: var(--window-border-width) solid var(--window-border);
     box-shadow:
         0 0 0 1px var(--bezel-light) inset,
         0 0 0 2px var(--bezel-shadow) inset,
@@ -850,4 +854,9 @@ html, body {
     align-items: center;
     gap: 4px;
     margin-bottom: 2px;
+}
+
+.window-row.selected {
+    background-color: var(--selection-bg);
+    color: var(--selection-text);
 }
