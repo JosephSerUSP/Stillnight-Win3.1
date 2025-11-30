@@ -20,6 +20,12 @@ export function createBattlerNameLabel(battler, options = {}) {
         container.appendChild(createElementIcon(battler.elements));
     }
 
+    const levelSpan = document.createElement("span");
+    levelSpan.textContent = `Lv.${battler.level}`;
+    levelSpan.style.margin = "0 4px";
+    levelSpan.style.fontSize = "10px";
+    container.appendChild(levelSpan);
+
     const nameSpan = document.createElement("span");
     nameSpan.textContent = battler.name;
     container.appendChild(nameSpan);
@@ -192,12 +198,51 @@ export function createInteractiveLabel(data, type, options = {}) {
 }
 
 /**
+ * Draws standard battler gauges (HP, XP) for slot displays.
+ * @param {import("./objects.js").Game_Battler} battler
+ */
+export function drawBattlerStats(battler) {
+    const container = document.createElement("div");
+    container.style.display = "flex";
+    container.style.flexDirection = "column";
+    container.style.flexGrow = "1";
+    container.style.minWidth = "0"; // Enable flex shrinking
+
+    // HP Text
+    const hpText = document.createElement("div");
+    hpText.textContent = `HP ${battler.hp}/${battler.maxHp}`;
+    hpText.style.fontSize = "10px";
+    hpText.style.marginBottom = "1px";
+    container.appendChild(hpText);
+
+    // HP Gauge
+    const { container: hpGauge, fill: hpFill } = createGauge({ height: "6px", color: "var(--gauge-hp)" });
+    hpGauge.style.marginBottom = "2px";
+    hpFill.style.width = `${Math.max(0, (battler.hp / battler.maxHp) * 100)}%`;
+    hpFill.classList.add('hp-fill');
+    container.appendChild(hpGauge);
+
+    // XP Gauge
+    const xpNeeded = battler.xpNeeded(battler.level);
+    const xpPercent = Math.min(100, Math.max(0, ((battler.xp || 0) / xpNeeded) * 100));
+    const { container: xpGauge, fill: xpFill } = createGauge({
+        height: "4px",
+        color: "#60a0ff",
+        bgColor: "#333"
+    });
+    xpFill.style.width = `${xpPercent}%`;
+    container.appendChild(xpGauge);
+
+    return container;
+}
+
+/**
  * Creates a standard party member slot.
  */
 export function createPartySlot(battler, index, options = {}) {
     const slot = document.createElement("div");
     slot.className = "party-slot";
-    slot.style.width = "124px";
+    slot.style.width = "100%"; // Changed from fixed 124px to 100%
     slot.style.height = "116px";
     slot.style.display = "flex";
     slot.style.flexDirection = "column";
@@ -272,35 +317,8 @@ export function createPartySlot(battler, index, options = {}) {
     portrait.style.flexShrink = "0";
     body.appendChild(portrait);
 
-    const stats = document.createElement("div");
-    stats.className = "party-slot-stats";
-    stats.style.display = "flex";
-    stats.style.flexDirection = "column";
-    stats.style.flexGrow = "1";
+    const stats = drawBattlerStats(battler);
     stats.style.marginLeft = "4px";
-    stats.style.justifyContent = "flex-start";
-
-    const hpText = document.createElement("div");
-    hpText.textContent = `HP ${battler.hp}/${battler.maxHp}`;
-    hpText.style.marginBottom = "1px";
-    stats.appendChild(hpText);
-
-    const { container: hpGauge, fill: hpFill } = createGauge({ height: "6px", color: "var(--gauge-hp)" });
-    hpGauge.style.marginBottom = "1px";
-    hpFill.style.width = `${Math.max(0, (battler.hp / battler.maxHp) * 100)}%`;
-    hpFill.classList.add('hp-fill');
-    stats.appendChild(hpGauge);
-
-    const xpNeeded = battler.xpNeeded(battler.level);
-    const xpPercent = Math.min(100, Math.max(0, ((battler.xp || 0) / xpNeeded) * 100));
-    const { container: xpGauge, fill: xpFill } = createGauge({
-        height: "4px",
-        color: "#60a0ff",
-        bgColor: "#333"
-    });
-    xpFill.style.width = `${xpPercent}%`;
-    stats.appendChild(xpGauge);
-
     body.appendChild(stats);
     slot.appendChild(body);
 
@@ -326,6 +344,70 @@ export function createPartySlot(battler, index, options = {}) {
 /**
  * @class WindowLayer
  */
+/**
+ * Creates a compact slot for reserve members.
+ */
+export function createReserveSlot(battler, index, options = {}) {
+    const slot = document.createElement("div");
+    slot.className = "party-slot";
+    slot.style.width = "100%";
+    slot.style.height = "54px"; // 48px + padding/border
+    slot.style.display = "flex";
+    slot.style.boxSizing = "border-box";
+    slot.style.padding = "2px";
+    slot.style.alignItems = "center";
+
+    if (options.className) slot.classList.add(options.className);
+    slot.dataset.index = index;
+    if (options.testId) slot.dataset.testid = options.testId;
+
+    if (options.onClick) {
+        slot.addEventListener("click", (e) => options.onClick(battler, index, e));
+    }
+
+    if (!battler) {
+        const empty = document.createElement("div");
+        empty.textContent = "(Empty)";
+        empty.style.margin = "auto";
+        slot.appendChild(empty);
+        return slot;
+    }
+
+    // Portrait
+    const portrait = document.createElement("div");
+    portrait.className = "party-slot-portrait";
+    portrait.style.backgroundImage = `url('assets/portraits/${battler.spriteKey || "pixie"}.png')`;
+    portrait.style.width = "48px";
+    portrait.style.height = "48px";
+    portrait.style.flexShrink = "0";
+    slot.appendChild(portrait);
+
+    // Info
+    const info = document.createElement("div");
+    info.style.display = "flex";
+    info.style.flexDirection = "column";
+    info.style.marginLeft = "6px";
+    info.style.justifyContent = "center";
+    info.style.overflow = "hidden";
+    info.style.flexGrow = "1";
+    info.style.whiteSpace = "nowrap";
+
+    // Label
+    const label = createBattlerNameLabel(battler, { evolutionStatus: options.evolutionStatus });
+    label.style.overflow = "hidden";
+    label.style.textOverflow = "ellipsis";
+    label.style.marginBottom = "2px";
+    info.appendChild(label);
+
+    // Gauges
+    const gauges = drawBattlerStats(battler);
+    info.appendChild(gauges);
+
+    slot.appendChild(info);
+
+    return slot;
+}
+
 export class WindowLayer {
   constructor() {
     this.element = document.createElement("div");
@@ -745,8 +827,9 @@ export class Window_Battle extends Window_Base {
     this.viewportEl.appendChild(header);
 
     battlers.forEach((e, idx) => {
-        const top = 30 + (idx % 2) * 40;
-        const left = 20 + Math.floor(idx / 2) * 220;
+        if (!e) return;
+        const top = 30 + Math.floor(idx / 2) * 40;
+        const left = 20 + (idx % 2) * 220;
         const hp = e.hp;
 
         const primaryElements = getPrimaryElements(e.elements);
@@ -764,8 +847,9 @@ export class Window_Battle extends Window_Base {
     });
 
     party.forEach((p, idx) => {
-        const top = 140 + (idx % 2) * 40;
-        const left = 20 + Math.floor(idx / 2) * 220;
+        if (!p) return;
+        const top = 140 + Math.floor(idx / 2) * 40;
+        const left = 20 + (idx % 2) * 220;
         const hp = p.hp;
 
         const primaryElements = getPrimaryElements(p.elements);
@@ -983,10 +1067,27 @@ export class Window_Evolution extends Window_Base {
  */
 export class Window_Shop extends Window_Selectable {
   constructor() {
-    super('center', 'center', 420, 320, { title: "Shop – Stillnight", id: "shop-window" });
+    super('center', 'center', 420, 360, { title: "Shop – Stillnight", id: "shop-window" });
 
     const shopBody = this.createPanel();
     shopBody.style.flexGrow = "1";
+
+    this.tabNav = document.createElement("div");
+    this.tabNav.className = "tab-nav";
+
+    this.btnBuy = document.createElement("button");
+    this.btnBuy.className = "tab-btn active";
+    this.btnBuy.textContent = "Buy";
+    this.btnBuy.onclick = () => this.callHandler('mode_buy');
+    this.tabNav.appendChild(this.btnBuy);
+
+    this.btnSell = document.createElement("button");
+    this.btnSell.className = "tab-btn";
+    this.btnSell.textContent = "Sell";
+    this.btnSell.onclick = () => this.callHandler('mode_sell');
+    this.tabNav.appendChild(this.btnSell);
+
+    shopBody.appendChild(this.tabNav);
 
     const goldRow = document.createElement('div');
     goldRow.className = 'window-row';
@@ -997,6 +1098,8 @@ export class Window_Shop extends Window_Selectable {
     shopBody.appendChild(goldRow);
 
     this.listContainer = document.createElement('div');
+    this.listContainer.style.flex = "1";
+    this.listContainer.style.overflowY = "auto";
     shopBody.appendChild(this.listContainer);
 
     this.messageEl = document.createElement('div');
@@ -1006,15 +1109,23 @@ export class Window_Shop extends Window_Selectable {
     shopBody.appendChild(this.messageEl);
 
     this.btnLeave = this.addButton("Leave", () => {});
+
+    this.mode = 'buy';
   }
 
-  setup(gold, message, items, buyCallback) {
-    this.gold = gold; // Store gold for availability checks
+  setMode(mode) {
+      this.mode = mode;
+      this.btnBuy.classList.toggle('active', mode === 'buy');
+      this.btnSell.classList.toggle('active', mode === 'sell');
+  }
+
+  setupBuy(gold, message, items, buyCallback) {
+    this.setMode('buy');
+    this.gold = gold;
     this.goldLabelEl.textContent = `${gold}G`;
     this.messageEl.textContent = message;
 
     this.setHandler('buy', (item) => {
-        // Prevent buying if too expensive (safety check, though button is disabled)
         if (item.cost > this.gold) return;
         if (buyCallback) buyCallback(item.id);
     });
@@ -1022,8 +1133,29 @@ export class Window_Shop extends Window_Selectable {
     this.setData(items);
   }
 
+  setupSell(gold, inventory, sellCallback) {
+      this.setMode('sell');
+      this.gold = gold;
+      this.goldLabelEl.textContent = `${gold}G`;
+      this.messageEl.textContent = "Select an item to sell.";
+
+      this.setHandler('sell', (item) => {
+          if (sellCallback) sellCallback(item);
+      });
+
+      this.setData(inventory);
+  }
+
   refresh() {
     this.listContainer.innerHTML = "";
+    if (this._data.length === 0) {
+        const p = document.createElement("div");
+        p.textContent = this.mode === 'buy' ? "No items for sale." : "Nothing to sell.";
+        p.style.padding = "4px";
+        this.listContainer.appendChild(p);
+        return;
+    }
+
     this._data.forEach((tpl, index) => {
       const row = document.createElement("div");
       row.className = "window-row";
@@ -1032,19 +1164,29 @@ export class Window_Shop extends Window_Selectable {
       const label = createInteractiveLabel(tpl, 'item');
       row.appendChild(label);
 
+      let price = tpl.cost;
+      if (this.mode === 'sell') {
+          price = Math.floor(tpl.cost / 2);
+      }
+
       const costSpan = document.createElement("span");
-      costSpan.textContent = ` (${tpl.cost}G)`;
+      costSpan.textContent = ` (${price}G)`;
       costSpan.style.marginRight = "auto";
       row.appendChild(costSpan);
 
       const btn = document.createElement("button");
       btn.className = "win-btn";
-      btn.textContent = "Buy";
-      btn.dataset.action = "buy";
 
-      if (tpl.cost > this.gold) {
-          btn.disabled = true;
-          btn.classList.add("disabled");
+      if (this.mode === 'buy') {
+          btn.textContent = "Buy";
+          btn.dataset.action = "buy";
+          if (price > this.gold) {
+              btn.disabled = true;
+              btn.classList.add("disabled");
+          }
+      } else {
+          btn.textContent = "Sell";
+          btn.dataset.action = "sell";
       }
 
       row.appendChild(btn);
@@ -1059,14 +1201,15 @@ export class Window_Shop extends Window_Selectable {
  */
 export class Window_Formation extends Window_Base {
   constructor() {
-    super('center', 'center', 300, 320, { title: "Formation – Stillnight", id: "formation-window" });
+    super('center', 'center', 300, 480, { title: "Formation – Stillnight", id: "formation-window" });
 
     const formationBody = this.createPanel();
     formationBody.style.flexGrow = "1";
+    formationBody.style.overflowY = "auto";
 
     const label = document.createElement('div');
     label.className = 'formation-label';
-    label.textContent = 'Drag and drop to rearrange. Active party is the first 4 members.';
+    label.textContent = 'Click a member to select, then another to swap. Active party is the first 4.';
     formationBody.appendChild(label);
 
     this.gridEl = document.createElement('div');
@@ -1095,7 +1238,7 @@ export class Window_Formation extends Window_Base {
     this.btnOk = this.addButton("OK", () => this.onUserClose());
     this.btnCancel = this.addButton("Cancel", () => this.onUserClose());
 
-    this.draggedIndex = null;
+    this.selectedSlotIndex = null;
     this.party = null;
     this.onChange = null;
     this.context = null;
@@ -1105,6 +1248,7 @@ export class Window_Formation extends Window_Base {
       this.party = party;
       this.context = context;
       if (onChange) this.onChange = onChange;
+      this.selectedSlotIndex = null;
       this.renderFormationGrid();
   }
 
@@ -1123,14 +1267,22 @@ export class Window_Formation extends Window_Base {
           }
       }
 
-      const slot = createPartySlot(m, index, {
-          draggable: true,
-          onDragStart: this.onDragStart.bind(this),
-          onDragOver: this.onDragOver.bind(this),
-          onDrop: this.onDrop.bind(this),
-          onDragEnd: this.onDragEnd.bind(this),
+      const isReserve = index >= 4;
+      const options = {
+          onClick: this.onSlotClick.bind(this),
           evolutionStatus: evolutionStatus
-      });
+      };
+
+      let slot;
+      if (isReserve) {
+          slot = createReserveSlot(m, index, options);
+      } else {
+          slot = createPartySlot(m, index, options);
+      }
+
+      if (this.selectedSlotIndex === index) {
+          slot.classList.add('selected');
+      }
 
       if (index < 4) {
         this.gridEl.appendChild(slot);
@@ -1140,29 +1292,19 @@ export class Window_Formation extends Window_Base {
     });
   }
 
-  onDragStart(e, index) {
-    this.draggedIndex = index;
-    const slot = e.target.closest(".party-slot");
-    if (slot) slot.classList.add("dragging");
-  }
-  onDragOver(e) {
-    e.preventDefault();
-    const target = e.target.closest(".party-slot");
-    if (target) target.classList.add("drag-over");
-  }
-  onDrop(e, targetIndex) {
-    e.preventDefault();
-    if (this.draggedIndex === null || this.draggedIndex === targetIndex) return;
-    if (this.party.reorderMembers(this.draggedIndex, targetIndex)) {
-        this.draggedIndex = null;
-        this.renderFormationGrid();
-        SoundManager.beep(500, 80);
-        if (this.onChange) this.onChange();
-    }
-  }
-  onDragEnd(e) {
-    const allSlots = this.element.querySelectorAll(".party-slot");
-    allSlots.forEach((s) => s.classList.remove("dragging", "drag-over"));
+  onSlotClick(battler, index) {
+      if (this.selectedSlotIndex === null) {
+          this.selectedSlotIndex = index;
+      } else {
+          if (this.selectedSlotIndex !== index) {
+              if (this.party.reorderMembers(this.selectedSlotIndex, index)) {
+                  SoundManager.beep(500, 80);
+                  if (this.onChange) this.onChange();
+              }
+          }
+          this.selectedSlotIndex = null;
+      }
+      this.renderFormationGrid();
   }
 }
 
@@ -1604,9 +1746,9 @@ export class Window_PartyPanel extends Window_Base {
 
     updateParty(party, onInspect, context = null) {
         this.partyGridEl.innerHTML = "";
-        party.members.slice(0, 4).forEach((member, index) => {
+        party.slots.slice(0, 4).forEach((member, index) => {
             let evolutionStatus = null;
-            if (context) {
+            if (member && context) {
                 const statusObj = member.getEvolutionStatus(context.inventory, context.floorDepth, context.gold);
                 if (statusObj.status !== 'NONE') {
                     evolutionStatus = statusObj.status;
@@ -1618,19 +1760,21 @@ export class Window_PartyPanel extends Window_Base {
                 testId: `party-slot-${index}`,
                 evolutionStatus: evolutionStatus
             });
-            const gaugeFill = slot.querySelector('.hp-fill');
-            if (gaugeFill) {
-                const startHp = member.prevHp !== undefined ? member.prevHp : member.hp;
-                gaugeFill.style.width = `${Math.max(0, (startHp / member.maxHp) * 100)}%`;
-                this.animateGauge(
-                    gaugeFill,
-                    startHp,
-                    member.hp,
-                    member.maxHp,
-                    500
-                );
+            if (member) {
+                const gaugeFill = slot.querySelector('.hp-fill');
+                if (gaugeFill) {
+                    const startHp = member.prevHp !== undefined ? member.prevHp : member.hp;
+                    gaugeFill.style.width = `${Math.max(0, (startHp / member.maxHp) * 100)}%`;
+                    this.animateGauge(
+                        gaugeFill,
+                        startHp,
+                        member.hp,
+                        member.maxHp,
+                        500
+                    );
+                }
+                member.prevHp = member.hp;
             }
-            member.prevHp = member.hp;
             this.partyGridEl.appendChild(slot);
         });
     }
@@ -1833,9 +1977,10 @@ export function renderCreatureInfo(container, battler, title) {
  */
 export class Window_PartySelect extends Window_Selectable {
     constructor() {
-        super('center', 'center', 300, 320, { title: "Select Target", id: "party-select-window" });
+    super('center', 'center', 300, 480, { title: "Select Target", id: "party-select-window" });
         const body = this.createPanel();
         body.style.flexGrow = "1";
+        body.style.overflowY = "auto";
 
         this.msgEl = document.createElement("div");
         this.msgEl.style.marginBottom = "6px";
@@ -1862,7 +2007,8 @@ export class Window_PartySelect extends Window_Selectable {
     refresh() {
         this.gridEl.innerHTML = "";
         if (!this.party) return;
-        this.party.members.forEach((m, index) => {
+        this.party.members.forEach((m) => {
+            const realIndex = this.party.slots.indexOf(m);
             let evolutionStatus = null;
             if (this.context) {
                 const statusObj = m.getEvolutionStatus(this.context.inventory, this.context.floorDepth, this.context.gold);
@@ -1871,12 +2017,20 @@ export class Window_PartySelect extends Window_Selectable {
                 }
             }
 
-            const slot = createPartySlot(m, index, {
-                onClick: (member, idx) => {
-                    if (this.onSelect) this.onSelect(member, idx);
+            const isReserve = realIndex >= 4;
+            const options = {
+                onClick: (member) => {
+                    if (this.onSelect) this.onSelect(member);
                 },
                 evolutionStatus: evolutionStatus
-            });
+            };
+
+            let slot;
+            if (isReserve) {
+                slot = createReserveSlot(m, realIndex, options);
+            } else {
+                slot = createPartySlot(m, realIndex, options);
+            }
             this.gridEl.appendChild(slot);
         });
     }
@@ -2259,4 +2413,5 @@ if (typeof window !== 'undefined' && window.location.search.includes("test=true"
     window.Window_ConfirmEffect = Window_ConfirmEffect;
     window.Window_PartySelect = Window_PartySelect;
     window.Window_EquipItemSelect = Window_EquipItemSelect;
+    window.Window_Battle = Window_Battle;
 }
