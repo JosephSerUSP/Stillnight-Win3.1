@@ -1231,8 +1231,7 @@ export class Window_Formation extends Window_Base {
     this.reserveGridEl.style.gridTemplateColumns = 'repeat(2, 1fr)';
     this.reserveGridEl.style.gap = '4px';
     this.reserveGridEl.style.marginBottom = '4px';
-    this.reserveGridEl.style.maxHeight = '200px';
-    this.reserveGridEl.style.overflowY = 'auto';
+    // Removed inner scroll to match width and let parent scroll
     formationBody.appendChild(this.reserveGridEl);
 
     this.btnOk = this.addButton("OK", () => this.onUserClose());
@@ -1258,9 +1257,9 @@ export class Window_Formation extends Window_Base {
 
     if (!this.party) return;
 
-    this.party.members.forEach((m, index) => {
+    this.party.slots.forEach((m, index) => {
       let evolutionStatus = null;
-      if (this.context) {
+      if (m && this.context) {
           const statusObj = m.getEvolutionStatus(this.context.inventory, this.context.floorDepth, this.context.gold);
           if (statusObj.status !== 'NONE') {
               evolutionStatus = statusObj.status;
