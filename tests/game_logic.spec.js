@@ -33,7 +33,7 @@ test.describe('Game Logic', () => {
     });
 
     // Wait for battle window to appear
-    const battleWindow = page.locator('.window-header span', { hasText: 'Battle' });
+    const battleWindow = page.locator('.window-header span', { hasText: 'Battle – Stillnight' });
     await expect(battleWindow).toBeVisible();
 
     // Find close button

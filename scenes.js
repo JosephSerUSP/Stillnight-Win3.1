@@ -805,7 +805,12 @@ export class Scene_Shop extends Scene_Base {
 
         this.party.gold -= item.cost;
         this.party.inventory.push(item);
-        this.shopWindow.goldLabelEl.textContent = this.party.gold;
+
+        // Update window state to refresh button availability
+        this.shopWindow.gold = this.party.gold;
+        this.shopWindow.goldLabelEl.textContent = `${this.party.gold}G`;
+        this.shopWindow.refresh();
+
         this.shopWindow.messageEl.textContent = this.dataManager.terms.shop.purchased + item.name + ".";
     this.sceneManager.previous().logMessage(
             `[Shop] ${this.dataManager.terms.shop.purchased}${item.name}.`
@@ -1446,11 +1451,7 @@ export class Scene_Map extends Scene_Base {
    */
   getDomElements() {
     this.explorationGridEl = document.getElementById("exploration-grid");
-    this.cardTitleEl = document.getElementById("card-title");
-    this.cardIndexLabelEl = document.getElementById("card-index-label");
-    this.cardDepthLabelEl = document.getElementById("card-depth-label");
-    this.cardListEl = document.getElementById("card-list");
-    this.partyGridEl = document.getElementById("party-grid");
+    // Other DOM elements are cached for dynamic updates, but buttons are now accessed via HUD.
     this.logEl = document.getElementById("log-content");
     this.statusMessageEl = document.getElementById("status-message");
     this.statusGoldEl = document.getElementById("status-gold");
@@ -1459,11 +1460,6 @@ export class Scene_Map extends Scene_Base {
     this.statusRunEl = document.getElementById("status-run");
     this.statusItemsEl = document.getElementById("status-items");
     this.modeLabelEl = document.getElementById("mode-label");
-    this.btnNewRun = document.getElementById("btn-new-run");
-    this.btnRevealAll = document.getElementById("btn-reveal-all");
-    this.btnClearLog = document.getElementById("btn-clear-log");
-    this.btnFormation = document.getElementById("btn-formation");
-    this.btnInventory = document.getElementById("btn-inventory");
   }
 
   /**
@@ -1471,17 +1467,17 @@ export class Scene_Map extends Scene_Base {
    * @method addEventListeners
    */
   addEventListeners() {
-    this.btnNewRun.addEventListener("click", this.startNewRun.bind(this));
-    this.btnRevealAll.addEventListener("click", this.revealAllFloors.bind(this));
+    this.hud.btnNewRun.addEventListener("click", this.startNewRun.bind(this));
+    this.hud.btnRevealAll.addEventListener("click", this.revealAllFloors.bind(this));
     this.hud.btnSettings.addEventListener("click", this.openSettings.bind(this));
     this.hud.btnHelp.addEventListener("click", this.openHelp.bind(this));
-    this.btnClearLog.addEventListener("click", () => {
+    this.hud.btnClearLog.addEventListener("click", () => {
       this.logEl.textContent = "";
       this.setStatus("Log cleared.");
       SoundManager.beep(300, 80);
     });
-    this.btnFormation.addEventListener("click", this.openFormation.bind(this));
-    this.btnInventory.addEventListener("click", this.openInventory.bind(this));
+    this.hud.btnFormation.addEventListener("click", this.openFormation.bind(this));
+    this.hud.btnInventory.addEventListener("click", this.openInventory.bind(this));
   }
 
   /**
@@ -2111,7 +2107,7 @@ renderElements(elements) {
    * @method refreshInventoryWindow
    */
   refreshInventoryWindow() {
-    this.inventoryWindow.refresh(
+    this.inventoryWindow.setup(
       this.party,
       (item, target) => {
           if (item.type === 'equipment') {
