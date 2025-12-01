@@ -59,6 +59,7 @@ test.describe('Game Logic', () => {
         // Add a dummy item to inventory
         await page.evaluate(() => {
             const sceneMap = window.sceneManager.currentScene();
+            sceneMap.party.inventory = []; // Clear random inventory to ensure Test Sword is targetable
             const sword = {
                 id: "test_sword",
                 name: "Test Sword",
@@ -79,14 +80,26 @@ test.describe('Game Logic', () => {
         await page.click('.inspect-value.win-btn', { hasText: '—' }); // Assuming no equipment initially or specific text
 
         // Find the equip button for the test sword
-        // Use .first() to handle potential multiple matches if inventory has duplicates or previous renders
-        const equipBtn = page.locator('button.win-btn', { hasText: 'Equip' }).first();
+        const row = page.locator('.window-row', { hasText: 'Test Sword' });
+        const equipBtn = row.locator('button.win-btn', { hasText: /^Equip$/ });
         await expect(equipBtn).toBeVisible();
         await equipBtn.click();
 
+        // Confirm equipment change
+        const confirmBtn = page.locator('#confirm-effect-window button.win-btn', { hasText: 'Confirm' });
+        await expect(confirmBtn).toBeVisible();
+        await confirmBtn.click();
+
+        // Check log to confirm action
+        const log = page.locator('#log-content');
+        await expect(log).toContainText('equipped Test Sword');
+
         // Verify the inspect window is still open (Equipment list container)
-        const equipList = page.locator('.group-box legend', { hasText: 'Change Equipment' });
-        await expect(equipList).toBeVisible();
+        // Updated: Now we check for the inspect window and that the equipment button shows the new item name.
+        const inspectWindow = page.locator('#inspect-window');
+        await expect(inspectWindow).toBeVisible();
+        const equipBtnUpdated = inspectWindow.locator('.inspect-value.win-btn', { hasText: 'Test Sword' });
+        await expect(equipBtnUpdated).toBeVisible();
     });
 
     test('Map interaction blocked during battle', async ({ page }) => {

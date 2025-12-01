@@ -1787,6 +1787,36 @@ export class Window_Exploration extends Window_Base {
     updateTitle(title) {
         this.setTitle(title);
     }
+
+    setMode(text) {
+        const el = this.header.querySelector("#mode-label");
+        if (el) el.textContent = text;
+    }
+
+    drawGrid(width, height, getTileData, onTileClick) {
+        this.explorationGrid.innerHTML = "";
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const data = getTileData(x, y);
+                const tileEl = document.createElement("div");
+                tileEl.className = "tile";
+                tileEl.dataset.x = x;
+                tileEl.dataset.y = y;
+
+                if (data.cssClass) {
+                    if (Array.isArray(data.cssClass)) {
+                         data.cssClass.forEach(c => tileEl.classList.add(c));
+                    } else {
+                         tileEl.classList.add(data.cssClass);
+                    }
+                }
+                tileEl.textContent = data.symbol;
+
+                tileEl.addEventListener("click", (e) => onTileClick(x, y, e));
+                this.explorationGrid.appendChild(tileEl);
+            }
+        }
+    }
 }
 
 /**
@@ -1900,6 +1930,15 @@ export class Window_LogPanel extends Window_Base {
         this.logEl.className = "log-content";
         this.logEl.id = "log-content";
         this.content.appendChild(this.logEl);
+    }
+
+    add(msg) {
+        this.logEl.textContent += msg + "\n";
+        this.logEl.scrollTop = this.logEl.scrollHeight;
+    }
+
+    clear() {
+        this.logEl.textContent = "";
     }
 }
 
@@ -2016,6 +2055,32 @@ export class Window_Desktop extends Window_Base {
 
     updateParty(party, onInspect, context = null) {
         this.partyPanel.updateParty(party, onInspect, context);
+    }
+
+    logMessage(msg) {
+        this.logPanel.add(msg);
+    }
+
+    clearLog() {
+        this.logPanel.clear();
+    }
+
+    setStatus(msg) {
+        if (this.statusMessageEl) this.statusMessageEl.textContent = msg;
+    }
+
+    updateStatus(gold, itemsCount, runActive) {
+        if (this.statusGoldEl) this.statusGoldEl.textContent = gold;
+        if (this.statusItemsEl) this.statusItemsEl.textContent = itemsCount;
+        if (this.statusRunEl) this.statusRunEl.textContent = runActive ? "Active" : "Over";
+    }
+
+    setMode(text) {
+        this.explorationWindow.setMode(text);
+    }
+
+    drawGrid(width, height, getTileData, onTileClick) {
+        this.explorationWindow.drawGrid(width, height, getTileData, onTileClick);
     }
 }
 
