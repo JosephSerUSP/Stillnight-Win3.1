@@ -85,7 +85,7 @@ test.describe('Game Logic', () => {
         await equipBtn.click();
 
         // Verify the inspect window is still open (Equipment list container)
-        const equipList = page.locator('.group-box legend', { hasText: 'Change Equipment' });
+        const equipList = page.locator('.group-box legend', { hasText: 'Changes' });
         await expect(equipList).toBeVisible();
     });
 

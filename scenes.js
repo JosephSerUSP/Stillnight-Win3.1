@@ -1473,21 +1473,6 @@ export class Scene_Map extends Scene_Base {
 
 
   /**
-   * Formats a skill name with its elemental icon.
-   * @method formatSkillName
-   * @param {string} skillId - The skill ID.
-   * @returns {string} The formatted HTML string.
-   */
-  formatSkillName(skillId) {
-      const skill = this.dataManager.skills[skillId];
-      if (!skill) return "";
-      const elementIcon = this.createElementIcon([skill.element]);
-      return `${elementIcon.innerHTML}${skill.name}`;
-  }
-
-
-
-  /**
    * Determines if a party member is in the "Front" or "Back" row.
    * @method partyRow
    * @param {number} index - Member index.

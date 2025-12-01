@@ -44,6 +44,13 @@ export class EffectManager {
         return events;
     }
 
+    /**
+     * Handles Health Regeneration (HRG) trait.
+     * @param {number} value - The regeneration rate (e.g., 0.05 for 5%).
+     * @param {import("./objects.js").Game_Battler} battler - The battler.
+     * @param {Object} context - The context.
+     * @returns {Object|null} The event object or null.
+     */
     static handleHrg(value, battler, context) {
         const amount = Math.floor(battler.maxHp * value);
         if (amount <= 0) return null;
@@ -63,6 +70,13 @@ export class EffectManager {
         };
     }
 
+    /**
+     * Handles Parasite trait (draining HP from allies).
+     * @param {number} value - The amount to drain.
+     * @param {import("./objects.js").Game_Battler} battler - The battler.
+     * @param {Object} context - The context containing allies.
+     * @returns {Object|null} The event object or null.
+     */
     static handleParasite(value, battler, context) {
         const { allies } = context;
         if (!allies || value <= 0) return null;
