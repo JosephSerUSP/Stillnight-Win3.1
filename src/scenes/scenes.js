@@ -1715,7 +1715,7 @@ export class Scene_Map extends Scene_Base {
     this.inventoryWindow.setup(
         this.party,
         (item, action) => this.onInventoryAction(item, action),
-        (item) => this.discardItem(item)
+        (item) => this.confirmDiscard(item)
     );
   }
 
@@ -1836,6 +1836,20 @@ export class Scene_Map extends Scene_Base {
       } else {
           this.logMessage(result.msg);
       }
+  }
+
+  confirmDiscard(item) {
+      this.confirmWindow.titleEl.textContent = "Discard Item";
+      this.confirmWindow.messageEl.textContent = `Are you sure you want to discard ${item.name}?`;
+      this.windowManager.push(this.confirmWindow);
+
+      this.confirmWindow.btnOk.onclick = () => {
+          this.windowManager.close(this.confirmWindow);
+          this.discardItem(item);
+      };
+      this.confirmWindow.btnCancel.onclick = () => {
+          this.windowManager.close(this.confirmWindow);
+      };
   }
 
   discardItem(item) {
