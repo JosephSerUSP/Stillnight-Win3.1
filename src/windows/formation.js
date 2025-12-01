@@ -46,13 +46,15 @@ export class Window_Formation extends Window_Base {
     this.selectedSlotIndex = null;
     this.party = null;
     this.onChange = null;
+    this.onSwapAttempt = null;
     this.context = null;
   }
 
-  refresh(party, onChange, context = null) {
+  refresh(party, onChange, context = null, onSwapAttempt = null) {
       this.party = party;
       this.context = context;
       if (onChange) this.onChange = onChange;
+      this.onSwapAttempt = onSwapAttempt;
       this.selectedSlotIndex = null;
       this.renderFormationGrid();
   }
@@ -102,12 +104,23 @@ export class Window_Formation extends Window_Base {
           this.selectedSlotIndex = index;
       } else {
           if (this.selectedSlotIndex !== index) {
-              if (this.party.reorderMembers(this.selectedSlotIndex, index)) {
-                  SoundManager.beep(500, 80);
-                  if (this.onChange) this.onChange();
+              if (this.onSwapAttempt) {
+                  // Delegate swap logic to callback
+                  this.onSwapAttempt(this.selectedSlotIndex, index);
+                  // Selection clears after attempt regardless of outcome usually, but can be controlled by Scene
+                  this.selectedSlotIndex = null;
+              } else {
+                  // Default immediate swap
+                  if (this.party.reorderMembers(this.selectedSlotIndex, index)) {
+                      SoundManager.beep(500, 80);
+                      if (this.onChange) this.onChange();
+                  }
+                  this.selectedSlotIndex = null;
               }
+          } else {
+             // Deselect if same slot clicked
+             this.selectedSlotIndex = null;
           }
-          this.selectedSlotIndex = null;
       }
       this.renderFormationGrid();
   }

@@ -18,6 +18,7 @@ import {
   Window_Options,
   Window_Desktop,
   Window_Help,
+  Window_Victory,
   WindowLayer,
   createInteractiveLabel,
   createElementIcon,
@@ -153,6 +154,8 @@ export class Scene_Battle extends Scene_Base {
     this.windowLayer.addChild(this.confirmWindow);
     this.equipItemSelectWindow = new Window_EquipItemSelect();
     this.windowLayer.addChild(this.equipItemSelectWindow);
+    this.victoryWindow = new Window_Victory();
+    this.windowLayer.addChild(this.victoryWindow);
 
     this.formationWindow.onUserClose = () => this.windowManager.close(this.formationWindow);
     this.inventoryWindow.onUserClose = () => this.windowManager.close(this.inventoryWindow);
@@ -160,15 +163,17 @@ export class Scene_Battle extends Scene_Base {
     this.confirmEffectWindow.onUserClose = () => this.windowManager.close(this.confirmEffectWindow);
     this.confirmWindow.onUserClose = () => this.windowManager.close(this.confirmWindow);
     this.equipItemSelectWindow.onUserClose = () => this.windowManager.close(this.equipItemSelectWindow);
+    this.victoryWindow.onUserClose = () => {/* Prevent closing victory manually without claim? Or allow and re-open? For now, button handles it. */};
 
     this.battleWindow.btnRound.addEventListener("click", this.resolveBattleRound.bind(this));
     this.battleWindow.btnFlee.addEventListener("click", this.attemptFlee.bind(this));
-    this.battleWindow.btnVictory.addEventListener("click", this.onBattleVictoryClick.bind(this));
+    // btnVictory is gone, we use Window_Victory
 
     this.battleWindow.btnFormation.addEventListener("click", this.onFormationClick.bind(this));
     this.battleWindow.btnItem.addEventListener("click", this.onItemClick.bind(this));
-    this.battleWindow.btnEquip.addEventListener("click", this.onEquipClick.bind(this));
-    this.battleWindow.btnAuto.addEventListener("click", this.toggleAutoBattle.bind(this));
+    // btnEquip is gone
+
+    this.battleWindow.autoSwitch.addEventListener("change", this.toggleAutoBattle.bind(this));
   }
 
   /**
@@ -229,7 +234,6 @@ export class Scene_Battle extends Scene_Base {
     this.battleManager.setup(enemies, this.tileX, this.tileY);
     this.battleBusy = false;
     this.battleWindow.logEl.textContent = "";
-    this.battleWindow.btnVictory.style.display = "none";
     this.battleWindow.btnRound.disabled = false;
     this.battleWindow.btnFlee.disabled = false;
 
@@ -246,8 +250,12 @@ export class Scene_Battle extends Scene_Base {
     }
   }
 
-  toggleAutoBattle() {
-      ConfigManager.autoBattle = !ConfigManager.autoBattle;
+  toggleAutoBattle(e) {
+      if (e) {
+        ConfigManager.autoBattle = this.battleWindow.autoCheckbox.checked;
+      } else {
+        ConfigManager.autoBattle = !ConfigManager.autoBattle;
+      }
       ConfigManager.save();
       this.battleWindow.updateAutoButton(ConfigManager.autoBattle);
       SoundManager.beep(400, 50);
@@ -261,35 +269,39 @@ export class Scene_Battle extends Scene_Base {
 
       this.formationChanged = false;
       this.windowManager.push(this.formationWindow);
-      this.formationWindow.refresh(this.party, () => {
-          this.formationChanged = true;
-          this.renderBattleAscii();
-      }, this.sceneManager.previous().getContext());
 
-      // Override onUserClose to intercept
-      this.formationWindow.onUserClose = () => {
-          if (!this.formationChanged) {
-              this.windowManager.close(this.formationWindow);
-              return;
+      this.formationWindow.refresh(this.party,
+          // onChange (unused here if onSwapAttempt is provided, or for legacy refreshes)
+          () => {
+             this.renderBattleAscii();
+          },
+          this.sceneManager.previous().getContext(),
+          // onSwapAttempt
+          (idx1, idx2) => {
+              this.confirmWindow.titleEl.textContent = "Confirm Swap?";
+              this.confirmWindow.messageEl.textContent = "Swapping members counts as your turn action.";
+              this.windowManager.push(this.confirmWindow);
+
+              this.confirmWindow.btnOk.onclick = () => {
+                  this.windowManager.close(this.confirmWindow);
+
+                  if (this.party.reorderMembers(idx1, idx2)) {
+                      this.windowManager.close(this.formationWindow);
+                      this.actionTakenThisTurn = true;
+                      this.disableActionButtons();
+                      this.battleWindow.appendLog("Formation changed.");
+                      this.renderBattleAscii();
+                      SoundManager.beep(500, 80);
+                  }
+              };
+              this.confirmWindow.btnCancel.onclick = () => {
+                  this.windowManager.close(this.confirmWindow);
+                  // Do not close formation, just stay there
+                  this.formationWindow.selectedSlotIndex = null;
+                  this.formationWindow.renderFormationGrid();
+              };
           }
-
-          this.confirmWindow.titleEl.textContent = "Confirm Formation?";
-          this.confirmWindow.messageEl.textContent = "Changing formation counts as your turn action.";
-          this.windowManager.push(this.confirmWindow);
-
-          this.confirmWindow.btnOk.onclick = () => {
-              this.windowManager.close(this.confirmWindow);
-              this.windowManager.close(this.formationWindow);
-              this.actionTakenThisTurn = true;
-              this.disableActionButtons();
-              this.battleWindow.appendLog("Formation changed.");
-              this.renderBattleAscii();
-          };
-          this.confirmWindow.btnCancel.onclick = () => {
-              this.windowManager.close(this.confirmWindow);
-              // Do not close formation, let them continue or cancel manually
-          };
-      };
+      );
   }
 
   onItemClick() {
@@ -299,66 +311,43 @@ export class Scene_Battle extends Scene_Base {
       this.inventoryWindow.setup(
           this.party,
           (item, action) => this.onInventoryAction(item, action),
-          (item) => {} // Discard disabled in battle? Or just allowed but no turn cost? Assuming use/equip are main actions.
+          (item) => {}
       );
   }
 
   onInventoryAction(item, action) {
-      if (action !== 'use') return; // Only use allowed via Item button?
-      // Actually Equip is separate button.
-      if (item.type === 'equipment') return;
+      if (action === 'use') {
+          if (item.type === 'equipment') return;
 
-      this.partySelectWindow.setup(this.party, `Use ${item.name} on:`, (target) => {
-          this.windowManager.close(this.partySelectWindow);
-          this.confirmEffectWindow.setupUse(target, item, () => {
-              this.windowManager.close(this.confirmEffectWindow);
-              this.windowManager.close(this.inventoryWindow);
+          this.partySelectWindow.setup(this.party, `Use ${item.name} on:`, (target) => {
+              this.windowManager.close(this.partySelectWindow);
+              this.confirmEffectWindow.setupUse(target, item, () => {
+                  this.windowManager.close(this.confirmEffectWindow);
+                  this.windowManager.close(this.inventoryWindow);
 
-              // Execute Use
-              const result = this.party.useItem(item, target);
-              if (result.success) {
-                  this.battleWindow.appendLog(`[Item] Used ${item.name} on ${target.name}.`);
-                  this.renderBattleAscii();
-                  this.actionTakenThisTurn = true;
-                  this.disableActionButtons();
-                  SoundManager.beep(700, 100);
-              } else {
-                   this.battleWindow.appendLog(result.msg);
-              }
-          });
-          this.windowManager.push(this.confirmEffectWindow);
-      }, this.sceneManager.previous().getContext());
-      this.windowManager.push(this.partySelectWindow);
-  }
+                  // Execute Use
+                  const result = this.party.useItem(item, target);
+                  if (result.success) {
+                      this.battleWindow.appendLog(`[Item] Used ${item.name} on ${target.name}.`);
+                      this.renderBattleAscii();
+                      this.actionTakenThisTurn = true;
+                      this.disableActionButtons();
+                      SoundManager.beep(700, 100);
+                  } else {
+                       this.battleWindow.appendLog(result.msg);
+                  }
+              });
+              this.windowManager.push(this.confirmEffectWindow);
+          }, this.sceneManager.previous().getContext());
+          this.windowManager.push(this.partySelectWindow);
 
-  onEquipClick() {
-      if (this.actionTakenThisTurn || this.battleBusy) return;
-
-      // Need to select a member first
-      this.partySelectWindow.setup(this.party, "Equip who?", (target) => {
-          this.windowManager.close(this.partySelectWindow);
-          this.openEquipSelect(target);
-      }, this.sceneManager.previous().getContext());
-      this.windowManager.push(this.partySelectWindow);
-  }
-
-  openEquipSelect(member) {
-      const inventoryItems = this.party.inventory.filter(i => i.type === "equipment");
-      // Include items equipped by others? Logic from Scene_Map
-      const otherMemberItems = this.party.members
-        .filter((m) => m !== member && m.equipmentItem)
-        .map((m) => ({
-            ...m.equipmentItem,
-            equippedBy: m.name,
-            equippedMember: m,
-        }));
-      const allItems = [...inventoryItems, ...otherMemberItems];
-
-      this.equipItemSelectWindow.setup(allItems, member.equipmentItem, "Equipment", (item) => {
-          this.windowManager.close(this.equipItemSelectWindow);
-          this.checkEquip(member, item);
-      });
-      this.windowManager.push(this.equipItemSelectWindow);
+      } else if (action === 'equip') {
+          this.partySelectWindow.setup(this.party, `Equip ${item.name} on:`, (target) => {
+              this.windowManager.close(this.partySelectWindow);
+              this.checkEquip(target, item);
+          }, this.sceneManager.previous().getContext());
+          this.windowManager.push(this.partySelectWindow);
+      }
   }
 
   checkEquip(target, item) {
@@ -371,6 +360,7 @@ export class Scene_Battle extends Scene_Base {
       }
       this.confirmEffectWindow.setupEquip(target, item, oldItem, "Held Item", () => {
           this.windowManager.close(this.confirmEffectWindow);
+          this.windowManager.close(this.inventoryWindow);
           this.equipItem(target, item);
       }, swapMsg);
       this.windowManager.push(this.confirmEffectWindow);
@@ -388,13 +378,13 @@ export class Scene_Battle extends Scene_Base {
   disableActionButtons() {
       this.battleWindow.btnFormation.classList.add('disabled');
       this.battleWindow.btnItem.classList.add('disabled');
-      this.battleWindow.btnEquip.classList.add('disabled');
+      // btnEquip is removed
   }
 
   enableActionButtons() {
       this.battleWindow.btnFormation.classList.remove('disabled');
       this.battleWindow.btnItem.classList.remove('disabled');
-      this.battleWindow.btnEquip.classList.remove('disabled');
+      // btnEquip is removed
   }
 
   /**
@@ -448,8 +438,6 @@ export class Scene_Battle extends Scene_Base {
         if (this.battleManager.isBattleFinished) break;
 
         // 3. Plan Action (AI for now)
-        // Future-Forward: To implement player control, check !battlerContext.isEnemy here.
-        // If player, wait for UI input to generate the 'action' object.
         const action = this.battleManager.getAIAction(battlerContext);
 
         if (action) {
@@ -467,16 +455,22 @@ export class Scene_Battle extends Scene_Base {
     this.sceneManager.previous().updateParty();
     this.renderBattleAscii();
 
-    if (this.battleManager.isVictoryPending) {
-      this.battleWindow.btnVictory.style.display = "inline-block";
-    }
-
     this.actionTakenThisTurn = false;
 
-    if (!this.battleManager.isBattleFinished) {
+    if (this.battleManager.isVictoryPending) {
+         if (!this.victoryPopupShown) {
+             this.showVictoryPopup();
+             this.victoryPopupShown = true;
+         }
+         // Victory handles closure, battleBusy stays true until victory confirmed
+    } else if (!this.battleManager.isBattleFinished) {
       this.battleWindow.btnRound.disabled = false;
       this.battleWindow.btnFlee.disabled = false;
+
+      // Only re-enable if we are not auto-battling to avoid flicker,
+      // though auto-battle will immediately recurse.
       this.enableActionButtons();
+
       this.battleWindow.appendLog("Use Resolve Round or Flee.");
 
       this.battleBusy = false;
@@ -486,8 +480,86 @@ export class Scene_Battle extends Scene_Base {
           this.resolveBattleRound();
       }
     } else {
-        this.battleBusy = false;
+        this.battleBusy = false; // Defeat or other end
     }
+  }
+
+  showVictoryPopup() {
+      // Calculate spoils
+      const enemies = this.battleManager.enemies;
+      let totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
+      const totalXp = enemies.reduce((sum, e) => sum + probabilisticRound(e.level * (e.expGrowth * 0.5) + 8), 0);
+
+      this.party.activeMembers.forEach((m) => {
+        if (m.hp > 0) {
+            const goldBonus = m.getPassiveValue("GOLD_DIGGER");
+            if (goldBonus > 0) {
+                totalGold += goldBonus;
+            }
+        }
+      });
+
+      const droppedItems = [];
+      enemies.forEach(e => {
+        if (e.actorData && e.actorData.drops) {
+            e.actorData.drops.forEach(drop => {
+                if (Math.random() < drop.chance) {
+                    const item = this.dataManager.items.find(i => i.id === drop.itemId);
+                    if (item) droppedItems.push(item);
+                }
+            });
+        }
+      });
+
+      let spoilText = `Gold: +${totalGold}G\nXP: +${totalXp}\n`;
+      if (droppedItems.length > 0) {
+          spoilText += "\nItems Found:\n";
+          droppedItems.forEach(i => spoilText += `- ${i.name}\n`);
+      }
+
+      this.victoryData = { totalGold, totalXp, droppedItems };
+
+      this.victoryWindow.setup(spoilText, () => this.claimVictoryRewards());
+      this.windowManager.push(this.victoryWindow);
+      SoundManager.beep(900, 200);
+  }
+
+  claimVictoryRewards() {
+      this.windowManager.close(this.victoryWindow);
+      const { totalGold, totalXp, droppedItems } = this.victoryData;
+
+      // Logic from onBattleVictoryClick
+      const living = this.party.activeMembers.filter((p) => p.hp > 0);
+      const share = living.length > 0 ? Math.max(1, totalXp / living.length) : 0;
+      living.forEach((m) => this.sceneManager.previous().gainXp(m, share));
+
+      const reserveShare = Math.max(1, totalXp / 20);
+      this.party.reserveMembers.forEach((m) => {
+          if (m.hp > 0) this.sceneManager.previous().gainXp(m, reserveShare, true);
+      });
+
+      this.party.gold += totalGold;
+      this.sceneManager.previous().logMessage(
+        `[Battle] Victory! Gained ${totalGold}G and ${totalXp} XP.`
+      );
+
+      if (droppedItems.length > 0) {
+          droppedItems.forEach(item => this.party.inventory.push(item));
+          const names = droppedItems.map(i => i.name).join(", ");
+          this.sceneManager.previous().logMessage(`[Battle] Found: ${names}`);
+      }
+
+      this.sceneManager.previous().updateAll();
+      this.applyPostBattlePassives();
+      this.sceneManager.previous().checkPermadeath();
+      this.clearEnemyTileAfterBattle();
+
+      this.battleManager.isVictoryPending = false;
+      this.victoryPopupShown = false;
+      this.sceneManager.pop();
+      if (this.sceneManager.currentScene() && this.sceneManager.currentScene().setStatus) {
+          this.sceneManager.currentScene().setStatus("Victory.");
+      }
   }
 
   /**
@@ -613,75 +685,6 @@ export class Scene_Battle extends Scene_Base {
     } else {
       this.battleWindow.appendLog("You failed to flee!");
     }
-  }
-
-  /**
-   * Handles the victory condition, awarding rewards and closing the battle.
-   * @method onBattleVictoryClick
-   */
-  onBattleVictoryClick() {
-    if (!this.battleManager || !this.battleManager.isVictoryPending) return;
-    const enemies = this.battleManager.enemies;
-    let totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
-    const totalXp = enemies.reduce((sum, e) => sum + probabilisticRound(e.level * (e.expGrowth * 0.5) + 8), 0);
-
-    const living = this.party.activeMembers.filter((p) => p.hp > 0);
-    living.forEach((m) => {
-      const goldBonus = m.getPassiveValue("GOLD_DIGGER");
-      if (goldBonus > 0) {
-        totalGold += goldBonus;
-        this.sceneManager.previous().logMessage(`[Passive] ${m.name} finds an extra ${goldBonus}G!`);
-      }
-    });
-    const share =
-      living.length > 0 ? Math.max(1, totalXp / living.length) : 0;
-    living.forEach((m) => this.sceneManager.previous().gainXp(m, share));
-
-    const reserveShare = Math.max(1, totalXp / 20);
-    this.party.reserveMembers.forEach((m) => {
-        if (m.hp > 0) this.sceneManager.previous().gainXp(m, reserveShare, true);
-    });
-
-    this.party.gold += totalGold;
-    this.sceneManager.previous().logMessage(
-      `[Battle] Victory! Gained ${totalGold}G and ${totalXp} XP.`
-    );
-
-    // Process Drops
-    const droppedItems = [];
-    enemies.forEach(e => {
-        if (e.actorData && e.actorData.drops) {
-            e.actorData.drops.forEach(drop => {
-                if (Math.random() < drop.chance) {
-                    const item = this.dataManager.items.find(i => i.id === drop.itemId);
-                    if (item) droppedItems.push(item);
-                }
-            });
-        }
-    });
-
-    if (droppedItems.length > 0) {
-        droppedItems.forEach(item => this.party.inventory.push(item));
-        const names = droppedItems.map(i => i.name).join(", ");
-        this.sceneManager.previous().logMessage(`[Battle] Found: ${names}`);
-    }
-
-    this.sceneManager.previous().updateAll();
-
-    this.applyPostBattlePassives();
-
-    // Permadeath check
-    this.sceneManager.previous().checkPermadeath();
-
-    this.clearEnemyTileAfterBattle();
-
-    this.battleManager.isVictoryPending = false;
-    this.battleWindow.btnVictory.style.display = "none";
-    this.sceneManager.pop();
-    if (this.sceneManager.currentScene() && this.sceneManager.currentScene().setStatus) {
-        this.sceneManager.currentScene().setStatus("Victory.");
-    }
-    SoundManager.beep(900, 200);
   }
 
   /**

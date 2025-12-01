@@ -28,6 +28,7 @@ export class Window_Battle extends Window_Base {
     actionRow.style.gap = "4px";
     actionRow.style.padding = "4px";
     actionRow.style.justifyContent = "center";
+    actionRow.style.alignItems = "center";
     actionRow.style.width = "100%";
     this.footer.insertBefore(actionRow, this.footer.firstChild);
 
@@ -41,24 +42,37 @@ export class Window_Battle extends Window_Base {
     this.btnItem.textContent = "Item";
     actionRow.appendChild(this.btnItem);
 
-    this.btnEquip = document.createElement("button");
-    this.btnEquip.className = "win-btn";
-    this.btnEquip.textContent = "Equip";
-    actionRow.appendChild(this.btnEquip);
+    // Toggle Switch for Auto
+    const autoContainer = document.createElement("div");
+    autoContainer.style.display = "flex";
+    autoContainer.style.alignItems = "center";
+    autoContainer.style.gap = "6px";
+    autoContainer.style.marginLeft = "10px";
 
-    this.btnAuto = document.createElement("button");
-    this.btnAuto.className = "win-btn";
-    this.btnAuto.textContent = "Auto: Off";
-    actionRow.appendChild(this.btnAuto);
+    const autoLabel = document.createElement("span");
+    autoLabel.textContent = "Auto";
+    autoContainer.appendChild(autoLabel);
+
+    this.autoSwitch = document.createElement("label");
+    this.autoSwitch.className = "toggle-switch";
+
+    this.autoCheckbox = document.createElement("input");
+    this.autoCheckbox.type = "checkbox";
+    this.autoSwitch.appendChild(this.autoCheckbox);
+
+    const slider = document.createElement("span");
+    slider.className = "toggle-slider";
+    this.autoSwitch.appendChild(slider);
+
+    autoContainer.appendChild(this.autoSwitch);
+    actionRow.appendChild(autoContainer);
 
     this.btnFlee = this.addButton("Flee", () => {});
-    this.btnVictory = this.addButton("Claim Spoils", () => {});
-    this.btnVictory.style.display = "none";
+    // btnVictory is removed; using Window_Victory instead.
   }
 
   updateAutoButton(isAuto) {
-      this.btnAuto.textContent = isAuto ? "Auto: ON" : "Auto: Off";
-      this.btnAuto.classList.toggle('active', isAuto);
+      this.autoCheckbox.checked = isAuto;
   }
 
   onUserClose() {
@@ -158,5 +172,42 @@ export class Window_Battle extends Window_Base {
       const container = el.closest('.battler-container');
       if (!container) return null;
       return container.querySelector('.battler-hp');
+  }
+}
+
+/**
+ * @class Window_Victory
+ */
+export class Window_Victory extends Window_Base {
+  constructor() {
+    super('center', 'center', 320, 240, { title: "Victory!", id: "victory-window" });
+
+    const contentPanel = this.createPanel();
+    contentPanel.style.flex = "1";
+    contentPanel.style.padding = "8px";
+    contentPanel.style.display = "flex";
+    contentPanel.style.flexDirection = "column";
+    contentPanel.style.gap = "8px";
+
+    this.messageEl = document.createElement("div");
+    this.messageEl.style.fontWeight = "bold";
+    this.messageEl.style.textAlign = "center";
+    this.messageEl.textContent = "Victory Achieved!";
+    contentPanel.appendChild(this.messageEl);
+
+    this.spoilsEl = document.createElement("div");
+    this.spoilsEl.style.flex = "1";
+    this.spoilsEl.style.whiteSpace = "pre-wrap";
+    this.spoilsEl.style.overflowY = "auto";
+    this.spoilsEl.style.fontSize = "11px";
+    contentPanel.appendChild(this.spoilsEl);
+
+    this.btnClaim = this.addButton("Claim Rewards", () => {});
+    // Typically close logic is handled by the caller or btnClaim
+  }
+
+  setup(spoils, onClaim) {
+      this.spoilsEl.textContent = spoils;
+      this.btnClaim.onclick = onClaim;
   }
 }
