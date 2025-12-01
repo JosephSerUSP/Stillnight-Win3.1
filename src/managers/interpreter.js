@@ -54,7 +54,7 @@ export class Game_Interpreter {
                 break;
             case 'DESCEND':
                 this.descendStairs();
-                SoundManager.beep(800, 150);
+                SoundManager.play('STAIRS');
                 break;
             case 'HEAL_PARTY':
                 this.healParty();
@@ -88,7 +88,7 @@ export class Game_Interpreter {
             }
         });
         this.scene.setStatus("Recovered HP.");
-        SoundManager.beep(600, 80);
+        SoundManager.play('HEAL');
         this.scene.applyMovePassives();
         this.scene.updateAll();
     }
@@ -116,7 +116,7 @@ export class Game_Interpreter {
         this.scene.logMessage(`[Floor] You descend to: ${f.title}`);
         this.scene.logMessage(`[Floor] ${f.intro}`);
         this.scene.setStatus("Descending.");
-        SoundManager.beep(800, 150);
+        SoundManager.play('STAIRS');
         this.scene.updateAll();
     }
 
@@ -150,7 +150,7 @@ export class Game_Interpreter {
         this.windowManager.push(this.scene.eventWindow);
 
         this.scene.setStatus("Shrine event.");
-        SoundManager.beep(700, 150);
+        SoundManager.play('UI_SELECT');
     }
 
     async applyEventEffect(effect) {
@@ -220,7 +220,7 @@ export class Game_Interpreter {
             }]
         });
         this.windowManager.push(this.scene.eventWindow);
-        SoundManager.beep(150, 300);
+        SoundManager.play('DAMAGE');
     }
 
     async resolveTrap(action) {
@@ -236,7 +236,7 @@ export class Game_Interpreter {
 
             this.scene.logMessage(`The party takes ${dmg} damage.`);
             this.scene.checkPermadeath();
-            SoundManager.beep(150, 300);
+            SoundManager.play('DAMAGE');
             this.scene.updateAll();
 
             this.scene.eventWindow.updateChoices([{
@@ -293,7 +293,7 @@ export class Game_Interpreter {
             }]
         });
         this.windowManager.push(this.scene.eventWindow);
-        SoundManager.beep(800, 100);
+        SoundManager.play('ITEM_GET');
         this.scene.updateAll();
     }
 
@@ -366,7 +366,7 @@ export class Game_Interpreter {
 
         this.windowManager.push(this.scene.recruitWindow);
         this.scene.setStatus("Recruit encountered.");
-        SoundManager.beep(400, 100);
+        SoundManager.play('UI_SELECT');
     }
 
     closeRecruitEvent() {
@@ -396,7 +396,7 @@ export class Game_Interpreter {
         this.windowManager.push(this.scene.eventWindow);
 
         this.scene.setStatus(`Talking to ${npc.name}.`);
-        SoundManager.beep(400, 100);
+        SoundManager.play('UI_SELECT');
     }
 
     clearEventTile() {
