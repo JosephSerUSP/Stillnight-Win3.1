@@ -154,7 +154,7 @@ export class DataManager {
  * @description A static class for handling audio playback.
  * This encapsulates the AudioContext and provides a simple interface
  * for playing sound effects. Handles loading and caching of audio buffers
- * and synthesis of procedural sounds.
+ * and synthesis of procedural sounds (single notes, sequences, chords).
  */
 export class SoundManager {
   /**
@@ -172,7 +172,7 @@ export class SoundManager {
   static _buffers = new Map();
 
   /**
-   * Map of sound keys to configuration (path string or settings object).
+   * Map of sound keys to configuration (path string, object, or array).
    * @private
    * @type {Object}
    */
@@ -238,7 +238,7 @@ export class SoundManager {
 
   /**
    * Plays a sound effect by key.
-   * Supports both file-based (AudioBuffer) and synthesis (Oscillator) sounds.
+   * Supports file-based, single procedural notes, and note sequences (polyphony).
    * @method play
    * @param {string} key - The key of the sound to play.
    * @param {Object} [options] - Playback options.
@@ -253,14 +253,14 @@ export class SoundManager {
           this._audioCtx.resume();
       }
 
-      const soundDef = this._soundMap[key];
+      let soundDef = this._soundMap[key];
       if (!soundDef) {
           // console.warn(`SoundManager: Sound '${key}' not found.`);
           return;
       }
 
+      // Case 1: File-based sound
       if (typeof soundDef === 'string') {
-          // File based
           let buffer = this._buffers.get(key);
           if (!buffer) {
              await this.loadSound(key, soundDef);
@@ -276,32 +276,43 @@ export class SoundManager {
               gainNode.connect(this._audioCtx.destination);
               source.start(0);
           }
-      } else if (typeof soundDef === 'object') {
-          // Synthesis based
+          return;
+      }
+
+      // Case 2: Procedural (Synthesized)
+      // Normalize single object to array for sequence handling
+      if (!Array.isArray(soundDef)) {
+          soundDef = [soundDef];
+      }
+
+      const now = this._audioCtx.currentTime;
+
+      soundDef.forEach(note => {
           try {
               const oscillator = this._audioCtx.createOscillator();
               const gainNode = this._audioCtx.createGain();
 
-              oscillator.type = soundDef.type || 'square';
-              oscillator.frequency.value = soundDef.frequency || 440;
+              oscillator.type = note.type || 'square';
+              let freq = note.frequency || 440;
+              if (options.pitch) freq *= options.pitch;
+              oscillator.frequency.value = freq;
 
-              if (options.pitch) {
-                   oscillator.frequency.value *= options.pitch;
-              }
-
-              // Default volume for beeps is lower
-              gainNode.gain.value = options.volume !== undefined ? options.volume : 0.1;
+              let vol = note.volume || 0.1;
+              if (options.volume !== undefined) vol *= options.volume;
+              gainNode.gain.value = vol;
 
               oscillator.connect(gainNode);
               gainNode.connect(this._audioCtx.destination);
 
-              oscillator.start();
-              const duration = (soundDef.duration || 100) / 1000;
-              oscillator.stop(this._audioCtx.currentTime + duration);
+              const startTime = now + (note.start || 0) / 1000;
+              const duration = (note.duration || 100) / 1000;
+
+              oscillator.start(startTime);
+              oscillator.stop(startTime + duration);
           } catch (e) {
-              console.error("SoundManager error:", e);
+              console.error("SoundManager note error:", e);
           }
-      }
+      });
   }
 
   /**
