@@ -21,9 +21,44 @@ export class Window_Battle extends Window_Base {
     terminal.appendChild(this.logEl);
 
     this.btnRound = this.addButton("Resolve Round", () => {});
+
+    // Action Row
+    const actionRow = document.createElement("div");
+    actionRow.style.display = "flex";
+    actionRow.style.gap = "4px";
+    actionRow.style.padding = "4px";
+    actionRow.style.justifyContent = "center";
+    actionRow.style.width = "100%";
+    this.footer.insertBefore(actionRow, this.footer.firstChild);
+
+    this.btnFormation = document.createElement("button");
+    this.btnFormation.className = "win-btn";
+    this.btnFormation.textContent = "Formation";
+    actionRow.appendChild(this.btnFormation);
+
+    this.btnItem = document.createElement("button");
+    this.btnItem.className = "win-btn";
+    this.btnItem.textContent = "Item";
+    actionRow.appendChild(this.btnItem);
+
+    this.btnEquip = document.createElement("button");
+    this.btnEquip.className = "win-btn";
+    this.btnEquip.textContent = "Equip";
+    actionRow.appendChild(this.btnEquip);
+
+    this.btnAuto = document.createElement("button");
+    this.btnAuto.className = "win-btn";
+    this.btnAuto.textContent = "Auto: Off";
+    actionRow.appendChild(this.btnAuto);
+
     this.btnFlee = this.addButton("Flee", () => {});
     this.btnVictory = this.addButton("Claim Spoils", () => {});
     this.btnVictory.style.display = "none";
+  }
+
+  updateAutoButton(isAuto) {
+      this.btnAuto.textContent = isAuto ? "Auto: ON" : "Auto: Off";
+      this.btnAuto.classList.toggle('active', isAuto);
   }
 
   onUserClose() {

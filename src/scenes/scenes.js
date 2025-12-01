@@ -1,7 +1,7 @@
 import { Game_Map, Game_Party, Game_Battler, Game_Event } from "../objects/objects.js";
 import { Game_Interpreter } from "../managers/interpreter.js";
 import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula, probabilisticRound } from "../core/utils.js";
-import { BattleManager, SoundManager, ThemeManager } from "../managers/index.js";
+import { BattleManager, SoundManager, ThemeManager, ConfigManager } from "../managers/index.js";
 import {
   Window_Battle,
   Window_Shop,
@@ -135,13 +135,40 @@ export class Scene_Battle extends Scene_Base {
     this.tileX = tileX;
     this.tileY = tileY;
     this.battleBusy = false;
+    this.actionTakenThisTurn = false;
 
     this.battleWindow = new Window_Battle();
     this.windowLayer.addChild(this.battleWindow);
 
+    // Instantiate sub-windows for battle actions
+    this.formationWindow = new Window_Formation();
+    this.windowLayer.addChild(this.formationWindow);
+    this.inventoryWindow = new Window_Inventory();
+    this.windowLayer.addChild(this.inventoryWindow);
+    this.partySelectWindow = new Window_PartySelect();
+    this.windowLayer.addChild(this.partySelectWindow);
+    this.confirmEffectWindow = new Window_ConfirmEffect();
+    this.windowLayer.addChild(this.confirmEffectWindow);
+    this.confirmWindow = new Window_Confirm();
+    this.windowLayer.addChild(this.confirmWindow);
+    this.equipItemSelectWindow = new Window_EquipItemSelect();
+    this.windowLayer.addChild(this.equipItemSelectWindow);
+
+    this.formationWindow.onUserClose = () => this.windowManager.close(this.formationWindow);
+    this.inventoryWindow.onUserClose = () => this.windowManager.close(this.inventoryWindow);
+    this.partySelectWindow.onUserClose = () => this.windowManager.close(this.partySelectWindow);
+    this.confirmEffectWindow.onUserClose = () => this.windowManager.close(this.confirmEffectWindow);
+    this.confirmWindow.onUserClose = () => this.windowManager.close(this.confirmWindow);
+    this.equipItemSelectWindow.onUserClose = () => this.windowManager.close(this.equipItemSelectWindow);
+
     this.battleWindow.btnRound.addEventListener("click", this.resolveBattleRound.bind(this));
     this.battleWindow.btnFlee.addEventListener("click", this.attemptFlee.bind(this));
     this.battleWindow.btnVictory.addEventListener("click", this.onBattleVictoryClick.bind(this));
+
+    this.battleWindow.btnFormation.addEventListener("click", this.onFormationClick.bind(this));
+    this.battleWindow.btnItem.addEventListener("click", this.onItemClick.bind(this));
+    this.battleWindow.btnEquip.addEventListener("click", this.onEquipClick.bind(this));
+    this.battleWindow.btnAuto.addEventListener("click", this.toggleAutoBattle.bind(this));
   }
 
   /**
@@ -149,6 +176,9 @@ export class Scene_Battle extends Scene_Base {
    * @method start
    */
   start() {
+    this.battleWindow.updateAutoButton(ConfigManager.autoBattle);
+    this.actionTakenThisTurn = false;
+
     const floor = this.map.floors[this.map.floorIndex];
     const depth = floor.depth;
 
@@ -210,6 +240,161 @@ export class Scene_Battle extends Scene_Base {
     this.windowManager.push(this.battleWindow);
     document.getElementById("mode-label").textContent = "Battle";
     SoundManager.beep(350, 200);
+
+    if (ConfigManager.autoBattle) {
+        this.resolveBattleRound();
+    }
+  }
+
+  toggleAutoBattle() {
+      ConfigManager.autoBattle = !ConfigManager.autoBattle;
+      ConfigManager.save();
+      this.battleWindow.updateAutoButton(ConfigManager.autoBattle);
+      SoundManager.beep(400, 50);
+      if (ConfigManager.autoBattle && !this.battleBusy && !this.battleManager.isBattleFinished) {
+          this.resolveBattleRound();
+      }
+  }
+
+  onFormationClick() {
+      if (this.actionTakenThisTurn || this.battleBusy) return;
+
+      this.formationChanged = false;
+      this.windowManager.push(this.formationWindow);
+      this.formationWindow.refresh(this.party, () => {
+          this.formationChanged = true;
+          this.renderBattleAscii();
+      }, this.sceneManager.previous().getContext());
+
+      // Override onUserClose to intercept
+      this.formationWindow.onUserClose = () => {
+          if (!this.formationChanged) {
+              this.windowManager.close(this.formationWindow);
+              return;
+          }
+
+          this.confirmWindow.titleEl.textContent = "Confirm Formation?";
+          this.confirmWindow.messageEl.textContent = "Changing formation counts as your turn action.";
+          this.windowManager.push(this.confirmWindow);
+
+          this.confirmWindow.btnOk.onclick = () => {
+              this.windowManager.close(this.confirmWindow);
+              this.windowManager.close(this.formationWindow);
+              this.actionTakenThisTurn = true;
+              this.disableActionButtons();
+              this.battleWindow.appendLog("Formation changed.");
+              this.renderBattleAscii();
+          };
+          this.confirmWindow.btnCancel.onclick = () => {
+              this.windowManager.close(this.confirmWindow);
+              // Do not close formation, let them continue or cancel manually
+          };
+      };
+  }
+
+  onItemClick() {
+      if (this.actionTakenThisTurn || this.battleBusy) return;
+
+      this.windowManager.push(this.inventoryWindow);
+      this.inventoryWindow.setup(
+          this.party,
+          (item, action) => this.onInventoryAction(item, action),
+          (item) => {} // Discard disabled in battle? Or just allowed but no turn cost? Assuming use/equip are main actions.
+      );
+  }
+
+  onInventoryAction(item, action) {
+      if (action !== 'use') return; // Only use allowed via Item button?
+      // Actually Equip is separate button.
+      if (item.type === 'equipment') return;
+
+      this.partySelectWindow.setup(this.party, `Use ${item.name} on:`, (target) => {
+          this.windowManager.close(this.partySelectWindow);
+          this.confirmEffectWindow.setupUse(target, item, () => {
+              this.windowManager.close(this.confirmEffectWindow);
+              this.windowManager.close(this.inventoryWindow);
+
+              // Execute Use
+              const result = this.party.useItem(item, target);
+              if (result.success) {
+                  this.battleWindow.appendLog(`[Item] Used ${item.name} on ${target.name}.`);
+                  this.renderBattleAscii();
+                  this.actionTakenThisTurn = true;
+                  this.disableActionButtons();
+                  SoundManager.beep(700, 100);
+              } else {
+                   this.battleWindow.appendLog(result.msg);
+              }
+          });
+          this.windowManager.push(this.confirmEffectWindow);
+      }, this.sceneManager.previous().getContext());
+      this.windowManager.push(this.partySelectWindow);
+  }
+
+  onEquipClick() {
+      if (this.actionTakenThisTurn || this.battleBusy) return;
+
+      // Need to select a member first
+      this.partySelectWindow.setup(this.party, "Equip who?", (target) => {
+          this.windowManager.close(this.partySelectWindow);
+          this.openEquipSelect(target);
+      }, this.sceneManager.previous().getContext());
+      this.windowManager.push(this.partySelectWindow);
+  }
+
+  openEquipSelect(member) {
+      const inventoryItems = this.party.inventory.filter(i => i.type === "equipment");
+      // Include items equipped by others? Logic from Scene_Map
+      const otherMemberItems = this.party.members
+        .filter((m) => m !== member && m.equipmentItem)
+        .map((m) => ({
+            ...m.equipmentItem,
+            equippedBy: m.name,
+            equippedMember: m,
+        }));
+      const allItems = [...inventoryItems, ...otherMemberItems];
+
+      this.equipItemSelectWindow.setup(allItems, member.equipmentItem, "Equipment", (item) => {
+          this.windowManager.close(this.equipItemSelectWindow);
+          this.checkEquip(member, item);
+      });
+      this.windowManager.push(this.equipItemSelectWindow);
+  }
+
+  checkEquip(target, item) {
+      const oldItem = target.equipmentItem;
+      let swapMsg = null;
+      if (item && item.equippedMember && item.equippedMember !== target) {
+          swapMsg = `Swapping with ${item.equippedMember.name}.`;
+      } else if (!item) {
+          swapMsg = "Unequipping.";
+      }
+      this.confirmEffectWindow.setupEquip(target, item, oldItem, "Held Item", () => {
+          this.windowManager.close(this.confirmEffectWindow);
+          this.equipItem(target, item);
+      }, swapMsg);
+      this.windowManager.push(this.confirmEffectWindow);
+  }
+
+  equipItem(member, item) {
+      const result = this.party.equipItem(member, item);
+      this.battleWindow.appendLog(result.msg);
+      this.renderBattleAscii();
+      this.actionTakenThisTurn = true;
+      this.disableActionButtons();
+      SoundManager.beep(800, 100);
+  }
+
+  disableActionButtons() {
+      this.battleWindow.btnFormation.classList.add('disabled');
+      this.battleWindow.btnItem.classList.add('disabled');
+      this.battleWindow.btnEquip.classList.add('disabled');
+  }
+
+  enableActionButtons() {
+      this.battleWindow.btnFormation.classList.remove('disabled');
+      this.battleWindow.btnItem.classList.remove('disabled');
+      this.battleWindow.btnEquip.classList.remove('disabled');
   }
 
   /**
@@ -243,6 +428,7 @@ export class Scene_Battle extends Scene_Base {
     this.battleBusy = true;
     this.battleWindow.btnRound.disabled = true;
     this.battleWindow.btnFlee.disabled = true;
+    this.disableActionButtons();
 
     // Start a new round in the BattleManager
     this.battleManager.startRound();
@@ -285,13 +471,23 @@ export class Scene_Battle extends Scene_Base {
       this.battleWindow.btnVictory.style.display = "inline-block";
     }
 
+    this.actionTakenThisTurn = false;
+
     if (!this.battleManager.isBattleFinished) {
       this.battleWindow.btnRound.disabled = false;
       this.battleWindow.btnFlee.disabled = false;
+      this.enableActionButtons();
       this.battleWindow.appendLog("Use Resolve Round or Flee.");
-    }
 
-    this.battleBusy = false;
+      this.battleBusy = false;
+
+      if (ConfigManager.autoBattle) {
+          await delay(500);
+          this.resolveBattleRound();
+      }
+    } else {
+        this.battleBusy = false;
+    }
   }
 
   /**
@@ -1548,6 +1744,20 @@ export class Scene_Map extends Scene_Base {
                 ThemeManager.applyTheme(val);
                 SoundManager.beep(400, 50);
             }
+        },
+        {
+            label: "Auto Battle",
+            type: "select",
+            value: ConfigManager.autoBattle ? "on" : "off",
+            options: [
+                { label: "On", value: "on" },
+                { label: "Off", value: "off" }
+            ],
+            onChange: (val) => {
+                ConfigManager.autoBattle = (val === "on");
+                ConfigManager.save();
+                SoundManager.beep(400, 50);
+            }
         }
     ];
 
@@ -1928,35 +2138,10 @@ export class Scene_Map extends Scene_Base {
    * @param {Object} item - The item to equip.
    */
   equipItem(member, item) {
-      if (!item) {
-          if (member.equipmentItem) {
-              this.party.inventory.push(member.equipmentItem);
-              SoundManager.beep(600, 80);
-          }
-          member.equipmentItem = null;
-          this.logMessage(`[Equip] ${member.name} unequipped item.`);
-          SoundManager.beep(800, 100);
-      } else if (item.equippedMember) {
-          const otherMember = item.equippedMember;
-          const currentItem = member.equipmentItem;
-          otherMember.equipmentItem = currentItem;
-          member.equipmentItem = item;
-          this.logMessage(`[Equip] ${member.name} swapped ${item.name} with ${otherMember.name}.`);
-          SoundManager.beep(700, 150);
-      } else {
-          // Unequip current item if one exists
-          if (member.equipmentItem) {
-              this.party.inventory.push(member.equipmentItem);
-              SoundManager.beep(600, 80);
-          }
-          member.equipmentItem = item;
-          const invIndex = this.party.inventory.findIndex((i) => i.id === item.id);
-          if (invIndex > -1) {
-              this.party.inventory.splice(invIndex, 1);
-          }
-          this.logMessage(`[Equip] ${member.name} equipped ${item.name}.`);
-          SoundManager.beep(800, 100);
-      }
+      const result = this.party.equipItem(member, item);
+      this.logMessage(`[Equip] ${result.msg}`);
+      SoundManager.beep(800, 100);
+
       this.openInspect(member, this.party.members.indexOf(member));
       this.updateAll();
   }

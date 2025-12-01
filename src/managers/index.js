@@ -817,6 +817,38 @@ export class ThemeManager {
   }
 }
 
+/**
+ * @class ConfigManager
+ * @description Manages persistent game configuration settings.
+ */
+export class ConfigManager {
+    static autoBattle = false;
+
+    static load() {
+        try {
+            const data = localStorage.getItem("stillnight_config");
+            if (data) {
+                const config = JSON.parse(data);
+                this.autoBattle = !!config.autoBattle;
+            }
+        } catch (e) {
+            console.error("Failed to load config", e);
+        }
+    }
+
+    static save() {
+        try {
+            const config = {
+                autoBattle: this.autoBattle
+            };
+            localStorage.setItem("stillnight_config", JSON.stringify(config));
+        } catch (e) {
+            console.error("Failed to save config", e);
+        }
+    }
+}
+ConfigManager.load();
+
 // Expose classes to the window object for testing if in test mode.
 if (typeof window !== 'undefined' && window.location.search.includes("test=true")) {
     window.DataManager = DataManager;
