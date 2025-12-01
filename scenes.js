@@ -918,7 +918,6 @@ export class Scene_Map extends Scene_Base {
     gameContainer.innerHTML = "";
     gameContainer.appendChild(this.hud.element);
 
-    this.getDomElements();
     this.addEventListeners();
 
     this.windowLayer = new WindowLayer();
@@ -1007,7 +1006,7 @@ export class Scene_Map extends Scene_Base {
     this.map.playerY = f.startY;
     this.map.revealAroundPlayer();
 
-    this.logEl.textContent = "";
+    this.hud.clearLog();
     this.logMessage(this.dataManager.terms.log.new_run);
     this.logMessage(this.dataManager.terms.log.floor_intro + f.intro);
     this.setStatus(
@@ -1015,23 +1014,6 @@ export class Scene_Map extends Scene_Base {
     );
     SoundManager.beep(500, 200);
     this.updateAll();
-  }
-
-  /**
-   * Caches references to DOM elements created in createUI.
-   * @method getDomElements
-   */
-  getDomElements() {
-    this.explorationGridEl = document.getElementById("exploration-grid");
-    // Other DOM elements are cached for dynamic updates, but buttons are now accessed via HUD.
-    this.logEl = document.getElementById("log-content");
-    this.statusMessageEl = document.getElementById("status-message");
-    this.statusGoldEl = document.getElementById("status-gold");
-    this.statusFloorEl = document.getElementById("status-floor");
-    this.statusCardsEl = document.getElementById("status-cards");
-    this.statusRunEl = document.getElementById("status-run");
-    this.statusItemsEl = document.getElementById("status-items");
-    this.modeLabelEl = document.getElementById("mode-label");
   }
 
   /**
@@ -1044,7 +1026,7 @@ export class Scene_Map extends Scene_Base {
     this.hud.btnSettings.addEventListener("click", this.openSettings.bind(this));
     this.hud.btnHelp.addEventListener("click", this.openHelp.bind(this));
     this.hud.btnClearLog.addEventListener("click", () => {
-      this.logEl.textContent = "";
+      this.hud.clearLog();
       this.setStatus("Log cleared.");
       SoundManager.beep(300, 80);
     });
@@ -1107,12 +1089,7 @@ export class Scene_Map extends Scene_Base {
       newY >= 0 &&
       newY < this.map.MAX_H
     ) {
-      const tileEl = this.explorationGridEl.querySelector(
-        `[data-x='${newX}'][data-y='${newY}']`
-      );
-      if (tileEl) {
-        this.onTileClick({ currentTarget: tileEl });
-      }
+      this.onTileClick(newX, newY);
     }
   }
 
@@ -1132,8 +1109,7 @@ export class Scene_Map extends Scene_Base {
    * @param {string} msg - The message to log.
    */
   logMessage(msg) {
-    this.logEl.textContent += msg + "\n";
-    this.logEl.scrollTop = this.logEl.scrollHeight;
+    this.hud.logMessage(msg);
 
     if (this.windowManager.stack.includes(this.eventWindow)) {
         this.eventWindow.appendLog(msg);
@@ -1146,7 +1122,7 @@ export class Scene_Map extends Scene_Base {
    * @param {string} msg - The status message.
    */
   setStatus(msg) {
-    this.statusMessageEl.textContent = msg;
+    this.hud.setStatus(msg);
   }
 
   /**
@@ -1201,10 +1177,12 @@ export class Scene_Map extends Scene_Base {
     this.updateCardHeader();
     this.updateCardList();
     this.updateParty();
-    this.statusGoldEl.textContent = this.party.gold;
-    this.statusItemsEl.textContent = this.party.inventory.length;
-    this.statusRunEl.textContent = this.runActive ? "Active" : "Over";
-    this.modeLabelEl.textContent = "Exploration";
+    this.hud.updateStatus({
+        gold: this.party.gold,
+        items: this.party.inventory.length,
+        runActive: this.runActive
+    });
+    this.hud.setMode("Exploration");
   }
 
   /**
@@ -1213,22 +1191,20 @@ export class Scene_Map extends Scene_Base {
    */
   updateGrid() {
     const floor = this.map.floors[this.map.floorIndex];
-    this.explorationGridEl.innerHTML = "";
+    const gridData = [];
+
     for (let y = 0; y < this.map.MAX_H; y++) {
       for (let x = 0; x < this.map.MAX_W; x++) {
-        const tileEl = document.createElement("div");
-        tileEl.className = "tile";
-        tileEl.dataset.x = x;
-        tileEl.dataset.y = y;
-
         const isPlayer = x === this.map.playerX && y === this.map.playerY;
         const visited = floor.visited[y][x];
         const ch = floor.tiles[y][x];
         const event = floor.events ? floor.events.find(e => e.x === x && e.y === y) : null;
 
+        const cell = { x, y, symbol: " ", cssClass: "" };
+
         if (!visited && !isPlayer) {
-          tileEl.classList.add("tile-fog");
-          tileEl.textContent = "?";
+          cell.cssClass = "tile-fog";
+          cell.symbol = "?";
         } else {
           let symbol = " ";
 
@@ -1247,7 +1223,7 @@ export class Scene_Map extends Scene_Base {
 
               if (visible) {
                   symbol = event.symbol;
-                  if (event.cssClass) tileEl.classList.add(event.cssClass);
+                  if (event.cssClass) cell.cssClass = event.cssClass;
               }
           }
 
@@ -1267,15 +1243,14 @@ export class Scene_Map extends Scene_Base {
 
           if (isPlayer) {
             symbol = "☺";
-            tileEl.classList.add("tile-player");
+            cell.cssClass = (cell.cssClass ? cell.cssClass + " " : "") + "tile-player";
           }
-          tileEl.textContent = symbol;
+          cell.symbol = symbol;
         }
-
-        tileEl.addEventListener("click", this.onTileClick.bind(this));
-        this.explorationGridEl.appendChild(tileEl);
+        gridData.push(cell);
       }
     }
+    this.hud.renderGrid(gridData, (x, y) => this.onTileClick(x, y));
   }
 
   /**
@@ -1335,16 +1310,13 @@ export class Scene_Map extends Scene_Base {
    * @method onTileClick
    * @param {MouseEvent} e - The click event.
    */
-  onTileClick(e) {
+  onTileClick(x, y) {
     if (!this.runActive) {
       this.setStatus("The run has ended. Start a new run.");
       return;
     }
     if (this.sceneManager.currentScene() !== this) return;
 
-    const tileEl = e.currentTarget;
-    const x = parseInt(tileEl.dataset.x, 10);
-    const y = parseInt(tileEl.dataset.y, 10);
     const floor = this.map.floors[this.map.floorIndex];
 
     const dx = Math.abs(x - this.map.playerX);

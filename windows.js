@@ -1787,6 +1787,26 @@ export class Window_Exploration extends Window_Base {
     updateTitle(title) {
         this.setTitle(title);
     }
+
+    setMode(mode) {
+        const el = this.header.querySelector("#mode-label");
+        if (el) el.textContent = mode;
+    }
+
+    renderGrid(gridData, onTileClick) {
+        this.explorationGrid.innerHTML = "";
+        gridData.forEach(cell => {
+             const tileEl = document.createElement("div");
+             tileEl.className = "tile";
+             if (cell.cssClass) tileEl.className += " " + cell.cssClass;
+             tileEl.dataset.x = cell.x;
+             tileEl.dataset.y = cell.y;
+             if (cell.symbol) tileEl.textContent = cell.symbol;
+
+             tileEl.addEventListener("click", (e) => onTileClick(cell.x, cell.y));
+             this.explorationGrid.appendChild(tileEl);
+        });
+    }
 }
 
 /**
@@ -1900,6 +1920,15 @@ export class Window_LogPanel extends Window_Base {
         this.logEl.className = "log-content";
         this.logEl.id = "log-content";
         this.content.appendChild(this.logEl);
+    }
+
+    add(msg) {
+        this.logEl.textContent += msg + "\n";
+        this.logEl.scrollTop = this.logEl.scrollHeight;
+    }
+
+    clear() {
+        this.logEl.textContent = "";
     }
 }
 
@@ -2016,6 +2045,34 @@ export class Window_Desktop extends Window_Base {
 
     updateParty(party, onInspect, context = null) {
         this.partyPanel.updateParty(party, onInspect, context);
+    }
+
+    logMessage(msg) {
+        this.logPanel.add(msg);
+    }
+
+    clearLog() {
+        this.logPanel.clear();
+    }
+
+    setStatus(msg) {
+        this.statusMessageEl.textContent = msg;
+    }
+
+    updateStatus(state) {
+        if (state.gold !== undefined) this.statusGoldEl.textContent = state.gold;
+        if (state.floor !== undefined) this.statusFloorEl.textContent = state.floor;
+        if (state.cards !== undefined) this.statusCardsEl.textContent = state.cards;
+        if (state.runActive !== undefined) this.statusRunEl.textContent = state.runActive ? "Active" : "Over";
+        if (state.items !== undefined) this.statusItemsEl.textContent = state.items;
+    }
+
+    setMode(mode) {
+        this.explorationWindow.setMode(mode);
+    }
+
+    renderGrid(gridData, onTileClick) {
+        this.explorationWindow.renderGrid(gridData, onTileClick);
     }
 }
 
