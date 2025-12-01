@@ -570,7 +570,11 @@ html, body {
 
 #window-layer {
     position: absolute;
-    inset: 0;
+    top: 50%;
+    left: 50%;
+    width: 960px;
+    height: 560px;
+    transform: translate(-50%, -50%);
     pointer-events: none; /* Allow clicks to pass through to the game */
 }
 
