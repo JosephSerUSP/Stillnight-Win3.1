@@ -1,4 +1,4 @@
-import { randInt, shuffleArray } from "../core.js";
+import { randInt, shuffleArray } from "../src/core/utils.js";
 
 /**
  * @file data/party.js

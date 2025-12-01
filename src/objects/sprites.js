@@ -41,13 +41,13 @@ export class Sprite {
 export class Sprite_Actor extends Sprite {
   /**
    * Creates a new Sprite_Actor instance.
-   * @param {import("./objects.js").Game_Battler} actor - The actor to represent.
+   * @param {import("../objects/objects.js").Game_Battler} actor - The actor to represent.
    */
   constructor(actor) {
     super();
     /**
      * The actor associated with this sprite.
-     * @type {import("./objects.js").Game_Battler}
+     * @type {import("../objects/objects.js").Game_Battler}
      */
     this.actor = actor;
     // Further implementation would go here.

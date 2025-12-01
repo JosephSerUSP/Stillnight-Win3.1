@@ -15,7 +15,7 @@ export class EffectManager {
     /**
      * Executes effects associated with a trigger for a battler.
      * @param {string} trigger - The trigger key (e.g., 'turnStart').
-     * @param {import("./objects.js").Game_Battler} battler - The owner of the traits.
+     * @param {import("../objects/objects.js").Game_Battler} battler - The owner of the traits.
      * @param {Object} context - Context data (allies, enemies, etc).
      * @returns {Array} List of event objects.
      */
@@ -47,7 +47,7 @@ export class EffectManager {
     /**
      * Handles Health Regeneration (HRG) trait.
      * @param {number} value - The regeneration rate (e.g., 0.05 for 5%).
-     * @param {import("./objects.js").Game_Battler} battler - The battler.
+     * @param {import("../objects/objects.js").Game_Battler} battler - The battler.
      * @param {Object} context - The context.
      * @returns {Object|null} The event object or null.
      */
@@ -73,7 +73,7 @@ export class EffectManager {
     /**
      * Handles Parasite trait (draining HP from allies).
      * @param {number} value - The amount to drain.
-     * @param {import("./objects.js").Game_Battler} battler - The battler.
+     * @param {import("../objects/objects.js").Game_Battler} battler - The battler.
      * @param {Object} context - The context containing allies.
      * @returns {Object|null} The event object or null.
      */

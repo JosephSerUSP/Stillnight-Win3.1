@@ -1,6 +1,6 @@
 import { Window_Base } from "./base.js";
 import { createPartySlot, createReserveSlot } from "./utils.js";
-import { SoundManager } from "../managers.js";
+import { SoundManager } from "../managers/index.js";
 
 /**
  * @class Window_Formation

@@ -1,5 +1,5 @@
 import { Window_Base } from "./base.js";
-import { getPrimaryElements, elementToAscii } from "../core.js";
+import { getPrimaryElements, elementToAscii } from "../core/utils.js";
 
 /**
  * @class Window_Battle

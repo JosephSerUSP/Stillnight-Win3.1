@@ -1,6 +1,6 @@
-import { DataManager, SceneManager, ThemeManager } from "./managers.js";
-import { Scene_Boot } from "./scenes.js";
-import { WindowManager } from "./windows.js";
+import { DataManager, SceneManager, ThemeManager } from "./managers/index.js";
+import { Scene_Boot } from "./scenes/scenes.js";
+import { WindowManager } from "./windows/index.js";
 
 /**
  * The main entry point for the game application.

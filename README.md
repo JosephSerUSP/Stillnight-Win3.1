@@ -18,14 +18,13 @@ The **Stillnight Engine** is a single-page RPG engine featuring a unique aesthet
 
 ```
 .
-├── core.js           # Core utility functions (RNG, Math)
-├── main.js           # Application entry point
-├── managers.js       # Global managers (Scene, Battle, Sound, Theme, Fusion)
-├── objects.js        # Game logic classes (Game_Battler, Game_Map, Game_Party)
-├── scenes.js         # Scene implementations (Map, Battle, Shop)
-├── windows.js        # UI Window classes
-├── sprites.js        # Sprite handling and rendering
-├── tooltip.js        # Global tooltip system
+├── src/
+│   ├── core/         # Core utility functions and singletons
+│   ├── managers/     # Global managers (Scene, Battle, Sound, Theme, Interpreter)
+│   ├── objects/      # Game logic classes (Battler, Map, Party)
+│   ├── scenes/       # Scene implementations (Map, Battle, Shop)
+│   ├── windows/      # UI Window classes
+│   └── main.js       # Application entry point
 ├── data/             # Game content (JSON/JS)
 ├── assets/           # Images, icons, and audio
 └── tests/            # Playwright test suite

@@ -1,12 +1,12 @@
-import { Game_Battler } from "./objects.js";
-import { randInt, pickWeighted, evaluateFormula } from "./core.js";
-import { SoundManager } from "./managers.js";
+import { Game_Battler } from "../objects/objects.js";
+import { randInt, pickWeighted, evaluateFormula } from "../core/utils.js";
+import { SoundManager } from "../managers/index.js";
 import {
   createInteractiveLabel,
   createBattlerNameLabel,
   renderCreatureInfo,
   renderElements
-} from "./windows.js";
+} from "../windows/index.js";
 
 /**
  * @class Game_Interpreter
@@ -31,7 +31,7 @@ export class Game_Interpreter {
     /**
      * Executes a map event action.
      * @param {Object} action - The action object.
-     * @param {import("./objects.js").Game_Event} event - The source event.
+     * @param {import("../objects/objects.js").Game_Event} event - The source event.
      */
     execute(action, event) {
         switch(action.type) {
