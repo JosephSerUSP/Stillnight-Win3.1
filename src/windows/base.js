@@ -79,8 +79,13 @@ export class Window_Base {
         } else {
             this.overlay = document.createElement("div");
             this.overlay.className = "modal-overlay";
+
+            this.backdrop = document.createElement("div");
+            this.backdrop.className = "modal-backdrop";
+            this.overlay.appendChild(this.backdrop);
+
             this.overlay.addEventListener("mousedown", (e) => {
-                if (e.target === this.overlay) {
+                if (e.target === this.overlay || e.target === this.backdrop) {
                     this.onUserClose();
                 }
             });
