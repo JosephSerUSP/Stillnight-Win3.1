@@ -312,12 +312,22 @@ export class Game_Interpreter {
         }
 
         if (!recruit) {
-            const availableCreatures = this.dataManager.actors.filter(creature => !creature.isEnemy);
-            if (availableCreatures.length === 0) {
-                this.scene.logMessage(this.dataManager.terms.recruit.no_one_here);
-                return;
+            // Check for floor-specific recruit pool
+            const floor = this.map.floors[this.map.floorIndex];
+            if (floor && floor.recruits && floor.recruits.length > 0) {
+                const recruitId = floor.recruits[randInt(0, floor.recruits.length - 1)];
+                recruit = this.dataManager.actors.find(a => a.id === recruitId);
             }
-            recruit = availableCreatures[randInt(0, availableCreatures.length - 1)];
+
+            // Fallback to global recruits
+            if (!recruit) {
+                const availableCreatures = this.dataManager.actors.filter(creature => creature.isRecruitable);
+                if (availableCreatures.length === 0) {
+                    this.scene.logMessage(this.dataManager.terms.recruit.no_one_here);
+                    return;
+                }
+                recruit = availableCreatures[randInt(0, availableCreatures.length - 1)];
+            }
         }
 
         const cost = forcedCost !== undefined ? forcedCost : randInt(25, 75);

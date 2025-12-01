@@ -15,6 +15,7 @@
  */
 
 export const passives = {
+    // Existing
     postBattleHeal: {
         id: 'postBattleHeal',
         name: 'Trick Heal',
@@ -86,5 +87,63 @@ export const passives = {
         effect: 'On death: Restore 20% HP, lose 2 levels.',
         icon: 1,
         traits: [{ code: 'ON_PERMADEATH', value: 1 }]
+    },
+    seeTraps: {
+        id: 'seeTraps',
+        name: 'Trap Sense',
+        description: 'Eyes that see what others miss.',
+        effect: 'Detects hidden traps.',
+        icon: 1,
+        traits: [{ code: 'SEE_TRAPS', value: 1 }]
+    },
+
+    // New
+    undeadFortitude: {
+        id: 'undeadFortitude',
+        name: 'Undead Fortitude',
+        description: 'Bones harder than steel.',
+        effect: 'Max HP +20%.',
+        icon: 1,
+        traits: [{ code: 'PARAM_RATE', dataId: 'maxHp', value: 1.2 }]
+    },
+    holyAura: {
+        id: 'holyAura',
+        name: 'Holy Aura',
+        description: 'Bathed in divine light.',
+        effect: 'Regenerates 5% HP each turn.',
+        icon: 1,
+        traits: [{ code: 'HRG', value: 0.05 }]
+    },
+    nightVision: {
+        id: 'nightVision',
+        name: 'Night Vision',
+        description: 'Pierces the dark.',
+        effect: 'Detects traps and secrets (Level 2).',
+        icon: 1,
+        traits: [{ code: 'SEE_TRAPS', value: 2 }]
+    },
+    etherealBody: {
+        id: 'etherealBody',
+        name: 'Ethereal',
+        description: 'Hard to touch.',
+        effect: 'Chance to avoid physical damage (Not Implemented Yet, using HP buff).',
+        icon: 1,
+        traits: [{ code: 'PARAM_RATE', dataId: 'maxHp', value: 1.1 }]
+    },
+    chaosPact: {
+        id: 'chaosPact',
+        name: 'Chaos Pact',
+        description: 'Power at a price.',
+        effect: 'Atk +15%.',
+        icon: 1,
+        traits: [{ code: 'PARAM_RATE', dataId: 'atk', value: 1.15 }]
+    },
+    mischief: {
+        id: 'mischief',
+        name: 'Mischief',
+        description: 'Always up to no good.',
+        effect: 'Gold found +2.',
+        icon: 1,
+        traits: [{ code: 'GOLD_DIGGER', value: 2 }]
     }
 };

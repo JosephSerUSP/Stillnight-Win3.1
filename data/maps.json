@@ -1,42 +1,36 @@
 [
   {
-    "title": "Floor 1: Entry Hall",
-    "intro": "You cross the threshold of Stillnight.",
-    "depth": 1,
+    "title": "Town of Stillnight",
+    "intro": "A quiet settlement on the edge of the void.",
+    "depth": 0,
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 2, "max": 3 },
       { "id": "shop", "count": 1 },
+      { "id": "npc", "count": 2 }
+    ],
+    "treasures": [],
+    "encounters": [],
+    "recruits": []
+  },
+  {
+    "title": "Floor 1: Entry Hall",
+    "intro": "You cross the threshold into the dark.",
+    "depth": 1,
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 2, "max": 3 },
       { "id": "recruit", "chance": 0.5 },
-      { "id": "npc", "chance": 0.3 },
-      { "id": "trap", "count": 2 },
       { "id": "treasure", "count": 1 }
     ],
     "treasures": ["potion", "antidote"],
     "encounters": [
-      { "id": "bat", "weight": 10 },
-      { "id": "ooze", "weight": 5 },
-      { "id": "pixie", "weight": 2 }
-    ]
-  },
-  {
-    "title": "Floor 1: Silent Shrine",
-    "intro": "A distant bell tolls once.",
-    "depth": 1,
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.7 },
-      { "id": "enemy", "min": 2, "max": 3 },
-      { "id": "shrine", "count": 1 },
-      { "id": "shop", "count": 1 },
-      { "id": "recruit", "chance": 0.5 }
-    ],
-    "encounters": [
-      { "id": "wisp", "weight": 8 },
       { "id": "pixie", "weight": 5 },
-      { "id": "ooze", "weight": 2 }
-    ]
+      { "id": "skeleton", "weight": 5 },
+      { "id": "imp", "weight": 3 }
+    ],
+    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat"]
   },
   {
     "title": "Floor 2: Chasm Crossing",
@@ -44,39 +38,22 @@
     "depth": 2,
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.5 },
+      { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 3, "max": 4 },
-      { "id": "shrine", "chance": 0.8 },
-      { "id": "shop", "count": 1 },
+      { "id": "shrine", "chance": 0.5 },
+      { "id": "shop", "chance": 0.5 },
       { "id": "recruit", "chance": 0.6 },
-      { "id": "npc", "chance": 0.3 },
-      { "id": "trap", "min": 1, "max": 3 },
+      { "id": "trap", "min": 1, "max": 2 },
       { "id": "treasure", "chance": 0.5 }
     ],
     "treasures": ["hi_potion", "iron_sword"],
     "encounters": [
-      { "id": "skeleton", "weight": 10 },
-      { "id": "imp", "weight": 6 },
-      { "id": "wisp", "weight": 4 }
-    ]
-  },
-  {
-    "title": "Floor 2: Glass Library",
-    "intro": "Shelves of crystal tomes hum quietly.",
-    "depth": 2,
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.5 },
-      { "id": "enemy", "min": 3, "max": 5 },
-      { "id": "shrine", "count": 1 },
-      { "id": "shop", "chance": 0.8 },
-      { "id": "recruit", "chance": 0.6 }
+      { "id": "skeleton", "weight": 8 },
+      { "id": "imp", "weight": 5 },
+      { "id": "wisp", "weight": 4 },
+      { "id": "ooze", "weight": 3 }
     ],
-    "encounters": [
-      { "id": "golem", "weight": 5 },
-      { "id": "wisp", "weight": 8 },
-      { "id": "imp", "weight": 4 }
-    ]
+    "recruits": ["skeleton", "imp", "ooze", "golem"]
   },
   {
     "title": "Floor 3: Rusted Choir",
@@ -84,36 +61,17 @@
     "depth": 3,
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.4 },
+      { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.7 },
-      { "id": "shop", "chance": 0.7 },
+      { "id": "shrine", "chance": 0.5 },
       { "id": "recruit", "chance": 0.7 }
     ],
     "encounters": [
-      { "id": "skeleton", "weight": 8 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 2 }
-    ]
-  },
-  {
-    "title": "Floor 3: Hollow Arcade",
-    "intro": "Columns slice the dark like teeth.",
-    "depth": 3,
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.4 },
-      { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.7 },
-      { "id": "shop", "chance": 0.7 },
-      { "id": "recruit", "chance": 0.7 },
-      { "id": "npc", "chance": 0.4 }
-    ],
-    "encounters": [
       { "id": "golem", "weight": 6 },
-      { "id": "imp", "weight": 8 },
-      { "id": "demon", "weight": 3 }
-    ]
+      { "id": "demon", "weight": 4 },
+      { "id": "angel", "weight": 3 }
+    ],
+    "recruits": ["golem", "demon", "angel", "larva"]
   },
   {
     "title": "Floor 4: Cryptic Vault",
@@ -121,17 +79,18 @@
     "depth": 4,
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
+      { "id": "recovery", "chance": 0.2 },
       { "id": "enemy", "min": 5, "max": 7 },
-      { "id": "shrine", "chance": 0.6 },
-      { "id": "shop", "chance": 0.6 },
+      { "id": "shrine", "chance": 0.5 },
+      { "id": "shop", "chance": 0.5 },
       { "id": "recruit", "chance": 0.5 }
     ],
     "encounters": [
       { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 },
-      { "id": "golem", "weight": 4 }
-    ]
+      { "id": "highPixie", "weight": 4 },
+      { "id": "ghoul", "weight": 4 }
+    ],
+    "recruits": ["demon", "angel", "golem"]
   },
   {
     "title": "Floor 5: Blood Chapel",
@@ -139,18 +98,17 @@
     "depth": 5,
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
+      { "id": "recovery", "chance": 0.2 },
       { "id": "enemy", "min": 5, "max": 8 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "npc", "chance": 0.5 }
+      { "id": "shrine", "chance": 0.4 },
+      { "id": "recruit", "chance": 0.4 }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 3 },
+      { "id": "crimsonLord", "weight": 2 },
       { "id": "demon", "weight": 8 },
       { "id": "highPixie", "weight": 5 }
-    ]
+    ],
+    "recruits": ["demon", "angel"]
   },
   {
     "title": "Floor 6: Stillnight Sanctum",
@@ -163,6 +121,7 @@
     "encounters": [
       { "id": "crimsonLord", "weight": 10 },
       { "id": "demon", "weight": 5 }
-    ]
+    ],
+    "recruits": []
   }
 ]
