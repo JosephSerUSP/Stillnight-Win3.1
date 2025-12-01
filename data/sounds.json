@@ -1,0 +1,19 @@
+{
+  "HEAL": "assets/audio/heal.wav",
+  "STAIRS": "assets/audio/stairs.wav",
+  "ITEM_GET": "assets/audio/item_get.wav",
+  "DAMAGE": "assets/audio/damage.wav",
+  "ATTACK": "assets/audio/attack.wav",
+  "VICTORY": "assets/audio/victory.wav",
+  "LEVEL_UP": "assets/audio/levelup.wav",
+  "SHOP_BUY": "assets/audio/shop_buy.wav",
+  "SHOP_SELL": "assets/audio/shop_sell.wav",
+  "EQUIP": "assets/audio/equip.wav",
+  "UI_HOVER": "assets/audio/ui_hover.wav",
+  "UI_SELECT": "assets/audio/ui_select.wav",
+  "UI_CANCEL": "assets/audio/ui_cancel.wav",
+  "BATTLE_START": "assets/audio/battle_start.wav",
+  "GAME_OVER": "assets/audio/game_over.wav",
+  "ESCAPE": "assets/audio/escape.wav",
+  "UI_ERROR": "assets/audio/ui_error.wav"
+}

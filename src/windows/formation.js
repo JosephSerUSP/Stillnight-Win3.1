@@ -112,7 +112,7 @@ export class Window_Formation extends Window_Base {
               } else {
                   // Default immediate swap
                   if (this.party.reorderMembers(this.selectedSlotIndex, index)) {
-                      SoundManager.beep(500, 80);
+                      SoundManager.play('UI_SELECT');
                       if (this.onChange) this.onChange();
                   }
                   this.selectedSlotIndex = null;

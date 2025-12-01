@@ -53,6 +53,12 @@ export class DataManager {
     this.terms = null;
 
     /**
+     * The sound mapping data loaded from sounds.json.
+     * @type {Object|null}
+     */
+    this.sounds = null;
+
+    /**
      * The skill data loaded from skills.js.
      * @type {Object|null}
      */
@@ -103,6 +109,7 @@ export class DataManager {
       npcs: "data/npcs.json",
       terms: "data/terms.json",
       themes: "data/themes.json",
+      sounds: "data/sounds.json",
     };
 
     try {
@@ -134,6 +141,11 @@ export class DataManager {
     } catch (error) {
         console.error("Failed to load animations.js:", error);
     }
+
+    // Initialize SoundManager with loaded sound data
+    if (this.sounds) {
+        SoundManager.init(this.sounds);
+    }
   }
 }
 
@@ -141,8 +153,7 @@ export class DataManager {
  * @class SoundManager
  * @description A static class for handling audio playback.
  * This encapsulates the AudioContext and provides a simple interface
- * for playing sound effects. This prevents the need to create a new
- * AudioContext for each sound and keeps audio-related logic in one place.
+ * for playing sound effects. Handles loading and caching of audio buffers.
  */
 export class SoundManager {
   /**
@@ -153,25 +164,130 @@ export class SoundManager {
   static _audioCtx = null;
 
   /**
+   * Map of sound keys to audio buffers.
+   * @private
+   * @type {Map<string, AudioBuffer>}
+   */
+  static _buffers = new Map();
+
+  /**
+   * Map of sound keys to file paths.
+   * @private
+   * @type {Object}
+   */
+  static _soundMap = {};
+
+  /**
+   * Initializes the SoundManager with sound data.
+   * @method init
+   * @param {Object} soundMap - Key-value pair of sound names and file paths.
+   */
+  static init(soundMap) {
+      this._soundMap = soundMap || {};
+      this._initializeContext();
+      // Preload critical sounds if desired, or load on demand.
+      // For now, we'll try to load them all asynchronously.
+      this.loadAll();
+  }
+
+  /**
    * Initializes the AudioContext if it hasn't been initialized yet.
-   * @method _initialize
+   * @method _initializeContext
    * @private
    */
-  static _initialize() {
+  static _initializeContext() {
     if (!this._audioCtx && typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) {
       this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
   }
 
   /**
-   * Plays a simple square wave beep sound.
+   * Loads all sounds defined in the sound map.
+   * @method loadAll
+   * @async
+   */
+  static async loadAll() {
+      if (!this._audioCtx) return;
+      const promises = Object.entries(this._soundMap).map(([key, path]) => this.loadSound(key, path));
+      await Promise.allSettled(promises);
+  }
+
+  /**
+   * Loads a single sound into the buffer cache.
+   * @method loadSound
+   * @async
+   * @param {string} key - The sound key.
+   * @param {string} path - The file path.
+   */
+  static async loadSound(key, path) {
+      if (!this._audioCtx) return;
+      try {
+          const response = await fetch(path);
+          if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+          const arrayBuffer = await response.arrayBuffer();
+          const audioBuffer = await this._audioCtx.decodeAudioData(arrayBuffer);
+          this._buffers.set(key, audioBuffer);
+      } catch (error) {
+          console.warn(`SoundManager: Failed to load sound '${key}' from '${path}'.`, error);
+      }
+  }
+
+  /**
+   * Plays a sound effect by key.
+   * @method play
+   * @param {string} key - The key of the sound to play (e.g., 'HEAL', 'ATTACK').
+   * @param {Object} [options] - Playback options.
+   * @param {number} [options.volume=1.0] - Volume (0.0 to 1.0).
+   * @param {number} [options.pitch=1.0] - Pitch variance (1.0 is normal).
+   */
+  static play(key, options = {}) {
+      this._initializeContext();
+      if (!this._audioCtx) return;
+
+      // Resume context if suspended (browser policy)
+      if (this._audioCtx.state === 'suspended') {
+          this._audioCtx.resume();
+      }
+
+      const buffer = this._buffers.get(key);
+      if (!buffer) {
+          // Fallback or silently ignore if file missing
+          // console.warn(`SoundManager: Sound '${key}' not found or not loaded.`);
+          // Try beep fallback for specific keys if needed, or just return
+          if (['UI_SELECT', 'UI_CANCEL', 'UI_HOVER'].includes(key)) {
+             // Optional: lightweight beep fallback for UI
+          }
+          return;
+      }
+
+      const source = this._audioCtx.createBufferSource();
+      source.buffer = buffer;
+
+      const gainNode = this._audioCtx.createGain();
+      gainNode.gain.value = options.volume !== undefined ? options.volume : 0.5;
+
+      // Pitch variation
+      if (options.pitch) {
+          source.playbackRate.value = options.pitch;
+      }
+
+      source.connect(gainNode);
+      gainNode.connect(this._audioCtx.destination);
+      source.start(0);
+  }
+
+  /**
+   * Plays a simple square wave beep sound (Legacy/Fallback).
    * @method beep
    * @param {number} [frequency=440] - The frequency of the beep in Hz.
    * @param {number} [duration=120] - The duration of the beep in ms.
    */
   static beep(frequency = 440, duration = 120) {
-    this._initialize();
+    this._initializeContext();
     if (!this._audioCtx) return;
+    if (this._audioCtx.state === 'suspended') {
+        this._audioCtx.resume();
+    }
 
     try {
       const oscillator = this._audioCtx.createOscillator();
@@ -524,6 +640,9 @@ export class BattleManager {
           const hpBefore = target.hp;
           target.hp = Math.max(0, target.hp - skillDmg);
 
+          // Add DAMAGE sound logic
+          SoundManager.play('DAMAGE');
+
           events.push({
             type: 'damage',
             battler: battler,
@@ -540,6 +659,9 @@ export class BattleManager {
 
           const hpBefore = target.hp;
           target.hp = Math.min(target.maxHp, target.hp + heal);
+
+          // Add HEAL sound logic
+          SoundManager.play('HEAL');
 
           events.push({
             type: 'heal',
@@ -594,6 +716,9 @@ export class BattleManager {
     const hpBefore = target.hp;
     target.hp = Math.max(0, target.hp - dmg);
 
+    // Play ATTACK/DAMAGE sound
+    SoundManager.play('DAMAGE'); // Or make a distinct ATTACK sound for initiation
+
     events.push({
       type: "damage",
       battler: battler,
@@ -620,11 +745,13 @@ export class BattleManager {
     if (!anyPartyAlive) {
       this.isBattleFinished = true;
       this.turnQueue = [];
+      SoundManager.play('GAME_OVER');
       events.push({ type: "end", result: "defeat", msg: this.dataManager.terms.battle.your_party_collapses });
     } else if (!anyEnemyAlive) {
       this.isBattleFinished = true;
       this.isVictoryPending = true;
       this.turnQueue = [];
+      // Victory jingle is typically played when the victory popup appears, handled in Scene_Battle
       events.push({ type: "end", result: "victory", msg: this.dataManager.terms.battle.victory });
     }
   }

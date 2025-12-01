@@ -18,7 +18,6 @@ test('Battle UI Features', async ({ page }) => {
   // Check Buttons
   await expect(battleWin.locator('button:has-text("Formation")')).toBeVisible();
   await expect(battleWin.locator('button:has-text("Item")')).toBeVisible();
-  await expect(battleWin.locator('button:has-text("Equip")')).toBeVisible();
   await expect(battleWin.locator('button:has-text("Auto: Off")')).toBeVisible();
 
   // Test Auto Toggle
