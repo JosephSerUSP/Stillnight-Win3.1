@@ -1,5 +1,5 @@
-import { getPrimaryElements, elementToAscii, getIconStyle, elementToIconId, evaluateFormula } from "../core.js";
-import { tooltip } from "../tooltip.js";
+import { getPrimaryElements, elementToAscii, getIconStyle, elementToIconId, evaluateFormula } from "../core/utils.js";
+import { tooltip } from "../core/tooltip.js";
 
 /**
  * Creates a DOM element representing a standard icon.
@@ -84,7 +84,7 @@ export function renderElements(elements) {
 
 /**
  * Creates a standardized label for a battler's name, including elemental icons and status indicators.
- * @param {import("../objects.js").Game_Battler} battler - The battler.
+ * @param {import("../objects/objects.js").Game_Battler} battler - The battler.
  * @param {Object} [options] - Configuration options.
  * @param {string} [options.evolutionStatus] - 'AVAILABLE', 'LOCKED', or 'NONE'.
  * @returns {HTMLElement} The container element.
@@ -224,7 +224,7 @@ export function createInteractiveLabel(data, type, options = {}) {
 
 /**
  * Draws standard battler gauges (HP, XP) for slot displays.
- * @param {import("../objects.js").Game_Battler} battler
+ * @param {import("../objects/objects.js").Game_Battler} battler
  */
 export function drawBattlerStats(battler) {
     const container = document.createElement("div");
@@ -433,14 +433,14 @@ export function createReserveSlot(battler, index, options = {}) {
 /**
  * Helper to render creature info.
  * @param {HTMLElement} container - Target container.
- * @param {import("../objects.js").Game_Battler} battler - The creature.
+ * @param {import("../objects/objects.js").Game_Battler} battler - The creature.
  * @param {Object} [options] - Options for what to display.
  * @param {boolean} [options.showSkills=false]
  * @param {boolean} [options.showPassives=false]
  * @param {boolean} [options.showEquipment=false]
  * @param {boolean} [options.showFlavor=false]
  * @param {boolean} [options.showElement=false]
- * @param {import("../managers.js").DataManager} [options.dataManager] - Required for skills/passives.
+ * @param {import("../managers/index.js").DataManager} [options.dataManager] - Required for skills/passives.
  */
 export function renderCreatureInfo(container, battler, options = {}) {
     container.innerHTML = "";

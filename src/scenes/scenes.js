@@ -1,7 +1,7 @@
-import { Game_Map, Game_Party, Game_Battler, Game_Event } from "./objects.js";
-import { Game_Interpreter } from "./interpreter.js";
-import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula, probabilisticRound } from "./core.js";
-import { BattleManager, SoundManager, ThemeManager } from "./managers.js";
+import { Game_Map, Game_Party, Game_Battler, Game_Event } from "../objects/objects.js";
+import { Game_Interpreter } from "../managers/interpreter.js";
+import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula, probabilisticRound } from "../core/utils.js";
+import { BattleManager, SoundManager, ThemeManager } from "../managers/index.js";
 import {
   Window_Battle,
   Window_Shop,
@@ -24,8 +24,8 @@ import {
   createBattlerNameLabel,
   renderCreatureInfo,
   renderElements
-} from "./windows.js";
-import { tooltip } from "./tooltip.js";
+} from "../windows/index.js";
+import { tooltip } from "../core/tooltip.js";
 
 /**
  * @class Scene_Base
@@ -35,19 +35,19 @@ import { tooltip } from "./tooltip.js";
 class Scene_Base {
   /**
    * Creates a new Scene_Base.
-   * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
-   * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
+   * @param {import("../managers/index.js").DataManager} dataManager - The data manager instance.
+   * @param {import("../windows/index.js").WindowManager} windowManager - The window manager instance.
    */
   constructor(dataManager, windowManager) {
     /**
      * The global data manager.
-     * @type {import("./managers.js").DataManager}
+     * @type {import("../managers/index.js").DataManager}
      */
     this.dataManager = dataManager;
 
     /**
      * The global window manager.
-     * @type {import("./windows.js").WindowManager}
+     * @type {import("../windows/index.js").WindowManager}
      */
     this.windowManager = windowManager;
   }
@@ -85,9 +85,9 @@ class Scene_Base {
 export class Scene_Boot extends Scene_Base {
     /**
      * Creates a new Scene_Boot.
-     * @param {import("./managers.js").DataManager} dataManager - The data manager instance.
-     * @param {import("./managers.js").SceneManager} sceneManager - The scene manager instance.
-     * @param {import("./windows.js").WindowManager} windowManager - The window manager instance.
+     * @param {import("../managers/index.js").DataManager} dataManager - The data manager instance.
+     * @param {import("../managers/index.js").SceneManager} sceneManager - The scene manager instance.
+     * @param {import("../windows/index.js").WindowManager} windowManager - The window manager instance.
      */
     constructor(dataManager, sceneManager, windowManager) {
         super(dataManager, windowManager);
@@ -115,13 +115,13 @@ export class Scene_Boot extends Scene_Base {
 export class Scene_Battle extends Scene_Base {
   /**
    * Creates a new Scene_Battle.
-   * @param {import("./managers.js").DataManager} dataManager - The data manager.
-   * @param {import("./managers.js").SceneManager} sceneManager - The scene manager.
-   * @param {import("./windows.js").WindowManager} windowManager - The window manager.
-   * @param {import("./objects.js").Game_Party} party - The player's party.
-   * @param {import("./managers.js").BattleManager} battleManager - The battle manager.
-   * @param {import("./windows.js").WindowLayer} windowLayer - The window layer to attach the battle window to.
-   * @param {import("./objects.js").Game_Map} map - The game map.
+   * @param {import("../managers/index.js").DataManager} dataManager - The data manager.
+   * @param {import("../managers/index.js").SceneManager} sceneManager - The scene manager.
+   * @param {import("../windows/index.js").WindowManager} windowManager - The window manager.
+   * @param {import("../objects/objects.js").Game_Party} party - The player's party.
+   * @param {import("../managers/index.js").BattleManager} battleManager - The battle manager.
+   * @param {import("../windows/index.js").WindowLayer} windowLayer - The window layer to attach the battle window to.
+   * @param {import("../objects/objects.js").Game_Map} map - The game map.
    * @param {number} tileX - The X coordinate of the battle on the map.
    * @param {number} tileY - The Y coordinate of the battle on the map.
    */
@@ -510,7 +510,7 @@ export class Scene_Battle extends Scene_Base {
 
   /**
    * Animates the HP gauge of a battler.
-   * @param {import("./objects.js").Game_Battler} battler - The battler.
+   * @param {import("../objects/objects.js").Game_Battler} battler - The battler.
    * @param {number} startHp - HP at start of animation.
    * @param {number} endHp - HP at end of animation.
    * @returns {Promise} Resolves when animation completes.
@@ -549,7 +549,7 @@ export class Scene_Battle extends Scene_Base {
 
   /**
    * Applies a visual animation class to a battler's DOM element.
-   * @param {import("./objects.js").Game_Battler} battler - The battler.
+   * @param {import("../objects/objects.js").Game_Battler} battler - The battler.
    * @param {string} animationType - 'flash' or 'shake'.
    */
   animateBattler(battler, animationType) {
@@ -584,7 +584,7 @@ export class Scene_Battle extends Scene_Base {
 
   /**
    * Animates the battler's name (e.g. text scramble effect).
-   * @param {import("./objects.js").Game_Battler} battler - The battler.
+   * @param {import("../objects/objects.js").Game_Battler} battler - The battler.
    * @returns {Promise} Resolves when animation completes.
    */
   animateBattlerName(battler) {
@@ -633,7 +633,7 @@ export class Scene_Battle extends Scene_Base {
 
   /**
    * Plays a data-driven animation on a target.
-   * @param {import("./objects.js").Game_Battler} target - The target battler.
+   * @param {import("../objects/objects.js").Game_Battler} target - The target battler.
    * @param {string} animationId - The animation ID from data/animations.js.
    * @returns {Promise} Resolves when animation completes.
    */
@@ -771,11 +771,11 @@ export class Scene_Battle extends Scene_Base {
 export class Scene_Shop extends Scene_Base {
     /**
      * Creates a new Scene_Shop.
-     * @param {import("./managers.js").DataManager} dataManager - The data manager.
-     * @param {import("./managers.js").SceneManager} sceneManager - The scene manager.
-     * @param {import("./windows.js").WindowManager} windowManager - The window manager.
-     * @param {import("./objects.js").Game_Party} party - The player's party.
-     * @param {import("./windows.js").WindowLayer} windowLayer - The window layer to attach the shop window to.
+     * @param {import("../managers/index.js").DataManager} dataManager - The data manager.
+     * @param {import("../managers/index.js").SceneManager} sceneManager - The scene manager.
+     * @param {import("../windows/index.js").WindowManager} windowManager - The window manager.
+     * @param {import("../objects/objects.js").Game_Party} party - The player's party.
+     * @param {import("../windows/index.js").WindowLayer} windowLayer - The window layer to attach the shop window to.
      */
     constructor(dataManager, sceneManager, windowManager, party, windowLayer) {
         super(dataManager, windowManager);
@@ -898,9 +898,9 @@ export class Scene_Shop extends Scene_Base {
 export class Scene_Map extends Scene_Base {
   /**
    * Creates a new Scene_Map.
-   * @param {import("./managers.js").DataManager} dataManager - The data manager.
-   * @param {import("./managers.js").SceneManager} sceneManager - The scene manager.
-   * @param {import("./windows.js").WindowManager} windowManager - The window manager.
+   * @param {import("../managers/index.js").DataManager} dataManager - The data manager.
+   * @param {import("../managers/index.js").SceneManager} sceneManager - The scene manager.
+   * @param {import("../windows/index.js").WindowManager} windowManager - The window manager.
    */
   constructor(dataManager, sceneManager, windowManager) {
     super(dataManager, windowManager);
@@ -1394,7 +1394,7 @@ export class Scene_Map extends Scene_Base {
   /**
    * Executes a map event.
    * @method executeEvent
-   * @param {import("./objects.js").Game_Event} event - The event to execute.
+   * @param {import("../objects/objects.js").Game_Event} event - The event to execute.
    */
   executeEvent(event) {
       if (event.actions) {
@@ -1425,7 +1425,7 @@ export class Scene_Map extends Scene_Base {
   /**
    * Adds XP to a member and handles level-up logging.
    * @method gainXp
-   * @param {import("./objects.js").Game_Battler} member - The member to give XP to.
+   * @param {import("../objects/objects.js").Game_Battler} member - The member to give XP to.
    * @param {number} amount - The amount of XP.
    */
   gainXp(member, amount, silent = false) {
@@ -1636,7 +1636,7 @@ export class Scene_Map extends Scene_Base {
   /**
    * Opens the inspection window for a specific party member.
    * @method openInspect
-   * @param {import("./objects.js").Game_Battler} member - The member to inspect.
+   * @param {import("../objects/objects.js").Game_Battler} member - The member to inspect.
    * @param {number} index - The member's index.
    */
   openInspect(member, index) {
@@ -1781,7 +1781,7 @@ export class Scene_Map extends Scene_Base {
   /**
    * Sacrifices a party member for gold.
    * @method sacrificeMember
-   * @param {import("./objects.js").Game_Battler} member - The member to sacrifice.
+   * @param {import("../objects/objects.js").Game_Battler} member - The member to sacrifice.
    * @param {number} value - The gold value.
    */
   sacrificeMember(member, value) {
@@ -1830,7 +1830,7 @@ export class Scene_Map extends Scene_Base {
   /**
    * Opens the evolution preview window.
    * @method openEvolution
-   * @param {import("./objects.js").Game_Battler} member - The member to evolve.
+   * @param {import("../objects/objects.js").Game_Battler} member - The member to evolve.
    * @param {Object} evolutionData - The evolution definition.
    */
   openEvolution(member, evolutionData) {
@@ -1852,8 +1852,8 @@ export class Scene_Map extends Scene_Base {
   /**
    * Prompts to confirm evolution (and resource consumption).
    * @method confirmEvolution
-   * @param {import("./objects.js").Game_Battler} member - The member to evolve.
-   * @param {import("./objects.js").Game_Battler} nextBattler - The evolved form.
+   * @param {import("../objects/objects.js").Game_Battler} member - The member to evolve.
+   * @param {import("../objects/objects.js").Game_Battler} nextBattler - The evolved form.
    * @param {Object} evolutionData - The evolution definition.
    */
   confirmEvolution(member, nextBattler, evolutionData) {
@@ -1885,8 +1885,8 @@ export class Scene_Map extends Scene_Base {
   /**
    * Executes the evolution, updating the party and consuming items.
    * @method executeEvolution
-   * @param {import("./objects.js").Game_Battler} member - The member to evolve.
-   * @param {import("./objects.js").Game_Battler} nextBattler - The evolved form.
+   * @param {import("../objects/objects.js").Game_Battler} member - The member to evolve.
+   * @param {import("../objects/objects.js").Game_Battler} nextBattler - The evolved form.
    * @param {Object} evolutionData - The evolution definition.
    */
   executeEvolution(member, nextBattler, evolutionData) {
@@ -1924,7 +1924,7 @@ export class Scene_Map extends Scene_Base {
   /**
    * Equips an item to a member, handling swaps if necessary.
    * @method equipItem
-   * @param {import("./objects.js").Game_Battler} member - The member.
+   * @param {import("../objects/objects.js").Game_Battler} member - The member.
    * @param {Object} item - The item to equip.
    */
   equipItem(member, item) {

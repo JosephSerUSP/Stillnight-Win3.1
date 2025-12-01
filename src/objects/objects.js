@@ -1,7 +1,7 @@
-import { randInt, shuffleArray, probabilisticRound } from "./core.js";
-import { EffectManager } from "./effects.js";
-import { passives as passivesData } from "./data/passives.js";
-import { states as statesData } from "./data/states.js";
+import { randInt, shuffleArray, probabilisticRound } from "../core/utils.js";
+import { EffectManager } from "../managers/effects.js";
+import { passives as passivesData } from "../../data/passives.js";
+import { states as statesData } from "../../data/states.js";
 
 /**
  * @class Game_Base

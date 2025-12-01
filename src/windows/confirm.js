@@ -1,6 +1,6 @@
 import { Window_Base } from "./base.js";
 import { renderCreatureInfo, createInteractiveLabel } from "./utils.js";
-import { evaluateFormula } from "../core.js";
+import { evaluateFormula } from "../core/utils.js";
 
 /**
  * @class Window_Confirm

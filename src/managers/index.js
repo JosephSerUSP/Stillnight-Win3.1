@@ -1,4 +1,4 @@
-import { randInt, elementToAscii, evaluateFormula, probabilisticRound } from "./core.js";
+import { randInt, elementToAscii, evaluateFormula, probabilisticRound } from "../core/utils.js";
 
 /**
  * @class DataManager
@@ -106,13 +106,13 @@ export class DataManager {
     };
 
     try {
-      const { skills } = await import("./data/skills.js");
+      const { skills } = await import("../../data/skills.js");
       this.skills = skills;
-      const { passives } = await import("./data/passives.js");
+      const { passives } = await import("../../data/passives.js");
       this.passives = passives;
-      const { states } = await import("./data/states.js");
+      const { states } = await import("../../data/states.js");
       this.states = states;
-      const { startingParty } = await import("./data/party.js");
+      const { startingParty } = await import("../../data/party.js");
       this.startingParty = startingParty;
     } catch (error) {
       console.error("Failed to load skills.js, passives.js, or states.js:", error);
@@ -129,7 +129,7 @@ export class DataManager {
 
     // Load Animations
     try {
-        const { animations } = await import("./data/animations.js");
+        const { animations } = await import("../../data/animations.js");
         this.animations = animations;
     } catch (error) {
         console.error("Failed to load animations.js:", error);
@@ -203,13 +203,13 @@ export class SoundManager {
 export class BattleManager {
   /**
    * Creates a new BattleManager instance.
-   * @param {import("./objects.js").Game_Party} party - The player's party.
+   * @param {import("../objects/objects.js").Game_Party} party - The player's party.
    * @param {DataManager} dataManager - The game's data manager.
    */
   constructor(party, dataManager) {
     /**
      * The player's party.
-     * @type {import("./objects.js").Game_Party}
+     * @type {import("../objects/objects.js").Game_Party}
      */
     this.party = party;
 
@@ -221,7 +221,7 @@ export class BattleManager {
 
     /**
      * The list of enemies in the current battle.
-     * @type {import("./objects.js").Game_Battler[]}
+     * @type {import("../objects/objects.js").Game_Battler[]}
      */
     this.enemies = [];
 
@@ -253,7 +253,7 @@ export class BattleManager {
   /**
    * Sets up a new battle with the given enemies.
    * @method setup
-   * @param {import("./objects.js").Game_Battler[]} enemies - The array of enemies for this battle.
+   * @param {import("../objects/objects.js").Game_Battler[]} enemies - The array of enemies for this battle.
    * @param {number} tileX - The X coordinate on the map where the battle started.
    * @param {number} tileY - The Y coordinate on the map where the battle started.
    */
@@ -373,7 +373,7 @@ export class BattleManager {
    * @method getValidTargets
    * @param {Object} battlerContext - The context of the battler.
    * @param {string} [scope='enemy'] - The target scope ('enemy', 'ally', 'self', etc.).
-   * @returns {import("./objects.js").Game_Battler[]} List of valid targets.
+   * @returns {import("../objects/objects.js").Game_Battler[]} List of valid targets.
    */
   getValidTargets(battlerContext, scope = 'enemy') {
       const { isEnemy } = battlerContext;
@@ -408,7 +408,7 @@ export class BattleManager {
    * @method createAction
    * @param {Object} battlerContext - The source of the action.
    * @param {string} type - The type of action ('attack', 'skill').
-   * @param {import("./objects.js").Game_Battler} target - The target of the action.
+   * @param {import("../objects/objects.js").Game_Battler} target - The target of the action.
    * @param {Object} [options] - Additional options (e.g., skillId).
    * @returns {Object} The action object.
    */
@@ -649,14 +649,14 @@ export class SceneManager {
 
     /**
      * The stack of active scenes.
-     * @type {import("../scenes.js").Scene_Base[]}
+     * @type {import("../scenes/scenes.js").Scene_Base[]}
      * @private
      */
     this._stack = [];
 
     /**
      * The currently active scene.
-     * @type {import("../scenes.js").Scene_Base|null}
+     * @type {import("../scenes/scenes.js").Scene_Base|null}
      * @private
      */
     this._currentScene = null;
@@ -689,7 +689,7 @@ export class SceneManager {
    * Pushes a new scene onto the stack and starts it.
    * Pauses the previous scene.
    * @method push
-   * @param {import("../scenes.js").Scene_Base} scene - The scene to push.
+   * @param {import("../scenes/scenes.js").Scene_Base} scene - The scene to push.
    */
   push(scene) {
     if (this._currentScene) {
@@ -714,7 +714,7 @@ export class SceneManager {
   /**
    * Gets the currently active scene.
    * @method currentScene
-   * @returns {import("../scenes.js").Scene_Base|null} The current scene.
+   * @returns {import("../scenes/scenes.js").Scene_Base|null} The current scene.
    */
   currentScene() {
     return this._currentScene;
@@ -723,7 +723,7 @@ export class SceneManager {
   /**
    * Gets the previous scene in the stack (the one below the current scene).
    * @method previous
-   * @returns {import("../scenes.js").Scene_Base|undefined} The previous scene.
+   * @returns {import("../scenes/scenes.js").Scene_Base|undefined} The previous scene.
    */
   previous() {
     return this._stack[this._stack.length - 1];

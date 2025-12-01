@@ -1,4 +1,4 @@
-import { Graphics } from "../core.js";
+import { Graphics } from "../core/utils.js";
 
 /**
  * @class WindowAnimator
