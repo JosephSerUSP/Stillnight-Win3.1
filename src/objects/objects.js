@@ -620,6 +620,38 @@ export class Game_Party {
       this.inventory.splice(index, 1);
       return { success: true, outcomes, item };
   }
+
+  /**
+   * Equips an item to a member, handling swaps and inventory updates.
+   * @param {Game_Battler} member - The member to equip.
+   * @param {Object} item - The item to equip (can be null to unequip).
+   * @returns {Object} { success: boolean, msg: string }
+   */
+  equipItem(member, item) {
+      if (!item) {
+          if (member.equipmentItem) {
+              this.inventory.push(member.equipmentItem);
+          }
+          member.equipmentItem = null;
+          return { success: true, msg: `${member.name} unequipped item.` };
+      } else if (item.equippedMember) {
+          const otherMember = item.equippedMember;
+          const currentItem = member.equipmentItem;
+          otherMember.equipmentItem = currentItem;
+          member.equipmentItem = item;
+          return { success: true, msg: `${member.name} swapped ${item.name} with ${otherMember.name}.` };
+      } else {
+          if (member.equipmentItem) {
+              this.inventory.push(member.equipmentItem);
+          }
+          member.equipmentItem = item;
+          const invIndex = this.inventory.findIndex((i) => i.id === item.id);
+          if (invIndex > -1) {
+              this.inventory.splice(invIndex, 1);
+          }
+          return { success: true, msg: `${member.name} equipped ${item.name}.` };
+      }
+  }
 }
 
 /**
