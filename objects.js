@@ -328,15 +328,6 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
-   * Executes an action on a target. (Placeholder / Debug)
-   * @param {Object} action - The action object.
-   * @param {Game_Battler} target - The target battler.
-   */
-  executeAction(action, target) {
-    console.log(`${this.name} uses an action on ${target.name}.`);
-  }
-
-  /**
    * Handles start-of-turn logic (states, passives).
    * @param {Game_Battler[]} allies - List of active allies.
    * @param {Game_Battler[]} enemies - List of active enemies.

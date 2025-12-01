@@ -13,13 +13,13 @@ test('Verify Evolution System', async ({ page }) => {
     const scene = window.sceneManager.currentScene();
     if (!scene || !scene.party) return;
 
-    // Clear party
-    scene.party.members = [];
+    // Clear party slots
+    scene.party.slots.fill(null);
 
     // Add Pixie
     const pixieData = window.dataManager.actors.find(a => a.id === 'pixie');
     const pixie = new window.Game_Battler(pixieData);
-    scene.party.members.push(pixie);
+    scene.party.addMember(pixie);
 
     // Level up to 6
     pixie.level = 6;

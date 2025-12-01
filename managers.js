@@ -472,106 +472,139 @@ export class BattleManager {
    * @returns {Array} List of events describing the outcome.
    */
   executeAction(action) {
-      const events = [];
-      if (!action) return events;
+    if (!action) return [];
 
-      const { sourceContext, target } = action;
-      const { battler, index, isEnemy } = sourceContext;
+    const { sourceContext, target } = action;
+    const { battler } = sourceContext;
 
-      if (battler.hp <= 0) return events; // Should not happen but safety check
-      if (target.hp <= 0) return events; // Target died before action?
+    if (battler.hp <= 0) return []; // Should not happen but safety check
+    if (target.hp <= 0) return []; // Target died before action?
 
-      if (action.type === 'skill') {
-          const skill = this.dataManager.skills[action.skillId];
-          if (skill) {
-               let boost = 1;
-               if (skill.element) {
-                 const matches = battler.elements.filter((e) => e === skill.element).length;
-                 boost += matches * 0.25;
-               }
-               const skillName = `${elementToAscii(skill.element)}${skill.name}`;
-               events.push({ type: 'use_skill', battler: battler, skillName, msg: `${battler.name} uses ${skillName}!` });
+    let events = [];
+    switch (action.type) {
+      case 'skill':
+        events = this._executeSkill(action);
+        break;
+      case 'attack':
+        events = this._executeAttack(action);
+        break;
+      default:
+        console.warn(`Unknown action type: ${action.type}`);
+        break;
+    }
 
-               skill.effects.forEach((effect) => {
-                 if (effect.type === "hp_damage") {
-                   let skillDmg = probabilisticRound(evaluateFormula(effect.formula, battler, target) * boost);
-                   if (skillDmg < 1) skillDmg = 1;
+    this._checkBattleEnd(events);
+    return events;
+  }
 
-                   const hpBefore = target.hp;
-                   target.hp = Math.max(0, target.hp - skillDmg);
+  /**
+   * Internal handler for skill actions.
+   * @private
+   */
+  _executeSkill(action) {
+    const { sourceContext, target } = action;
+    const { battler } = sourceContext;
+    const events = [];
 
-                   events.push({
-                       type: 'damage',
-                       battler: battler,
-                       target: target,
-                       value: skillDmg,
-                       hpBefore: hpBefore,
-                       hpAfter: target.hp,
-                       msg: `  ${target.name} takes ${skillDmg} damage.`
-                   });
-                 }
-                 if (effect.type === "hp_heal") {
-                    let heal = probabilisticRound(evaluateFormula(effect.formula, battler, target) * boost);
-                    if (heal < 1) heal = 1;
-
-                    const hpBefore = target.hp;
-                    target.hp = Math.min(target.maxHp, target.hp + heal);
-
-                    events.push({
-                        type: 'heal',
-                        battler: battler,
-                        target: target,
-                        value: heal,
-                        hpBefore: hpBefore,
-                        hpAfter: target.hp,
-                        msg: `  ${target.name} heals ${heal} HP.`,
-                        animation: 'healing_sparkle'
-                    });
-                 }
-                 if (effect.type === "add_status") {
-                   const chance = (effect.chance || 1) * boost;
-                   if (Math.random() < chance) {
-                     target.addState(effect.status);
-                     events.push({ type: 'status', target: target, status: effect.status, msg: `  ${target.name} is afflicted with ${effect.status}.` });
-                   }
-                 }
-               });
-          }
-      } else if (action.type === 'attack') {
-           // Normal Attack
-           // Base logic moved to Game_Battler.atk (includes traits)
-           // BattleManager adds variance (+/- 1)
-           let base = battler.atk + randInt(-1, 1);
-
-           if (!isEnemy) {
-               const row = this._partyRow(index);
-               if (row === "Front") base += 1;
-               else base -= 1;
-           }
-
-           if (base < 1) base = 1;
-
-           const mult = this.elementMultiplier(battler.elements, target.elements);
-           let dmg = probabilisticRound(base * mult);
-           dmg += battler.getPassiveValue("DEAL_DAMAGE_MOD");
-           if (dmg < 1) dmg = 1;
-
-           const hpBefore = target.hp;
-           target.hp = Math.max(0, target.hp - dmg);
-
-           events.push({
-             type: "damage",
-             battler: battler,
-             target: target,
-             value: dmg,
-             hpBefore: hpBefore,
-             hpAfter: target.hp,
-             msg: `${battler.name} attacks ${target.name} for ${dmg}.`,
-           });
+    const skill = this.dataManager.skills[action.skillId];
+    if (skill) {
+      let boost = 1;
+      if (skill.element) {
+        const matches = battler.elements.filter((e) => e === skill.element).length;
+        boost += matches * 0.25;
       }
+      const skillName = `${elementToAscii(skill.element)}${skill.name}`;
+      events.push({ type: 'use_skill', battler: battler, skillName, msg: `${battler.name} uses ${skillName}!` });
 
-      this._checkBattleEnd(events);
-      return events;
+      skill.effects.forEach((effect) => {
+        if (effect.type === "hp_damage") {
+          let skillDmg = probabilisticRound(evaluateFormula(effect.formula, battler, target) * boost);
+          if (skillDmg < 1) skillDmg = 1;
+
+          const hpBefore = target.hp;
+          target.hp = Math.max(0, target.hp - skillDmg);
+
+          events.push({
+            type: 'damage',
+            battler: battler,
+            target: target,
+            value: skillDmg,
+            hpBefore: hpBefore,
+            hpAfter: target.hp,
+            msg: `  ${target.name} takes ${skillDmg} damage.`
+          });
+        }
+        if (effect.type === "hp_heal") {
+          let heal = probabilisticRound(evaluateFormula(effect.formula, battler, target) * boost);
+          if (heal < 1) heal = 1;
+
+          const hpBefore = target.hp;
+          target.hp = Math.min(target.maxHp, target.hp + heal);
+
+          events.push({
+            type: 'heal',
+            battler: battler,
+            target: target,
+            value: heal,
+            hpBefore: hpBefore,
+            hpAfter: target.hp,
+            msg: `  ${target.name} heals ${heal} HP.`,
+            animation: 'healing_sparkle'
+          });
+        }
+        if (effect.type === "add_status") {
+          const chance = (effect.chance || 1) * boost;
+          if (Math.random() < chance) {
+            target.addState(effect.status);
+            events.push({ type: 'status', target: target, status: effect.status, msg: `  ${target.name} is afflicted with ${effect.status}.` });
+          }
+        }
+      });
+    }
+    return events;
+  }
+
+  /**
+   * Internal handler for attack actions.
+   * @private
+   */
+  _executeAttack(action) {
+    const { sourceContext, target } = action;
+    const { battler, index, isEnemy } = sourceContext;
+    const events = [];
+
+    // Normal Attack
+    // Base logic moved to Game_Battler.atk (includes traits)
+    // BattleManager adds variance (+/- 1)
+    let base = battler.atk + randInt(-1, 1);
+
+    if (!isEnemy) {
+      const row = this._partyRow(index);
+      if (row === "Front") base += 1;
+      else base -= 1;
+    }
+
+    if (base < 1) base = 1;
+
+    const mult = this.elementMultiplier(battler.elements, target.elements);
+    let dmg = probabilisticRound(base * mult);
+    dmg += battler.getPassiveValue("DEAL_DAMAGE_MOD");
+    if (dmg < 1) dmg = 1;
+
+    const hpBefore = target.hp;
+    target.hp = Math.max(0, target.hp - dmg);
+
+    events.push({
+      type: "damage",
+      battler: battler,
+      target: target,
+      value: dmg,
+      hpBefore: hpBefore,
+      hpAfter: target.hp,
+      msg: `${battler.name} attacks ${target.name} for ${dmg}.`,
+    });
+
+    return events;
   }
 
   /**
