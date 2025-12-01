@@ -53,6 +53,12 @@ export class DataManager {
     this.terms = null;
 
     /**
+     * The sound mapping data loaded from sounds.json.
+     * @type {Object|null}
+     */
+    this.sounds = null;
+
+    /**
      * The skill data loaded from skills.js.
      * @type {Object|null}
      */
@@ -103,6 +109,7 @@ export class DataManager {
       npcs: "data/npcs.json",
       terms: "data/terms.json",
       themes: "data/themes.json",
+      sounds: "data/sounds.json",
     };
 
     try {
@@ -134,6 +141,11 @@ export class DataManager {
     } catch (error) {
         console.error("Failed to load animations.js:", error);
     }
+
+    // Initialize SoundManager with loaded sound data
+    if (this.sounds) {
+        SoundManager.init(this.sounds);
+    }
   }
 }
 
@@ -141,8 +153,8 @@ export class DataManager {
  * @class SoundManager
  * @description A static class for handling audio playback.
  * This encapsulates the AudioContext and provides a simple interface
- * for playing sound effects. This prevents the need to create a new
- * AudioContext for each sound and keeps audio-related logic in one place.
+ * for playing sound effects. Handles loading and caching of audio buffers
+ * and synthesis of procedural sounds.
  */
 export class SoundManager {
   /**
@@ -153,39 +165,164 @@ export class SoundManager {
   static _audioCtx = null;
 
   /**
+   * Map of sound keys to audio buffers.
+   * @private
+   * @type {Map<string, AudioBuffer>}
+   */
+  static _buffers = new Map();
+
+  /**
+   * Map of sound keys to configuration (path string or settings object).
+   * @private
+   * @type {Object}
+   */
+  static _soundMap = {};
+
+  /**
+   * Initializes the SoundManager with sound data.
+   * @method init
+   * @param {Object} soundMap - Key-value pair of sound names and config/paths.
+   */
+  static init(soundMap) {
+      this._soundMap = soundMap || {};
+      this._initializeContext();
+      this.loadAll();
+  }
+
+  /**
    * Initializes the AudioContext if it hasn't been initialized yet.
-   * @method _initialize
+   * @method _initializeContext
    * @private
    */
-  static _initialize() {
+  static _initializeContext() {
     if (!this._audioCtx && typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) {
       this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
   }
 
   /**
-   * Plays a simple square wave beep sound.
-   * @method beep
-   * @param {number} [frequency=440] - The frequency of the beep in Hz.
-   * @param {number} [duration=120] - The duration of the beep in ms.
+   * Loads all file-based sounds defined in the sound map.
+   * @method loadAll
+   * @async
+   */
+  static async loadAll() {
+      if (!this._audioCtx) return;
+      const promises = Object.entries(this._soundMap).map(([key, value]) => {
+          if (typeof value === 'string') {
+              return this.loadSound(key, value);
+          }
+          return Promise.resolve();
+      });
+      await Promise.allSettled(promises);
+  }
+
+  /**
+   * Loads a single sound into the buffer cache.
+   * @method loadSound
+   * @async
+   * @param {string} key - The sound key.
+   * @param {string} path - The file path.
+   */
+  static async loadSound(key, path) {
+      if (!this._audioCtx) return;
+      try {
+          const response = await fetch(path);
+          if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+          const arrayBuffer = await response.arrayBuffer();
+          const audioBuffer = await this._audioCtx.decodeAudioData(arrayBuffer);
+          this._buffers.set(key, audioBuffer);
+      } catch (error) {
+          console.warn(`SoundManager: Failed to load sound '${key}' from '${path}'.`, error);
+      }
+  }
+
+  /**
+   * Plays a sound effect by key.
+   * Supports both file-based (AudioBuffer) and synthesis (Oscillator) sounds.
+   * @method play
+   * @param {string} key - The key of the sound to play.
+   * @param {Object} [options] - Playback options.
+   * @param {number} [options.volume] - Volume multiplier.
+   * @param {number} [options.pitch] - Pitch multiplier.
+   */
+  static async play(key, options = {}) {
+      this._initializeContext();
+      if (!this._audioCtx) return;
+
+      if (this._audioCtx.state === 'suspended') {
+          this._audioCtx.resume();
+      }
+
+      const soundDef = this._soundMap[key];
+      if (!soundDef) {
+          // console.warn(`SoundManager: Sound '${key}' not found.`);
+          return;
+      }
+
+      if (typeof soundDef === 'string') {
+          // File based
+          let buffer = this._buffers.get(key);
+          if (!buffer) {
+             await this.loadSound(key, soundDef);
+             buffer = this._buffers.get(key);
+          }
+          if (buffer) {
+              const source = this._audioCtx.createBufferSource();
+              source.buffer = buffer;
+              const gainNode = this._audioCtx.createGain();
+              gainNode.gain.value = options.volume !== undefined ? options.volume : 0.5;
+              if (options.pitch) source.playbackRate.value = options.pitch;
+              source.connect(gainNode);
+              gainNode.connect(this._audioCtx.destination);
+              source.start(0);
+          }
+      } else if (typeof soundDef === 'object') {
+          // Synthesis based
+          try {
+              const oscillator = this._audioCtx.createOscillator();
+              const gainNode = this._audioCtx.createGain();
+
+              oscillator.type = soundDef.type || 'square';
+              oscillator.frequency.value = soundDef.frequency || 440;
+
+              if (options.pitch) {
+                   oscillator.frequency.value *= options.pitch;
+              }
+
+              // Default volume for beeps is lower
+              gainNode.gain.value = options.volume !== undefined ? options.volume : 0.1;
+
+              oscillator.connect(gainNode);
+              gainNode.connect(this._audioCtx.destination);
+
+              oscillator.start();
+              const duration = (soundDef.duration || 100) / 1000;
+              oscillator.stop(this._audioCtx.currentTime + duration);
+          } catch (e) {
+              console.error("SoundManager error:", e);
+          }
+      }
+  }
+
+  /**
+   * Legacy beep (used if no configuration exists or direct call needed).
    */
   static beep(frequency = 440, duration = 120) {
-    this._initialize();
-    if (!this._audioCtx) return;
+      this._initializeContext();
+      if (!this._audioCtx) return;
+      if (this._audioCtx.state === 'suspended') this._audioCtx.resume();
 
-    try {
-      const oscillator = this._audioCtx.createOscillator();
-      const gainNode = this._audioCtx.createGain();
-      oscillator.type = "square";
-      oscillator.frequency.value = frequency;
-      gainNode.gain.value = 0.05;
-      oscillator.connect(gainNode);
-      gainNode.connect(this._audioCtx.destination);
-      oscillator.start();
-      oscillator.stop(this._audioCtx.currentTime + duration / 1000);
-    } catch (e) {
-      // Fail silently if audio context fails.
-    }
+      try {
+          const oscillator = this._audioCtx.createOscillator();
+          const gainNode = this._audioCtx.createGain();
+          oscillator.type = "square";
+          oscillator.frequency.value = frequency;
+          gainNode.gain.value = 0.05;
+          oscillator.connect(gainNode);
+          gainNode.connect(this._audioCtx.destination);
+          oscillator.start();
+          oscillator.stop(this._audioCtx.currentTime + duration / 1000);
+      } catch (e) {}
   }
 }
 
@@ -524,6 +661,9 @@ export class BattleManager {
           const hpBefore = target.hp;
           target.hp = Math.max(0, target.hp - skillDmg);
 
+          // Add DAMAGE sound logic
+          SoundManager.play('DAMAGE');
+
           events.push({
             type: 'damage',
             battler: battler,
@@ -540,6 +680,9 @@ export class BattleManager {
 
           const hpBefore = target.hp;
           target.hp = Math.min(target.maxHp, target.hp + heal);
+
+          // Add HEAL sound logic
+          SoundManager.play('HEAL');
 
           events.push({
             type: 'heal',
@@ -594,6 +737,9 @@ export class BattleManager {
     const hpBefore = target.hp;
     target.hp = Math.max(0, target.hp - dmg);
 
+    // Play ATTACK/DAMAGE sound
+    SoundManager.play('DAMAGE');
+
     events.push({
       type: "damage",
       battler: battler,
@@ -620,6 +766,7 @@ export class BattleManager {
     if (!anyPartyAlive) {
       this.isBattleFinished = true;
       this.turnQueue = [];
+      SoundManager.play('GAME_OVER');
       events.push({ type: "end", result: "defeat", msg: this.dataManager.terms.battle.your_party_collapses });
     } else if (!anyEnemyAlive) {
       this.isBattleFinished = true;

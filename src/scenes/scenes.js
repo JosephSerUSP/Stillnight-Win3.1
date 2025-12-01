@@ -243,7 +243,7 @@ export class Scene_Battle extends Scene_Base {
     this.renderBattleAscii();
     this.windowManager.push(this.battleWindow);
     document.getElementById("mode-label").textContent = "Battle";
-    SoundManager.beep(350, 200);
+    SoundManager.play('BATTLE_START');
 
     if (ConfigManager.autoBattle) {
         this.resolveBattleRound();
@@ -258,7 +258,7 @@ export class Scene_Battle extends Scene_Base {
       }
       ConfigManager.save();
       this.battleWindow.updateAutoButton(ConfigManager.autoBattle);
-      SoundManager.beep(400, 50);
+      SoundManager.play('UI_SELECT');
       if (ConfigManager.autoBattle && !this.battleBusy && !this.battleManager.isBattleFinished) {
           this.resolveBattleRound();
       }
@@ -291,7 +291,7 @@ export class Scene_Battle extends Scene_Base {
                       this.disableActionButtons();
                       this.battleWindow.appendLog("Formation changed.");
                       this.renderBattleAscii();
-                      SoundManager.beep(500, 80);
+                      SoundManager.play('UI_SELECT');
                   }
               };
               this.confirmWindow.btnCancel.onclick = () => {
@@ -332,7 +332,7 @@ export class Scene_Battle extends Scene_Base {
                       this.renderBattleAscii();
                       this.actionTakenThisTurn = true;
                       this.disableActionButtons();
-                      SoundManager.beep(700, 100);
+                      SoundManager.play('HEAL');
                   } else {
                        this.battleWindow.appendLog(result.msg);
                   }
@@ -372,7 +372,7 @@ export class Scene_Battle extends Scene_Base {
       this.renderBattleAscii();
       this.actionTakenThisTurn = true;
       this.disableActionButtons();
-      SoundManager.beep(800, 100);
+      SoundManager.play('EQUIP');
   }
 
   disableActionButtons() {
@@ -424,7 +424,7 @@ export class Scene_Battle extends Scene_Base {
     this.battleManager.startRound();
 
     const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-    SoundManager.beep(300, 80);
+    SoundManager.play('UI_SELECT');
 
     // Loop through turns until the round is complete
     while (true) {
@@ -521,7 +521,7 @@ export class Scene_Battle extends Scene_Base {
 
       this.victoryWindow.setup(spoilText, () => this.claimVictoryRewards());
       this.windowManager.push(this.victoryWindow);
-      SoundManager.beep(900, 200);
+      SoundManager.play('VICTORY');
   }
 
   claimVictoryRewards() {
@@ -547,6 +547,7 @@ export class Scene_Battle extends Scene_Base {
           droppedItems.forEach(item => this.party.inventory.push(item));
           const names = droppedItems.map(i => i.name).join(", ");
           this.sceneManager.previous().logMessage(`[Battle] Found: ${names}`);
+          SoundManager.play('ITEM_GET');
       }
 
       this.sceneManager.previous().updateAll();
@@ -681,9 +682,11 @@ export class Scene_Battle extends Scene_Base {
   attemptFlee() {
     if (Math.random() < this.sceneManager.previous().getFleeChance()) {
       this.sceneManager.previous().logMessage("[Battle] You successfully fled!");
+      SoundManager.play('ESCAPE');
       this.sceneManager.pop();
     } else {
       this.battleWindow.appendLog("You failed to flee!");
+      SoundManager.play('UI_ERROR');
     }
   }
 
@@ -1000,7 +1003,7 @@ export class Scene_Shop extends Scene_Base {
         this.startBuy();
         this.windowManager.push(this.shopWindow);
         document.getElementById("mode-label").textContent = "Shop";
-        SoundManager.beep(650, 150);
+        SoundManager.play('UI_SELECT');
     }
 
     startBuy() {
@@ -1030,7 +1033,7 @@ export class Scene_Shop extends Scene_Base {
             this.startSell();
 
             this.sceneManager.previous().logMessage(`[Shop] Sold ${item.name} for ${price}G.`);
-            SoundManager.beep(600, 80);
+            SoundManager.play('SHOP_SELL');
             this.sceneManager.previous().updateAll();
         }
     }
@@ -1066,7 +1069,7 @@ export class Scene_Shop extends Scene_Base {
 
         if (this.party.gold < item.cost) {
             this.shopWindow.messageEl.textContent = this.dataManager.terms.shop.not_enough_gold;
-            SoundManager.beep(180, 80);
+            SoundManager.play('UI_CANCEL');
             return;
         }
 
@@ -1083,7 +1086,7 @@ export class Scene_Shop extends Scene_Base {
             `[Shop] ${this.dataManager.terms.shop.purchased}${item.name}.`
         );
     this.sceneManager.previous().updateAll();
-        SoundManager.beep(600, 80);
+        SoundManager.play('SHOP_BUY');
     }
 }
 
@@ -1211,7 +1214,7 @@ export class Scene_Map extends Scene_Base {
     this.setStatus(
       this.dataManager.terms.status.exploring_floor + (this.map.floorIndex + 1)
     );
-    SoundManager.beep(500, 200);
+    SoundManager.play('UI_SELECT');
     this.updateAll();
   }
 
@@ -1227,7 +1230,7 @@ export class Scene_Map extends Scene_Base {
     this.hud.btnClearLog.addEventListener("click", () => {
       this.hud.clearLog();
       this.setStatus("Log cleared.");
-      SoundManager.beep(300, 80);
+      SoundManager.play('UI_CANCEL');
     });
     this.hud.btnFormation.addEventListener("click", this.openFormation.bind(this));
     this.hud.btnInventory.addEventListener("click", this.openInventory.bind(this));
@@ -1477,7 +1480,7 @@ export class Scene_Map extends Scene_Base {
             this.map.playerY = floor.startY;
             this.map.revealAroundPlayer();
             this.logMessage(`[Navigate] You flip to card ${idx + 1} (${floor.title}).`);
-            SoundManager.beep(550, 120);
+            SoundManager.play('STAIRS');
             this.updateAll();
         }
     );
@@ -1524,7 +1527,7 @@ export class Scene_Map extends Scene_Base {
 
     if (!isAdjacent && !(x === this.map.playerX && y === this.map.playerY)) {
       this.setStatus(this.dataManager.terms.status.only_adjacent_tiles);
-      SoundManager.beep(200, 80);
+      SoundManager.play('UI_ERROR');
       return;
     }
 
@@ -1533,7 +1536,7 @@ export class Scene_Map extends Scene_Base {
 
     if (ch === "#") {
       this.setStatus(this.dataManager.terms.log.wall_blocks);
-      SoundManager.beep(180, 80);
+      SoundManager.play('UI_ERROR');
       return;
     }
 
@@ -1585,7 +1588,7 @@ export class Scene_Map extends Scene_Base {
       this.setStatus("You move.");
     }
 
-    SoundManager.beep(600, 80);
+    SoundManager.play('UI_SELECT');
     this.applyMovePassives();
     this.updateAll();
   }
@@ -1618,7 +1621,7 @@ export class Scene_Map extends Scene_Base {
     this.updateGrid();
     this.setStatus("All tiles revealed.");
     this.logMessage("[Debug] You peek behind the fog.");
-    SoundManager.beep(1000, 100);
+    SoundManager.play('ITEM_GET');
   }
 
   /**
@@ -1633,7 +1636,7 @@ export class Scene_Map extends Scene_Base {
       this.logMessage(
         `[Level] ${member.name} grows to Lv${result.newLevel}! HP +${result.hpGain}.`
       );
-      SoundManager.beep(900, 150);
+      SoundManager.play('LEVEL_UP');
       this.updateParty();
     }
   }
@@ -1745,7 +1748,7 @@ export class Scene_Map extends Scene_Base {
             options: themes,
             onChange: (val) => {
                 ThemeManager.applyTheme(val);
-                SoundManager.beep(400, 50);
+                SoundManager.play('UI_SELECT');
             }
         },
         {
@@ -1759,7 +1762,7 @@ export class Scene_Map extends Scene_Base {
             onChange: (val) => {
                 ConfigManager.autoBattle = (val === "on");
                 ConfigManager.save();
-                SoundManager.beep(400, 50);
+                SoundManager.play('UI_SELECT');
             }
         }
     ];
@@ -1823,13 +1826,13 @@ export class Scene_Map extends Scene_Base {
           result.outcomes.forEach(o => {
              if (o.type === 'xp' && o.result.leveledUp) {
                  this.logMessage(`[Level] ${target.name} grows to Lv${o.result.newLevel}! HP +${o.result.hpGain}.`);
-                 SoundManager.beep(900, 150);
+                 SoundManager.play('LEVEL_UP');
              }
           });
           this.updateParty();
           this.inventoryWindow.updateList();
           this.updateAll();
-          SoundManager.beep(700, 100);
+          SoundManager.play('HEAL');
       } else {
           this.logMessage(result.msg);
       }
@@ -1842,7 +1845,7 @@ export class Scene_Map extends Scene_Base {
           this.inventoryWindow.updateList();
           this.updateAll();
           this.logMessage(`[Inventory] Discarded ${item.name}.`);
-          SoundManager.beep(300, 80);
+          SoundManager.play('UI_CANCEL');
       }
   }
 
@@ -2001,7 +2004,7 @@ export class Scene_Map extends Scene_Base {
       if (this.party.removeMember(member)) {
           this.party.gold += value;
           this.logMessage(`[Sacrifice] ${member.name} was sacrificed for ${value}G.`);
-          SoundManager.beep(150, 400);
+          SoundManager.play('GAME_OVER');
           this.closeInspect();
           this.updateAll();
       }
@@ -2127,7 +2130,7 @@ export class Scene_Map extends Scene_Base {
           this.party.replaceMember(slotIndex, nextBattler);
 
           this.logMessage(`[Evolution] ${member.name} evolved into ${nextBattler.name}!`);
-          SoundManager.beep(800, 300);
+          SoundManager.play('LEVEL_UP');
 
           this.windowManager.close(this.evolutionWindow);
           this.updateAll();
@@ -2143,7 +2146,7 @@ export class Scene_Map extends Scene_Base {
   equipItem(member, item) {
       const result = this.party.equipItem(member, item);
       this.logMessage(`[Equip] ${result.msg}`);
-      SoundManager.beep(800, 100);
+      SoundManager.play('EQUIP');
 
       this.openInspect(member, this.party.members.indexOf(member));
       this.updateAll();

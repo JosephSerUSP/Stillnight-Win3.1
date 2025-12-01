@@ -1,0 +1,18 @@
+{
+  "HEAL": { "type": "square", "frequency": 700, "duration": 100 },
+  "STAIRS": { "type": "square", "frequency": 550, "duration": 120 },
+  "ITEM_GET": { "type": "square", "frequency": 800, "duration": 100 },
+  "DAMAGE": { "type": "sawtooth", "frequency": 150, "duration": 100 },
+  "VICTORY": { "type": "square", "frequency": 900, "duration": 200 },
+  "LEVEL_UP": { "type": "square", "frequency": 900, "duration": 150 },
+  "SHOP_BUY": { "type": "square", "frequency": 600, "duration": 80 },
+  "SHOP_SELL": { "type": "square", "frequency": 600, "duration": 80 },
+  "EQUIP": { "type": "square", "frequency": 800, "duration": 100 },
+  "UI_HOVER": { "type": "sine", "frequency": 440, "duration": 50 },
+  "UI_SELECT": { "type": "square", "frequency": 400, "duration": 50 },
+  "UI_CANCEL": { "type": "square", "frequency": 300, "duration": 80 },
+  "UI_ERROR": { "type": "sawtooth", "frequency": 180, "duration": 150 },
+  "BATTLE_START": { "type": "square", "frequency": 350, "duration": 200 },
+  "GAME_OVER": { "type": "sawtooth", "frequency": 100, "duration": 500 },
+  "ESCAPE": { "type": "square", "frequency": 600, "duration": 150 }
+}
