@@ -50,7 +50,7 @@ export const startingParty = {
    * @returns {Object[]} The starting party members configuration.
    */
   getMembers: (allActors) => {
-    const availableCreatures = allActors.filter(creature => !creature.isEnemy);
+    const availableCreatures = allActors.filter(creature => creature.initialParty);
 
     if (Math.random() < 0.25) {
       // 2 creatures, one leveled up

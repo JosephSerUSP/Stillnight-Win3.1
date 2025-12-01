@@ -174,15 +174,25 @@ export class Game_Battler extends Game_Base {
    */
   get maxHp() {
       const base = this._baseMaxHp;
-      const bonus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'maxHp')
+      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'maxHp')
                                .reduce((sum, t) => sum + t.value, 0);
-      return base + bonus;
+      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'maxHp')
+                               .reduce((acc, t) => acc * t.value, 1.0);
+      return Math.floor((base + plus) * rate);
   }
 
   set maxHp(value) {
-      const bonus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'maxHp')
+      // Inverse calculation for setting base max hp is tricky with rates.
+      // We assume this setter is mostly used for initialization or direct manipulation where
+      // we want the FINAL value to be 'value'.
+      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'maxHp')
                                .reduce((sum, t) => sum + t.value, 0);
-      this._baseMaxHp = value - bonus;
+      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'maxHp')
+                               .reduce((acc, t) => acc * t.value, 1.0);
+
+      // (base + plus) * rate = value  =>  base = (value / rate) - plus
+      if (rate === 0) this._baseMaxHp = 0; // Avoid division by zero
+      else this._baseMaxHp = Math.ceil((value / rate) - plus);
   }
 
   /**
@@ -199,9 +209,11 @@ export class Game_Battler extends Game_Base {
            base = 3 + Math.floor(this.level / 2);
       }
 
-      const bonus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'atk')
+      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'atk')
                                .reduce((sum, t) => sum + t.value, 0);
-      return base + bonus;
+      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'atk')
+                               .reduce((acc, t) => acc * t.value, 1.0);
+      return Math.floor((base + plus) * rate);
   }
 
   /**

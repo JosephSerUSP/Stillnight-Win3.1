@@ -35,7 +35,7 @@ export const skills = {
         element: 'Green',
         description: "Strikes a foe with a blade of wind.",
         effects: [
-            { type: 'hp_damage', formula: '5 + 1.2 * a.level' }
+            { type: 'hp_damage', formula: '6 + 1.2 * a.level' }
         ]
     },
     soothingMote: {
@@ -45,7 +45,7 @@ export const skills = {
         element: 'White',
         description: "Heals a small amount of HP for an ally.",
         effects: [
-            { type: 'hp_heal', formula: '4 + 1.5 * a.level' }
+            { type: 'hp_heal', formula: '5 + 1.5 * a.level' }
         ]
     },
 
@@ -57,7 +57,7 @@ export const skills = {
         element: 'Black',
         description: "A reckless charge.",
         effects: [
-            { type: 'hp_damage', formula: '6 + 1.1 * a.level' }
+            { type: 'hp_damage', formula: '7 + 1.2 * a.level' }
         ]
     },
 
@@ -69,7 +69,7 @@ export const skills = {
         element: 'White',
         description: "Smite evil with holy light.",
         effects: [
-            { type: 'hp_damage', formula: '5 + 1.4 * a.level' }
+            { type: 'hp_damage', formula: '6 + 1.4 * a.level' }
         ]
     },
     divineFavor: {
@@ -91,7 +91,7 @@ export const skills = {
         element: 'Black',
         description: "Tears at the enemy from the shadows.",
         effects: [
-            { type: 'hp_damage', formula: '6 + 1.3 * a.level' }
+            { type: 'hp_damage', formula: '8 + 1.3 * a.level' }
         ]
     },
     infernalPact: {
@@ -102,19 +102,6 @@ export const skills = {
         description: "Sacrifice safety for power. (Grants Berserk)",
         effects: [
             { type: 'add_status', status: 'berserk', chance: 1.0, duration: 3 }
-        ]
-    },
-
-    // Example from prompt
-    sleepMist: {
-        id: 'sleepMist',
-        name: 'Sleep Mist',
-        target: 'enemy-all',
-        element: 'Blue',
-        description: "A mist that lulls enemies to sleep.",
-        effects: [
-            { type: 'hp_damage', formula: '3 + 1.6 * a.level' },
-            { type: 'add_status', status: 'sleep', chance: 0.3 }
         ]
     },
 
