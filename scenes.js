@@ -330,6 +330,10 @@ export class Scene_Battle extends Scene_Base {
                 this.animateBattler(event.target, 'flash');
                 await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
 
+                if (targetNewHp <= 0) {
+                     await this.playAnimation(event.target, 'death');
+                }
+
             } else if (event.type === 'heal' && event.target) {
                 if (event.animation) {
                      await this.playAnimation(event.target, event.animation);
@@ -499,7 +503,7 @@ export class Scene_Battle extends Scene_Base {
   _getBattlerContext(battler) {
       const enemyIndex = this.battleManager.enemies.indexOf(battler);
       if (enemyIndex !== -1) return { index: enemyIndex, isEnemy: true };
-      const partyIndex = this.party.members.indexOf(battler);
+      const partyIndex = this.party.slots.indexOf(battler);
       if (partyIndex !== -1) return { index: partyIndex, isEnemy: false };
       return null;
   }
@@ -653,6 +657,29 @@ export class Scene_Battle extends Scene_Base {
                 targetEl = this.battleWindow.getHpElement(ctx.index, ctx.isEnemy);
                 if (targetEl) preserveBrackets = true;
                 else targetEl = battlerElement; // fallback
+           }
+
+           if (anim.type === "death_sequence") {
+               const hpEl = this.battleWindow.getHpElement(ctx.index, ctx.isEnemy);
+               const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+               const collapse = async () => {
+                   if (hpEl) {
+                       for (let i = 15; i >= 0; i--) {
+                           hpEl.textContent = `[${" ".repeat(i)}]`;
+                           await delay(30);
+                       }
+                   }
+                   if (battlerElement) {
+                       this.animateBattler(target, 'flash');
+                       await delay(200);
+                       target.hidden = true;
+                       this.renderBattleAscii();
+                   }
+                   resolve();
+               };
+               collapse();
+               return;
            }
 
            if (anim.type === "text_flow" || anim.type === "text_flow_liquid") {

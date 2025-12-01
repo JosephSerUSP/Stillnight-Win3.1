@@ -31,5 +31,9 @@ export const animations = {
     type: "flash",
     duration: 200,
     color: "#ffffff"
+  },
+  death: {
+    type: "death_sequence",
+    duration: 1000
   }
 };
