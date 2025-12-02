@@ -57,26 +57,30 @@ export class WindowAnimator {
      * @param {number} targetHeight - The full height of the window.
      * @param {Function} onComplete - Callback when animation finishes.
      */
+/**
+     * Animates window opening (growing height).
+     * @param {HTMLElement} element - The window element.
+     * @param {number} targetHeight - The full height of the window.
+     * @param {Function} onComplete - Callback when animation finishes.
+     */
     open(element, targetHeight, onComplete) {
          if (!element) return;
          if (this.activeAnimations.has(element)) {
              cancelAnimationFrame(this.activeAnimations.get(element));
          }
 
-         // Setup initial state
          element.style.height = "0px";
-         // element.style.overflow = "hidden"; // Assumed handled by CSS or logic, but let's ensure clipping if needed.
-         // Actually, to hide children, we'll assume the caller manages visibility or overflow.
-         // Given "reveals itself", overflow hidden on the frame is best.
          const originalOverflow = element.style.overflow;
          element.style.overflow = "hidden";
 
-         // Hide children initially by setting opacity 0? Or just relying on height clipping?
-         // "after that is finished, it draws its contents" -> suggests children are not visible until end.
-         // We can toggle a class or style on children.
-         // For now, let's rely on clipping + explicit child hiding by caller if needed,
-         // but the prompt says "it draws its contents", which might mean making them visible.
-         // Let's assume the caller (Window_Base) handles child visibility.
+         // --- INSERT NEW CODE HERE ---
+         // 1. Calculate the dynamic growth rate based on target height
+         let growthRate = 64; 
+         if (targetHeight > 320) {
+             const extraSpeed = Math.floor((targetHeight - 320) / 32) * 10;
+             growthRate += extraSpeed;
+         }
+         // ---------------------------
 
          let currentHeight = 0;
          let frameCounter = 0;
@@ -84,11 +88,12 @@ export class WindowAnimator {
          const animate = () => {
              // Every 3 frames
              if (frameCounter % 3 === 0) {
-                 currentHeight += 32;
+                 currentHeight += growthRate; // 2. CHANGE '64' TO 'growthRate'
+                 
                  if (currentHeight >= targetHeight) {
                      currentHeight = targetHeight;
                      element.style.height = `${currentHeight}px`;
-                     element.style.overflow = originalOverflow; // Restore overflow
+                     element.style.overflow = originalOverflow;
                      this.activeAnimations.delete(element);
                      if (onComplete) onComplete();
                      return;
@@ -114,7 +119,7 @@ export class WindowAnimator {
          }
 
          let frameCounter = 0;
-         const durationFrames = 5;
+         const durationFrames = 8;
 
          const animate = () => {
              if (frameCounter >= durationFrames) {
