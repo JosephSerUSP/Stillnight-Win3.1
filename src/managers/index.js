@@ -981,6 +981,7 @@ export class ThemeManager {
  */
 export class ConfigManager {
     static autoBattle = false;
+    static windowAnimations = true;
 
     static load() {
         try {
@@ -988,6 +989,7 @@ export class ConfigManager {
             if (data) {
                 const config = JSON.parse(data);
                 this.autoBattle = !!config.autoBattle;
+                this.windowAnimations = config.windowAnimations !== undefined ? !!config.windowAnimations : true;
             }
         } catch (e) {
             console.error("Failed to load config", e);
@@ -997,7 +999,8 @@ export class ConfigManager {
     static save() {
         try {
             const config = {
-                autoBattle: this.autoBattle
+                autoBattle: this.autoBattle,
+                windowAnimations: this.windowAnimations
             };
             localStorage.setItem("stillnight_config", JSON.stringify(config));
         } catch (e) {
@@ -1014,4 +1017,5 @@ if (typeof window !== 'undefined' && window.location.search.includes("test=true"
     window.BattleManager = BattleManager;
     window.SceneManager = SceneManager;
     window.ThemeManager = ThemeManager;
+    window.ConfigManager = ConfigManager;
 }

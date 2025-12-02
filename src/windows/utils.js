@@ -557,3 +557,43 @@ export function renderCreatureInfo(container, battler, options = {}) {
         createRow('Flavor', flavorVal);
     }
 }
+
+/**
+ * Creates a toggle switch element.
+ * @param {string} labelText - Text label for the toggle.
+ * @param {boolean} initialValue - Initial state.
+ * @param {Function} onChange - Callback when changed (receives new boolean value).
+ * @returns {HTMLElement} The container element with label and switch.
+ */
+export function createToggleSwitch(labelText, initialValue, onChange) {
+    const container = document.createElement("div");
+    container.style.display = "flex";
+    container.style.alignItems = "center";
+    container.style.gap = "6px";
+
+    const label = document.createElement("span");
+    label.textContent = labelText;
+    container.appendChild(label);
+
+    const toggleLabel = document.createElement("label");
+    toggleLabel.className = "toggle-switch";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = !!initialValue;
+    checkbox.addEventListener("change", (e) => {
+        if (onChange) onChange(e.target.checked);
+    });
+    toggleLabel.appendChild(checkbox);
+
+    const slider = document.createElement("span");
+    slider.className = "toggle-slider";
+    toggleLabel.appendChild(slider);
+
+    container.appendChild(toggleLabel);
+
+    // Attach checkbox to container for external access if needed (e.g. testing)
+    container.checkbox = checkbox;
+
+    return container;
+}
