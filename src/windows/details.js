@@ -1,5 +1,6 @@
 import { Window_Base } from "./base.js";
 import { createBattlerNameLabel, renderElements, createInteractiveLabel } from "./utils.js";
+import { UI } from "./builder.js";
 
 /**
  * @class Window_Inspect
@@ -8,36 +9,75 @@ export class Window_Inspect extends Window_Base {
   constructor() {
     super('center', 'center', 480, 320, { title: "Creature – Stillnight", id: "inspect-window" });
 
-    const inspectBody = this.createPanel();
-    // inspectBody.className = "window-panel"; // Already set by createPanel
+    // Initialize content structure using UI.build
+    // We create a panel for the main body
+    this.mainPanel = UI.build(this.content, {
+        type: 'panel',
+        props: { className: 'window-panel' },
+        children: [
+            {
+                type: 'flex',
+                props: { className: 'inspect-layout', gap: '10px' },
+                children: [
+                    {
+                        type: 'panel', // Sprite container
+                        props: { className: 'inspect-sprite' }
+                    },
+                    {
+                        type: 'flex', // Fields container
+                        props: { className: 'inspect-fields', direction: 'column' }
+                    }
+                ]
+            },
+            {
+                type: 'panel',
+                props: { className: 'inspect-notes' }
+            }
+        ]
+    });
 
-    const layout = document.createElement('div');
-    layout.className = 'inspect-layout';
-    inspectBody.appendChild(layout);
+    // Cache references to dynamically updated elements
+    // The structure is: content -> mainPanel -> [0:layout, 1:notes]
+    // layout -> [0:sprite, 1:fields]
+    const layout = this.mainPanel.children[0];
+    this.spriteEl = layout.children[0];
+    this.fieldsContainer = layout.children[1];
+    this.notesEl = this.mainPanel.children[1];
 
-    this.spriteEl = document.createElement('div');
-    this.spriteEl.className = 'inspect-sprite';
-    layout.appendChild(this.spriteEl);
+    // Create fields map for easy access
+    this.fieldElements = {};
+    const fieldKeys = ["Name", "Level", "Row", "HP", "XP", "Element", "Equipment", "Passive", "Skills", "Flavor"];
 
-    const fields = document.createElement('div');
-    fields.className = 'inspect-fields';
-    layout.appendChild(fields);
+    fieldKeys.forEach(key => {
+        const isButton = key === "Equipment";
+        const row = UI.build(this.fieldsContainer, {
+            type: 'flex',
+            props: { className: 'inspect-row', align: 'center' },
+            children: [
+                { type: 'label', props: { className: 'inspect-label', text: key } },
+                {
+                    type: isButton ? 'button' : 'label',
+                    props: { className: isButton ? 'win-btn inspect-value' : 'inspect-value', text: '' }
+                }
+            ]
+        });
+        // Store the value element (2nd child)
+        this.fieldElements[key] = row.children[1];
+    });
 
-    this.nameEl = this._createField(fields, "Name");
-    this.levelEl = this._createField(fields, "Level");
-    this.rowPosEl = this._createField(fields, "Row");
-    this.hpEl = this._createField(fields, "HP");
-    this.xpEl = this._createField(fields, "XP");
-    this.elementEl = this._createField(fields, "Element");
-    this.equipEl = this._createField(fields, "Equipment", true);
-    this.passiveEl = this._createField(fields, "Passive");
-    this.skillsEl = this._createField(fields, "Skills");
-    this.flavorEl = this._createField(fields, "Flavor");
+    // Map legacy property names to the new elements to maintain API compatibility
+    this.nameEl = this.fieldElements["Name"];
+    this.levelEl = this.fieldElements["Level"];
+    this.rowPosEl = this.fieldElements["Row"];
+    this.hpEl = this.fieldElements["HP"];
+    this.xpEl = this.fieldElements["XP"];
+    this.elementEl = this.fieldElements["Element"];
+    this.equipEl = this.fieldElements["Equipment"];
+    this.passiveEl = this.fieldElements["Passive"];
+    this.skillsEl = this.fieldElements["Skills"];
+    this.flavorEl = this.fieldElements["Flavor"];
 
-    this.notesEl = document.createElement('div');
-    this.notesEl.className = 'inspect-notes';
-    inspectBody.appendChild(this.notesEl);
-
+    // Buttons
     this.btnSacrifice = this.addButton("Sacrifice", () => {});
     this.btnSacrifice.style.marginRight = "auto";
     this.btnSacrifice.style.display = "none";
@@ -46,22 +86,6 @@ export class Window_Inspect extends Window_Base {
     this.btnEvolve.style.display = "none";
 
     this.btnOk = this.addButton("OK", () => this.onUserClose());
-  }
-
-  _createField(parent, label, isButton = false) {
-    const row = document.createElement('div');
-    row.className = 'inspect-row';
-    const labelSpan = document.createElement('span');
-    labelSpan.className = 'inspect-label';
-    labelSpan.textContent = label;
-    row.appendChild(labelSpan);
-
-    const valueEl = isButton ? document.createElement('button') : document.createElement('span');
-    valueEl.className = isButton ? 'win-btn inspect-value' : 'inspect-value';
-    row.appendChild(valueEl);
-
-    parent.appendChild(row);
-    return valueEl;
   }
 }
 
@@ -72,31 +96,22 @@ export class Window_Evolution extends Window_Base {
   constructor() {
     super('center', 'center', 700, 400, { title: "Evolution – Stillnight", id: "evolution-window" });
 
-    const body = document.createElement('div');
-    // Generic flex row
-    body.style.display = 'flex';
-    body.style.flexGrow = '1';
-    body.style.justifyContent = 'space-between';
-    body.style.alignItems = 'center';
-    body.style.padding = '10px';
-    // Use panel style? Or maybe just background
-    // Since it's a window, the frame is gray. We can use panels for panes.
-    this.content.appendChild(body);
+    // Build main layout
+    const structure = {
+        type: 'flex',
+        props: {
+            style: { flexGrow: '1', justifyContent: 'space-between', alignItems: 'center', padding: '10px' }
+        },
+        children: [
+            { type: 'panel', props: { className: 'window-panel evolution-pane', style: { flex: '1' } } },
+            { type: 'label', props: { className: 'evolution-arrow', text: '➔' } },
+            { type: 'panel', props: { className: 'window-panel evolution-pane', style: { flex: '1' } } }
+        ]
+    };
 
-    this.leftPane = document.createElement('div');
-    this.leftPane.className = 'window-panel evolution-pane';
-    this.leftPane.style.flex = '1';
-    body.appendChild(this.leftPane);
-
-    const arrow = document.createElement('div');
-    arrow.textContent = "➔";
-    arrow.className = "evolution-arrow";
-    body.appendChild(arrow);
-
-    this.rightPane = document.createElement('div');
-    this.rightPane.className = 'window-panel evolution-pane';
-    this.rightPane.style.flex = '1';
-    body.appendChild(this.rightPane);
+    const body = UI.build(this.content, structure);
+    this.leftPane = body.children[0];
+    this.rightPane = body.children[2];
 
     this.btnConfirm = this.addButton("Confirm Evolution", () => {});
     this.btnReturn = this.addButton("Return", () => this.onUserClose());
@@ -109,50 +124,67 @@ export class Window_Evolution extends Window_Base {
 
   renderPane(container, battler) {
       container.innerHTML = "";
-      const layout = document.createElement('div');
-      layout.className = 'inspect-layout';
-      container.appendChild(layout);
 
-      const sprite = document.createElement('div');
-      sprite.className = 'inspect-sprite';
-      sprite.style.backgroundImage = `url('assets/portraits/${battler.spriteKey || "pixie"}.png')`;
-      layout.appendChild(sprite);
+      const structure = {
+          type: 'flex',
+          props: { className: 'inspect-layout', gap: '10px' },
+          children: [
+              {
+                  type: 'panel',
+                  props: {
+                      className: 'inspect-sprite',
+                      style: { backgroundImage: `url('assets/portraits/${battler.spriteKey || "pixie"}.png')` }
+                  }
+              },
+              {
+                  type: 'flex',
+                  props: { className: 'inspect-fields', direction: 'column' },
+                  children: [
+                      // Fields will be added dynamically below or we can construct data here
+                  ]
+              }
+          ]
+      };
 
-      const fields = document.createElement('div');
-      fields.className = 'inspect-fields';
-      layout.appendChild(fields);
+      const layout = UI.build(container, structure);
+      const fieldsContainer = layout.children[1];
 
-      const createRow = (label, valueEl) => {
-        const row = document.createElement('div');
-        row.className = 'inspect-row';
-        const lbl = document.createElement('span');
-        lbl.className = 'inspect-label';
-        lbl.textContent = label;
-        row.appendChild(lbl);
-        valueEl.classList.add('inspect-value');
-        row.appendChild(valueEl);
-        fields.appendChild(row);
+      // Helper to add rows
+      const addRow = (label, contentElement) => {
+          const row = UI.build(fieldsContainer, {
+              type: 'flex',
+              props: { className: 'inspect-row', align: 'center' },
+              children: [
+                  { type: 'label', props: { className: 'inspect-label', text: label } },
+                  // Placeholder for value, we append the actual element
+                  { type: 'panel', props: { className: 'inspect-value' } }
+              ]
+          });
+          const valueContainer = row.children[1];
+          // Clear styles/classes that might interfere if we just append?
+          // Actually inspect-value is a good class for text, but if we have complex content...
+          valueContainer.innerHTML = ''; // Clear default
+
+          if (contentElement instanceof HTMLElement) {
+              valueContainer.appendChild(contentElement);
+          } else {
+              valueContainer.textContent = contentElement;
+          }
       };
 
       // Name
       const nameVal = document.createElement('span');
       nameVal.appendChild(createBattlerNameLabel(battler));
-      createRow('Name', nameVal);
+      addRow('Name', nameVal);
 
       // Level
-      const levelVal = document.createElement('span');
-      levelVal.textContent = battler.level;
-      createRow('Level', levelVal);
+      addRow('Level', battler.level);
 
       // Role
-      const roleVal = document.createElement('span');
-      roleVal.textContent = battler.role || "—";
-      createRow('Role', roleVal);
+      addRow('Role', battler.role || "—");
 
       // HP
-      const hpVal = document.createElement('span');
-      hpVal.textContent = `${battler.maxHp}`;
-      createRow('Max HP', hpVal);
+      addRow('Max HP', `${battler.maxHp}`);
 
       // Passives
       const passiveVal = document.createElement('span');
@@ -165,6 +197,6 @@ export class Window_Evolution extends Window_Base {
       } else {
           passiveVal.textContent = "—";
       }
-      createRow('Passive', passiveVal);
+      addRow('Passive', passiveVal);
   }
 }
