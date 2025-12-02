@@ -821,6 +821,7 @@ export class Game_Map {
       title: meta.title,
       depth: meta.depth,
       intro: meta.intro,
+      music: meta.music,
       encounters: meta.encounters,
       treasures: meta.treasures,
       tiles,
