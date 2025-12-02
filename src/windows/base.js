@@ -194,7 +194,7 @@ export class Window_Base {
             }
             this.element.style.zIndex = "10";
 
-            this.overlay.appendChild(this.element);
+            // this.overlay.appendChild(this.element);
         }
 
         // 1. Header
