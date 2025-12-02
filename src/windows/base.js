@@ -1,4 +1,5 @@
 import { Graphics } from "../core/utils.js";
+import { ConfigManager } from "../managers/index.js";
 
 /**
  * @class WindowAnimator
@@ -22,31 +23,110 @@ export class WindowAnimator {
         }
 
         const startTime = performance.now();
+        let frameCounter = 0;
 
         const animate = (time) => {
             const elapsed = time - startTime;
             const progress = Math.min(elapsed / duration, 1);
 
             if (progress < 1) {
-                // Damping shake
-                const currentIntensity = intensity * (1 - progress);
-                const x = (Math.random() * 2 - 1) * currentIntensity;
-                const y = (Math.random() * 2 - 1) * currentIntensity;
+                // Update only every 3 frames
+                if (frameCounter % 3 === 0) {
+                     // No easing (constant intensity)
+                     // Snap to integer to fit Win 3.1 aesthetic
+                     const x = Math.round((Math.random() * 2 - 1) * intensity);
+                     const y = Math.round((Math.random() * 2 - 1) * intensity);
+                     element.style.transform = `translate(${x}px, ${y}px)`;
+                }
 
-                // Snap to integer to fit Win 3.1 aesthetic
-                const intX = Math.round(x);
-                const intY = Math.round(y);
-
-                element.style.transform = `translate(${intX}px, ${intY}px)`;
-
+                frameCounter++;
                 this.activeAnimations.set(element, requestAnimationFrame(animate));
             } else {
+                // Snap back to position
                 element.style.transform = "";
                 this.activeAnimations.delete(element);
             }
         };
 
         this.activeAnimations.set(element, requestAnimationFrame(animate));
+    }
+
+    /**
+     * Animates window opening (growing height).
+     * @param {HTMLElement} element - The window element.
+     * @param {number} targetHeight - The full height of the window.
+     * @param {Function} onComplete - Callback when animation finishes.
+     */
+    open(element, targetHeight, onComplete) {
+         if (!element) return;
+         if (this.activeAnimations.has(element)) {
+             cancelAnimationFrame(this.activeAnimations.get(element));
+         }
+
+         // Setup initial state
+         element.style.height = "0px";
+         // element.style.overflow = "hidden"; // Assumed handled by CSS or logic, but let's ensure clipping if needed.
+         // Actually, to hide children, we'll assume the caller manages visibility or overflow.
+         // Given "reveals itself", overflow hidden on the frame is best.
+         const originalOverflow = element.style.overflow;
+         element.style.overflow = "hidden";
+
+         // Hide children initially by setting opacity 0? Or just relying on height clipping?
+         // "after that is finished, it draws its contents" -> suggests children are not visible until end.
+         // We can toggle a class or style on children.
+         // For now, let's rely on clipping + explicit child hiding by caller if needed,
+         // but the prompt says "it draws its contents", which might mean making them visible.
+         // Let's assume the caller (Window_Base) handles child visibility.
+
+         let currentHeight = 0;
+         let frameCounter = 0;
+
+         const animate = () => {
+             // Every 3 frames
+             if (frameCounter % 3 === 0) {
+                 currentHeight += 32;
+                 if (currentHeight >= targetHeight) {
+                     currentHeight = targetHeight;
+                     element.style.height = `${currentHeight}px`;
+                     element.style.overflow = originalOverflow; // Restore overflow
+                     this.activeAnimations.delete(element);
+                     if (onComplete) onComplete();
+                     return;
+                 }
+                 element.style.height = `${currentHeight}px`;
+             }
+             frameCounter++;
+             this.activeAnimations.set(element, requestAnimationFrame(animate));
+         };
+
+         this.activeAnimations.set(element, requestAnimationFrame(animate));
+    }
+
+    /**
+     * Animates window closing (hides contents, waits, then closes).
+     * @param {HTMLElement} element - The window element.
+     * @param {Function} onComplete - Callback when animation finishes.
+     */
+    close(element, onComplete) {
+         if (!element) return;
+         if (this.activeAnimations.has(element)) {
+             cancelAnimationFrame(this.activeAnimations.get(element));
+         }
+
+         let frameCounter = 0;
+         const durationFrames = 5;
+
+         const animate = () => {
+             if (frameCounter >= durationFrames) {
+                 this.activeAnimations.delete(element);
+                 if (onComplete) onComplete();
+                 return;
+             }
+             frameCounter++;
+             this.activeAnimations.set(element, requestAnimationFrame(animate));
+         };
+
+         this.activeAnimations.set(element, requestAnimationFrame(animate));
     }
 }
 
@@ -68,6 +148,10 @@ export class Window_Base {
     constructor(x, y, width, height, options = {}) {
         this.embedded = options.embedded || false;
         this.animator = new WindowAnimator();
+
+        // Store target dimensions
+        this.width = width;
+        this.height = height;
 
         if (this.embedded) {
             this.element = document.createElement("div");
@@ -143,6 +227,9 @@ export class Window_Base {
         this._dragStart = null;
         this._onDragHandler = this._onDrag.bind(this);
         this._onDragEndHandler = this._onDragEnd.bind(this);
+
+        // Internal state for restoration after close animation
+        this._originalHeight = null;
     }
 
     makeDraggable(titleBar) {
@@ -169,8 +256,68 @@ export class Window_Base {
         document.removeEventListener("mouseup", this._onDragEndHandler);
     }
 
-    open() { if (this.overlay) this.overlay.classList.add("active"); }
-    close() { if (this.overlay) this.overlay.classList.remove("active"); }
+    open() {
+        if (this.overlay) {
+            this.overlay.classList.add("active");
+
+            if (ConfigManager.windowAnimations) {
+                // Determine target height
+                let targetHeight;
+                if (this.height === 'auto') {
+                    // Temporarily measure
+                    const savedHeight = this.element.style.height;
+                    this.element.style.height = 'auto';
+                    targetHeight = this.element.getBoundingClientRect().height;
+                    // If height was previously 0 due to previous close, we need to reset it to auto to measure,
+                    // but the animation starts from 0.
+                } else {
+                    targetHeight = this.height;
+                }
+
+                // Hide contents during animation?
+                // The prompt says "after that is finished, it draws its contents".
+                this.setChildrenVisibility('hidden');
+
+                this.animator.open(this.element, targetHeight, () => {
+                    this.setChildrenVisibility('visible');
+                    // Ensure final height state is correct
+                    if (this.height === 'auto') this.element.style.height = 'auto';
+                });
+            } else {
+                // Ensure visible if animation disabled but previously hidden
+                this.setChildrenVisibility('visible');
+            }
+        }
+    }
+
+    close() {
+        if (this.overlay) {
+            if (ConfigManager.windowAnimations && this.overlay.classList.contains("active")) {
+                // Hide contents immediately
+                this.setChildrenVisibility('hidden');
+
+                this.animator.close(this.element, () => {
+                    this.overlay.classList.remove("active");
+                    // Reset visibility/height for next open?
+                    // Better to do it on open start, but let's reset height here to avoid flash
+                    this.element.style.height = '';
+                    if (this.height !== 'auto') this.element.style.height = `${this.height}px`;
+                });
+            } else {
+                this.overlay.classList.remove("active");
+            }
+        }
+    }
+
+    setChildrenVisibility(visibility) {
+        // Toggle visibility of children to simulate "drawing contents after reveal"
+        // Using opacity allows layout to remain stable
+        const val = visibility === 'hidden' ? '0' : '1';
+        this.header.style.opacity = val;
+        this.content.style.opacity = val;
+        this.footer.style.opacity = val;
+    }
+
     onEscape() { this.onUserClose(); }
     onUserClose() { this.close(); }
     refresh() {}

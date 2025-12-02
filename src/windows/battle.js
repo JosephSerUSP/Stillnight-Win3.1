@@ -1,5 +1,5 @@
 import { Window_Base } from "./base.js";
-import { getPrimaryElements, elementToAscii } from "../core/utils.js";
+import { getPrimaryElements, elementToAscii, createToggleSwitch } from "./utils.js";
 
 /**
  * @class Window_Battle
@@ -43,29 +43,29 @@ export class Window_Battle extends Window_Base {
     actionRow.appendChild(this.btnItem);
 
     // Toggle Switch for Auto
-    const autoContainer = document.createElement("div");
-    autoContainer.style.display = "flex";
-    autoContainer.style.alignItems = "center";
-    autoContainer.style.gap = "6px";
-    autoContainer.style.marginLeft = "10px";
+    // Note: We don't have a direct callback here because Scene_Battle sets it up later via listeners or properties.
+    // However, createToggleSwitch requires an onChange. We can pass a dummy one or expose the checkbox.
+    // Given existing code accessed `this.autoCheckbox`, we need to maintain that access.
 
-    const autoLabel = document.createElement("span");
-    autoLabel.textContent = "Auto";
-    autoContainer.appendChild(autoLabel);
+    // Original code:
+    // this.autoSwitch = ...
+    // this.autoCheckbox = ...
 
-    this.autoSwitch = document.createElement("label");
-    this.autoSwitch.className = "toggle-switch";
+    // New code using helper:
+    const autoSwitchContainer = createToggleSwitch("Auto", false, (val) => {
+        // Scene_Battle might listen to 'change' event on the checkbox,
+        // so we just need to ensure the checkbox is accessible.
+    });
+    // The helper sets container.checkbox
+    this.autoCheckbox = autoSwitchContainer.checkbox;
+    this.autoSwitch = autoSwitchContainer.querySelector('.toggle-switch'); // maintain reference if needed, though likely not used directly if checkbox is exposed.
 
-    this.autoCheckbox = document.createElement("input");
-    this.autoCheckbox.type = "checkbox";
-    this.autoSwitch.appendChild(this.autoCheckbox);
+    // Style adjustments to match previous layout
+    // Previous layout: autoContainer (flex, align-center, gap 6, margin-left 10)
+    // The helper returns a flex container with gap 6. We just need margin-left.
+    autoSwitchContainer.style.marginLeft = "10px";
 
-    const slider = document.createElement("span");
-    slider.className = "toggle-slider";
-    this.autoSwitch.appendChild(slider);
-
-    autoContainer.appendChild(this.autoSwitch);
-    actionRow.appendChild(autoContainer);
+    actionRow.appendChild(autoSwitchContainer);
 
     this.btnFlee = this.addButton("Flee", () => {});
     // btnVictory is removed; using Window_Victory instead.
