@@ -1,5 +1,6 @@
 import { getPrimaryElements, elementToAscii, getIconStyle, elementToIconId, evaluateFormula } from "../core/utils.js";
 import { tooltip } from "../core/tooltip.js";
+import { Component_Icon, Component_ElementIcon, Component_Gauge, Component_InteractiveLabel, Component_Label } from "./components.js";
 
 /**
  * Creates a DOM element representing a standard icon.
@@ -10,19 +11,7 @@ import { tooltip } from "../core/tooltip.js";
  * @returns {HTMLElement} The icon element.
  */
 export function createIcon(iconId, options = {}) {
-    const icon = document.createElement("span");
-    icon.className = "icon";
-    if (options.className) icon.classList.add(options.className);
-
-    if (iconId > 0) {
-        icon.style.backgroundPosition = getIconStyle(iconId);
-    }
-
-    if (options.tooltip) {
-        icon.title = options.tooltip;
-    }
-
-    return icon;
+    return Component_Icon(null, { iconId, ...options });
 }
 
 /**
@@ -31,38 +20,7 @@ export function createIcon(iconId, options = {}) {
  * @returns {HTMLElement} The icon container element.
  */
 export function createElementIcon(elements) {
-    const primaryElements = getPrimaryElements(elements);
-    const container = document.createElement('div');
-
-    if (primaryElements.length <= 1) {
-        container.className = 'element-icon-container-name';
-        if (primaryElements.length === 1) {
-            const iconId = elementToIconId(primaryElements[0]);
-            container.appendChild(createIcon(iconId));
-        } else {
-            const icon = document.createElement('div');
-            icon.className = 'icon';
-            container.appendChild(icon);
-        }
-    } else {
-        container.className = 'element-icon-container';
-        const positions = [
-            { top: '0px', left: '0px' },
-            { top: '6px', left: '6px' },
-            { top: '0px', left: '6px' },
-            { top: '6px', left: '0px' },
-        ];
-        primaryElements.forEach((element, index) => {
-            if (index < 4) {
-                const iconId = elementToIconId('l_' + element);
-                const icon = createIcon(iconId, { className: 'element-icon' });
-                icon.style.top = positions[index].top;
-                icon.style.left = positions[index].left;
-                container.appendChild(icon);
-            }
-        });
-    }
-    return container;
+    return Component_ElementIcon(null, { elements });
 }
 
 /**
@@ -76,7 +34,7 @@ export function renderElements(elements) {
     elements.forEach(element => {
         const iconId = elementToIconId(element);
         if (iconId > 0) {
-            container.appendChild(createIcon(iconId));
+            Component_Icon(container, { iconId });
         }
     });
     return container;
@@ -97,7 +55,7 @@ export function createBattlerNameLabel(battler, options = {}) {
     container.style.whiteSpace = "nowrap";
 
     if (battler.elements) {
-        container.appendChild(createElementIcon(battler.elements));
+        Component_ElementIcon(container, { elements: battler.elements });
     }
 
     const levelSpan = document.createElement("span");
@@ -113,7 +71,7 @@ export function createBattlerNameLabel(battler, options = {}) {
     if (options.evolutionStatus && options.evolutionStatus !== 'NONE') {
         const iconId = options.evolutionStatus === 'AVAILABLE' ? 102 : 101;
         const tooltip = options.evolutionStatus === 'AVAILABLE' ? "Evolution Available" : "Evolution Locked";
-        const evoIcon = createIcon(iconId, { tooltip });
+        const evoIcon = Component_Icon(null, { iconId, tooltip });
         evoIcon.style.marginLeft = "4px";
         container.appendChild(evoIcon);
     }
@@ -126,100 +84,16 @@ export function createBattlerNameLabel(battler, options = {}) {
  * @param {Object} options - Configuration options.
  */
 export function createGauge(options = {}) {
-    const container = document.createElement("div");
-    container.className = "gauge";
-    if (options.className) container.classList.add(options.className);
-
-    if (options.width) container.style.width = `${options.width}px`;
-    container.style.height = options.height || "6px";
-    if (options.bgColor) container.style.backgroundColor = options.bgColor;
-
-    const fill = document.createElement("div");
-    fill.className = "gauge-fill";
-    if (options.color) {
-        fill.style.backgroundColor = options.color;
-    }
-
-    container.appendChild(fill);
-    return { container, fill };
+    // Adapter to match existing return signature { container, fill }
+    // Component_Gauge returns { container, fill } so it should match.
+    return Component_Gauge(null, options);
 }
 
 /**
  * Creates an interactive label for a game object (Skill, Passive, Item).
  */
 export function createInteractiveLabel(data, type, options = {}) {
-    const el = document.createElement("span");
-    el.className = "interactive-label";
-    el.style.display = "inline-flex";
-    el.style.alignItems = "center";
-    el.style.marginRight = "5px";
-
-    if (options.className) {
-        el.classList.add(options.className);
-    }
-
-    // Icon / Elements
-    let iconId = data.icon;
-    if (!iconId && type === 'item') {
-        iconId = 6; // Default placeholder for items
-    }
-
-    if (type === 'skill' || (data.element || data.elements)) {
-        let elements = data.elements || (data.element ? [data.element] : []);
-        if (options.elements) elements = options.elements;
-
-        if (elements.length > 0) {
-            const iconEl = createElementIcon(elements);
-            el.appendChild(iconEl);
-        } else if (iconId) {
-             const icon = createIcon(iconId);
-             icon.style.marginRight = "4px";
-             el.appendChild(icon);
-        }
-    } else if (iconId) {
-        const icon = createIcon(iconId);
-        icon.style.marginRight = "4px";
-        el.appendChild(icon);
-    }
-
-    const nameSpan = document.createElement("span");
-    nameSpan.textContent = data.name;
-    if (type === 'skill' || type === 'passive') {
-         nameSpan.style.textDecoration = "underline";
-         nameSpan.style.textDecorationStyle = "dotted";
-    }
-    el.appendChild(nameSpan);
-
-    // Tooltip
-    if (options.showTooltip !== false) {
-        let text = options.tooltipText || data.description || "";
-        if (!options.tooltipText) {
-             let extra = "";
-             if (type === 'passive' && data.effect) {
-                 extra = data.effect;
-             }
-             if (extra) {
-                 text += `<br/><span class="text-functional" style="font-size: 0.9em;">${extra}</span>`;
-             }
-        }
-
-        if (text) {
-             el.style.cursor = "help";
-             el.addEventListener("mouseenter", (e) => {
-                tooltip.show(e.clientX, e.clientY, null, text);
-            });
-            el.addEventListener("mouseleave", () => {
-                tooltip.hide();
-            });
-            el.addEventListener("mousemove", (e) => {
-                if (tooltip.visible) {
-                    tooltip.show(e.clientX, e.clientY, null, text);
-                }
-            });
-        }
-    }
-
-    return el;
+    return Component_InteractiveLabel(null, { data, type, ...options });
 }
 
 /**
@@ -241,22 +115,20 @@ export function drawBattlerStats(battler) {
     container.appendChild(hpText);
 
     // HP Gauge
-    const { container: hpGauge, fill: hpFill } = createGauge({ height: "6px", color: "var(--gauge-hp)" });
-    hpGauge.style.marginBottom = "2px";
+    const { fill: hpFill } = Component_Gauge(container, { height: "6px", color: "var(--gauge-hp)", className: "gauge" });
+    hpFill.parentElement.style.marginBottom = "2px"; // Access container via parent
     hpFill.style.width = `${Math.max(0, (battler.hp / battler.maxHp) * 100)}%`;
     hpFill.classList.add('hp-fill');
-    container.appendChild(hpGauge);
 
     // XP Gauge
     const xpNeeded = battler.xpNeeded(battler.level);
     const xpPercent = Math.min(100, Math.max(0, ((battler.xp || 0) / xpNeeded) * 100));
-    const { container: xpGauge, fill: xpFill } = createGauge({
+    const { fill: xpFill } = Component_Gauge(container, {
         height: "4px",
         color: "#60a0ff",
         bgColor: "#333"
     });
     xpFill.style.width = `${xpPercent}%`;
-    container.appendChild(xpGauge);
 
     return container;
 }
@@ -354,7 +226,7 @@ export function createPartySlot(battler, index, options = {}) {
     footer.style.alignItems = "center";
 
     if (battler.equipmentItem) {
-        const itemLabel = createInteractiveLabel(battler.equipmentItem, 'item');
+        const itemLabel = Component_InteractiveLabel(null, { data: battler.equipmentItem, type: 'item' });
         footer.appendChild(itemLabel);
     } else {
         const none = document.createElement("span");
@@ -494,7 +366,7 @@ export function renderCreatureInfo(container, battler, options = {}) {
     if (options.showElement) {
         const elementVal = document.createElement('span');
         if (battler.elements && battler.elements.length > 0) {
-            elementVal.appendChild(createElementIcon(battler.elements));
+            Component_ElementIcon(elementVal, { elements: battler.elements });
         } else {
             elementVal.textContent = "—";
         }
@@ -517,7 +389,7 @@ export function renderCreatureInfo(container, battler, options = {}) {
                      const found = Object.values(options.dataManager.passives).find(p => p.id === code || p.code === code);
                      if (found) def = found;
                 }
-                const el = createInteractiveLabel(def, 'passive');
+                const el = Component_InteractiveLabel(null, { data: def, type: 'passive' });
                 passiveVal.appendChild(el);
                 if (i < battler.passives.length - 1) passiveVal.appendChild(document.createTextNode(", "));
             });
@@ -536,7 +408,7 @@ export function renderCreatureInfo(container, battler, options = {}) {
                      skill = options.dataManager.skills[sId];
                 }
                 if (skill) {
-                    const el = createInteractiveLabel(skill, 'skill');
+                    const el = Component_InteractiveLabel(null, { data: skill, type: 'skill' });
                     skillVal.appendChild(el);
                 } else {
                     skillVal.appendChild(document.createTextNode(sId));
