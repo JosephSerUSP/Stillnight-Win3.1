@@ -221,6 +221,17 @@ export class SoundManager {
   }
 
   /**
+   * Resumes the AudioContext if it is suspended.
+   * Useful to call on user interaction (e.g., "Start Game" button).
+   */
+  static async resumeContext() {
+      this._initializeContext();
+      if (this._audioCtx && this._audioCtx.state === 'suspended') {
+          await this._audioCtx.resume();
+      }
+  }
+
+  /**
    * Initializes the AudioContext if it hasn't been initialized yet.
    * @method _initializeContext
    * @private
