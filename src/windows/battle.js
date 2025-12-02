@@ -129,7 +129,9 @@ export class Window_Battle extends Window_Base {
                     position: 'absolute',
                     top: `${top}px`,
                     left: `${left}px`,
-                    whiteSpace: 'pre'
+                    whiteSpace: 'pre',
+                    display: 'flex',
+                    flexDirection: 'column'
                 }
             },
             children: [

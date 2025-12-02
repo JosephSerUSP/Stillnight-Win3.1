@@ -161,6 +161,7 @@ export class Window_PartyPanel extends Window_Base {
         this.btnInventory.style.fontSize = "10px";
         this.btnInventory.style.padding = "0 6px";
         this.btnInventory.id = "btn-inventory";
+        this.btnInventory.dataset.testid = "btn-inventory"; // Added testid
         this.btnInventory.textContent = "Inventory...";
         btnContainer.appendChild(this.btnInventory);
 

@@ -1,4 +1,5 @@
 import { Window_Selectable } from "./selectable.js";
+import { UI } from "./builder.js";
 import { createInteractiveLabel } from "./utils.js";
 
 /**
@@ -9,34 +10,44 @@ export class Window_Inventory extends Window_Selectable {
     super('center', 'center', 400, 300, { title: "Inventory", id: "inventory-window" });
 
     this.content.style.overflowY = "auto";
-
     this.currentTab = 'consumable';
 
-    this.tabNav = document.createElement("div");
-    this.tabNav.className = "tab-nav";
-    this.content.appendChild(this.tabNav);
+    // 1. Structure
+    const structure = {
+        type: 'flex',
+        props: {
+            style: { flexDirection: 'column', flex: '1' }
+        },
+        children: [
+            {
+                type: 'flex', // Tab Nav
+                props: { className: 'tab-nav' },
+                children: [
+                    { type: 'button', props: { className: 'tab-btn active', label: 'Consumables', onClick: () => this.switchTab('consumable') } },
+                    { type: 'button', props: { className: 'tab-btn', label: 'Equipment', onClick: () => this.switchTab('equipment') } }
+                ]
+            },
+            {
+                type: 'panel', // List Container
+                props: { style: { flex: '1' } }
+            },
+            {
+                type: 'label', // Empty Msg
+                props: {
+                    text: "Your inventory is empty.",
+                    style: { textAlign: 'center', display: 'none' }
+                }
+            }
+        ]
+    };
 
-    this.btnTabConsumable = document.createElement("button");
-    this.btnTabConsumable.className = "tab-btn active";
-    this.btnTabConsumable.textContent = "Consumables";
-    this.btnTabConsumable.onclick = () => this.switchTab('consumable');
-    this.tabNav.appendChild(this.btnTabConsumable);
+    const body = UI.build(this.content, structure);
 
-    this.btnTabEquipment = document.createElement("button");
-    this.btnTabEquipment.className = "tab-btn";
-    this.btnTabEquipment.textContent = "Equipment";
-    this.btnTabEquipment.onclick = () => this.switchTab('equipment');
-    this.tabNav.appendChild(this.btnTabEquipment);
-
-    this.listEl = document.createElement("div");
-    this.listEl.style.flex = "1";
-    this.content.appendChild(this.listEl);
-
-    this.emptyMsgEl = document.createElement("p");
-    this.emptyMsgEl.textContent = "Your inventory is empty.";
-    this.emptyMsgEl.style.textAlign = "center";
-    this.emptyMsgEl.style.display = "none";
-    this.content.appendChild(this.emptyMsgEl);
+    // 2. Cache
+    this.btnTabConsumable = body.children[0].children[0];
+    this.btnTabEquipment = body.children[0].children[1];
+    this.listEl = body.children[1];
+    this.emptyMsgEl = body.children[2];
 
     this.btnClose2 = this.addButton("Close", () => this.onUserClose());
 
@@ -88,11 +99,6 @@ export class Window_Inventory extends Window_Selectable {
     } else {
       this.emptyMsgEl.style.display = "none";
       this._data.forEach((item, idx) => {
-        const row = document.createElement("div");
-        row.className = "window-row";
-        row.style.borderBottom = "1px solid var(--bezel-shadow)";
-        row.style.paddingBottom = "2px";
-        row.dataset.index = idx;
 
         let tooltipText = item.description;
         let effectsText = "";
@@ -115,28 +121,55 @@ export class Window_Inventory extends Window_Selectable {
         if (effects.length > 0) effectsText = effects.join(", ");
         if (effectsText) tooltipText += `<br/><span class="text-functional" style="font-size: 0.9em;">${effectsText}</span>`;
 
+        const rowStructure = {
+            type: 'flex',
+            props: {
+                className: 'window-row',
+                dataset: { index: idx },
+                style: {
+                    borderBottom: '1px solid var(--bezel-shadow)',
+                    paddingBottom: '2px',
+                    alignItems: 'center'
+                }
+            },
+            children: [
+                {
+                    type: 'panel', // Label Wrapper
+                    props: { style: { flexGrow: '1', display: 'flex', alignItems: 'center' } }
+                },
+                {
+                    type: 'flex', // Buttons
+                    props: { gap: '4px' },
+                    children: [
+                        {
+                            type: 'button',
+                            props: {
+                                className: 'win-btn',
+                                label: this.currentTab === 'equipment' ? 'Equip' : 'Use',
+                                dataset: { action: this.currentTab === 'equipment' ? 'equip' : 'use' }
+                            }
+                        },
+                        {
+                            type: 'button',
+                            props: {
+                                className: 'win-btn',
+                                label: 'Discard',
+                                dataset: { action: 'discard' }
+                            }
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const row = UI.build(this.listEl, rowStructure);
+        const labelWrapper = row.children[0];
+
         const label = createInteractiveLabel(item, 'item', { tooltipText });
-        label.style.flexGrow = "1";
-        row.appendChild(label);
-
-        const btns = document.createElement("div");
-        const useBtn = document.createElement("button");
-        useBtn.className = "win-btn";
-        useBtn.textContent = this.currentTab === 'equipment' ? "Equip" : "Use";
-        useBtn.dataset.action = this.currentTab === 'equipment' ? "equip" : "use";
-
-        const discardBtn = document.createElement("button");
-        discardBtn.className = "win-btn";
-        discardBtn.textContent = "Discard";
-        discardBtn.dataset.action = "discard";
-
-        btns.appendChild(useBtn);
-        btns.appendChild(discardBtn);
-
-        row.appendChild(btns);
-        this.listEl.appendChild(row);
+        // Ensure the label component is inline-flex to align nicely
+        label.style.display = 'inline-flex';
+        labelWrapper.appendChild(label);
       });
     }
   }
-
 }
