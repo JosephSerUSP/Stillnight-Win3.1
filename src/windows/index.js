@@ -23,6 +23,7 @@ export * from "./party_select.js";
 export * from "./equip_select.js";
 export * from "./details.js";
 export * from "./misc.js";
+export * from "./builder.js";
 
 if (typeof window !== 'undefined' && window.location.search.includes("test=true")) {
     window.Window_Formation = Window_Formation;
