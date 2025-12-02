@@ -1,4 +1,5 @@
 import { Window_Selectable } from "./selectable.js";
+import { UI } from "./builder.js";
 import { createInteractiveLabel } from "./utils.js";
 
 /**
@@ -8,47 +9,56 @@ export class Window_Shop extends Window_Selectable {
   constructor() {
     super('center', 'center', 420, 360, { title: "Shop – Stillnight", id: "shop-window" });
 
-    const shopBody = this.createPanel();
-    shopBody.style.flexGrow = "1";
+    // 1. Structure
+    const structure = {
+        type: 'flex',
+        props: {
+            className: 'window-panel',
+            style: { flexGrow: '1', display: 'flex', flexDirection: 'column' }
+        },
+        children: [
+            {
+                type: 'flex', // Tab Nav
+                props: { className: 'tab-nav' },
+                children: [
+                    { type: 'button', props: { className: 'tab-btn active', label: 'Buy', onClick: () => this.callHandler('mode_buy') } },
+                    { type: 'button', props: { className: 'tab-btn', label: 'Sell', onClick: () => this.callHandler('mode_sell') } }
+                ]
+            },
+            {
+                type: 'flex', // Gold Row
+                props: { className: 'window-row' },
+                children: [
+                    { type: 'label', props: { text: 'Current gold: ' } },
+                    { type: 'label', props: { className: 'shop-gold' } }
+                ]
+            },
+            {
+                type: 'panel', // List Container
+                props: {
+                    style: { flex: '1', overflowY: 'auto' }
+                }
+            },
+            {
+                type: 'label', // Message
+                props: {
+                    className: 'window-row',
+                    style: { marginTop: '6px', fontSize: '10px' }
+                }
+            }
+        ]
+    };
 
-    this.tabNav = document.createElement("div");
-    this.tabNav.className = "tab-nav";
+    const shopBody = UI.build(this.content, structure);
 
-    this.btnBuy = document.createElement("button");
-    this.btnBuy.className = "tab-btn active";
-    this.btnBuy.textContent = "Buy";
-    this.btnBuy.onclick = () => this.callHandler('mode_buy');
-    this.tabNav.appendChild(this.btnBuy);
-
-    this.btnSell = document.createElement("button");
-    this.btnSell.className = "tab-btn";
-    this.btnSell.textContent = "Sell";
-    this.btnSell.onclick = () => this.callHandler('mode_sell');
-    this.tabNav.appendChild(this.btnSell);
-
-    shopBody.appendChild(this.tabNav);
-
-    const goldRow = document.createElement('div');
-    goldRow.className = 'window-row';
-    goldRow.textContent = 'Current gold: ';
-    this.goldLabelEl = document.createElement('span');
-    this.goldLabelEl.className = 'shop-gold';
-    goldRow.appendChild(this.goldLabelEl);
-    shopBody.appendChild(goldRow);
-
-    this.listContainer = document.createElement('div');
-    this.listContainer.style.flex = "1";
-    this.listContainer.style.overflowY = "auto";
-    shopBody.appendChild(this.listContainer);
-
-    this.messageEl = document.createElement('div');
-    this.messageEl.className = 'window-row';
-    this.messageEl.style.marginTop = '6px';
-    this.messageEl.style.fontSize = '10px';
-    shopBody.appendChild(this.messageEl);
+    // 2. Cache Elements
+    this.btnBuy = shopBody.children[0].children[0];
+    this.btnSell = shopBody.children[0].children[1];
+    this.goldLabelEl = shopBody.children[1].children[1];
+    this.listContainer = shopBody.children[2];
+    this.messageEl = shopBody.children[3];
 
     this.btnLeave = this.addButton("Leave", () => {});
-
     this.mode = 'buy';
   }
 
@@ -88,49 +98,59 @@ export class Window_Shop extends Window_Selectable {
   refresh() {
     this.listContainer.innerHTML = "";
     if (this._data.length === 0) {
-        const p = document.createElement("div");
-        p.textContent = this.mode === 'buy' ? "No items for sale." : "Nothing to sell.";
-        p.style.padding = "4px";
-        this.listContainer.appendChild(p);
+        UI.build(this.listContainer, {
+            type: 'label',
+            props: {
+                text: this.mode === 'buy' ? "No items for sale." : "Nothing to sell.",
+                style: { padding: '4px', display: 'block' }
+            }
+        });
         return;
     }
 
     this._data.forEach((tpl, index) => {
-      const row = document.createElement("div");
-      row.className = "window-row";
-      row.dataset.index = index;
-
-      const label = createInteractiveLabel(tpl, 'item');
-      row.appendChild(label);
-
       let price = tpl.cost;
       if (this.mode === 'sell') {
           price = Math.floor(tpl.cost / 2);
       }
 
-      const costSpan = document.createElement("span");
-      costSpan.textContent = ` (${price}G)`;
-      costSpan.style.marginRight = "auto";
-      row.appendChild(costSpan);
+      const isBuyMode = this.mode === 'buy';
+      const isDisabled = isBuyMode && price > this.gold;
 
-      const btn = document.createElement("button");
-      btn.className = "win-btn";
+      const rowStructure = {
+          type: 'flex',
+          props: {
+              className: 'window-row',
+              dataset: { index: index },
+              align: 'center'
+          },
+          children: [
+              {
+                  type: 'panel', // Wrapper for label
+                  props: { className: 'shop-item-label', style: { flex: '1' } }
+              },
+              {
+                  type: 'label',
+                  props: { text: ` (${price}G)`, style: { marginRight: '8px' } }
+              },
+              {
+                  type: 'button',
+                  props: {
+                      className: 'win-btn',
+                      label: isBuyMode ? 'Buy' : 'Sell',
+                      disabled: isDisabled,
+                      dataset: { action: isBuyMode ? 'buy' : 'sell' }
+                  }
+              }
+          ]
+      };
 
-      if (this.mode === 'buy') {
-          btn.textContent = "Buy";
-          btn.dataset.action = "buy";
-          if (price > this.gold) {
-              btn.disabled = true;
-              btn.classList.add("disabled");
-          }
-      } else {
-          btn.textContent = "Sell";
-          btn.dataset.action = "sell";
-      }
+      const row = UI.build(this.listContainer, rowStructure);
+      const labelContainer = row.children[0];
 
-      row.appendChild(btn);
-
-      this.listContainer.appendChild(row);
+      // Insert interactive label
+      const label = createInteractiveLabel(tpl, 'item');
+      labelContainer.appendChild(label);
     });
   }
 }

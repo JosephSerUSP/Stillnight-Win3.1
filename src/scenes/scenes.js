@@ -2079,7 +2079,7 @@ export class Scene_Map extends Scene_Base {
       const nextData = this.dataManager.actors.find(a => a.id === nextId);
       if (!nextData) return;
 
-      const nextBattler = new Game_Battler({ ...nextData, level: member.level });
+      const nextBattler = Game_Battler.create(nextData, member.level);
       // Copy equipment to ensure stat preview includes equipment bonuses
       nextBattler.equipmentItem = member.equipmentItem;
 

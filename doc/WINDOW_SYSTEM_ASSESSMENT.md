@@ -74,13 +74,13 @@ Refactor `Window_Inspect` to use this new system.
 *   Keep the Window class focused on event handling and data fetching.
 *   **Outcome:** `Window_Inspect` and `Window_Evolution` were successfully refactored to use `UI.build` and functional components. The code is significantly more readable, with layout structure clearly separated from data binding.
 
-### Phase 4: Standardization & Rollout (In Progress)
+### Phase 4: Standardization & Rollout (Complete)
 *   **Goal:** Apply the declarative builder pattern to remaining complex windows (`Window_Battle`, `Window_Shop`, `Window_Inventory`).
 *   **Strategy:**
     *   **Completed:** Refactor `Window_Battle` next as it has the most complex dynamic layout.
     *   **Completed:** Update `Window_Evolution` to have feature parity with `Window_Inspect` and display comparison stats correctly.
-    *   **Pending:** Refactor `Window_Shop` to streamline the buy/sell list generation.
-    *   **Pending:** Refactor `Window_Inventory`.
+    *   **Completed:** Refactor `Window_Shop` to streamline the buy/sell list generation.
+    *   **Completed:** Refactor `Window_Inventory`.
     *   Ensure all new windows utilize `UI.build` by default.
 
 ## 5. Conclusion
