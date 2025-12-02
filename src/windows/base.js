@@ -193,8 +193,9 @@ export class Window_Base {
                 this.element.style.height = `${height}px`;
             }
             this.element.style.zIndex = "10";
+            this.element.style.display = "none";
 
-            this.overlay.appendChild(this.element);
+            // this.overlay.appendChild(this.element);
         }
 
         // 1. Header
@@ -264,6 +265,7 @@ export class Window_Base {
     open() {
         if (this.overlay) {
             this.overlay.classList.add("active");
+            this.element.style.display = "";
 
             if (ConfigManager.windowAnimations) {
                 // Determine target height
@@ -303,6 +305,7 @@ export class Window_Base {
 
                 this.animator.close(this.element, () => {
                     this.overlay.classList.remove("active");
+                    this.element.style.display = "none";
                     // Reset visibility/height for next open?
                     // Better to do it on open start, but let's reset height here to avoid flash
                     this.element.style.height = '';
@@ -310,6 +313,7 @@ export class Window_Base {
                 });
             } else {
                 this.overlay.classList.remove("active");
+                this.element.style.display = "none";
             }
         }
     }
