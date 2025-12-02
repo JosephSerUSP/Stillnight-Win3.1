@@ -1,4 +1,5 @@
 import { randInt, elementToAscii, evaluateFormula, probabilisticRound } from "../core/utils.js";
+import { MidiParser, MidiPlayer } from "./midi.js";
 
 /**
  * @class DataManager
@@ -179,6 +180,34 @@ export class SoundManager {
   static _soundMap = {};
 
   /**
+   * Map of MIDI keys to parsed MIDI data.
+   * @private
+   * @type {Map<string, Object>}
+   */
+  static _midiData = new Map();
+
+  /**
+   * The MIDI player instance.
+   * @private
+   * @type {MidiPlayer}
+   */
+  static _musicPlayer = null;
+
+  /**
+   * Counter for active SFX to handle interruption logic.
+   * @private
+   * @type {number}
+   */
+  static _sfxCount = 0;
+
+  /**
+   * The current music key being played.
+   * @private
+   * @type {string|null}
+   */
+  static _currentMusicKey = null;
+
+  /**
    * Initializes the SoundManager with sound data.
    * @method init
    * @param {Object} soundMap - Key-value pair of sound names and config/paths.
@@ -186,6 +215,10 @@ export class SoundManager {
   static init(soundMap) {
       this._soundMap = soundMap || {};
       this._initializeContext();
+      // Also register MIDI files if not in soundMap (assuming they are fixed assets)
+      // or we can add them to sounds.json. For now, we'll manually load them or assume they are in soundMap.
+      // But user said: "assets/midi/" exists.
+      // We will inject MIDI definitions if not present or load them manually.
       this.loadAll();
   }
 
@@ -197,6 +230,9 @@ export class SoundManager {
   static _initializeContext() {
     if (!this._audioCtx && typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) {
       this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (this._audioCtx && !this._musicPlayer) {
+        this._musicPlayer = new MidiPlayer(this._audioCtx);
     }
   }
 
@@ -213,6 +249,13 @@ export class SoundManager {
           }
           return Promise.resolve();
       });
+
+      // Also load known MIDI files
+      const midis = ['battle1', 'dungeon1', 'town1'];
+      midis.forEach(key => {
+          promises.push(this.loadMidi(key, `assets/midi/${key}.mid`));
+      });
+
       await Promise.allSettled(promises);
   }
 
@@ -234,6 +277,58 @@ export class SoundManager {
       } catch (error) {
           console.warn(`SoundManager: Failed to load sound '${key}' from '${path}'.`, error);
       }
+  }
+
+  static async loadMidi(key, path) {
+      if (!this._audioCtx) return;
+      try {
+          const response = await fetch(path);
+          if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+          const arrayBuffer = await response.arrayBuffer();
+          const parser = new MidiParser(arrayBuffer);
+          const data = parser.parse();
+          this._midiData.set(key, data);
+      } catch (error) {
+          console.warn(`SoundManager: Failed to load midi '${key}' from '${path}'.`, error);
+      }
+  }
+
+  /**
+   * Plays background music.
+   * @method playMusic
+   * @param {string} key - The music key (e.g., 'battle1').
+   */
+  static playMusic(key) {
+      this._initializeContext();
+      if (!this._audioCtx) return;
+      if (this._audioCtx.state === 'suspended') this._audioCtx.resume();
+
+      if (this._currentMusicKey === key && this._musicPlayer.isPlaying) return;
+
+      const data = this._midiData.get(key);
+      if (!data) {
+          // Try to load on demand? Or just warn.
+          // console.warn(`SoundManager: Music '${key}' not found.`);
+          return;
+      }
+
+      this._currentMusicKey = key;
+      this._musicPlayer.load(data);
+      this._musicPlayer.play(true);
+
+      // If SFX are playing, silence music immediately
+      if (this._sfxCount > 0) {
+          this._musicPlayer.setVolume(0);
+      } else {
+          this._musicPlayer.setVolume(0.3);
+      }
+  }
+
+  static stopMusic() {
+      if (this._musicPlayer) {
+          this._musicPlayer.stop();
+      }
+      this._currentMusicKey = null;
   }
 
   /**
@@ -259,6 +354,22 @@ export class SoundManager {
           return;
       }
 
+      // Interrupt Music
+      this._sfxCount++;
+      if (this._musicPlayer && this._musicPlayer.isPlaying) {
+          this._musicPlayer.setVolume(0);
+      }
+
+      const onEnd = () => {
+          this._sfxCount--;
+          if (this._sfxCount <= 0) {
+              this._sfxCount = 0;
+              if (this._musicPlayer && this._musicPlayer.isPlaying) {
+                  this._musicPlayer.setVolume(0.3);
+              }
+          }
+      };
+
       // Case 1: File-based sound
       if (typeof soundDef === 'string') {
           let buffer = this._buffers.get(key);
@@ -274,7 +385,10 @@ export class SoundManager {
               if (options.pitch) source.playbackRate.value = options.pitch;
               source.connect(gainNode);
               gainNode.connect(this._audioCtx.destination);
+              source.onended = onEnd;
               source.start(0);
+          } else {
+              onEnd();
           }
           return;
       }
@@ -286,6 +400,7 @@ export class SoundManager {
       }
 
       const now = this._audioCtx.currentTime;
+      let maxDuration = 0;
 
       soundDef.forEach(note => {
           try {
@@ -307,12 +422,17 @@ export class SoundManager {
               const startTime = now + (note.start || 0) / 1000;
               const duration = (note.duration || 100) / 1000;
 
+              const endTime = (note.start || 0) + (note.duration || 100);
+              if (endTime > maxDuration) maxDuration = endTime;
+
               oscillator.start(startTime);
               oscillator.stop(startTime + duration);
           } catch (e) {
               console.error("SoundManager note error:", e);
           }
       });
+
+      setTimeout(onEnd, maxDuration);
   }
 
   /**
@@ -322,6 +442,22 @@ export class SoundManager {
       this._initializeContext();
       if (!this._audioCtx) return;
       if (this._audioCtx.state === 'suspended') this._audioCtx.resume();
+
+      // Interrupt Music (Beep is usually short, but still)
+      this._sfxCount++;
+      if (this._musicPlayer && this._musicPlayer.isPlaying) {
+          this._musicPlayer.setVolume(0);
+      }
+
+      const onEnd = () => {
+          this._sfxCount--;
+           if (this._sfxCount <= 0) {
+              this._sfxCount = 0;
+              if (this._musicPlayer && this._musicPlayer.isPlaying) {
+                  this._musicPlayer.setVolume(0.3);
+              }
+          }
+      };
 
       try {
           const oscillator = this._audioCtx.createOscillator();
@@ -333,7 +469,10 @@ export class SoundManager {
           gainNode.connect(this._audioCtx.destination);
           oscillator.start();
           oscillator.stop(this._audioCtx.currentTime + duration / 1000);
-      } catch (e) {}
+          oscillator.onended = onEnd;
+      } catch (e) {
+          onEnd();
+      }
   }
 }
 

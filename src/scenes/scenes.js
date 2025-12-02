@@ -100,7 +100,7 @@ export class Scene_Boot extends Scene_Base {
      * @method start
      * @async
      */
-    async start() { console.log("Scene_Boot started");
+    async start() {
         await this.dataManager.loadData();
         ThemeManager.init(this.dataManager.themes);
         this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager));
@@ -244,6 +244,7 @@ export class Scene_Battle extends Scene_Base {
     this.windowManager.push(this.battleWindow);
     document.getElementById("mode-label").textContent = "Battle";
     SoundManager.play('BATTLE_START');
+    SoundManager.playMusic('battle1');
 
     if (ConfigManager.autoBattle) {
         this.resolveBattleRound();
@@ -560,6 +561,8 @@ export class Scene_Battle extends Scene_Base {
       this.sceneManager.pop();
       if (this.sceneManager.currentScene() && this.sceneManager.currentScene().setStatus) {
           this.sceneManager.currentScene().setStatus("Victory.");
+          // Resume map music
+          this.sceneManager.currentScene().resumeMusic();
       }
   }
 
@@ -684,6 +687,10 @@ export class Scene_Battle extends Scene_Base {
       this.sceneManager.previous().logMessage("[Battle] You successfully fled!");
       SoundManager.play('ESCAPE');
       this.sceneManager.pop();
+      // Resume music
+      if (this.sceneManager.currentScene().resumeMusic) {
+          this.sceneManager.currentScene().resumeMusic();
+      }
     } else {
       this.battleWindow.appendLog("You failed to flee!");
       SoundManager.play('UI_ERROR');
@@ -1216,6 +1223,18 @@ export class Scene_Map extends Scene_Base {
     );
     SoundManager.play('UI_SELECT');
     this.updateAll();
+    this.checkMusic();
+  }
+
+  resumeMusic() {
+      this.checkMusic();
+  }
+
+  checkMusic() {
+      const f = this.map.floors[this.map.floorIndex];
+      if (f && f.music) {
+          SoundManager.playMusic(f.music);
+      }
   }
 
   /**
@@ -1482,6 +1501,7 @@ export class Scene_Map extends Scene_Base {
             this.logMessage(`[Navigate] You flip to card ${idx + 1} (${floor.title}).`);
             SoundManager.play('STAIRS');
             this.updateAll();
+            this.checkMusic();
         }
     );
   }
