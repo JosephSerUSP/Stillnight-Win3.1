@@ -100,7 +100,7 @@ export class Scene_Boot extends Scene_Base {
      * @method start
      * @async
      */
-    async start() {
+    async start() { console.log("Scene_Boot started");
         await this.dataManager.loadData();
         ThemeManager.init(this.dataManager.themes);
         this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager));
@@ -1761,6 +1761,16 @@ export class Scene_Map extends Scene_Base {
             ],
             onChange: (val) => {
                 ConfigManager.autoBattle = (val === "on");
+                ConfigManager.save();
+                SoundManager.play('UI_SELECT');
+            }
+        },
+        {
+            label: "Window Animations",
+            type: "toggle",
+            value: ConfigManager.windowAnimations,
+            onChange: (val) => {
+                ConfigManager.windowAnimations = val;
                 ConfigManager.save();
                 SoundManager.play('UI_SELECT');
             }

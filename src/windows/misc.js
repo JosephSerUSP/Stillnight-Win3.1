@@ -1,4 +1,5 @@
 import { Window_Base } from "./base.js";
+import { createToggleSwitch } from "./utils.js";
 
 /**
  * @class Window_Help
@@ -78,33 +79,47 @@ export class Window_Options extends Window_Base {
         row.style.marginBottom = "8px";
         row.style.alignItems = "center";
 
-        const label = document.createElement("span");
-        label.textContent = opt.label + ": ";
-        label.style.width = "100px";
-        row.appendChild(label);
+        if (opt.type === 'toggle') {
+            // For toggle, we use the helper which creates label + switch
+            const toggle = createToggleSwitch(opt.label + ":", opt.value, (val) => {
+                if (opt.onChange) opt.onChange(val);
+            });
+            // Adjust label width inside toggle helper to match other rows if desired,
+            // but the helper uses flex. We can just append it.
+            // To align with other rows where label is 100px:
+            const labelEl = toggle.querySelector("span");
+            if (labelEl) labelEl.style.width = "100px";
 
-        if (opt.type === 'select') {
-            const select = document.createElement("select");
-            select.style.flex = "1";
-            opt.options.forEach(choice => {
-                const option = document.createElement("option");
-                option.value = choice.value;
-                option.textContent = choice.label;
-                if (choice.value === opt.value) {
-                    option.selected = true;
-                }
-                select.appendChild(option);
-            });
-            select.addEventListener("change", (e) => {
-                if (opt.onChange) {
-                    opt.onChange(e.target.value);
-                }
-            });
-            row.appendChild(select);
-        } else if (opt.type === 'text') {
-             const val = document.createElement("span");
-             val.textContent = opt.value;
-             row.appendChild(val);
+            row.appendChild(toggle);
+        } else {
+            const label = document.createElement("span");
+            label.textContent = opt.label + ": ";
+            label.style.width = "100px";
+            row.appendChild(label);
+
+            if (opt.type === 'select') {
+                const select = document.createElement("select");
+                select.style.flex = "1";
+                opt.options.forEach(choice => {
+                    const option = document.createElement("option");
+                    option.value = choice.value;
+                    option.textContent = choice.label;
+                    if (choice.value === opt.value) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
+                select.addEventListener("change", (e) => {
+                    if (opt.onChange) {
+                        opt.onChange(e.target.value);
+                    }
+                });
+                row.appendChild(select);
+            } else if (opt.type === 'text') {
+                 const val = document.createElement("span");
+                 val.textContent = opt.value;
+                 row.appendChild(val);
+            }
         }
 
         this.bodyEl.appendChild(row);
