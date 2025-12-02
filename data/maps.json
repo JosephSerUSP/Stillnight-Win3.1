@@ -3,6 +3,7 @@
     "title": "Town of Stillnight",
     "intro": "A quiet settlement on the edge of the void.",
     "depth": 0,
+    "music": "town1",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "count": 1 },
@@ -17,6 +18,7 @@
     "title": "Floor 1: Entry Hall",
     "intro": "You cross the threshold into the dark.",
     "depth": 1,
+    "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
@@ -36,6 +38,7 @@
     "title": "Floor 2: Chasm Crossing",
     "intro": "Wind howls across a broken bridge.",
     "depth": 2,
+    "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
@@ -59,6 +62,7 @@
     "title": "Floor 3: Rusted Choir",
     "intro": "Broken bells sway above a dry pit.",
     "depth": 3,
+    "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
@@ -77,6 +81,7 @@
     "title": "Floor 4: Cryptic Vault",
     "intro": "Relic pedestals gleam with unnatural light.",
     "depth": 4,
+    "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.2 },
@@ -96,6 +101,7 @@
     "title": "Floor 5: Blood Chapel",
     "intro": "Walls whisper of ancient oaths.",
     "depth": 5,
+    "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.2 },
@@ -114,6 +120,7 @@
     "title": "Floor 6: Stillnight Sanctum",
     "intro": "A presence fills the air. The Eternal Warden awaits.",
     "depth": 6,
+    "music": "dungeon1",
     "events": [
       { "id": "recovery", "count": 1 },
       { "id": "enemy", "min": 1, "max": 1 }
