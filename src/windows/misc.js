@@ -51,8 +51,8 @@ export class Window_Help extends Window_Base {
  * @class Window_Options
  */
 export class Window_Options extends Window_Base {
-  constructor() {
-    super('center', 'center', 300, 400, { title: "Settings", id: "options-window" });
+  constructor(title = "Settings") {
+    super('center', 'center', 300, 400, { title: title, id: "options-window" });
 
     this.bodyEl = this.createPanel();
     this.bodyEl.style.flexGrow = "1";
@@ -80,17 +80,65 @@ export class Window_Options extends Window_Base {
         row.style.alignItems = "center";
 
         if (opt.type === 'toggle') {
-            // For toggle, we use the helper which creates label + switch
             const toggle = createToggleSwitch(opt.label + ":", opt.value, (val) => {
                 if (opt.onChange) opt.onChange(val);
             });
-            // Adjust label width inside toggle helper to match other rows if desired,
-            // but the helper uses flex. We can just append it.
-            // To align with other rows where label is 100px:
             const labelEl = toggle.querySelector("span");
             if (labelEl) labelEl.style.width = "100px";
-
             row.appendChild(toggle);
+
+        } else if (opt.type === 'slider') {
+            const label = document.createElement("span");
+            label.textContent = opt.label + ": ";
+            label.style.width = "100px";
+            row.appendChild(label);
+
+            const sliderContainer = document.createElement("div");
+            sliderContainer.style.flex = "1";
+            sliderContainer.style.display = "flex";
+            sliderContainer.style.alignItems = "center";
+            sliderContainer.style.gap = "8px";
+
+            const input = document.createElement("input");
+            input.type = "range";
+            input.min = "0";
+            input.max = "100";
+            input.value = Math.round(opt.value * 100);
+            input.style.flex = "1";
+
+            const valueLabel = document.createElement("span");
+            valueLabel.textContent = `${input.value}%`;
+            valueLabel.style.width = "40px";
+            valueLabel.style.textAlign = "right";
+
+            input.addEventListener("input", (e) => {
+                const val = parseInt(e.target.value, 10);
+                valueLabel.textContent = `${val}%`;
+                if (opt.onChange) {
+                    opt.onChange(val / 100.0);
+                }
+            });
+
+            sliderContainer.appendChild(input);
+            sliderContainer.appendChild(valueLabel);
+            row.appendChild(sliderContainer);
+
+        } else if (opt.type === 'action') {
+             const label = document.createElement("span");
+             label.textContent = opt.label;
+             label.style.width = "100px";
+
+             const btn = document.createElement("button");
+             btn.textContent = "Open..."; // Or specific text
+             btn.className = "ui-btn";
+             btn.style.flex = "1";
+             btn.onclick = () => {
+                 if (opt.action) opt.action();
+             };
+
+             row.appendChild(label);
+             row.appendChild(btn);
+
         } else {
             const label = document.createElement("span");
             label.textContent = opt.label + ": ";

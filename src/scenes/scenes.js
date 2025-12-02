@@ -100,7 +100,7 @@ export class Scene_Boot extends Scene_Base {
      * @method start
      * @async
      */
-    async start() { console.log("Scene_Boot started");
+    async start() {
         await this.dataManager.loadData();
         ThemeManager.init(this.dataManager.themes);
         this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager));
@@ -244,6 +244,7 @@ export class Scene_Battle extends Scene_Base {
     this.windowManager.push(this.battleWindow);
     document.getElementById("mode-label").textContent = "Battle";
     SoundManager.play('BATTLE_START');
+    SoundManager.playMusic('battle1');
 
     if (ConfigManager.autoBattle) {
         this.resolveBattleRound();
@@ -560,6 +561,8 @@ export class Scene_Battle extends Scene_Base {
       this.sceneManager.pop();
       if (this.sceneManager.currentScene() && this.sceneManager.currentScene().setStatus) {
           this.sceneManager.currentScene().setStatus("Victory.");
+          // Resume map music
+          this.sceneManager.currentScene().resumeMusic();
       }
   }
 
@@ -684,6 +687,10 @@ export class Scene_Battle extends Scene_Base {
       this.sceneManager.previous().logMessage("[Battle] You successfully fled!");
       SoundManager.play('ESCAPE');
       this.sceneManager.pop();
+      // Resume music
+      if (this.sceneManager.currentScene().resumeMusic) {
+          this.sceneManager.currentScene().resumeMusic();
+      }
     } else {
       this.battleWindow.appendLog("You failed to flee!");
       SoundManager.play('UI_ERROR');
@@ -1148,6 +1155,8 @@ export class Scene_Map extends Scene_Base {
     this.windowLayer.addChild(this.equipItemSelectWindow);
     this.optionsWindow = new Window_Options();
     this.windowLayer.addChild(this.optionsWindow);
+    this.audioWindow = new Window_Options("Audio Settings");
+    this.windowLayer.addChild(this.audioWindow);
     this.helpWindow = new Window_Help();
     this.windowLayer.addChild(this.helpWindow);
 
@@ -1159,6 +1168,7 @@ export class Scene_Map extends Scene_Base {
     this.partySelectWindow.onUserClose = () => this.windowManager.close(this.partySelectWindow);
     this.equipItemSelectWindow.onUserClose = () => this.windowManager.close(this.equipItemSelectWindow);
     this.optionsWindow.onUserClose = () => this.windowManager.close(this.optionsWindow);
+    this.audioWindow.onUserClose = () => this.windowManager.close(this.audioWindow);
     this.helpWindow.onUserClose = () => this.windowManager.close(this.helpWindow);
 
     this.inventoryWindow.onUserClose = this.closeInventory.bind(this);
@@ -1216,6 +1226,18 @@ export class Scene_Map extends Scene_Base {
     );
     SoundManager.play('UI_SELECT');
     this.updateAll();
+    this.checkMusic();
+  }
+
+  resumeMusic() {
+      this.checkMusic();
+  }
+
+  checkMusic() {
+      const f = this.map.floors[this.map.floorIndex];
+      if (f && f.music) {
+          SoundManager.playMusic(f.music);
+      }
   }
 
   /**
@@ -1482,6 +1504,7 @@ export class Scene_Map extends Scene_Base {
             this.logMessage(`[Navigate] You flip to card ${idx + 1} (${floor.title}).`);
             SoundManager.play('STAIRS');
             this.updateAll();
+            this.checkMusic();
         }
     );
   }
@@ -1752,6 +1775,11 @@ export class Scene_Map extends Scene_Base {
             }
         },
         {
+            label: "Audio",
+            type: "action",
+            action: () => this.openAudioSettings()
+        },
+        {
             label: "Auto Battle",
             type: "select",
             value: ConfigManager.autoBattle ? "on" : "off",
@@ -1779,6 +1807,43 @@ export class Scene_Map extends Scene_Base {
 
     this.optionsWindow.setup(options);
     this.windowManager.push(this.optionsWindow);
+  }
+
+  openAudioSettings() {
+      const options = [
+          {
+              label: "Master",
+              type: "slider",
+              value: ConfigManager.masterVolume,
+              onChange: (val) => {
+                  ConfigManager.masterVolume = val;
+                  ConfigManager.save();
+                  SoundManager.updateVolumes();
+              }
+          },
+          {
+              label: "Music",
+              type: "slider",
+              value: ConfigManager.musicVolume,
+              onChange: (val) => {
+                  ConfigManager.musicVolume = val;
+                  ConfigManager.save();
+                  SoundManager.updateVolumes();
+              }
+          },
+          {
+              label: "SFX",
+              type: "slider",
+              value: ConfigManager.sfxVolume,
+              onChange: (val) => {
+                  ConfigManager.sfxVolume = val;
+                  ConfigManager.save();
+                  SoundManager.updateVolumes();
+              }
+          }
+      ];
+      this.audioWindow.setup(options);
+      this.windowManager.push(this.audioWindow);
   }
 
   onInventoryAction(item, action) {

@@ -1,4 +1,5 @@
 import { randInt, elementToAscii, evaluateFormula, probabilisticRound } from "../core/utils.js";
+import { MidiParser, MidiPlayer } from "./midi.js";
 
 /**
  * @class DataManager
@@ -143,8 +144,9 @@ export class DataManager {
     }
 
     // Initialize SoundManager with loaded sound data
+    // We await this to ensure MIDI data is ready before the game starts
     if (this.sounds) {
-        SoundManager.init(this.sounds);
+        await SoundManager.init(this.sounds);
     }
   }
 }
@@ -179,14 +181,43 @@ export class SoundManager {
   static _soundMap = {};
 
   /**
+   * Map of MIDI keys to parsed MIDI data.
+   * @private
+   * @type {Map<string, Object>}
+   */
+  static _midiData = new Map();
+
+  /**
+   * The MIDI player instance.
+   * @private
+   * @type {MidiPlayer}
+   */
+  static _musicPlayer = null;
+
+  /**
+   * Counter for active SFX to handle interruption logic.
+   * @private
+   * @type {number}
+   */
+  static _sfxCount = 0;
+
+  /**
+   * The current music key being played.
+   * @private
+   * @type {string|null}
+   */
+  static _currentMusicKey = null;
+
+  /**
    * Initializes the SoundManager with sound data.
    * @method init
    * @param {Object} soundMap - Key-value pair of sound names and config/paths.
+   * @returns {Promise} Resolves when all sounds and MIDI are loaded.
    */
-  static init(soundMap) {
+  static async init(soundMap) {
       this._soundMap = soundMap || {};
       this._initializeContext();
-      this.loadAll();
+      return this.loadAll();
   }
 
   /**
@@ -197,6 +228,9 @@ export class SoundManager {
   static _initializeContext() {
     if (!this._audioCtx && typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) {
       this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (this._audioCtx && !this._musicPlayer) {
+        this._musicPlayer = new MidiPlayer(this._audioCtx);
     }
   }
 
@@ -213,6 +247,13 @@ export class SoundManager {
           }
           return Promise.resolve();
       });
+
+      // Also load known MIDI files
+      const midis = ['battle1', 'dungeon1', 'town1'];
+      midis.forEach(key => {
+          promises.push(this.loadMidi(key, `assets/midi/${key}.mid`));
+      });
+
       await Promise.allSettled(promises);
   }
 
@@ -236,6 +277,77 @@ export class SoundManager {
       }
   }
 
+  static async loadMidi(key, path) {
+      if (!this._audioCtx) return;
+      try {
+          const response = await fetch(path);
+          if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+          const arrayBuffer = await response.arrayBuffer();
+          const parser = new MidiParser(arrayBuffer);
+          const data = parser.parse();
+          this._midiData.set(key, data);
+      } catch (error) {
+          console.warn(`SoundManager: Failed to load midi '${key}' from '${path}'.`, error);
+      }
+  }
+
+  /**
+   * Plays background music.
+   * @method playMusic
+   * @param {string} key - The music key (e.g., 'battle1').
+   */
+  static playMusic(key) {
+      const volume = ConfigManager.masterVolume * ConfigManager.musicVolume;
+      if (volume <= 0) {
+          // If volume is 0, we can start it muted to keep state, or just return.
+          // Let's start it so we can fade in later if volume changes.
+      }
+
+      this._initializeContext();
+      if (!this._audioCtx) return;
+      if (this._audioCtx.state === 'suspended') this._audioCtx.resume();
+
+      if (this._currentMusicKey === key && this._musicPlayer.isPlaying) {
+          this.updateVolumes();
+          return;
+      }
+
+      const data = this._midiData.get(key);
+      if (!data) {
+          console.warn(`SoundManager: Music '${key}' not found or not loaded.`);
+          return;
+      }
+
+      this._currentMusicKey = key;
+      this._musicPlayer.load(data);
+      this._musicPlayer.play(true);
+
+      this.updateVolumes();
+  }
+
+  static stopMusic() {
+      if (this._musicPlayer) {
+          this._musicPlayer.stop();
+      }
+      this._currentMusicKey = null;
+  }
+
+  /**
+   * Updates volumes of active playback based on ConfigManager.
+   */
+  static updateVolumes() {
+      if (!this._audioCtx) return;
+
+      const musicVol = ConfigManager.masterVolume * ConfigManager.musicVolume;
+      // If SFX are active, silence music
+      if (this._sfxCount > 0) {
+          if (this._musicPlayer) this._musicPlayer.setVolume(0);
+      } else {
+          // Normal music volume (0.3 base scaling to match square wave loudness)
+          if (this._musicPlayer) this._musicPlayer.setVolume(musicVol * 0.3);
+      }
+  }
+
   /**
    * Plays a sound effect by key.
    * Supports file-based, single procedural notes, and note sequences (polyphony).
@@ -246,6 +358,9 @@ export class SoundManager {
    * @param {number} [options.pitch] - Pitch multiplier.
    */
   static async play(key, options = {}) {
+      const sfxVol = ConfigManager.masterVolume * ConfigManager.sfxVolume;
+      if (sfxVol <= 0) return;
+
       this._initializeContext();
       if (!this._audioCtx) return;
 
@@ -259,6 +374,18 @@ export class SoundManager {
           return;
       }
 
+      // Interrupt Music
+      this._sfxCount++;
+      this.updateVolumes(); // Will silence music
+
+      const onEnd = () => {
+          this._sfxCount--;
+          if (this._sfxCount <= 0) {
+              this._sfxCount = 0;
+              this.updateVolumes(); // Restore music
+          }
+      };
+
       // Case 1: File-based sound
       if (typeof soundDef === 'string') {
           let buffer = this._buffers.get(key);
@@ -270,11 +397,17 @@ export class SoundManager {
               const source = this._audioCtx.createBufferSource();
               source.buffer = buffer;
               const gainNode = this._audioCtx.createGain();
-              gainNode.gain.value = options.volume !== undefined ? options.volume : 0.5;
+
+              let playVol = (options.volume !== undefined ? options.volume : 0.5) * sfxVol;
+              gainNode.gain.value = playVol;
+
               if (options.pitch) source.playbackRate.value = options.pitch;
               source.connect(gainNode);
               gainNode.connect(this._audioCtx.destination);
+              source.onended = onEnd;
               source.start(0);
+          } else {
+              onEnd();
           }
           return;
       }
@@ -286,6 +419,7 @@ export class SoundManager {
       }
 
       const now = this._audioCtx.currentTime;
+      let maxDuration = 0;
 
       soundDef.forEach(note => {
           try {
@@ -297,9 +431,10 @@ export class SoundManager {
               if (options.pitch) freq *= options.pitch;
               oscillator.frequency.value = freq;
 
-              let vol = note.volume || 0.1;
-              if (options.volume !== undefined) vol *= options.volume;
-              gainNode.gain.value = vol;
+              let noteVol = (note.volume || 0.1);
+              let playVol = (options.volume !== undefined ? options.volume : 1.0) * noteVol * sfxVol;
+
+              gainNode.gain.value = playVol;
 
               oscillator.connect(gainNode);
               gainNode.connect(this._audioCtx.destination);
@@ -307,33 +442,55 @@ export class SoundManager {
               const startTime = now + (note.start || 0) / 1000;
               const duration = (note.duration || 100) / 1000;
 
+              const endTime = (note.start || 0) + (note.duration || 100);
+              if (endTime > maxDuration) maxDuration = endTime;
+
               oscillator.start(startTime);
               oscillator.stop(startTime + duration);
           } catch (e) {
               console.error("SoundManager note error:", e);
           }
       });
+
+      setTimeout(onEnd, maxDuration);
   }
 
   /**
    * Legacy beep (used if no configuration exists or direct call needed).
    */
   static beep(frequency = 440, duration = 120) {
+      const sfxVol = ConfigManager.masterVolume * ConfigManager.sfxVolume;
+      if (sfxVol <= 0) return;
+
       this._initializeContext();
       if (!this._audioCtx) return;
       if (this._audioCtx.state === 'suspended') this._audioCtx.resume();
+
+      this._sfxCount++;
+      this.updateVolumes();
+
+      const onEnd = () => {
+          this._sfxCount--;
+           if (this._sfxCount <= 0) {
+              this._sfxCount = 0;
+              this.updateVolumes();
+          }
+      };
 
       try {
           const oscillator = this._audioCtx.createOscillator();
           const gainNode = this._audioCtx.createGain();
           oscillator.type = "square";
           oscillator.frequency.value = frequency;
-          gainNode.gain.value = 0.05;
+          gainNode.gain.value = 0.05 * sfxVol;
           oscillator.connect(gainNode);
           gainNode.connect(this._audioCtx.destination);
           oscillator.start();
           oscillator.stop(this._audioCtx.currentTime + duration / 1000);
-      } catch (e) {}
+          oscillator.onended = onEnd;
+      } catch (e) {
+          onEnd();
+      }
   }
 }
 
@@ -982,6 +1139,9 @@ export class ThemeManager {
 export class ConfigManager {
     static autoBattle = false;
     static windowAnimations = true;
+    static masterVolume = 1.0;
+    static sfxVolume = 1.0;
+    static musicVolume = 1.0;
 
     static load() {
         try {
@@ -990,6 +1150,25 @@ export class ConfigManager {
                 const config = JSON.parse(data);
                 this.autoBattle = !!config.autoBattle;
                 this.windowAnimations = config.windowAnimations !== undefined ? !!config.windowAnimations : true;
+
+                // Migrate legacy booleans to floats if needed
+                if (typeof config.audioEnabled === 'boolean') {
+                    this.masterVolume = config.audioEnabled ? 1.0 : 0.0;
+                } else if (config.masterVolume !== undefined) {
+                    this.masterVolume = parseFloat(config.masterVolume);
+                }
+
+                if (typeof config.sfxEnabled === 'boolean') {
+                    this.sfxVolume = config.sfxEnabled ? 1.0 : 0.0;
+                } else if (config.sfxVolume !== undefined) {
+                    this.sfxVolume = parseFloat(config.sfxVolume);
+                }
+
+                if (typeof config.musicEnabled === 'boolean') {
+                    this.musicVolume = config.musicEnabled ? 1.0 : 0.0;
+                } else if (config.musicVolume !== undefined) {
+                    this.musicVolume = parseFloat(config.musicVolume);
+                }
             }
         } catch (e) {
             console.error("Failed to load config", e);
@@ -1000,7 +1179,10 @@ export class ConfigManager {
         try {
             const config = {
                 autoBattle: this.autoBattle,
-                windowAnimations: this.windowAnimations
+                windowAnimations: this.windowAnimations,
+                masterVolume: this.masterVolume,
+                sfxVolume: this.sfxVolume,
+                musicVolume: this.musicVolume
             };
             localStorage.setItem("stillnight_config", JSON.stringify(config));
         } catch (e) {
