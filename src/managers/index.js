@@ -406,7 +406,12 @@ export class SoundManager {
               source.connect(gainNode);
               gainNode.connect(this._audioCtx.destination);
               source.onended = onEnd;
-              source.start(0);
+              try {
+                  source.start(0);
+              } catch (e) {
+                  console.error("SoundManager: source.start failed", e);
+                  onEnd();
+              }
           } else {
               onEnd();
           }
