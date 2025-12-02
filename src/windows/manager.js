@@ -6,6 +6,7 @@ export class WindowLayer {
   }
   addChild(window) {
     this.element.appendChild(window.overlay);
+    this.element.appendChild(window.element);
   }
   appendTo(parent) {
     parent.appendChild(this.element);
