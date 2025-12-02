@@ -20,6 +20,7 @@ import {
   Window_Help,
   Window_Victory,
   WindowLayer,
+  Window_Base,
   createInteractiveLabel,
   createElementIcon,
   createBattlerNameLabel,
@@ -103,6 +104,71 @@ export class Scene_Boot extends Scene_Base {
     async start() {
         await this.dataManager.loadData();
         ThemeManager.init(this.dataManager.themes);
+        this.sceneManager.push(new Scene_Title(this.dataManager, this.sceneManager, this.windowManager));
+    }
+}
+
+/**
+ * @class Scene_Battle
+ * @description The title screen scene.
+ * @extends Scene_Base
+ */
+export class Scene_Title extends Scene_Base {
+    /**
+     * Creates a new Scene_Title.
+     * @param {import("../managers/index.js").DataManager} dataManager - The data manager.
+     * @param {import("../managers/index.js").SceneManager} sceneManager - The scene manager.
+     * @param {import("../windows/index.js").WindowManager} windowManager - The window manager.
+     */
+    constructor(dataManager, sceneManager, windowManager) {
+        super(dataManager, windowManager);
+        this.sceneManager = sceneManager;
+
+        // Clear container and setup window layer
+        const gameContainer = document.getElementById("game-container");
+        gameContainer.innerHTML = "";
+        this.windowLayer = new WindowLayer();
+        this.windowLayer.appendTo(gameContainer);
+
+        // Create the title window using Window_Base directly
+        // We center it manually or use 'center' param
+        this.titleWindow = new Window_Base('center', 'center', 300, 200, { title: "Stillnight", closeButton: false });
+        this.windowLayer.addChild(this.titleWindow);
+
+        // Build content
+        const content = this.titleWindow.content;
+        content.style.display = "flex";
+        content.style.flexDirection = "column";
+        content.style.alignItems = "center";
+        content.style.justifyContent = "center";
+        content.style.gap = "20px";
+        content.style.padding = "20px";
+
+        const label = document.createElement("div");
+        label.textContent = "Welcome to Stillnight!";
+        label.style.textAlign = "center";
+        label.style.fontSize = "1.2em";
+        content.appendChild(label);
+
+        const btnStart = document.createElement("button");
+        btnStart.className = "win-btn";
+        btnStart.textContent = "Start Game";
+        btnStart.style.padding = "8px 24px";
+        btnStart.onclick = () => this.startGame();
+        content.appendChild(btnStart);
+    }
+
+    start() {
+        this.windowManager.push(this.titleWindow);
+    }
+
+    stop() {
+        this.windowManager.close(this.titleWindow);
+    }
+
+    async startGame() {
+        await SoundManager.resumeContext();
+        SoundManager.play('UI_SELECT');
         this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager));
     }
 }
