@@ -118,6 +118,7 @@ export class Game_Interpreter {
         this.scene.setStatus("Descending.");
         SoundManager.play('STAIRS');
         this.scene.updateAll();
+        this.scene.checkMusic();
     }
 
     openShrineEvent() {
