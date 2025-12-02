@@ -2080,7 +2080,10 @@ export class Scene_Map extends Scene_Base {
       if (!nextData) return;
 
       const nextBattler = new Game_Battler({ ...nextData, level: member.level });
-      this.evolutionWindow.setup(member, nextBattler);
+      // Copy equipment to ensure stat preview includes equipment bonuses
+      nextBattler.equipmentItem = member.equipmentItem;
+
+      this.evolutionWindow.setup(member, nextBattler, this.dataManager);
 
       this.evolutionWindow.btnConfirm.onclick = () => {
           this.confirmEvolution(member, nextBattler, evolutionData);

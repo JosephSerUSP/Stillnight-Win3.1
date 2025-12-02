@@ -1,6 +1,7 @@
 import { Window_Base } from "./base.js";
 import { createBattlerNameLabel, renderElements, createInteractiveLabel } from "./utils.js";
 import { UI } from "./builder.js";
+import { evaluateFormula } from "../core/utils.js";
 
 /**
  * @class Window_Inspect
@@ -117,12 +118,12 @@ export class Window_Evolution extends Window_Base {
     this.btnReturn = this.addButton("Return", () => this.onUserClose());
   }
 
-  setup(current, next) {
-      this.renderPane(this.leftPane, current);
-      this.renderPane(this.rightPane, next);
+  setup(current, next, dataManager) {
+      this.renderPane(this.leftPane, current, dataManager);
+      this.renderPane(this.rightPane, next, dataManager);
   }
 
-  renderPane(container, battler) {
+  renderPane(container, battler, dataManager) {
       container.innerHTML = "";
 
       const structure = {
@@ -140,7 +141,7 @@ export class Window_Evolution extends Window_Base {
                   type: 'flex',
                   props: { className: 'inspect-fields', direction: 'column' },
                   children: [
-                      // Fields will be added dynamically below or we can construct data here
+                      // Fields will be added dynamically below
                   ]
               }
           ]
@@ -156,14 +157,11 @@ export class Window_Evolution extends Window_Base {
               props: { className: 'inspect-row', align: 'center' },
               children: [
                   { type: 'label', props: { className: 'inspect-label', text: label } },
-                  // Placeholder for value, we append the actual element
                   { type: 'panel', props: { className: 'inspect-value' } }
               ]
           });
           const valueContainer = row.children[1];
-          // Clear styles/classes that might interfere if we just append?
-          // Actually inspect-value is a good class for text, but if we have complex content...
-          valueContainer.innerHTML = ''; // Clear default
+          valueContainer.innerHTML = '';
 
           if (contentElement instanceof HTMLElement) {
               valueContainer.appendChild(contentElement);
@@ -186,7 +184,66 @@ export class Window_Evolution extends Window_Base {
       // HP
       addRow('Max HP', `${battler.maxHp}`);
 
-      // Passives
+      // Atk
+      addRow('Atk', `${battler.atk}`);
+
+      // Element
+      const elementVal = document.createElement('span');
+      if (battler.elements && battler.elements.length > 0) {
+          elementVal.appendChild(renderElements(battler.elements));
+      } else {
+          elementVal.textContent = "—";
+      }
+      addRow('Element', elementVal);
+
+      // Skills
+      const skillsVal = document.createElement('span');
+      if (battler.skills && battler.skills.length > 0) {
+          battler.skills.forEach((sId, i) => {
+            const skill = dataManager && dataManager.skills ? dataManager.skills[sId] : null;
+            if (skill) {
+                // Calculate dynamic effects
+                let effectsText = "";
+                if (skill.effects && skill.effects.length > 0) {
+                    const descriptions = [];
+                    skill.effects.forEach(eff => {
+                         if (eff.type === 'hp_damage') {
+                             const val = Math.round(evaluateFormula(eff.formula, battler));
+                             descriptions.push(`Deals ~${val} Damage`);
+                         } else if (eff.type === 'hp_heal') {
+                             const val = Math.round(evaluateFormula(eff.formula, battler));
+                             descriptions.push(`Heals ~${val} HP`);
+                         } else if (eff.type === 'add_status') {
+                             const chance = Math.round((eff.chance || 1) * 100);
+                             descriptions.push(`${chance}% chance to add ${eff.status}`);
+                         }
+                    });
+                    if (descriptions.length > 0) {
+                        effectsText = descriptions.join(", ");
+                    }
+                }
+
+                let tooltipText = skill.description;
+                if (effectsText) {
+                    tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
+                }
+
+                const el = createInteractiveLabel(skill, 'skill', { tooltipText });
+                skillsVal.appendChild(el);
+            } else {
+                skillsVal.appendChild(document.createTextNode(sId));
+            }
+
+            if (i < battler.skills.length - 1) {
+                skillsVal.appendChild(document.createTextNode(", "));
+            }
+        });
+      } else {
+          skillsVal.textContent = "—";
+      }
+      addRow('Skills', skillsVal);
+
+      // Passives (Game_Battler resolves these to objects)
       const passiveVal = document.createElement('span');
       if (battler.passives && battler.passives.length > 0) {
           battler.passives.forEach((p, i) => {
@@ -198,5 +255,13 @@ export class Window_Evolution extends Window_Base {
           passiveVal.textContent = "—";
       }
       addRow('Passive', passiveVal);
+
+      // Flavor
+      const flavorVal = document.createElement('span');
+      flavorVal.textContent = battler.flavor || "—";
+      flavorVal.style.fontStyle = "italic";
+      flavorVal.style.fontSize = "0.9em";
+      flavorVal.className = "text-muted";
+      addRow('Flavor', flavorVal);
   }
 }

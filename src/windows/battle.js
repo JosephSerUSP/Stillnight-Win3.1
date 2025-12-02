@@ -1,6 +1,7 @@
 import { Window_Base } from "./base.js";
 import { createToggleSwitch } from "./utils.js";
 import { getPrimaryElements, elementToAscii } from "../core/utils.js";
+import { UI } from "./builder.js";
 
 /**
  * @class Window_Battle
@@ -9,67 +10,67 @@ export class Window_Battle extends Window_Base {
   constructor() {
     super('center', 'center', 528, 360, { title: "Battle – Stillnight" });
 
-    const terminal = document.createElement("div");
-    terminal.className = "terminal";
-    this.content.appendChild(terminal);
+    // 1. Content: Terminal with Viewport and Log
+    const contentStructure = {
+        type: 'flex',
+        props: { className: 'terminal', direction: 'column' },
+        children: [
+            {
+                type: 'panel',
+                props: { className: 'terminal-viewport', id: 'battle-viewport' }
+            },
+            {
+                type: 'panel',
+                props: { className: 'terminal-log', id: 'battle-log' }
+            }
+        ]
+    };
 
-    this.viewportEl = document.createElement("div");
-    this.viewportEl.className = "terminal-viewport";
-    terminal.appendChild(this.viewportEl);
+    const terminal = UI.build(this.content, contentStructure);
+    // Flex container children: [0] viewport, [1] log
+    this.viewportEl = terminal.children[0];
+    this.logEl = terminal.children[1];
 
-    this.logEl = document.createElement("div");
-    this.logEl.className = "terminal-log";
-    terminal.appendChild(this.logEl);
-
+    // 2. Footer: Action Buttons
     this.btnRound = this.addButton("Resolve Round", () => {});
 
-    // Action Row
-    const actionRow = document.createElement("div");
-    actionRow.style.display = "flex";
-    actionRow.style.gap = "4px";
-    actionRow.style.padding = "4px";
-    actionRow.style.justifyContent = "center";
-    actionRow.style.alignItems = "center";
-    actionRow.style.width = "100%";
+    // Action Row Structure
+    const actionRowStructure = {
+        type: 'flex',
+        props: {
+            style: {
+                gap: '4px',
+                padding: '4px',
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: '100%'
+            }
+        },
+        children: [
+            { type: 'button', props: { className: 'win-btn', label: 'Formation' } },
+            { type: 'button', props: { className: 'win-btn', label: 'Item' } }
+        ]
+    };
+
+    // Build detached and insert
+    const actionRow = UI.build(null, actionRowStructure);
     this.footer.insertBefore(actionRow, this.footer.firstChild);
 
-    this.btnFormation = document.createElement("button");
-    this.btnFormation.className = "win-btn";
-    this.btnFormation.textContent = "Formation";
-    actionRow.appendChild(this.btnFormation);
+    this.btnFormation = actionRow.children[0];
+    this.btnItem = actionRow.children[1];
 
-    this.btnItem = document.createElement("button");
-    this.btnItem.className = "win-btn";
-    this.btnItem.textContent = "Item";
-    actionRow.appendChild(this.btnItem);
-
-    // Toggle Switch for Auto
-    // Note: We don't have a direct callback here because Scene_Battle sets it up later via listeners or properties.
-    // However, createToggleSwitch requires an onChange. We can pass a dummy one or expose the checkbox.
-    // Given existing code accessed `this.autoCheckbox`, we need to maintain that access.
-
-    // Original code:
-    // this.autoSwitch = ...
-    // this.autoCheckbox = ...
-
-    // New code using helper:
+    // Auto Toggle
+    // The helper createToggleSwitch returns a label containing a checkbox.
     const autoSwitchContainer = createToggleSwitch("Auto", false, (val) => {
-        // Scene_Battle might listen to 'change' event on the checkbox,
-        // so we just need to ensure the checkbox is accessible.
+        // Callback handled by Scene listeners if needed, or polling check state
     });
-    // The helper sets container.checkbox
-    this.autoCheckbox = autoSwitchContainer.checkbox;
-    this.autoSwitch = autoSwitchContainer.querySelector('.toggle-switch'); // maintain reference if needed, though likely not used directly if checkbox is exposed.
-
-    // Style adjustments to match previous layout
-    // Previous layout: autoContainer (flex, align-center, gap 6, margin-left 10)
-    // The helper returns a flex container with gap 6. We just need margin-left.
     autoSwitchContainer.style.marginLeft = "10px";
-
     actionRow.appendChild(autoSwitchContainer);
 
+    this.autoCheckbox = autoSwitchContainer.checkbox;
+    this.autoSwitch = autoSwitchContainer.querySelector('.toggle-switch');
+
     this.btnFlee = this.addButton("Flee", () => {});
-    // btnVictory is removed; using Window_Victory instead.
   }
 
   updateAutoButton(isAuto) {
@@ -100,53 +101,55 @@ export class Window_Battle extends Window_Base {
   refresh(battlers, party) {
     this.viewportEl.innerHTML = "";
 
-    const header = document.createElement("div");
-    header.textContent = "== BATTLE ==";
-    header.style.textAlign = "center";
-    header.style.padding = "5px 0";
-    this.viewportEl.appendChild(header);
-
-    battlers.forEach((e, idx) => {
-        if (!e) return;
-        if (e.hidden) return;
-        const top = 30 + Math.floor(idx / 2) * 40;
-        const left = 20 + (idx % 2) * 220;
-        const hp = e.hp;
-
-        const primaryElements = getPrimaryElements(e.elements);
-        const elementAscii = primaryElements.map(el => elementToAscii(el)).join('');
-        const nameStr = `<span id="battler-enemy-${idx}">${e.name}</span>`;
-
-        const el = document.createElement("div");
-        el.className = 'battler-container';
-        el.style.position = "absolute";
-        el.style.top = `${top}px`;
-        el.style.left = `${left}px`;
-        el.style.whiteSpace = "pre";
-        el.innerHTML = `<div class="battler-name">${elementAscii}${nameStr} (HP ${hp}/${e.maxHp})</div><div class="battler-hp">${this.createHpGauge(hp, e.maxHp)}</div>`;
-        this.viewportEl.appendChild(el);
+    UI.build(this.viewportEl, {
+          type: 'label',
+          props: {
+              text: "== BATTLE ==",
+              style: { display: 'block', textAlign: 'center', padding: '5px 0' }
+          }
     });
 
-    party.forEach((p, idx) => {
-        if (!p) return;
-        if (p.hidden) return;
-        const top = 140 + Math.floor(idx / 2) * 40;
+    const renderBattler = (b, idx, isEnemy) => {
+        if (!b || b.hidden) return;
+
+        const top = isEnemy ? 30 + Math.floor(idx / 2) * 40 : 140 + Math.floor(idx / 2) * 40;
         const left = 20 + (idx % 2) * 220;
-        const hp = p.hp;
 
-        const primaryElements = getPrimaryElements(p.elements);
+        const primaryElements = getPrimaryElements(b.elements);
         const elementAscii = primaryElements.map(el => elementToAscii(el)).join('');
-        const nameStr = `<span id="battler-party-${idx}">${p.name}</span>`;
 
-        const el = document.createElement("div");
-        el.className = 'battler-container';
-        el.style.position = "absolute";
-        el.style.top = `${top}px`;
-        el.style.left = `${left}px`;
-        el.style.whiteSpace = "pre";
-        el.innerHTML = `<div class="battler-name">${elementAscii}${nameStr} (HP ${hp}/${p.maxHp})</div><div class="battler-hp">${this.createHpGauge(hp, p.maxHp)}</div>`;
-        this.viewportEl.appendChild(el);
-    });
+        const battlerId = isEnemy ? `battler-enemy-${idx}` : `battler-party-${idx}`;
+
+        // Use UI.build for the battler container
+        const container = UI.build(this.viewportEl, {
+            type: 'panel',
+            props: {
+                className: 'battler-container',
+                style: {
+                    position: 'absolute',
+                    top: `${top}px`,
+                    left: `${left}px`,
+                    whiteSpace: 'pre'
+                }
+            },
+            children: [
+               {
+                   type: 'label',
+                   props: { className: 'battler-name' },
+               },
+               {
+                   type: 'label',
+                   props: { className: 'battler-hp', text: this.createHpGauge(b.hp, b.maxHp) }
+               }
+            ]
+        });
+
+        const nameEl = container.children[0];
+        nameEl.innerHTML = `${elementAscii}<span id="${battlerId}">${b.name}</span> (HP ${b.hp}/${b.maxHp})`;
+    };
+
+    battlers.forEach((e, idx) => renderBattler(e, idx, true));
+    party.forEach((p, idx) => renderBattler(p, idx, false));
   }
 
   createHpGauge(hp, maxHp) {
@@ -183,28 +186,35 @@ export class Window_Victory extends Window_Base {
   constructor() {
     super('center', 'center', 320, 240, { title: "Victory!", id: "victory-window" });
 
-    const contentPanel = this.createPanel();
-    contentPanel.style.flex = "1";
-    contentPanel.style.padding = "8px";
-    contentPanel.style.display = "flex";
-    contentPanel.style.flexDirection = "column";
-    contentPanel.style.gap = "8px";
+    const structure = {
+        type: 'flex',
+        props: {
+            className: 'window-panel',
+            style: { flex: '1', padding: '8px', gap: '8px' },
+            direction: 'column'
+        },
+        children: [
+            {
+                type: 'label',
+                props: {
+                    text: 'Victory Achieved!',
+                    style: { fontWeight: 'bold', textAlign: 'center' }
+                }
+            },
+            {
+                type: 'panel', // Spoils container
+                props: {
+                    style: { flex: '1', whiteSpace: 'pre-wrap', overflowY: 'auto', fontSize: '11px' }
+                }
+            }
+        ]
+    };
 
-    this.messageEl = document.createElement("div");
-    this.messageEl.style.fontWeight = "bold";
-    this.messageEl.style.textAlign = "center";
-    this.messageEl.textContent = "Victory Achieved!";
-    contentPanel.appendChild(this.messageEl);
-
-    this.spoilsEl = document.createElement("div");
-    this.spoilsEl.style.flex = "1";
-    this.spoilsEl.style.whiteSpace = "pre-wrap";
-    this.spoilsEl.style.overflowY = "auto";
-    this.spoilsEl.style.fontSize = "11px";
-    contentPanel.appendChild(this.spoilsEl);
+    const panel = UI.build(this.content, structure);
+    this.messageEl = panel.children[0];
+    this.spoilsEl = panel.children[1];
 
     this.btnClaim = this.addButton("Claim Rewards", () => {});
-    // Typically close logic is handled by the caller or btnClaim
   }
 
   setup(spoils, onClaim) {
