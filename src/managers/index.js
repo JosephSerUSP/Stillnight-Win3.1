@@ -315,6 +315,7 @@ export class SoundManager {
       const data = this._midiData.get(key);
       if (!data) {
           console.warn(`SoundManager: Music '${key}' not found or not loaded.`);
+          this.stopMusic();
           return;
       }
 
