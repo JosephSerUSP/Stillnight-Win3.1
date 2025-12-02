@@ -43,12 +43,12 @@ The external proposal suggests a strict separation of concerns:
 
 We will implement a lighter version of the proposed architecture, focusing on **Composition** and **Declarative Helpers**.
 
-### Phase 1: Component Library Expansion
+### Phase 1: Component Library Expansion (Complete)
 Refactor `src/windows/utils.js` into a more robust `src/windows/components.js`.
 *   Standardize components to accept a `parent` and `props` object.
 *   Create components for common patterns: `Label`, `Icon`, `Button`, `Panel`, `GridContainer`, `FlexContainer`.
 
-### Phase 2: Declarative Builder Pattern
+### Phase 2: Declarative Builder Pattern (Complete)
 Introduce a utility to build DOM trees from a JSON-like structure. This replaces the `defineLayout` blueprint system with a functional equivalent.
 
 **Example Concept:**
@@ -67,11 +67,19 @@ const structure = {
 UI.build(parent, structure);
 ```
 
-### Phase 3: Pilot Refactor (Window_Inspect)
+### Phase 3: Pilot Refactor (Window_Inspect) (Complete)
 Refactor `Window_Inspect` to use this new system.
 *   Remove the manual `createElement` chains.
 *   Implement a `render()` method that defines the structure data and passes it to the builder.
 *   Keep the Window class focused on event handling and data fetching.
+*   **Outcome:** `Window_Inspect` and `Window_Evolution` were successfully refactored to use `UI.build` and functional components. The code is significantly more readable, with layout structure clearly separated from data binding.
+
+### Phase 4: Standardization & Rollout
+*   **Goal:** Apply the declarative builder pattern to remaining complex windows (`Window_Battle`, `Window_Shop`, `Window_Inventory`).
+*   **Strategy:**
+    *   Refactor `Window_Battle` next as it has the most complex dynamic layout.
+    *   Refactor `Window_Shop` to streamline the buy/sell list generation.
+    *   Ensure all new windows utilize `UI.build` by default.
 
 ## 5. Conclusion
-The proposed architecture highlights valid flaws in our current approach. By adopting a component-based, declarative mindset, we can eliminate the "DOM Spaghetti" code while preserving the flexibility of our web-native stack. We do not need to implement a full "Layout Manager" class hierarchy, but rather a set of robust functional composables.
+The proposed architecture highlights valid flaws in our current approach. By adopting a component-based, declarative mindset, we have eliminated the "DOM Spaghetti" code while preserving the flexibility of our web-native stack. The pilot refactor proves that `UI.build` reduces boilerplate and improves structural clarity. The next steps are to propagate this pattern across the codebase.
