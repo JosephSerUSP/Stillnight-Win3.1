@@ -101,6 +101,7 @@ export class Window_Options extends Window_Base {
 
             const input = document.createElement("input");
             input.type = "range";
+            input.className = "win-slider";
             input.min = "0";
             input.max = "100";
             input.value = Math.round(opt.value * 100);
@@ -130,7 +131,7 @@ export class Window_Options extends Window_Base {
 
              const btn = document.createElement("button");
              btn.textContent = "Open..."; // Or specific text
-             btn.className = "ui-btn";
+             btn.className = "win-btn";
              btn.style.flex = "1";
              btn.onclick = () => {
                  if (opt.action) opt.action();

@@ -971,3 +971,72 @@ input:checked + .toggle-slider:before {
 ::-webkit-scrollbar-corner {
     background-color: #c0c0c0;
 }
+
+
+/* ===== Windows 3.1 Slider ===== */
+.win-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    background: transparent;
+    height: 24px; /* Container height to accommodate the thumb */
+    cursor: pointer;
+}
+
+.win-slider:focus {
+    outline: none;
+}
+
+/* --- WebKit Thumb --- */
+.win-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 20px;
+    width: 10px;
+    background: var(--button-bg);
+    border: 2px solid var(--window-border); /* Fallback */
+    border-top-color: var(--bezel-light);
+    border-left-color: var(--bezel-light);
+    border-right-color: var(--bezel-dark);
+    border-bottom-color: var(--bezel-dark);
+    box-shadow: 1px 1px 0 #000;
+    margin-top: -8px; /* Centers thumb on track */
+}
+
+/* --- WebKit Track --- */
+.win-slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px;
+    background: var(--window-bg);
+    border: 1px solid var(--bezel-shadow); /* Inset effect */
+    border-top-color: var(--bezel-shadow);
+    border-left-color: var(--bezel-shadow);
+    border-right-color: var(--bezel-light);
+    border-bottom-color: var(--bezel-light);
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+}
+
+/* --- Firefox Thumb --- */
+.win-slider::-moz-range-thumb {
+    height: 20px;
+    width: 10px;
+    background: var(--button-bg);
+    border: 2px solid;
+    border-top-color: var(--bezel-light);
+    border-left-color: var(--bezel-light);
+    border-right-color: var(--bezel-dark);
+    border-bottom-color: var(--bezel-dark);
+    box-shadow: 1px 1px 0 #000;
+    border-radius: 0; /* Reset radius */
+}
+
+/* --- Firefox Track --- */
+.win-slider::-moz-range-track {
+    width: 100%;
+    height: 4px;
+    background: var(--window-bg);
+    border: 1px solid;
+    border-top-color: var(--bezel-shadow);
+    border-left-color: var(--bezel-shadow);
+    border-right-color: var(--bezel-light);
+    border-bottom-color: var(--bezel-light);
+}
