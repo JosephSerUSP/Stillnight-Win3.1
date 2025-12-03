@@ -228,7 +228,7 @@
     "icon": 6,
     "description": "Wondrous boots that grant the wearer unimaginable swiftness.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "spd", "value": 2 },
+      { "code": "PARAM_PLUS", "dataId": "asp", "value": 2 },
       { "code": "ELEMENT_CHANGE", "dataId": "Green" }
     ]
   }

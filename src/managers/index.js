@@ -657,7 +657,7 @@ export class BattleManager {
         }
 
         // Total Speed = Battler Speed + Action Speed
-        const totalSpeed = ctx.battler.spd + actionSpeed;
+        const totalSpeed = ctx.battler.asp + actionSpeed;
 
         return { ...ctx, action, totalSpeed };
     });
