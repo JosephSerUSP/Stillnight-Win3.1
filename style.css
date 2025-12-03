@@ -352,6 +352,12 @@ html, body {
     animation: blink 0.1s step-end 2;
 }
 
+.flash {
+    animation: blink 0.1s step-end 2;
+    background-color: var(--text-highlight);
+    color: white;
+}
+
 .battler-name {
     margin-bottom: 3px;
 }
@@ -451,6 +457,7 @@ html, body {
 .tile-shop    { color: var(--text-warning); }
 .tile-recruit { color: var(--text-special); }
 .tile-npc     { color: var(--text-info); }
+.tile-breakable-wall { border: 2px dashed var(--text-warning); }
 
 /* Functional Utility Classes */
 .text-danger { color: var(--text-danger); }
