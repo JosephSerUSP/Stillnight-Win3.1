@@ -940,9 +940,36 @@ export class BattleManager {
 
     if (base < 1) base = 1;
 
+    // Evasion Check
+    // Evasion is determined by EVA trait on target
+    const evasionChance = target.getPassiveValue("EVA");
+    if (evasionChance > 0 && Math.random() < evasionChance) {
+        SoundManager.play('UI_CANCEL'); // Or miss sound
+        events.push({
+            type: "miss",
+            battler: battler,
+            target: target,
+            msg: `${battler.name} attacks ${target.name} but misses!`,
+        });
+        return events;
+    }
+
+    // Critical Hit Check
+    // Crit chance is determined by CRI trait on attacker
+    let isCritical = false;
+    const critChance = battler.getPassiveValue("CRI");
+    if (critChance > 0 && Math.random() < critChance) {
+        isCritical = true;
+    }
+
     const mult = this.elementMultiplier(battler.elements, target.elements);
     let dmg = probabilisticRound(base * mult);
     dmg += battler.getPassiveValue("DEAL_DAMAGE_MOD");
+
+    if (isCritical) {
+        dmg = Math.floor(dmg * 2);
+    }
+
     if (dmg < 1) dmg = 1;
 
     const hpBefore = target.hp;
@@ -951,6 +978,16 @@ export class BattleManager {
     // Play ATTACK/DAMAGE sound
     SoundManager.play('DAMAGE');
 
+    const msg = isCritical
+        ? `CRITICAL! ${battler.name} deals ${dmg} damage to ${target.name}!`
+        : `${battler.name} attacks ${target.name} for ${dmg}.`;
+
+    if (isCritical) {
+        // Flash logic handled by animation helper if needed, but we can signal it in event
+        // The animateEvents in Scene_Battle handles 'damage' type.
+        // We can add a property to trigger extra flash.
+    }
+
     events.push({
       type: "damage",
       battler: battler,
@@ -958,7 +995,8 @@ export class BattleManager {
       value: dmg,
       hpBefore: hpBefore,
       hpAfter: target.hp,
-      msg: `${battler.name} attacks ${target.name} for ${dmg}.`,
+      isCritical: isCritical, // Pass flag for UI
+      msg: msg,
     });
 
     return events;

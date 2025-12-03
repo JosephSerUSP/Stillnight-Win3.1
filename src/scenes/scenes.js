@@ -636,6 +636,15 @@ export class Scene_Battle extends Scene_Base {
 
             if (event.type === 'damage' && event.target) {
                 this.animateBattler(event.target, 'flash');
+
+                if (event.isCritical) {
+                    this.battleWindow.logEl.classList.add('flash');
+                    setTimeout(() => {
+                        this.battleWindow.logEl.classList.remove('flash');
+                    }, 200);
+                    SoundManager.play('UI_ERROR'); // Extra impact sound
+                }
+
                 await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
 
                 if (targetNewHp <= 0) {
@@ -1487,7 +1496,13 @@ export class Scene_Map extends Scene_Base {
 
         const cell = { x, y, symbol: " ", cssClass: "" };
 
-        if (!visited && !isPlayer) {
+        let forceVisible = false;
+        if (event && event.behavior === 'chase' && !event.isSneakAttack) {
+             forceVisible = true;
+             event.symbol = 'E'; // Enforce 'E' for moving enemies
+        }
+
+        if (!visited && !isPlayer && !forceVisible) {
           cell.cssClass = "tile-fog";
           cell.symbol = "?";
         } else {
@@ -1511,6 +1526,10 @@ export class Scene_Map extends Scene_Base {
                   }
               }
 
+              if (forceVisible) {
+                  visible = true;
+              }
+
               if (visible) {
                   symbol = event.symbol;
                   if (event.cssClass) cell.cssClass = event.cssClass;
@@ -1521,6 +1540,13 @@ export class Scene_Map extends Scene_Base {
             switch (ch) {
               case "#":
                 symbol = "█";
+                // Check for SEE_WALLS trait to highlight breakable walls
+                if (event && event.actions && event.actions.some(a => a.type === 'BREAKABLE_WALL')) {
+                     const seeWalls = this.party.members.some(m => m.getPassiveValue('SEE_WALLS') > 0);
+                     if (seeWalls) {
+                         cell.cssClass = (cell.cssClass ? cell.cssClass + " " : "") + "tile-breakable-wall";
+                     }
+                }
                 break;
               case ".":
                 symbol = " ";

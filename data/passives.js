@@ -96,6 +96,14 @@ export const passives = {
         icon: 1,
         traits: [{ code: 'SEE_TRAPS', value: 1 }]
     },
+    sense: {
+        id: 'sense',
+        name: 'Sense',
+        description: 'Heightened awareness.',
+        effect: 'Reveals breakable walls.',
+        icon: 1,
+        traits: [{ code: 'SEE_WALLS', value: 1 }]
+    },
 
     // New
     undeadFortitude: {

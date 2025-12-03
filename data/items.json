@@ -39,9 +39,10 @@
     "equipType": "Weapon",
     "cost": 25,
     "icon": 6,
-    "description": "Sharpened steel blade. +1 damage.",
+    "description": "Sharpened steel blade. +1 damage, +10% Crit.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 }
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 },
+      { "code": "CRI", "value": 0.1 }
     ]
   },
   {
