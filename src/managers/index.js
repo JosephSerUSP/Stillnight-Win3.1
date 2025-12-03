@@ -886,6 +886,33 @@ export class BattleManager {
             events.push({ type: 'status', target: target, status: effect.status, msg: `  ${target.name} is afflicted with ${effect.status}.` });
           }
         }
+        if (effect.type === "hp_drain") {
+            let damage = probabilisticRound(evaluateFormula(effect.formula, battler, target) * boost);
+            if (damage < 1) damage = 1;
+
+            const hpBeforeTarget = target.hp;
+            target.hp = Math.max(0, target.hp - damage);
+            const damageDealt = hpBeforeTarget - target.hp; // Actual damage dealt
+
+            // Heal user by same amount (or capped at their maxHP, but logic handles overflow)
+            const hpBeforeSource = battler.hp;
+            battler.hp = Math.min(battler.maxHp, battler.hp + damageDealt);
+
+            SoundManager.play('DAMAGE'); // Or a specific drain sound
+
+            events.push({
+                type: 'hp_drain',
+                battler: battler,
+                source: battler,
+                target: target,
+                value: damageDealt,
+                hpBeforeTarget: hpBeforeTarget,
+                hpAfterTarget: target.hp,
+                hpBeforeSource: hpBeforeSource,
+                hpAfterSource: battler.hp,
+                msg: `  ${battler.name} drains ${damageDealt} HP from ${target.name}.`
+            });
+        }
       });
     }
     return events;

@@ -146,6 +146,13 @@ export const passives = {
         icon: 1,
         traits: [{ code: 'GOLD_DIGGER', value: 2 }]
     },
+    symbiosis: {
+        id: 'symbiosis',
+        name: 'Symbiosis',
+        description: 'A life-giving bond.',
+        effect: 'Heals neighbor 2 HP/turn.',
+        icon: 1,
+        traits: [{ code: 'SYMBIOSIS', value: 2 }]
     initiative: {
         id: 'initiative',
         name: 'Initiative',
