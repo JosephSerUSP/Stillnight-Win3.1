@@ -81,7 +81,7 @@ test.describe('Game Logic', () => {
         await page.click('.party-slot[data-index="0"]');
 
         // Open equipment screen
-        await page.click('.inspect-value.win-btn', { hasText: '—' }); // Assuming no equipment initially or specific text
+        await page.click('.inspect-value .win-btn', { hasText: 'Unequipped' }); // Assuming no equipment initially or specific text
 
         // Find the equip button for the test sword
         // Use .first() to handle potential multiple matches if inventory has duplicates or previous renders
