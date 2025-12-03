@@ -1045,6 +1045,9 @@ export class Scene_Shop extends Scene_Base {
 
         this.shopWindow.setHandler('mode_buy', () => this.startBuy());
         this.shopWindow.setHandler('mode_sell', () => this.startSell());
+        this.shopWindow.setHandler('undo', () => this.undoLastTransaction());
+
+        this.lastTransaction = null;
     }
 
     /**
@@ -1065,6 +1068,7 @@ export class Scene_Shop extends Scene_Base {
             this.dataManager.items,
             (itemId) => this.buyItem(itemId)
         );
+        this.updateUndoButton();
     }
 
     startSell() {
@@ -1073,6 +1077,11 @@ export class Scene_Shop extends Scene_Base {
             this.party.inventory,
             (item) => this.sellItem(item)
         );
+        this.updateUndoButton();
+    }
+
+    updateUndoButton() {
+        this.shopWindow.updateUndoState(!!this.lastTransaction);
     }
 
     sellItem(item) {
@@ -1082,12 +1091,53 @@ export class Scene_Shop extends Scene_Base {
             const price = Math.floor(item.cost / 2);
             this.party.gold += price;
 
+            this.lastTransaction = { type: 'sell', item, price };
             this.startSell();
 
             this.sceneManager.previous().logMessage(`[Shop] Sold ${item.name} for ${price}G.`);
             SoundManager.play('SHOP_SELL');
             this.sceneManager.previous().updateAll();
         }
+    }
+
+    undoLastTransaction() {
+        if (!this.lastTransaction) return;
+        const { type, item, price } = this.lastTransaction;
+
+        if (type === 'buy') {
+            const index = this.party.inventory.indexOf(item);
+            if (index > -1) {
+                this.party.inventory.splice(index, 1);
+                this.party.gold += price;
+                this.sceneManager.previous().logMessage(`[Shop] Undid purchase of ${item.name}.`);
+            } else {
+                 return;
+            }
+        } else if (type === 'sell') {
+            if (this.party.gold >= price) {
+                this.party.gold -= price;
+                this.party.inventory.push(item);
+                this.sceneManager.previous().logMessage(`[Shop] Undid sale of ${item.name}.`);
+            } else {
+                 return;
+            }
+        }
+
+        SoundManager.play('UI_CANCEL');
+        this.lastTransaction = null;
+        this.updateUndoButton();
+
+        // Refresh UI based on current mode
+        this.shopWindow.gold = this.party.gold;
+        this.shopWindow.goldLabelEl.textContent = `${this.party.gold}G`;
+        // Re-setup to refresh list (needed for inventory changes)
+        if (this.shopWindow.mode === 'buy') {
+             // In buy mode, inventory change doesn't affect list, but affects disabled states if gold changed
+             this.shopWindow.refresh();
+        } else {
+             this.startSell();
+        }
+        this.sceneManager.previous().updateAll();
     }
 
     /**
@@ -1127,6 +1177,9 @@ export class Scene_Shop extends Scene_Base {
 
         this.party.gold -= item.cost;
         this.party.inventory.push(item);
+
+        this.lastTransaction = { type: 'buy', item, price: item.cost };
+        this.updateUndoButton();
 
         // Update window state to refresh button availability
         this.shopWindow.gold = this.party.gold;

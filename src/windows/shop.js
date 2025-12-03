@@ -22,7 +22,8 @@ export class Window_Shop extends Window_Selectable {
                 props: { className: 'tab-nav' },
                 children: [
                     { type: 'button', props: { className: 'tab-btn active', label: 'Buy', onClick: () => this.callHandler('mode_buy') } },
-                    { type: 'button', props: { className: 'tab-btn', label: 'Sell', onClick: () => this.callHandler('mode_sell') } }
+                    { type: 'button', props: { className: 'tab-btn', label: 'Sell', onClick: () => this.callHandler('mode_sell') } },
+                    { type: 'button', props: { className: 'tab-btn', label: '↩', title: 'Undo last action', onClick: () => this.callHandler('undo'), disabled: true, style: { marginLeft: 'auto' } } }
                 ]
             },
             {
@@ -54,12 +55,17 @@ export class Window_Shop extends Window_Selectable {
     // 2. Cache Elements
     this.btnBuy = shopBody.children[0].children[0];
     this.btnSell = shopBody.children[0].children[1];
+    this.btnUndo = shopBody.children[0].children[2];
     this.goldLabelEl = shopBody.children[1].children[1];
     this.listContainer = shopBody.children[2];
     this.messageEl = shopBody.children[3];
 
     this.btnLeave = this.addButton("Leave", () => {});
     this.mode = 'buy';
+  }
+
+  updateUndoState(enabled) {
+      this.btnUndo.disabled = !enabled;
   }
 
   setMode(mode) {
