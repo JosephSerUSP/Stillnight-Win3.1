@@ -931,3 +931,43 @@ input:checked + .toggle-slider:before {
     cursor: default;
     filter: grayscale(100%);
 }
+
+/* ===== Windows 3.1 Scrollbars ===== */
+::-webkit-scrollbar {
+    width: 16px;
+    height: 16px;
+    background-color: #ffffff;
+}
+
+::-webkit-scrollbar-track {
+    background-color: #ffffff;
+    border-left: 1px solid #000000;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    box-shadow: 1px 1px 0 #808080;
+}
+
+::-webkit-scrollbar-thumb:active {
+    background-color: #a0a0a0;
+}
+
+::-webkit-scrollbar-button {
+    background-color: #c0c0c0;
+    width: 16px;
+    height: 16px;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    display: block;
+}
+
+::-webkit-scrollbar-corner {
+    background-color: #c0c0c0;
+}
