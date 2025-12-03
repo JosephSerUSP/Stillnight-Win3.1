@@ -1,4 +1,4 @@
-import { getIconStyle, elementToIconId, getPrimaryElements, generateTraitDescription, generateEffectDescription } from "../core/utils.js";
+import { getIconStyle, elementToIconId, getPrimaryElements, generateEffectDescription, generateTraitDescription } from "../core/utils.js";
 import { tooltip } from "../core/tooltip.js";
 
 /**

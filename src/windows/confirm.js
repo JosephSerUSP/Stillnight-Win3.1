@@ -1,6 +1,7 @@
 import { Window_Base } from "./base.js";
 import { renderCreatureInfo, createInteractiveLabel } from "./utils.js";
 import { evaluateFormula } from "../core/utils.js";
+import { TRAIT_DEFINITIONS } from "../../data/traits.js";
 
 /**
  * @class Window_Confirm
@@ -155,8 +156,12 @@ export class Window_ConfirmEffect extends Window_Base {
         // XP
         if (item.effects.xp) {
             const val = getVal(item.effects.xp);
-            // Simplified, doesn't predict level up exactly but shows XP gain
             changes.push(`XP: +${val}`);
+        }
+        // Any other effect
+        for (const [key, val] of Object.entries(item.effects)) {
+            if (['hp', 'maxHp', 'xp'].includes(key)) continue;
+             changes.push(`${key}: ${val}`);
         }
 
         return changes;
@@ -167,34 +172,85 @@ export class Window_ConfirmEffect extends Window_Base {
         const oldTraits = oldItem ? (oldItem.traits || []) : [];
         const newTraits = newItem ? (newItem.traits || []) : [];
 
-        const getTraitVal = (traits, code, dataId) => {
-             return traits.filter(t => t.code === code && t.dataId === dataId)
-                          .reduce((sum, t) => sum + t.value, 0);
+        // Group by Label
+        const changes = {}; // Label -> { oldVals: [], newVals: [] }
+
+        const process = (traits, type) => {
+            traits.forEach(t => {
+                const def = TRAIT_DEFINITIONS[t.code];
+                if (!def) return;
+                const label = def.label ? def.label(t.dataId) : t.code;
+
+                if (!changes[label]) changes[label] = { oldVals: [], newVals: [] };
+                if (!changes[label][type]) changes[label][type] = [];
+                changes[label][type].push(t);
+            });
         };
 
-        const checkParamDynamic = (name, getterProp, code, dataId) => {
-             const oldVal = getTraitVal(oldTraits, code, dataId);
-             const newVal = getTraitVal(newTraits, code, dataId);
-             if (oldVal !== newVal) {
-                 const currentTotal = member[getterProp];
-                 const newTotal = currentTotal - oldVal + newVal;
-                 const sign = newTotal > currentTotal ? "+" : "";
-                 const change = newTotal - currentTotal;
-                 diffs.push(`${name}: ${sign}${change} (${currentTotal} -> ${newTotal})`);
+        process(oldTraits, 'oldVals');
+        process(newTraits, 'newVals');
+
+        Object.keys(changes).sort().forEach(label => {
+             const data = changes[label];
+             const rep = data.oldVals[0] || data.newVals[0];
+             const def = TRAIT_DEFINITIONS[rep.code];
+
+             // Check if we can sum/multiply
+             const isNumeric = data.oldVals.every(t => typeof t.value === 'number') &&
+                               data.newVals.every(t => typeof t.value === 'number');
+
+             if (isNumeric && (data.oldVals.length + data.newVals.length > 0)) {
+                 let oldVal, newVal;
+
+                 if (def.combine === 'multiply') {
+                     // Multiplicative
+                     oldVal = data.oldVals.reduce((acc, t) => acc * t.value, 1.0);
+                     newVal = data.newVals.reduce((acc, t) => acc * t.value, 1.0);
+                 } else {
+                     // Additive (Default)
+                     oldVal = data.oldVals.reduce((acc, t) => acc + t.value, 0);
+                     newVal = data.newVals.reduce((acc, t) => acc + t.value, 0);
+                 }
+
+                 const oldStr = def.format(oldVal, rep.dataId);
+                 const newStr = def.format(newVal, rep.dataId);
+
+                 // Compare with tolerance for floats
+                 if (Math.abs(oldVal - newVal) > 0.0001) {
+                     // Determine "empty" state.
+                     // For Additive, 0 is empty.
+                     // For Multiplicative, 1 is empty.
+                     const oldIsEmpty = (def.combine === 'multiply' && oldVal === 1.0) || (!def.combine && oldVal === 0);
+                     const newIsEmpty = (def.combine === 'multiply' && newVal === 1.0) || (!def.combine && newVal === 0);
+
+                     if (oldIsEmpty) {
+                         diffs.push(`${label}: ${newStr}`); // New
+                     } else if (newIsEmpty) {
+                         diffs.push(`${label}: ${oldStr} (Removed)`); // Removed
+                     } else {
+                         diffs.push(`${label}: ${oldStr} -> ${newStr}`); // Changed
+                     }
+                 }
+             } else {
+                 // Qualitative
+                 const fmt = (t) => {
+                     const d = TRAIT_DEFINITIONS[t.code];
+                     return d.format(t.value, t.dataId);
+                 };
+
+                 const oldStrs = data.oldVals.map(fmt).sort().join(", ");
+                 const newStrs = data.newVals.map(fmt).sort().join(", ");
+
+                 if (oldStrs !== newStrs) {
+                     if (!oldStrs) diffs.push(`${label}: ${newStrs}`);
+                     else if (!newStrs) diffs.push(`${label}: ${oldStrs} (Removed)`);
+                     else diffs.push(`${label}: ${oldStrs} -> ${newStrs}`);
+                 }
              }
-        };
-
-        checkParamDynamic("Max HP", "maxHp", "PARAM_PLUS", "maxHp");
-        checkParamDynamic("Atk", "atk", "PARAM_PLUS", "atk");
-
-        const oldDmg = oldItem ? (oldItem.damageBonus || 0) : 0;
-        const newDmg = newItem ? (newItem.damageBonus || 0) : 0;
-        if (oldDmg !== newDmg) {
-             diffs.push(`Damage Bonus: ${newDmg > oldDmg ? "+" : ""}${newDmg - oldDmg}`);
-        }
+        });
 
         if (diffs.length === 0) {
-            diffs.push("No stat changes.");
+            diffs.push("No changes.");
         }
         return diffs;
     }
