@@ -250,10 +250,41 @@ export class SoundManager {
           return Promise.resolve();
       });
 
-      // Also load known MIDI files
-      const midis = ['battle1', 'dungeon1', 'town1'];
-      midis.forEach(key => {
-          promises.push(this.loadMidi(key, `assets/midi/${key}.mid`));
+      // Load MIDI files
+      // Try to fetch directory listing if possible (for local/dev environments),
+      // otherwise fall back to known list.
+      const midiFolder = 'assets/midi/';
+      let midiFiles = ['battle1.mid', 'dungeon1.mid', 'town1.mid', 'event1.mid'];
+
+      try {
+          // Attempt to scan directory (works in some local servers that serve auto-index)
+          const response = await fetch(midiFolder);
+          if (response.ok) {
+              const text = await response.text();
+              // Simple regex to find hrefs ending in .mid
+              const matches = text.matchAll(/href="([^"]+\.mid)"/g);
+              const found = [];
+              for (const match of matches) {
+                  // decodeURI in case of encoded characters
+                  const fileName = decodeURI(match[1]);
+                  if (!found.includes(fileName)) found.push(fileName);
+              }
+              if (found.length > 0) {
+                  midiFiles = found;
+              }
+          }
+      } catch (e) {
+          console.warn("Dynamic MIDI scan failed, using fallback list.", e);
+      }
+
+      midiFiles.forEach(file => {
+          // Key is filename without extension
+          const key = file.replace(/\.mid$/i, '');
+          // If file is just the name, path is midiFolder + file
+          // If file is full relative path (from recursive scan?), handle it.
+          // Assuming flat structure for now.
+          const path = midiFolder + file;
+          promises.push(this.loadMidi(key, path));
       });
 
       await Promise.allSettled(promises);
@@ -333,6 +364,30 @@ export class SoundManager {
           this._musicPlayer.stop();
       }
       this._currentMusicKey = null;
+  }
+
+  static pauseMusic() {
+      if (this._musicPlayer) {
+          this._musicPlayer.pause();
+      }
+  }
+
+  static resumeMusic() {
+      if (this._musicPlayer) {
+          this._musicPlayer.resume();
+      }
+  }
+
+  static isMusicPlaying() {
+      return this._musicPlayer && this._musicPlayer.isPlaying;
+  }
+
+  static getMusicDuration() {
+      return this._musicPlayer ? this._musicPlayer.duration : 0;
+  }
+
+  static getMusicTime() {
+      return this._musicPlayer ? this._musicPlayer.currentTime : 0;
   }
 
   /**

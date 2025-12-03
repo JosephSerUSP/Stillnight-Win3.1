@@ -157,6 +157,18 @@ export class MidiPlayer {
     this.schedulerTimer = null;
     this.lookahead = 0.1; // seconds
     this.scheduleAheadTime = 0.2; // seconds
+    this.pausedTime = 0;
+  }
+
+  get duration() {
+    if (!this.events || this.events.length === 0) return 0;
+    return this.events[this.events.length - 1].time;
+  }
+
+  get currentTime() {
+    if (!this.isPlaying && this.pausedTime > 0) return this.pausedTime;
+    if (!this.isPlaying) return 0;
+    return Math.max(0, this.audioCtx.currentTime - this.startTime);
   }
 
   load(midiData) {
@@ -208,11 +220,13 @@ export class MidiPlayer {
     this.loop = loop;
     this.startTime = this.audioCtx.currentTime;
     this.eventIndex = 0;
+    this.pausedTime = 0;
     this.schedule();
   }
 
   stop() {
     this.isPlaying = false;
+    this.pausedTime = 0;
     clearTimeout(this.schedulerTimer);
     this.activeOscillators.forEach((osc) => {
       try {
@@ -221,6 +235,27 @@ export class MidiPlayer {
       } catch (e) {}
     });
     this.activeOscillators = [];
+  }
+
+  pause() {
+    if (!this.isPlaying) return;
+    this.isPlaying = false;
+    clearTimeout(this.schedulerTimer);
+    this.pausedTime = this.audioCtx.currentTime - this.startTime;
+    this.activeOscillators.forEach((osc) => {
+        try {
+            osc.stop();
+            osc.disconnect();
+        } catch (e) {}
+    });
+    this.activeOscillators = [];
+  }
+
+  resume() {
+    if (this.isPlaying) return;
+    this.isPlaying = true;
+    this.startTime = this.audioCtx.currentTime - this.pausedTime;
+    this.schedule();
   }
 
   setVolume(value) {
