@@ -53,7 +53,8 @@ test.describe('Sacrifice and Permadeath', () => {
             scene.battleManager,
             scene.windowLayer,
             scene.map,
-            0, 0
+            0, 0,
+            scene.getSharedWindows()
         );
         window.sceneManager.push(battleScene);
     });
@@ -71,12 +72,12 @@ test.describe('Sacrifice and Permadeath', () => {
         // We can manually trigger check or just set flags
         bm.isBattleFinished = true;
         bm.isVictoryPending = true;
-        // Force refresh to show button
-        window.sceneManager.currentScene().battleWindow.btnVictory.style.display = 'inline-block';
+        // Force victory popup
+        window.sceneManager.currentScene().showVictoryPopup();
     });
 
     // 3. Click Claim Spoils
-    await page.click('button:has-text("Claim Spoils")');
+    await page.click('button:has-text("Claim Rewards")');
 
     // 4. Verify we are back on map and member is gone
     await expect(page.locator('#mode-label')).toHaveText('Exploration');

@@ -30,7 +30,8 @@ test.describe('Game Logic', () => {
             sceneMap.battleManager,
             sceneMap.windowLayer,
             sceneMap.map,
-            0, 0
+            0, 0,
+            sceneMap.getSharedWindows()
         );
         window.sceneManager.push(battleScene);
         battleScene.start();
@@ -109,7 +110,8 @@ test.describe('Game Logic', () => {
                  sceneMap.battleManager,
                  sceneMap.windowLayer,
                  sceneMap.map,
-                 0, 0
+                 0, 0,
+                 sceneMap.getSharedWindows()
              );
              window.sceneManager.push(battleScene);
              // We don't necessarily need to start it fully, just push it.
