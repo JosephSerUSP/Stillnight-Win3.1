@@ -24,6 +24,7 @@ export * from "./equip_select.js";
 export * from "./details.js";
 export * from "./misc.js";
 export * from "./builder.js";
+export * from "./audio_player.js";
 
 if (typeof window !== 'undefined' && window.location.search.includes("test=true")) {
     window.Window_Formation = Window_Formation;
