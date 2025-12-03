@@ -636,26 +636,44 @@ export class BattleManager {
   startRound(isFirstStrike = false) {
     if (this.isBattleFinished) return;
     this.round++;
-    // Create a turn order list: Party then Enemies (Default)
-    // Iterate slots 0-3 to preserve correct slot index for row calculation
-    const partyQueue = [];
+
+    // 1. Gather all potential combatants
+    const combatants = [];
     this.party.slots.slice(0, 4).forEach((battler, index) => {
         if (battler) {
-            partyQueue.push({ battler, index, isEnemy: false });
+            combatants.push({ battler, index, isEnemy: false });
         }
     });
+    this.enemies.forEach((b, i) => combatants.push({ battler: b, index: i, isEnemy: true }));
 
-    const enemyQueue = this.enemies.map((b, i) => ({ battler: b, index: i, isEnemy: true }));
+    // 2. Plan Actions & Calculate Total Speed
+    const plannedQueue = combatants.map(ctx => {
+        const action = this.getAIAction(ctx); // Plan the action
+        let actionSpeed = 0;
+        if (action && action.skillId) {
+            // Check skill speed if available (default 0)
+            const skill = this.dataManager.skills[action.skillId];
+            if (skill && skill.speed) actionSpeed = skill.speed;
+        }
 
+        // Total Speed = Battler Speed + Action Speed
+        const totalSpeed = ctx.battler.spd + actionSpeed;
+
+        return { ...ctx, action, totalSpeed };
+    });
+
+    // 3. Sort by Total Speed
+    const sortBySpeed = (queue) => queue.sort((a, b) => b.totalSpeed - a.totalSpeed);
+
+    // 4. Determine Execution Order
     if (isFirstStrike) {
-        // Player First Strike: Only party members get a turn
-        this.turnQueue = [...partyQueue];
+        this.turnQueue = sortBySpeed(plannedQueue.filter(c => !c.isEnemy));
     } else if (this.round === 1 && this.isSneakAttack) {
-        // Sneak Attack: Enemies go first
-        this.turnQueue = [...enemyQueue, ...partyQueue];
+        const enemies = sortBySpeed(plannedQueue.filter(c => c.isEnemy));
+        const party = sortBySpeed(plannedQueue.filter(c => !c.isEnemy));
+        this.turnQueue = [...enemies, ...party];
     } else {
-        // Default: Party goes first
-        this.turnQueue = [...partyQueue, ...enemyQueue];
+        this.turnQueue = sortBySpeed(plannedQueue);
     }
   }
 
@@ -795,11 +813,25 @@ export class BattleManager {
   executeAction(action) {
     if (!action) return [];
 
-    const { sourceContext, target } = action;
+    const { sourceContext } = action;
     const { battler } = sourceContext;
+    let { target } = action;
 
-    if (battler.hp <= 0) return []; // Should not happen but safety check
-    if (target.hp <= 0) return []; // Target died before action?
+    if (battler.hp <= 0) return [];
+
+    // Re-validate target (Smart re-targeting)
+    if (!target || target.hp <= 0) {
+        // If target is dead, try to find a new target
+        const skill = action.skillId ? this.dataManager.skills[action.skillId] : null;
+        const scope = skill ? skill.target : 'enemy';
+        const targets = this.getValidTargets(sourceContext, scope);
+        if (targets.length > 0) {
+            target = targets[randInt(0, targets.length - 1)];
+            action.target = target; // Update action
+        } else {
+            return []; // Fizzle if no valid targets
+        }
+    }
 
     let events = [];
     switch (action.type) {

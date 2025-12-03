@@ -465,7 +465,7 @@ export class Scene_Battle extends Scene_Base {
 
     // Loop through turns until the round is complete
     while (true) {
-        // 1. Get next battler
+        // 1. Get next battler (includes planned action)
         const battlerContext = this.battleManager.getNextBattler();
         if (!battlerContext) break; // Round over
 
@@ -474,8 +474,8 @@ export class Scene_Battle extends Scene_Base {
         await this.animateEvents(startEvents);
         if (this.battleManager.isBattleFinished) break;
 
-        // 3. Plan Action (AI for now)
-        const action = this.battleManager.getAIAction(battlerContext);
+        // 3. Execute Planned Action
+        const action = battlerContext.action;
 
         if (action) {
              // 4. Execute Action
