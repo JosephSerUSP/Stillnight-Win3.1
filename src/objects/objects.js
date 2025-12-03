@@ -864,6 +864,37 @@ export class Game_Map {
       }
     }
   }
+
+  /**
+   * Checks if all accessible (non-wall) tiles on the current floor have been visited.
+   * @returns {boolean} True if the floor is fully explored.
+   */
+  checkFloorExploration() {
+      const floor = this.floors[this.floorIndex];
+      if (floor.fullyRevealed) return false; // Already handled
+
+      for (let y = 0; y < this.MAX_H; y++) {
+          for (let x = 0; x < this.MAX_W; x++) {
+              if (floor.tiles[y][x] !== '#' && !floor.visited[y][x]) {
+                  return false;
+              }
+          }
+      }
+      return true;
+  }
+
+  /**
+   * Reveals the entire current floor.
+   */
+  revealCurrentFloor() {
+      const floor = this.floors[this.floorIndex];
+      floor.fullyRevealed = true;
+      for (let y = 0; y < this.MAX_H; y++) {
+          for (let x = 0; x < this.MAX_W; x++) {
+              floor.visited[y][x] = true;
+          }
+      }
+  }
 }
 
 // Expose classes to the window object for testing if in test mode.

@@ -69,6 +69,43 @@ export class Game_Interpreter {
             case 'TRAP_TRIGGER':
                 this.triggerTrap(action);
                 break;
+            case 'BREAKABLE_WALL':
+                this.triggerBreakableWall(action, event);
+                break;
+        }
+    }
+
+    triggerBreakableWall(action, event) {
+        // Initialize HP if not present (stored in the event instance, not the data def)
+        if (event.hp === undefined) {
+             event.hp = action.hp || 3;
+        }
+
+        event.hp--;
+
+        if (event.hp > 0) {
+            this.scene.logMessage(action.hitMessage || "The wall shudders under your touch.");
+            this.scene.setStatus("It seems weak...");
+            SoundManager.play('UI_SELECT'); // or a thud sound
+            this.scene.updateAll();
+        } else {
+            this.scene.logMessage(action.breakMessage || "The wall crumbles away!");
+            this.scene.setStatus("Path opened.");
+            SoundManager.play('DAMAGE'); // Crumble sound
+
+            // Remove the event
+            this.map.removeEvent(this.map.floorIndex, event.x, event.y);
+
+            // Change the tile to floor
+            const floor = this.map.floors[this.map.floorIndex];
+            floor.tiles[event.y][event.x] = '.';
+
+            // Reveal if needed (auto-reveal check handles it on next move, but we can do it here)
+            floor.visited[event.y][event.x] = true;
+
+            // Update grid
+            this.scene.updateGrid();
+            this.scene.updateAll();
         }
     }
 

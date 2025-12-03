@@ -1557,6 +1557,31 @@ export class Scene_Map extends Scene_Base {
     const ch = floor.tiles[y][x];
     const event = floor.events ? floor.events.find(e => e.x === x && e.y === y) : null;
 
+    // Check for events BEFORE blocking on walls, to allow interaction with "Breakable Walls" or similar
+    if (event) {
+       let isHidden = false;
+       if (event.hidden) {
+           let maxSee = 0;
+           this.party.members.forEach(m => {
+              const v = m.getPassiveValue("SEE_TRAPS");
+              if (v > maxSee) maxSee = v;
+           });
+           if (maxSee <= event.trapValue) {
+               isHidden = true;
+           }
+       }
+
+       if (!isHidden) {
+           // If interaction is allowed, do not move the player but execute the event
+           // Specifically for breakable walls or similar blockers on '#' tiles
+           if (ch === '#') {
+                this.currentInteractionEvent = event;
+                this.executeEvent(event);
+                return;
+           }
+       }
+    }
+
     if (ch === "#") {
       this.setStatus(this.dataManager.terms.log.wall_blocks);
       SoundManager.play('UI_ERROR');
@@ -1566,6 +1591,14 @@ export class Scene_Map extends Scene_Base {
     this.map.playerX = x;
     this.map.playerY = y;
     this.map.revealAroundPlayer();
+
+    // Auto-reveal check
+    if (this.map.checkFloorExploration()) {
+        this.map.revealCurrentFloor();
+        this.logMessage("Map fully explored! The entire floor is revealed.");
+        SoundManager.play('ITEM_GET');
+    }
+
     this.updateGrid();
 
     if (event) {
