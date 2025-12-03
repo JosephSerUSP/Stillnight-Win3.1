@@ -180,3 +180,79 @@ export function evaluateFormula(formula, a, b = {}) {
         return 0;
     }
 }
+
+/**
+ * Generates a human-readable description for a trait.
+ * @param {Object} trait - The trait object { code, dataId, value }.
+ * @returns {string} The description.
+ */
+export function generateTraitDescription(trait) {
+    const pct = (val) => `${Math.round(val * 100)}%`;
+    const val = trait.value;
+    const paramNames = { maxHp: 'Max HP', atk: 'ATK', def: 'DEF', mat: 'MAT', mdf: 'MDF', agi: 'AGI', luk: 'LUK' };
+
+    switch (trait.code) {
+        case 'PARAM_PLUS':
+            return `${val >= 0 ? '+' : ''}${val} ${paramNames[trait.dataId] || trait.dataId}`;
+        case 'PARAM_RATE':
+            return `${paramNames[trait.dataId] || trait.dataId} x${val}`;
+        case 'HRG': return `HP Regen ${pct(val)}`;
+        case 'EVA': return `Evasion +${pct(val)}`;
+        case 'CRI': return `Crit Rate +${pct(val)}`;
+        case 'CEV': return `Crit Evasion +${pct(val)}`;
+        case 'HIT': return `Hit Rate +${pct(val)}`;
+        case 'TGR': return `Target Rate x${pct(val)}`;
+        case 'GRD': return `Guard Effect ${pct(val)}`;
+        case 'REC': return `Recovery Effect ${pct(val)}`;
+        case 'PHA': return `Pharmacology ${pct(val)}`;
+        case 'MCV': return `MP Cost ${pct(val)}`;
+        case 'TCR': return `TP Charge ${pct(val)}`;
+        case 'PDR': return `Phys Dmg Taken ${pct(val)}`;
+        case 'MDR': return `Mag Dmg Taken ${pct(val)}`;
+        case 'FDR': return `Floor Dmg ${pct(val)}`;
+        case 'EXR': return `Exp Rate ${pct(val)}`;
+        case 'GDR': return `Gold Rate ${pct(val)}`;
+        case 'RESTRICTION': return `Restriction: ${val}`;
+        case 'ELEMENT_RATE': return `${trait.dataId} Dmg x${pct(val)}`;
+        case 'DEBUFF_RATE': return `${trait.dataId} Resist ${pct(val)}`;
+        case 'STATE_RATE': return `${trait.dataId} Chance ${pct(val)}`;
+        case 'STATE_RESIST': return `Immune to ${trait.dataId}`;
+        case 'ATTACK_ELEMENT': return `Attack Element: ${trait.dataId}`;
+        case 'ATTACK_STATE': return `Attack State: ${trait.dataId} ${pct(val)}`;
+        case 'SLOT_TYPE': return `Slot Type: ${val}`;
+        case 'ACTION_PLUS': return `Actions +${val}`;
+        case 'SPECIAL_FLAG': return `Special: ${val}`;
+        case 'COLLAPSE_TYPE': return `Collapse: ${val}`;
+        case 'PARTY_ABILITY': return `Party Ability: ${val}`;
+        case 'ON_PERMADEATH': return "Revives once on death";
+        case 'SYMBIOSIS': return "Heals neighbors";
+        case 'SEE_WALLS': return "Reveals breakable walls";
+        case 'SEE_TRAPS': return "Reveals traps";
+        case 'INITIATIVE': return `Initiative +${val}`;
+        case 'REAR_GUARD': return "Prevents sneak attacks";
+        case 'GOLD_DIGGER': return `Bonus Gold +${val}`;
+        case 'POST_BATTLE_HEAL': return `Post-Battle Heal ${val}`;
+        case 'BATTLE_START_DAMAGE': return `Start Dmg ${val}`;
+        case 'MOVE_HEAL': return `Heals on move ${val}`;
+        case 'FLEE_CHANCE_BONUS': return `Flee chance +${pct(val)}`;
+        default: return `${trait.code} ${val}`;
+    }
+}
+
+/**
+ * Generates a human-readable description for an item effect.
+ * @param {string} key - The effect key (e.g., 'hp', 'recruit_egg').
+ * @param {any} value - The effect value.
+ * @param {import("../managers/index.js").DataManager} [dataManager] - Optional data manager for lookups.
+ * @returns {string} The description.
+ */
+export function generateEffectDescription(key, value, dataManager) {
+    switch (key) {
+        case 'hp': return `Restores ${value} HP`;
+        case 'maxHp': return `Max HP +${value}`;
+        case 'xp': return `Grants ${value} XP`;
+        case 'recruit_egg': return `Recruits a monster`;
+        case 'hp_drain': return `Drains ${value} HP`;
+        default: return `${key}: ${value}`;
+    }
+}

@@ -986,15 +986,26 @@ export class Game_Map {
    * Reveals tiles around the player (fog of war).
    */
   revealAroundPlayer() {
+    this.revealRadius(1);
+  }
+
+  /**
+   * Reveals tiles within a specific radius around the player.
+   * @param {number} radius - The radius to reveal.
+   */
+  revealRadius(radius) {
     const floor = this.floors[this.floorIndex];
-    const r = 1;
-    for (let dy = -r; dy <= r; dy++) {
-      for (let dx = -r; dx <= r; dx++) {
-        const nx = this.playerX + dx;
-        const ny = this.playerY + dy;
-        if (ny >= 0 && ny < this.MAX_H && nx >= 0 && nx < this.MAX_W) {
-          floor.visited[ny][nx] = true;
-        }
+    const px = this.playerX;
+    const py = this.playerY;
+
+    const startX = Math.max(0, px - radius);
+    const endX = Math.min(this.MAX_W - 1, px + radius);
+    const startY = Math.max(0, py - radius);
+    const endY = Math.min(this.MAX_H - 1, py + radius);
+
+    for (let y = startY; y <= endY; y++) {
+      for (let x = startX; x <= endX; x++) {
+        floor.visited[y][x] = true;
       }
     }
   }
