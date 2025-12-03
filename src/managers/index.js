@@ -148,6 +148,8 @@ export class DataManager {
     if (this.sounds) {
         await SoundManager.init(this.sounds);
     }
+
+    this.loaded = true;
   }
 }
 
