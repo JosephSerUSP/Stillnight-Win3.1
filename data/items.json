@@ -116,5 +116,120 @@
     "effects": {
       "recruit_egg": "egg"
     }
+  },
+  {
+    "id": "exp_boost",
+    "name": "Golden Egg",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 9999,
+    "icon": 6,
+    "description": "Beautiful golden egg, sought after by many.",
+    "traits": [
+      { "code": "XP_MULT", "value": 0.5 }
+    ]
+  },
+    {
+    "id": "hp_boost1",
+    "name": "Vitality Seal 1",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 125,
+    "icon": 6,
+    "description": "+10% Max HP",
+    "traits": [
+      { "code": "PARAM_MULT", "dataId": "maxHp", "value": 0.1 }
+    ]
+  },
+  {
+    "id": "hp_boost2",
+    "name": "Vitality Seal 2",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 400,
+    "icon": 6,
+    "description": "+20% Max HP",
+    "traits": [
+      { "code": "PARAM_MULT", "dataId": "maxHp", "value": 0.2 }
+    ]
+  },
+  {
+    "id": "hp_boost3",
+    "name": "Vitality Seal 3",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 2800,
+    "icon": 6,
+    "description": "+30% Max HP",
+    "traits": [
+      { "code": "PARAM_MULT", "dataId": "maxHp", "value": 0.3 }
+    ]
+  },
+  {
+    "id": "holy_sword_gram",
+    "name": "Holy Sword Gram",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 1520,
+    "icon": 6,
+    "description": "Legendary sword wielded by angels of time immemorial.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
+      { "code": "ELEMENT_CHANGE", "dataId": "W" },
+      { "code": "CRI", "value": 0.15 }
+    ]
+  },
+  {
+    "id": "dark_scepter_lucille",
+    "name": "Dark Scepter Lucille",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 1666,
+    "icon": 6,
+    "description": "Cursed sceptre. Once wielded by a fallen queen, or so they say.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
+      { "code": "ELEMENT_CHANGE", "dataId": "K" },
+      { "code": "CRI", "value": 0.1 }
+    ]
+  },
+  {
+    "id": "mars_emblem",
+    "name": "Mars Emblem",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 1460,
+    "icon": 6,
+    "description": "Its magicked properties imbue the wearer with elemental energy.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
+      { "code": "ELEMENT_CHANGE", "dataId": "R" }
+    ]
+  },
+  {
+    "id": "mercury_crest",
+    "name": "Mercury Crest",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 1260,
+    "icon": 6,
+    "description": "Ornate and delicate, its blue sheen is comforting.",
+    "traits": [
+      { "code": "HP_REGEN", "value": 1 },
+      { "code": "ELEMENT_CHANGE", "dataId": "B" }
+    ]
+  },
+  {
+    "id": "hermes_boots",
+    "name": "Hermes' Boots",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 2100,
+    "icon": 6,
+    "description": "Wondrous boots that grant the wearer unimaginable swiftness.",
+    "traits": [
+      { "code": "SPEED_BONUS", "value": 2 },
+      { "code": "ELEMENT_CHANGE", "dataId": "G" }
+    ]
   }
 ]
