@@ -18,6 +18,7 @@ import {
   Window_Options,
   Window_Desktop,
   Window_Help,
+  Window_AudioPlayer,
   Window_Victory,
   WindowLayer,
   createInteractiveLabel,
@@ -1202,6 +1203,8 @@ export class Scene_Map extends Scene_Base {
     this.windowLayer.addChild(this.optionsWindow);
     this.audioWindow = new Window_Options("Audio Settings");
     this.windowLayer.addChild(this.audioWindow);
+    this.audioPlayerWindow = new Window_AudioPlayer();
+    this.windowLayer.addChild(this.audioPlayerWindow);
     this.helpWindow = new Window_Help();
     this.windowLayer.addChild(this.helpWindow);
 
@@ -1214,6 +1217,7 @@ export class Scene_Map extends Scene_Base {
     this.equipItemSelectWindow.onUserClose = () => this.windowManager.close(this.equipItemSelectWindow);
     this.optionsWindow.onUserClose = () => this.windowManager.close(this.optionsWindow);
     this.audioWindow.onUserClose = () => this.windowManager.close(this.audioWindow);
+    this.audioPlayerWindow.onUserClose = () => this.windowManager.close(this.audioPlayerWindow);
     this.helpWindow.onUserClose = () => this.windowManager.close(this.helpWindow);
 
     this.inventoryWindow.onUserClose = this.closeInventory.bind(this);
@@ -1888,9 +1892,17 @@ export class Scene_Map extends Scene_Base {
             }
         },
         {
-            label: "Audio",
+            label: "Audio Settings",
             type: "action",
             action: () => this.openAudioSettings()
+        },
+        {
+            label: "Audio Player",
+            type: "action",
+            action: () => {
+                this.windowManager.push(this.audioPlayerWindow);
+                SoundManager.play('UI_SELECT');
+            }
         },
         {
             label: "Auto Battle",
