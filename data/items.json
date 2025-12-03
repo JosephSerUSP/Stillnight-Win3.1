@@ -82,6 +82,30 @@
     ]
   },
   {
+    "id": "alert_charm",
+    "name": "Alert Charm",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 150,
+    "icon": 6,
+    "description": "Humming chime. Increases party initiative.",
+    "traits": [
+      { "code": "INITIATIVE", "value": 5 }
+    ]
+  },
+  {
+    "id": "rear_mirror",
+    "name": "Rear Mirror",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 200,
+    "icon": 6,
+    "description": "Reflective glass. Prevents sneak attacks if in back row.",
+    "traits": [
+      { "code": "REAR_GUARD", "value": 1 }
+    ]
+  },
+  {
     "id": "mystic_egg",
     "name": "Mystic Egg",
     "type": "consumable",
