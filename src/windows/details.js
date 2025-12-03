@@ -147,46 +147,87 @@ export class Window_Inspect extends Window_Base {
       xpContainer.appendChild(xpGauge.container);
       addRow("XP", xpContainer);
 
-      // Element
+      // Element & Equipment
+      const elEquipContainer = document.createElement("div");
+      elEquipContainer.style.display = "flex";
+      elEquipContainer.style.alignItems = "center";
+      elEquipContainer.style.gap = "10px";
+
       if (member.elements && member.elements.length > 0) {
-          addRow("Element", renderElements(member.elements));
+          elEquipContainer.appendChild(renderElements(member.elements));
       } else {
-          addRow("Element", "—");
+          const elSpan = document.createElement("span");
+          elSpan.textContent = "—";
+          elEquipContainer.appendChild(elSpan);
       }
 
-      // Equipment (Button-like)
-      const equipText = member.equipmentItem ? member.equipmentItem.name : (member.baseEquipment || "—");
-      const equipVal = addRow("Equipment", equipText);
-      equipVal.classList.add("win-btn");
-      equipVal.style.cursor = "pointer";
-      equipVal.onclick = () => {
+      // Equipment Button
+      const equipText = member.equipmentItem ? member.equipmentItem.name : (member.baseEquipment || "Unequipped");
+      const equipBtn = document.createElement("div");
+      equipBtn.className = "win-btn";
+      equipBtn.textContent = equipText;
+      equipBtn.style.cursor = "pointer";
+      equipBtn.style.padding = "2px 6px";
+      equipBtn.style.fontSize = "0.9em";
+      equipBtn.onclick = () => {
           if (this.callbacks.onEquip) this.callbacks.onEquip();
       };
+      elEquipContainer.appendChild(equipBtn);
 
-      // Passives
-      const passiveVal = document.createElement('span');
-      if (member.passives && member.passives.length > 0) {
-          member.passives.forEach((pData, i) => {
-               const code = pData.code || pData.id;
-               let def = null;
-               if (dataManager && dataManager.passives) {
-                   def = Object.values(dataManager.passives).find(p => p.id === code || p.code === code);
-               }
-               if (!def) def = pData;
+      addRow("Element", elEquipContainer);
 
-               const el = createInteractiveLabel(def, 'passive');
-               passiveVal.appendChild(el);
-               if (i < member.passives.length - 1) passiveVal.appendChild(document.createTextNode(", "));
-          });
-      } else {
-          passiveVal.textContent = "—";
-      }
-      addRow("Passive", passiveVal);
+      // Skills & Passives Container
+      const listsContainer = document.createElement("div");
+      listsContainer.style.display = "flex";
+      listsContainer.style.gap = "10px";
+      listsContainer.style.marginTop = "8px";
+      listsContainer.style.marginBottom = "8px";
 
-      // Skills
-      const skillsVal = document.createElement('span');
-      if (member.skills && member.skills.length > 0) {
-          member.skills.forEach((sId, i) => {
+      // Helper to create list column
+      const createListColumn = (title, items, renderer) => {
+          const col = document.createElement("div");
+          col.style.flex = "1";
+          col.style.minWidth = "0"; // Enable truncation in flex child
+
+          const header = document.createElement("div");
+          header.textContent = title;
+          header.style.fontWeight = "bold";
+          header.style.marginBottom = "4px";
+          header.style.borderBottom = "1px solid var(--bezel-light)";
+          col.appendChild(header);
+
+          const list = document.createElement("div");
+          list.style.display = "flex";
+          list.style.flexDirection = "column";
+          list.style.gap = "2px";
+
+          if (items && items.length > 0) {
+              items.forEach(item => {
+                  const row = document.createElement("div");
+                  row.style.whiteSpace = "nowrap";
+                  row.style.overflow = "hidden";
+                  row.style.textOverflow = "ellipsis";
+
+                  const content = renderer(item);
+                  if (typeof content === 'string') {
+                      row.textContent = content;
+                  } else {
+                      row.appendChild(content);
+                  }
+                  list.appendChild(row);
+              });
+          } else {
+               const empty = document.createElement("div");
+               empty.textContent = "—";
+               empty.className = "text-muted";
+               list.appendChild(empty);
+          }
+          col.appendChild(list);
+          return col;
+      };
+
+      // Skills Column
+      const skillsCol = createListColumn("Skills", member.skills || [], (sId) => {
             const skill = dataManager.skills[sId];
             if (skill) {
                 let effectsText = "";
@@ -212,27 +253,34 @@ export class Window_Inspect extends Window_Base {
                 if (effectsText) {
                     tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
                 }
-                const el = createInteractiveLabel(skill, 'skill', { tooltipText });
-                skillsVal.appendChild(el);
-            } else {
-                skillsVal.appendChild(document.createTextNode(sId));
+                return createInteractiveLabel(skill, 'skill', { tooltipText });
             }
-            if (i < member.skills.length - 1) {
-                skillsVal.appendChild(document.createTextNode(", "));
-            }
-        });
-      } else {
-          skillsVal.textContent = "—";
-      }
-      addRow("Skills", skillsVal);
+            return sId;
+      });
 
-      // Flavor
-      const flavorVal = document.createElement('span');
+      // Passives Column
+      const passivesCol = createListColumn("Passives", member.passives || [], (pData) => {
+           const code = pData.code || pData.id;
+           let def = null;
+           if (dataManager && dataManager.passives) {
+               def = Object.values(dataManager.passives).find(p => p.id === code || p.code === code);
+           }
+           if (!def) def = pData;
+           return createInteractiveLabel(def, 'passive');
+      });
+
+      listsContainer.appendChild(skillsCol);
+      listsContainer.appendChild(passivesCol);
+      this.fieldsContainer.appendChild(listsContainer);
+
+      // Flavor (No label)
+      const flavorVal = document.createElement('div');
       flavorVal.textContent = member.flavor || "—";
       flavorVal.style.fontStyle = "italic";
       flavorVal.style.fontSize = "0.9em";
       flavorVal.className = "text-muted";
-      addRow("Flavor", flavorVal);
+      flavorVal.style.marginTop = "8px";
+      this.fieldsContainer.appendChild(flavorVal);
 
       // Update Buttons
       const sacrificeValue = member.level * (member.hp + member.maxHp);
@@ -361,10 +409,58 @@ export class Window_Evolution extends Window_Base {
       }
       addRow('Element', elementVal);
 
-      // Skills
-      const skillsVal = document.createElement('span');
-      if (battler.skills && battler.skills.length > 0) {
-          battler.skills.forEach((sId, i) => {
+      // Skills & Passives Container
+      const listsContainer = document.createElement("div");
+      listsContainer.style.display = "flex";
+      listsContainer.style.gap = "10px";
+      listsContainer.style.marginTop = "8px";
+      listsContainer.style.marginBottom = "8px";
+
+      // Helper to create list column
+      const createListColumn = (title, items, renderer) => {
+          const col = document.createElement("div");
+          col.style.flex = "1";
+          col.style.minWidth = "0"; // Enable truncation in flex child
+
+          const header = document.createElement("div");
+          header.textContent = title;
+          header.style.fontWeight = "bold";
+          header.style.marginBottom = "4px";
+          header.style.borderBottom = "1px solid var(--bezel-light)";
+          col.appendChild(header);
+
+          const list = document.createElement("div");
+          list.style.display = "flex";
+          list.style.flexDirection = "column";
+          list.style.gap = "2px";
+
+          if (items && items.length > 0) {
+              items.forEach(item => {
+                  const row = document.createElement("div");
+                  row.style.whiteSpace = "nowrap";
+                  row.style.overflow = "hidden";
+                  row.style.textOverflow = "ellipsis";
+
+                  const content = renderer(item);
+                  if (typeof content === 'string') {
+                      row.textContent = content;
+                  } else {
+                      row.appendChild(content);
+                  }
+                  list.appendChild(row);
+              });
+          } else {
+               const empty = document.createElement("div");
+               empty.textContent = "—";
+               empty.className = "text-muted";
+               list.appendChild(empty);
+          }
+          col.appendChild(list);
+          return col;
+      };
+
+      // Skills Column
+      const skillsCol = createListColumn("Skills", battler.skills || [], (sId) => {
             const skill = dataManager && dataManager.skills ? dataManager.skills[sId] : null;
             if (skill) {
                 // Calculate dynamic effects
@@ -392,41 +488,27 @@ export class Window_Evolution extends Window_Base {
                 if (effectsText) {
                     tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
                 }
-
-                const el = createInteractiveLabel(skill, 'skill', { tooltipText });
-                skillsVal.appendChild(el);
-            } else {
-                skillsVal.appendChild(document.createTextNode(sId));
+                return createInteractiveLabel(skill, 'skill', { tooltipText });
             }
+            return sId;
+      });
 
-            if (i < battler.skills.length - 1) {
-                skillsVal.appendChild(document.createTextNode(", "));
-            }
-        });
-      } else {
-          skillsVal.textContent = "—";
-      }
-      addRow('Skills', skillsVal);
+      // Passives Column
+      const passivesCol = createListColumn("Passives", battler.passives || [], (p) => {
+           return createInteractiveLabel(p, 'passive');
+      });
 
-      // Passives (Game_Battler resolves these to objects)
-      const passiveVal = document.createElement('span');
-      if (battler.passives && battler.passives.length > 0) {
-          battler.passives.forEach((p, i) => {
-              const el = createInteractiveLabel(p, 'passive');
-              passiveVal.appendChild(el);
-              if (i < battler.passives.length - 1) passiveVal.appendChild(document.createTextNode(", "));
-          });
-      } else {
-          passiveVal.textContent = "—";
-      }
-      addRow('Passive', passiveVal);
+      listsContainer.appendChild(skillsCol);
+      listsContainer.appendChild(passivesCol);
+      fieldsContainer.appendChild(listsContainer);
 
       // Flavor
-      const flavorVal = document.createElement('span');
+      const flavorVal = document.createElement('div');
       flavorVal.textContent = battler.flavor || "—";
       flavorVal.style.fontStyle = "italic";
       flavorVal.style.fontSize = "0.9em";
       flavorVal.className = "text-muted";
-      addRow('Flavor', flavorVal);
+      flavorVal.style.marginTop = "8px";
+      fieldsContainer.appendChild(flavorVal);
   }
 }
