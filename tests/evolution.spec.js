@@ -46,8 +46,8 @@ test('Verify Evolution System', async ({ page }) => {
   await expect(evolveBtn).toBeVisible();
 
   // Verify Icon 6 in name (Title check)
-  const nameEl = inspectWindow.locator('.inspect-row:has-text("Name")');
-  const evoIcon = nameEl.locator('span[title="Evolution Available"]');
+  const header = inspectWindow.locator('.inspect-header');
+  const evoIcon = header.locator('span[title="Evolution Available"]');
   await expect(evoIcon).toBeVisible();
 
   // 6. Click Evolution

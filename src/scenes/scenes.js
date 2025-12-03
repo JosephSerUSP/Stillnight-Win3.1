@@ -2033,142 +2033,25 @@ export class Scene_Map extends Scene_Base {
    * @param {number} index - The member's index.
    */
   openInspect(member, index) {
-    this.inspectWindow.member = member;
-    const need = member.xpNeeded(member.level);
-    const spriteKey = member.spriteKey || 'pixie';
-    this.inspectWindow.spriteEl.style.backgroundImage = `url('assets/portraits/${spriteKey}.png')`;
-
-    // Evolution Check & Name Rendering
-    const floor = this.map.floors[this.map.floorIndex];
-    const evoStatus = member.getEvolutionStatus(this.party.inventory, floor ? floor.depth : 1, this.party.gold);
-
-    this.inspectWindow.nameEl.innerHTML = "";
-    // Use the centralized helper
-    this.inspectWindow.nameEl.appendChild(createBattlerNameLabel(member, {
-        evolutionStatus: evoStatus.status
-    }));
-
-    if (evoStatus.status === 'AVAILABLE') {
-         this.inspectWindow.btnEvolve.style.display = "inline-block";
-         this.inspectWindow.btnEvolve.onclick = () => {
-             this.openEvolution(member, evoStatus.evolution);
-         };
-    } else {
-         this.inspectWindow.btnEvolve.style.display = "none";
-    }
-
-    this.inspectWindow.levelEl.textContent = member.level;
-    this.inspectWindow.rowPosEl.textContent = this.partyRow(index);
-    this.inspectWindow.hpEl.textContent = `${member.hp} / ${member.maxHp}`;
-    this.inspectWindow.xpEl.textContent = `${member.xp || 0} / ${need}`;
-
-    this.inspectWindow.elementEl.innerHTML = "";
-    if (member.elements && member.elements.length > 0) {
-        this.inspectWindow.elementEl.appendChild(renderElements(member.elements));
-    } else {
-        this.inspectWindow.elementEl.textContent = "—";
-    }
-
-    if (member.equipmentItem) {
-      this.inspectWindow.equipEl.textContent = member.equipmentItem.name;
-    } else if (member.baseEquipment) {
-      this.inspectWindow.equipEl.textContent = member.baseEquipment;
-    } else {
-      this.inspectWindow.equipEl.textContent = "—";
-    }
-
-    // Passives
-    this.inspectWindow.passiveEl.innerHTML = "";
-    if (member.passives && member.passives.length > 0) {
-        member.passives.forEach((pData, i) => {
-            const code = pData.code || pData.id;
-            let def = null;
-            if (this.dataManager.passives) {
-                def = Object.values(this.dataManager.passives).find(p => p.id === code || p.code === code);
-            }
-            if (!def) def = pData;
-
-            const el = createInteractiveLabel(def, 'passive');
-            this.inspectWindow.passiveEl.appendChild(el);
-
-            if (i < member.passives.length - 1) {
-                this.inspectWindow.passiveEl.appendChild(document.createTextNode(", "));
-            }
-        });
-    } else {
-        this.inspectWindow.passiveEl.textContent = "—";
-    }
-
-    // Skills
-    this.inspectWindow.skillsEl.innerHTML = "";
-    if (member.skills && member.skills.length > 0) {
-        member.skills.forEach((sId, i) => {
-            const skill = this.dataManager.skills[sId];
-            if (skill) {
-                // Calculate dynamic effects
-                let effectsText = "";
-                if (skill.effects && skill.effects.length > 0) {
-                    const descriptions = [];
-                    skill.effects.forEach(eff => {
-                         if (eff.type === 'hp_damage') {
-                             const val = Math.round(evaluateFormula(eff.formula, member));
-                             descriptions.push(`Deals ~${val} Damage`);
-                         } else if (eff.type === 'hp_heal') {
-                             const val = Math.round(evaluateFormula(eff.formula, member));
-                             descriptions.push(`Heals ~${val} HP`);
-                         } else if (eff.type === 'add_status') {
-                             const chance = Math.round((eff.chance || 1) * 100);
-                             descriptions.push(`${chance}% chance to add ${eff.status}`);
-                         }
-                    });
-                    if (descriptions.length > 0) {
-                        effectsText = descriptions.join(", ");
-                    }
-                }
-
-                let tooltipText = skill.description;
-                if (effectsText) {
-                    tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
-                }
-
-                const el = createInteractiveLabel(skill, 'skill', { tooltipText });
-                this.inspectWindow.skillsEl.appendChild(el);
-            } else {
-                this.inspectWindow.skillsEl.appendChild(document.createTextNode(sId));
-            }
-
-            if (i < member.skills.length - 1) {
-                this.inspectWindow.skillsEl.appendChild(document.createTextNode(", "));
-            }
-        });
-    } else {
-        this.inspectWindow.skillsEl.textContent = "—";
-    }
-
-    this.inspectWindow.flavorEl.textContent = member.flavor || "—";
-    this.inspectWindow.notesEl.textContent = "Row is determined by the 2×2 formation grid.";
+    this.inspectWindow.setup(member, this.getContext(), this.dataManager, {
+        onEquip: () => this.openEquipmentScreen(),
+        onSacrifice: (val) => {
+             this.confirmWindow.titleEl.textContent = "Sacrifice Unit";
+             this.confirmWindow.messageEl.textContent = `Sacrifice ${member.name} for ${val} Gold? This cannot be undone.`;
+             this.windowManager.push(this.confirmWindow);
+             this.confirmWindow.btnOk.onclick = () => {
+                 this.windowManager.close(this.confirmWindow);
+                 this.sacrificeMember(member, val);
+             };
+        },
+        onEvolve: (evoData) => this.openEvolution(member, evoData)
+    });
 
     this.windowManager.push(this.inspectWindow);
     this.setStatus(`Inspecting ${member.name}`);
     this.logMessage(`[Inspect] ${member.name} – Lv${member.level}, ${this.partyRow(index)}, HP ${member.hp}/${member.maxHp}.`);
 
-    // Sacrifice Setup
-    const sacrificeValue = member.level * (member.hp + member.maxHp);
-    this.inspectWindow.btnSacrifice.textContent = `Sacrifice (${sacrificeValue}G)`;
-    this.inspectWindow.btnSacrifice.style.display = "block";
-    this.inspectWindow.btnSacrifice.onclick = () => {
-        this.confirmWindow.titleEl.textContent = "Sacrifice Unit";
-        this.confirmWindow.messageEl.textContent = `Sacrifice ${member.name} for ${sacrificeValue} Gold? This cannot be undone.`;
-        this.windowManager.push(this.confirmWindow);
-        this.confirmWindow.btnOk.onclick = () => {
-            this.windowManager.close(this.confirmWindow);
-            this.sacrificeMember(member, sacrificeValue);
-        };
-    };
-
     this.inspectWindow.onUserClose = () => this.closeInspect();
-    this.inspectWindow.btnOk.onclick = () => this.closeInspect();
-    this.inspectWindow.equipEl.onclick = () => this.openEquipmentScreen();
   }
 
   /**

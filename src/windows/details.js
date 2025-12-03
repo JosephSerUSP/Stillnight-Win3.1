@@ -1,5 +1,5 @@
 import { Window_Base } from "./base.js";
-import { createBattlerNameLabel, renderElements, createInteractiveLabel } from "./utils.js";
+import { createBattlerNameLabel, renderElements, createInteractiveLabel, createGauge } from "./utils.js";
 import { UI } from "./builder.js";
 import { evaluateFormula } from "../core/utils.js";
 
@@ -8,10 +8,9 @@ import { evaluateFormula } from "../core/utils.js";
  */
 export class Window_Inspect extends Window_Base {
   constructor() {
-    super('center', 'center', 480, 320, { title: "Creature – Stillnight", id: "inspect-window" });
+    super('center', 'center', 480, 320, { title: "Inspect", id: "inspect-window" });
 
     // Initialize content structure using UI.build
-    // We create a panel for the main body
     this.mainPanel = UI.build(this.content, {
         type: 'panel',
         props: { className: 'window-panel' },
@@ -31,52 +30,16 @@ export class Window_Inspect extends Window_Base {
                 ]
             },
             {
-                type: 'panel',
+                type: 'panel', // Footer/Notes (Empty now as requested)
                 props: { className: 'inspect-notes' }
             }
         ]
     });
 
-    // Cache references to dynamically updated elements
-    // The structure is: content -> mainPanel -> [0:layout, 1:notes]
-    // layout -> [0:sprite, 1:fields]
     const layout = this.mainPanel.children[0];
     this.spriteEl = layout.children[0];
     this.fieldsContainer = layout.children[1];
     this.notesEl = this.mainPanel.children[1];
-
-    // Create fields map for easy access
-    this.fieldElements = {};
-    const fieldKeys = ["Name", "Level", "Row", "HP", "XP", "Element", "Equipment", "Passive", "Skills", "Flavor"];
-
-    fieldKeys.forEach(key => {
-        const isButton = key === "Equipment";
-        const row = UI.build(this.fieldsContainer, {
-            type: 'flex',
-            props: { className: 'inspect-row', align: 'center' },
-            children: [
-                { type: 'label', props: { className: 'inspect-label', text: key } },
-                {
-                    type: isButton ? 'button' : 'label',
-                    props: { className: isButton ? 'win-btn inspect-value' : 'inspect-value', text: '' }
-                }
-            ]
-        });
-        // Store the value element (2nd child)
-        this.fieldElements[key] = row.children[1];
-    });
-
-    // Map legacy property names to the new elements to maintain API compatibility
-    this.nameEl = this.fieldElements["Name"];
-    this.levelEl = this.fieldElements["Level"];
-    this.rowPosEl = this.fieldElements["Row"];
-    this.hpEl = this.fieldElements["HP"];
-    this.xpEl = this.fieldElements["XP"];
-    this.elementEl = this.fieldElements["Element"];
-    this.equipEl = this.fieldElements["Equipment"];
-    this.passiveEl = this.fieldElements["Passive"];
-    this.skillsEl = this.fieldElements["Skills"];
-    this.flavorEl = this.fieldElements["Flavor"];
 
     // Buttons
     this.btnSacrifice = this.addButton("Sacrifice", () => {});
@@ -87,6 +50,208 @@ export class Window_Inspect extends Window_Base {
     this.btnEvolve.style.display = "none";
 
     this.btnOk = this.addButton("OK", () => this.onUserClose());
+  }
+
+  setup(member, context, dataManager, callbacks) {
+      this.member = member;
+      this.callbacks = callbacks || {};
+
+      // Update Sprite
+      const spriteKey = member.spriteKey || 'pixie';
+      this.spriteEl.style.backgroundImage = `url('assets/portraits/${spriteKey}.png')`;
+
+      // Clear fields
+      this.fieldsContainer.innerHTML = "";
+
+      // 1. Header (Name + Level + Icons)
+      const floorDepth = context.floorDepth || 1;
+      const gold = context.gold || 0;
+      const inventory = context.inventory || [];
+      const evoStatus = member.getEvolutionStatus(inventory, floorDepth, gold);
+
+      const headerRow = document.createElement("div");
+      headerRow.className = "inspect-header";
+      headerRow.style.marginBottom = "8px";
+
+      const nameLabel = createBattlerNameLabel(member, { evolutionStatus: evoStatus.status });
+      nameLabel.style.fontSize = "1.2em";
+      headerRow.appendChild(nameLabel);
+      this.fieldsContainer.appendChild(headerRow);
+
+      // Helper for rows
+      const addRow = (label, content) => {
+           const row = document.createElement("div");
+           row.className = "inspect-row";
+           row.style.display = "flex";
+           row.style.alignItems = "center";
+           row.style.marginBottom = "4px";
+
+           const lbl = document.createElement("span");
+           lbl.className = "inspect-label";
+           lbl.style.width = "80px";
+           lbl.textContent = label;
+
+           const val = document.createElement("div");
+           val.className = "inspect-value";
+           val.style.flexGrow = "1";
+
+           if (typeof content === 'string' || typeof content === 'number') {
+               val.textContent = content;
+           } else {
+               val.appendChild(content);
+           }
+
+           row.appendChild(lbl);
+           row.appendChild(val);
+           this.fieldsContainer.appendChild(row);
+           return val;
+      };
+
+      // HP Bar
+      const hpContainer = document.createElement("div");
+      hpContainer.style.width = "100%";
+      hpContainer.style.display = "flex";
+      hpContainer.style.alignItems = "center";
+
+      const hpText = document.createElement("span");
+      hpText.textContent = `${member.hp}/${member.maxHp}`;
+      hpText.style.marginRight = "6px";
+      hpText.style.fontSize = "10px";
+      hpText.style.minWidth = "50px";
+
+      const hpGauge = createGauge({ height: "8px", color: "var(--gauge-hp)", width: "100%" });
+      hpGauge.fill.style.width = `${Math.max(0, (member.hp / member.maxHp) * 100)}%`;
+
+      hpContainer.appendChild(hpText);
+      hpContainer.appendChild(hpGauge.container);
+      addRow("HP", hpContainer);
+
+      // XP Bar
+      const xpNeeded = member.xpNeeded(member.level);
+      const xpContainer = document.createElement("div");
+      xpContainer.style.width = "100%";
+      xpContainer.style.display = "flex";
+      xpContainer.style.alignItems = "center";
+
+      const xpText = document.createElement("span");
+      xpText.textContent = `${member.xp || 0}/${xpNeeded}`;
+      xpText.style.marginRight = "6px";
+      xpText.style.fontSize = "10px";
+      xpText.style.minWidth = "50px";
+
+      const xpGauge = createGauge({ height: "6px", color: "#60a0ff", bgColor: "#333", width: "100%" });
+      const xpPercent = xpNeeded > 0 ? ((member.xp || 0) / xpNeeded) * 100 : 0;
+      xpGauge.fill.style.width = `${Math.min(100, Math.max(0, xpPercent))}%`;
+
+      xpContainer.appendChild(xpText);
+      xpContainer.appendChild(xpGauge.container);
+      addRow("XP", xpContainer);
+
+      // Element
+      if (member.elements && member.elements.length > 0) {
+          addRow("Element", renderElements(member.elements));
+      } else {
+          addRow("Element", "—");
+      }
+
+      // Equipment (Button-like)
+      const equipText = member.equipmentItem ? member.equipmentItem.name : (member.baseEquipment || "—");
+      const equipVal = addRow("Equipment", equipText);
+      equipVal.classList.add("win-btn");
+      equipVal.style.cursor = "pointer";
+      equipVal.onclick = () => {
+          if (this.callbacks.onEquip) this.callbacks.onEquip();
+      };
+
+      // Passives
+      const passiveVal = document.createElement('span');
+      if (member.passives && member.passives.length > 0) {
+          member.passives.forEach((pData, i) => {
+               const code = pData.code || pData.id;
+               let def = null;
+               if (dataManager && dataManager.passives) {
+                   def = Object.values(dataManager.passives).find(p => p.id === code || p.code === code);
+               }
+               if (!def) def = pData;
+
+               const el = createInteractiveLabel(def, 'passive');
+               passiveVal.appendChild(el);
+               if (i < member.passives.length - 1) passiveVal.appendChild(document.createTextNode(", "));
+          });
+      } else {
+          passiveVal.textContent = "—";
+      }
+      addRow("Passive", passiveVal);
+
+      // Skills
+      const skillsVal = document.createElement('span');
+      if (member.skills && member.skills.length > 0) {
+          member.skills.forEach((sId, i) => {
+            const skill = dataManager.skills[sId];
+            if (skill) {
+                let effectsText = "";
+                if (skill.effects && skill.effects.length > 0) {
+                    const descriptions = [];
+                    skill.effects.forEach(eff => {
+                         if (eff.type === 'hp_damage') {
+                             const val = Math.round(evaluateFormula(eff.formula, member));
+                             descriptions.push(`Deals ~${val} Damage`);
+                         } else if (eff.type === 'hp_heal') {
+                             const val = Math.round(evaluateFormula(eff.formula, member));
+                             descriptions.push(`Heals ~${val} HP`);
+                         } else if (eff.type === 'add_status') {
+                             const chance = Math.round((eff.chance || 1) * 100);
+                             descriptions.push(`${chance}% chance to add ${eff.status}`);
+                         }
+                    });
+                    if (descriptions.length > 0) {
+                        effectsText = descriptions.join(", ");
+                    }
+                }
+                let tooltipText = skill.description;
+                if (effectsText) {
+                    tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
+                }
+                const el = createInteractiveLabel(skill, 'skill', { tooltipText });
+                skillsVal.appendChild(el);
+            } else {
+                skillsVal.appendChild(document.createTextNode(sId));
+            }
+            if (i < member.skills.length - 1) {
+                skillsVal.appendChild(document.createTextNode(", "));
+            }
+        });
+      } else {
+          skillsVal.textContent = "—";
+      }
+      addRow("Skills", skillsVal);
+
+      // Flavor
+      const flavorVal = document.createElement('span');
+      flavorVal.textContent = member.flavor || "—";
+      flavorVal.style.fontStyle = "italic";
+      flavorVal.style.fontSize = "0.9em";
+      flavorVal.className = "text-muted";
+      addRow("Flavor", flavorVal);
+
+      // Update Buttons
+      const sacrificeValue = member.level * (member.hp + member.maxHp);
+      this.btnSacrifice.textContent = `Sacrifice (${sacrificeValue}G)`;
+      this.btnSacrifice.style.display = "block";
+      this.btnSacrifice.onclick = () => {
+          if (this.callbacks.onSacrifice) this.callbacks.onSacrifice(sacrificeValue);
+      };
+
+      if (evoStatus.status === 'AVAILABLE') {
+          this.btnEvolve.style.display = "inline-block";
+          this.btnEvolve.onclick = () => {
+              if (this.callbacks.onEvolve) this.callbacks.onEvolve(evoStatus.evolution);
+          };
+      } else {
+          this.btnEvolve.style.display = "none";
+      }
+
+      this.notesEl.textContent = "";
   }
 }
 
