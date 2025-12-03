@@ -9,6 +9,7 @@ export class EffectManager {
         return {
             'HRG': { trigger: 'turnStart', fn: this.handleHrg },
             'PARASITE': { trigger: 'turnStart', fn: this.handleParasite },
+            'SYMBIOSIS': { trigger: 'turnStart', fn: this.handleSymbiosis },
         };
     }
 
@@ -110,6 +111,47 @@ export class EffectManager {
             hpBeforeSource: hpBeforeSource,
             hpAfterSource: battler.hp,
             msg: `[Passive] ${battler.name} drains ${parasiteDrain} HP from ${target.name}.`
+        };
+    }
+
+    /**
+     * Handles Symbiosis trait (Healing neighbors).
+     * @param {number} value - The amount to heal.
+     * @param {import("../objects/objects.js").Game_Battler} battler - The battler.
+     * @param {Object} context - The context containing allies.
+     * @returns {Object|null} The event object or null.
+     */
+    static handleSymbiosis(value, battler, context) {
+        const { allies } = context;
+        if (!allies || value <= 0) return null;
+
+        const myIndex = allies.indexOf(battler);
+        if (myIndex === -1) return null;
+
+        // Heal neighbor (Front <-> Front, Back <-> Back in same column)
+        const targetIndex = myIndex % 2 === 0 ? myIndex + 1 : myIndex - 1;
+
+        if (targetIndex < 0 || targetIndex >= allies.length) return null;
+
+        const target = allies[targetIndex];
+        if (!target || target.hp <= 0) return null;
+
+        const healAmount = value;
+
+        const hpBeforeTarget = target.hp;
+        target.hp = Math.min(target.maxHp, target.hp + healAmount);
+
+        if (target.hp === hpBeforeTarget) return null; // No effective heal
+
+        return {
+            type: 'heal',
+            battler: battler,
+            target: target,
+            value: healAmount,
+            hpBefore: hpBeforeTarget,
+            hpAfter: target.hp,
+            msg: `[Passive] ${battler.name} heals ${target.name} for ${healAmount} HP via Symbiosis.`,
+            animation: 'healing_sparkle'
         };
     }
 }

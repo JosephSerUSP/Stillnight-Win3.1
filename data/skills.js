@@ -121,5 +121,41 @@ export const skills = {
         element: 'Red',
         description: "Rise from the ashes.",
         effects: []
+    },
+
+    // Nurse
+    needleShot: {
+        id: 'needleShot',
+        name: 'Needle Shot',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "A precise strike that injects toxins.",
+        effects: [
+            { type: 'hp_damage', formula: '5 + 1.2 * a.level' },
+            { type: 'add_status', status: 'poison', chance: 0.4, duration: 3 }
+        ]
+    },
+    fieldSurgery: {
+        id: 'fieldSurgery',
+        name: 'Field Surgery',
+        target: 'ally-any',
+        element: 'Black',
+        description: "Emergency medical attention. It might hurt.",
+        effects: [
+            { type: 'hp_heal', formula: '10 + 2.0 * a.level' }
+        ]
+    },
+
+    // Incubus
+    drainKiss: {
+        id: 'drainKiss',
+        name: 'Drain Kiss',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "Steals vitality and puts the target to sleep.",
+        effects: [
+            { type: 'hp_drain', formula: '4 + 0.6 * a.level' },
+            { type: 'add_status', status: 'sleep', chance: 0.5, duration: 3 }
+        ]
     }
 };

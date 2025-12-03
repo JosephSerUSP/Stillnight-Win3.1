@@ -630,7 +630,7 @@ export class Scene_Battle extends Scene_Base {
                 targetNewHp = event.hpAfter;
             }
             // For passive drain, we have explicit target/source keys
-            if (event.type === 'passive_drain') {
+            if (event.type === 'passive_drain' || event.type === 'hp_drain') {
                  targetOldHp = event.hpBeforeTarget;
                  targetNewHp = event.hpAfterTarget;
             }
@@ -649,7 +649,7 @@ export class Scene_Battle extends Scene_Base {
                 }
                 await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
 
-            } else if (event.type === 'passive_drain') {
+            } else if (event.type === 'passive_drain' || event.type === 'hp_drain') {
                 this.animateBattler(event.target, 'flash');
                 await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
                 if (event.source) {
