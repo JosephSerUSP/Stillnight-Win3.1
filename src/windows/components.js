@@ -1,4 +1,4 @@
-import { getIconStyle, elementToIconId, getPrimaryElements } from "../core/utils.js";
+import { getIconStyle, elementToIconId, getPrimaryElements, generateTraitDescription, generateEffectDescription } from "../core/utils.js";
 import { tooltip } from "../core/tooltip.js";
 
 /**
@@ -311,13 +311,36 @@ export function Component_InteractiveLabel(parent, props = {}) {
     // Tooltip Logic
     if (props.showTooltip !== false) {
         let text = props.tooltipText || data.description || "";
+
         if (!props.tooltipText) {
-             let extra = "";
-             if (type === 'passive' && data.effect) {
-                 extra = data.effect;
+             let functionalText = "";
+
+             // Traits (Equipment, Passives, States)
+             if (data.traits && Array.isArray(data.traits)) {
+                 const traitDescs = data.traits.map(t => generateTraitDescription(t)).filter(Boolean);
+                 if (traitDescs.length > 0) {
+                     functionalText += traitDescs.join("<br/>");
+                 }
              }
-             if (extra) {
-                 text += `<br/><span class="text-functional" style="font-size: 0.9em;">${extra}</span>`;
+
+             // Effects (Consumables)
+             if (data.effects && typeof data.effects === 'object') {
+                  const effectDescs = Object.entries(data.effects).map(([k, v]) => generateEffectDescription(k, v)).filter(Boolean);
+                  if (effectDescs.length > 0) {
+                      if (functionalText) functionalText += "<br/>";
+                      functionalText += effectDescs.join("<br/>");
+                  }
+             }
+
+             // Legacy/Manual 'effect' string (e.g. for Passives if they still use it)
+             if (data.effect && typeof data.effect === 'string') {
+                  if (functionalText) functionalText += "<br/>";
+                  functionalText += data.effect;
+             }
+
+             // Append to main text
+             if (functionalText) {
+                 text += `<br/><span class="text-functional" style="font-size: 0.9em;">${functionalText}</span>`;
              }
         }
 
