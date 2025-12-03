@@ -344,8 +344,8 @@ export class SoundManager {
       if (this._sfxCount > 0) {
           if (this._musicPlayer) this._musicPlayer.setVolume(0);
       } else {
-          // Normal music volume (0.3 base scaling to match square wave loudness)
-          if (this._musicPlayer) this._musicPlayer.setVolume(musicVol * 0.3);
+          // Normal music volume (0.6 base scaling to match square wave loudness)
+          if (this._musicPlayer) this._musicPlayer.setVolume(musicVol * 0.6);
       }
   }
 
@@ -399,7 +399,8 @@ export class SoundManager {
               source.buffer = buffer;
               const gainNode = this._audioCtx.createGain();
 
-              let playVol = (options.volume !== undefined ? options.volume : 0.5) * sfxVol;
+              // Tuned up default volume to 1.0 (was 0.5)
+              let playVol = (options.volume !== undefined ? options.volume : 1.0) * sfxVol;
               gainNode.gain.value = playVol;
 
               if (options.pitch) source.playbackRate.value = options.pitch;
@@ -432,7 +433,8 @@ export class SoundManager {
               if (options.pitch) freq *= options.pitch;
               oscillator.frequency.value = freq;
 
-              let noteVol = (note.volume || 0.1);
+              // Tuned up default note volume to 0.3 (was 0.1)
+              let noteVol = (note.volume || 0.3);
               let playVol = (options.volume !== undefined ? options.volume : 1.0) * noteVol * sfxVol;
 
               gainNode.gain.value = playVol;
@@ -483,7 +485,8 @@ export class SoundManager {
           const gainNode = this._audioCtx.createGain();
           oscillator.type = "square";
           oscillator.frequency.value = frequency;
-          gainNode.gain.value = 0.05 * sfxVol;
+          // Tuned up beep volume to 0.2 (was 0.05)
+          gainNode.gain.value = 0.2 * sfxVol;
           oscillator.connect(gainNode);
           gainNode.connect(this._audioCtx.destination);
           oscillator.start();
@@ -1140,9 +1143,9 @@ export class ThemeManager {
 export class ConfigManager {
     static autoBattle = false;
     static windowAnimations = true;
-    static masterVolume = 1.0;
-    static sfxVolume = 1.0;
-    static musicVolume = 1.0;
+    static masterVolume = 0.5;
+    static sfxVolume = 0.5;
+    static musicVolume = 0.5;
 
     static load() {
         try {
@@ -1154,19 +1157,19 @@ export class ConfigManager {
 
                 // Migrate legacy booleans to floats if needed
                 if (typeof config.audioEnabled === 'boolean') {
-                    this.masterVolume = config.audioEnabled ? 1.0 : 0.0;
+                    this.masterVolume = config.audioEnabled ? 0.5 : 0.0;
                 } else if (config.masterVolume !== undefined) {
                     this.masterVolume = parseFloat(config.masterVolume);
                 }
 
                 if (typeof config.sfxEnabled === 'boolean') {
-                    this.sfxVolume = config.sfxEnabled ? 1.0 : 0.0;
+                    this.sfxVolume = config.sfxEnabled ? 0.5 : 0.0;
                 } else if (config.sfxVolume !== undefined) {
                     this.sfxVolume = parseFloat(config.sfxVolume);
                 }
 
                 if (typeof config.musicEnabled === 'boolean') {
-                    this.musicVolume = config.musicEnabled ? 1.0 : 0.0;
+                    this.musicVolume = config.musicEnabled ? 0.5 : 0.0;
                 } else if (config.musicVolume !== undefined) {
                     this.musicVolume = parseFloat(config.musicVolume);
                 }

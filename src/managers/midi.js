@@ -241,7 +241,7 @@ export class MidiPlayer {
 
       if (playTime >= currentTime) {
           if (event.type === "noteOn") {
-            this.playNote(event.note, playTime);
+            this.playNote(event.note, event.velocity, playTime);
           } else if (event.type === "noteOff") {
             this.stopNote(event.note, playTime);
           }
@@ -274,7 +274,7 @@ export class MidiPlayer {
     this.schedulerTimer = setTimeout(() => this.schedule(), this.lookahead * 1000);
   }
 
-  playNote(note, time) {
+  playNote(note, velocity, time) {
     const osc = this.audioCtx.createOscillator();
     const gain = this.audioCtx.createGain();
 
@@ -285,7 +285,10 @@ export class MidiPlayer {
     osc.connect(gain);
     gain.connect(this.gainNode);
 
-    gain.gain.value = 0.1;
+    // Use velocity to determine volume (velocity 0-127)
+    // Tune up base volume to 0.5 (was 0.1)
+    const normalizedVelocity = velocity / 127;
+    gain.gain.value = 0.5 * normalizedVelocity;
 
     osc.start(time);
     this.activeOscillators.push(osc);
