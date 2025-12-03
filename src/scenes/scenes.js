@@ -128,7 +128,7 @@ export class Scene_Battle extends Scene_Base {
    * @param {Object} [encounterData] - Specific encounter data for this battle.
    * @param {boolean} [isSneakAttack] - Whether this is a sneak attack.
    */
-  constructor(dataManager, sceneManager, windowManager, party, battleManager, windowLayer, map, tileX, tileY, encounterData = null, isSneakAttack = false) {
+  constructor(dataManager, sceneManager, windowManager, party, battleManager, windowLayer, map, tileX, tileY, sharedWindows, encounterData = null, isSneakAttack = false, isPlayerFirstStrike = false) {
     super(dataManager, windowManager);
     this.sceneManager = sceneManager;
     this.party = party;
@@ -139,25 +139,20 @@ export class Scene_Battle extends Scene_Base {
     this.tileY = tileY;
     this.encounterData = encounterData;
     this.isSneakAttack = isSneakAttack;
+    this.isPlayerFirstStrike = isPlayerFirstStrike;
     this.battleBusy = false;
     this.actionTakenThisTurn = false;
 
     this.battleWindow = new Window_Battle();
     this.windowLayer.addChild(this.battleWindow);
 
-    // Instantiate sub-windows for battle actions
-    this.formationWindow = new Window_Formation();
-    this.windowLayer.addChild(this.formationWindow);
-    this.inventoryWindow = new Window_Inventory();
-    this.windowLayer.addChild(this.inventoryWindow);
-    this.partySelectWindow = new Window_PartySelect();
-    this.windowLayer.addChild(this.partySelectWindow);
-    this.confirmEffectWindow = new Window_ConfirmEffect();
-    this.windowLayer.addChild(this.confirmEffectWindow);
-    this.confirmWindow = new Window_Confirm();
-    this.windowLayer.addChild(this.confirmWindow);
-    this.equipItemSelectWindow = new Window_EquipItemSelect();
-    this.windowLayer.addChild(this.equipItemSelectWindow);
+    // Use shared windows from Scene_Map
+    this.formationWindow = sharedWindows.formation;
+    this.inventoryWindow = sharedWindows.inventory;
+    this.partySelectWindow = sharedWindows.partySelect;
+    this.confirmEffectWindow = sharedWindows.confirmEffect;
+    this.confirmWindow = sharedWindows.confirm;
+    this.equipItemSelectWindow = sharedWindows.equipItemSelect;
     this.victoryWindow = new Window_Victory();
     this.windowLayer.addChild(this.victoryWindow);
 
@@ -166,7 +161,6 @@ export class Scene_Battle extends Scene_Base {
     this.partySelectWindow.onUserClose = () => this.windowManager.close(this.partySelectWindow);
     this.confirmEffectWindow.onUserClose = () => this.windowManager.close(this.confirmEffectWindow);
     this.confirmWindow.onUserClose = () => this.windowManager.close(this.confirmWindow);
-    this.equipItemSelectWindow.onUserClose = () => this.windowManager.close(this.equipItemSelectWindow);
     this.victoryWindow.onUserClose = () => {/* Prevent closing victory manually without claim? Or allow and re-open? For now, button handles it. */};
 
     this.battleWindow.btnRound.addEventListener("click", this.resolveBattleRound.bind(this));
@@ -274,6 +268,9 @@ export class Scene_Battle extends Scene_Base {
     if (this.isSneakAttack) {
         this.battleWindow.appendLog("Sneak Attack! Enemies have the upper hand.");
         SoundManager.play('UI_ERROR');
+    } else if (this.isPlayerFirstStrike) {
+        this.battleWindow.appendLog("First Strike! You have the upper hand.");
+        SoundManager.play('UI_SUCCESS');
     }
 
     this.applyBattleStartPassives();
@@ -283,7 +280,9 @@ export class Scene_Battle extends Scene_Base {
     SoundManager.play('BATTLE_START');
     SoundManager.playMusic('battle1');
 
-    if (ConfigManager.autoBattle) {
+    if (this.isPlayerFirstStrike) {
+        this.resolveBattleRound(true);
+    } else if (ConfigManager.autoBattle) {
         this.resolveBattleRound();
     }
   }
@@ -450,7 +449,7 @@ export class Scene_Battle extends Scene_Base {
    * @method resolveBattleRound
    * @async
    */
-  async resolveBattleRound() {
+  async resolveBattleRound(isFirstStrike = false) {
     if (!this.battleManager || this.battleManager.isBattleFinished || this.battleBusy) return;
 
     this.battleBusy = true;
@@ -459,7 +458,7 @@ export class Scene_Battle extends Scene_Base {
     this.disableActionButtons();
 
     // Start a new round in the BattleManager
-    this.battleManager.startRound();
+    this.battleManager.startRound(isFirstStrike);
 
     const delay = (ms) => new Promise((res) => setTimeout(res, ms));
     SoundManager.play('UI_SELECT');
@@ -1220,10 +1219,21 @@ export class Scene_Map extends Scene_Base {
    * @param {Object} [encounterData] - Specific encounter data.
    * @param {boolean} [isSneakAttack] - Whether it is a sneak attack.
    */
-  startBattle(x, y, encounterData = null, isSneakAttack = false) {
+  startBattle(x, y, encounterData = null, isSneakAttack = false, isPlayerFirstStrike = false) {
       this.setStatus("Enemy encountered!");
       this.logMessage("[Battle] Shapes uncoil from the dark.");
-      this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.battleManager, this.windowLayer, this.map, x, y, encounterData, isSneakAttack));
+      this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.battleManager, this.windowLayer, this.map, x, y, this.getSharedWindows(), encounterData, isSneakAttack, isPlayerFirstStrike));
+  }
+
+  getSharedWindows() {
+      return {
+          formation: this.formationWindow,
+          inventory: this.inventoryWindow,
+          partySelect: this.partySelectWindow,
+          confirmEffect: this.confirmEffectWindow,
+          confirm: this.confirmWindow,
+          equipItemSelect: this.equipItemSelectWindow,
+      };
   }
 
   /**
@@ -1698,7 +1708,7 @@ export class Scene_Map extends Scene_Base {
    */
   executeEvent(event) {
       if (event.type === 'BATTLE' || (event.type === 'enemy' || event.id === 'enemy')) {
-          this.startBattle(event.x, event.y, event.encounterData, event.isSneakAttack);
+          this.startBattle(event.x, event.y, event.encounterData, event.isSneakAttack, event.isPlayerFirstStrike);
       } else if (event.actions) {
           event.actions.forEach(action => this.interpreter.execute(action, event));
       }

@@ -145,5 +145,21 @@ export const passives = {
         effect: 'Gold found +2.',
         icon: 1,
         traits: [{ code: 'GOLD_DIGGER', value: 2 }]
+    },
+    initiative: {
+        id: 'initiative',
+        name: 'Initiative',
+        description: 'A chance to act before the enemy.',
+        effect: '25% chance of a first strike.',
+        icon: 1,
+        traits: [{ code: 'INITIATIVE', value: 0.25 }]
+    },
+    rearGuard: {
+        id: 'rearGuard',
+        name: 'Rear Guard',
+        description: 'Protects against ambushes.',
+        effect: 'Negates enemy first strikes.',
+        icon: 1,
+        traits: [{ code: 'REAR_GUARD', value: 1 }]
     }
 };

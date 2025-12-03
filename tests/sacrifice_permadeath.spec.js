@@ -5,6 +5,10 @@ test.describe('Sacrifice and Permadeath', () => {
     await page.goto('/?test=true');
     await page.waitForFunction(() => window.dataManager && window.dataManager.actors);
     await page.click('#btn-new-run');
+    // Disable animations
+    await page.evaluate(() => {
+      window.ConfigManager.windowAnimations = false;
+    });
   });
 
   test('Sacrifice a unit', async ({ page }) => {

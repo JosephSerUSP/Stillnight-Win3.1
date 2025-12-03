@@ -4,6 +4,11 @@ test('Battle UI Features', async ({ page }) => {
   await page.goto('/?test=true');
   await page.waitForLoadState('networkidle');
 
+  // Disable animations
+  await page.evaluate(() => {
+    window.ConfigManager.windowAnimations = false;
+  });
+
   // Start New Run
   await page.click('button:has-text("New Run")');
 
@@ -18,15 +23,20 @@ test('Battle UI Features', async ({ page }) => {
   // Check Buttons
   await expect(battleWin.locator('button:has-text("Formation")')).toBeVisible();
   await expect(battleWin.locator('button:has-text("Item")')).toBeVisible();
-  await expect(battleWin.locator('button:has-text("Auto: Off")')).toBeVisible();
+
+  const autoSwitchContainer = battleWin.locator('div:has(> span:text-is("Auto"))');
+  await expect(autoSwitchContainer).toBeVisible();
+
+  const autoSwitch = autoSwitchContainer.locator('.toggle-switch');
+  const autoSwitchInput = autoSwitch.locator('input');
 
   // Test Auto Toggle
-  await battleWin.locator('button:has-text("Auto: Off")').click();
-  await expect(battleWin.locator('button:has-text("Auto: ON")')).toBeVisible();
+  await autoSwitch.click();
+  await expect(autoSwitchInput).toBeChecked();
 
   // Toggle back
-  await battleWin.locator('button:has-text("Auto: ON")').click();
-  await expect(battleWin.locator('button:has-text("Auto: Off")')).toBeVisible();
+  await autoSwitch.click();
+  await expect(autoSwitchInput).not.toBeChecked();
 
   // Test Formation Button (should open formation window)
   await battleWin.locator('button:has-text("Formation")').click();

@@ -375,7 +375,7 @@ export class Game_Battler extends Game_Base {
         let eligible = true;
 
         // Level Requirement
-        if (evo.level && this.level < evo.level) eligible = false;
+        if (evo.level && this.level <= evo.level) eligible = false;
 
         // Item Requirement
         if (evo.item) {
@@ -679,6 +679,7 @@ export class Game_Event {
     this.behavior = data.behavior || null;
     this.encounterData = data.encounterData || null;
     this.isSneakAttack = data.isSneakAttack || false;
+    this.isPlayerFirstStrike = data.isPlayerFirstStrike || false;
   }
 
   /**
@@ -749,8 +750,8 @@ export class Game_Map {
    * @param {Array} [npcData=[]] - NPC definitions.
    * @param {Game_Party} [party=null] - The party (for initiative checks).
    */
-  initFloors(mapData, eventDefs, npcData = [], party = null) {
-    this.floors = mapData.map((meta, i) => this.generateFloor(meta, i, eventDefs, npcData, party));
+  initFloors(mapData, eventDefs, npcData = [], party = null, actors = []) {
+    this.floors = mapData.map((meta, i) => this.generateFloor(meta, i, eventDefs, npcData, party, actors));
     this.floors[0].discovered = true;
     this.maxReachedFloorIndex = 0;
   }
@@ -762,9 +763,10 @@ export class Game_Map {
    * @param {Array} eventDefs - Event definitions.
    * @param {Array} npcData - NPC definitions.
    * @param {Game_Party} [party=null] - The party (for initiative checks).
+   * @param {Array} [actors=[]] - The actor definitions (for enemy initiative checks).
    * @returns {Object} The generated floor object.
    */
-  generateFloor(meta, index, eventDefs, npcData = [], party = null) {
+  generateFloor(meta, index, eventDefs, npcData = [], party = null, actors = []) {
     const tiles = Array.from({ length: this.MAX_H }, () =>
       Array.from({ length: this.MAX_W }, () => "#")
     );
@@ -870,16 +872,56 @@ export class Game_Map {
 
                 // 2. Initiative Check (Sneak Attack)
                 if (party && !eventData.isSneakAttack) {
-                    const partyInit = party.members.reduce((sum, m) => sum + m.getPassiveValue("INITIATIVE"), 0);
-                    const playerRoll = randInt(1, 20) + partyInit;
-                    const enemyRoll = randInt(1, 20); // Base enemy initiative
+                    const get_actor_data = (id) => actors.find(a => a.id === id);
 
-                    // Rear Guard Check (Active Party Members in Back Row)
+                    // Player Initiative
+                    const partyInitChance = party.members.reduce((sum, m) => sum + m.getPassiveValue("INITIATIVE"), 0);
+
+                    // Enemy Initiative
+                    let enemyInitChance = 0;
+                    if (eventData.encounterData && eventData.encounterData.enemies) {
+                        eventData.encounterData.enemies.forEach(enemyId => {
+                            const enemyActorData = get_actor_data(enemyId);
+                            if (enemyActorData) {
+                                const tempEnemyBattler = new Game_Battler(enemyActorData);
+                                enemyInitChance += tempEnemyBattler.getPassiveValue("INITIATIVE");
+                            }
+                        });
+                    }
+
+                    // Rear Guard negates enemy initiative
                     const hasRearGuard = party.activeMembers.some((m, idx) => idx >= 2 && m.getPassiveValue("REAR_GUARD") > 0);
+                    if (hasRearGuard) {
+                        enemyInitChance = 0;
+                    }
 
-                    if (!hasRearGuard && enemyRoll > playerRoll) {
+                    let partyWins = false;
+                    let enemyWins = false;
+
+                    // If both have initiative, it's a proportional chance
+                    if (partyInitChance > 0 && enemyInitChance > 0) {
+                        const totalInit = partyInitChance + enemyInitChance;
+                        if (Math.random() < partyInitChance / totalInit) {
+                            partyWins = true;
+                        } else {
+                            enemyWins = true;
+                        }
+                    } else if (partyInitChance > 0) {
+                        if (Math.random() < partyInitChance) {
+                            partyWins = true;
+                        }
+                    } else if (enemyInitChance > 0) {
+                        if (Math.random() < enemyInitChance) {
+                            enemyWins = true;
+                        }
+                    }
+
+                    // If enemy wins, they get a sneak attack. Otherwise, the player gets the first turn by default.
+                    if (enemyWins) {
                         eventData.isSneakAttack = true;
                         eventData.hidden = true; // Invisible to player
+                    } else if (partyWins) {
+                        eventData.isPlayerFirstStrike = true;
                     }
                 }
             }

@@ -5,6 +5,10 @@ test.describe('Game Logic', () => {
     // Start the local server before running tests if not already running
     // In this environment, we assume the server is running on port 8080
     await page.goto('/?test=true');
+    // Disable animations
+    await page.evaluate(() => {
+      window.ConfigManager.windowAnimations = false;
+    });
   });
 
   test('Battle window shake on close attempt', async ({ page }) => {
