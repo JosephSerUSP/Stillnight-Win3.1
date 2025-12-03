@@ -153,6 +153,7 @@ export const passives = {
         effect: 'Heals neighbor 2 HP/turn.',
         icon: 1,
         traits: [{ code: 'SYMBIOSIS', value: 2 }]
+    },
     initiative: {
         id: 'initiative',
         name: 'Initiative',
