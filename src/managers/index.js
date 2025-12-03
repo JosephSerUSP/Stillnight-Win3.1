@@ -636,7 +636,7 @@ export class BattleManager {
   startRound(isFirstStrike = false) {
     if (this.isBattleFinished) return;
     this.round++;
-    // Create a turn order list: Party then Enemies (Default)
+    // Create a turn order list
     // Iterate slots 0-3 to preserve correct slot index for row calculation
     const partyQueue = [];
     this.party.slots.slice(0, 4).forEach((battler, index) => {
@@ -647,15 +647,18 @@ export class BattleManager {
 
     const enemyQueue = this.enemies.map((b, i) => ({ battler: b, index: i, isEnemy: true }));
 
+    // Helper to sort by speed
+    const sortBySpeed = (queue) => queue.sort((a, b) => b.battler.spd - a.battler.spd);
+
     if (isFirstStrike) {
         // Player First Strike: Only party members get a turn
-        this.turnQueue = [...partyQueue];
+        this.turnQueue = sortBySpeed([...partyQueue]);
     } else if (this.round === 1 && this.isSneakAttack) {
-        // Sneak Attack: Enemies go first
-        this.turnQueue = [...enemyQueue, ...partyQueue];
+        // Sneak Attack: Enemies go first, then Party. Sorted within groups.
+        this.turnQueue = [...sortBySpeed(enemyQueue), ...sortBySpeed(partyQueue)];
     } else {
-        // Default: Party goes first
-        this.turnQueue = [...partyQueue, ...enemyQueue];
+        // Default: Mixed sorting by speed
+        this.turnQueue = sortBySpeed([...partyQueue, ...enemyQueue]);
     }
   }
 
