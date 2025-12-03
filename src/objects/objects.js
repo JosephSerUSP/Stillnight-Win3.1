@@ -59,7 +59,15 @@ class Game_Base {
      * The elemental affinities of the unit.
      * @type {string[]}
      */
-    this.elements = unitData.elements || [];
+    this._baseElements = unitData.elements || [];
+  }
+
+  /**
+   * Gets the elemental affinities of the unit.
+   * @type {string[]}
+   */
+  get elements() {
+      return this._baseElements;
   }
 
   /**
@@ -169,6 +177,16 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
+   * Gets the effective elements, including traits.
+   * @type {string[]}
+   */
+  get elements() {
+      const base = this._baseElements || [];
+      const added = this.traits.filter(t => t.code === 'ELEMENT_CHANGE').map(t => t.dataId);
+      return [...new Set([...base, ...added])];
+  }
+
+  /**
    * Gets the effective maximum HP.
    * @type {number}
    */
@@ -217,6 +235,25 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
+   * Gets the effective Speed.
+   * @type {number}
+   */
+  get spd() {
+      let base = 0;
+      if (this.isEnemy) {
+           base = this.level;
+      } else {
+           base = 3 + Math.floor(this.level / 2);
+      }
+
+      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'spd')
+                               .reduce((sum, t) => sum + t.value, 0);
+      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'spd')
+                               .reduce((acc, t) => acc * t.value, 1.0);
+      return Math.floor((base + plus) * rate);
+  }
+
+  /**
    * Calculates the XP needed to reach the next level.
    * @param {number} level - The current level.
    * @returns {number} XP needed.
@@ -233,7 +270,10 @@ export class Game_Battler extends Game_Base {
   gainXp(amount) {
     if (amount <= 0) return { leveledUp: false, hpGain: 0, newLevel: this.level };
 
-    const actualAmount = probabilisticRound(amount);
+    const rate = this.traits.filter(t => t.code === 'XP_RATE')
+                            .reduce((acc, t) => acc * t.value, 1.0);
+
+    const actualAmount = probabilisticRound(amount * rate);
     this.xp = (this.xp || 0) + actualAmount;
     let leveledUp = false;
     let totalHpGain = 0;
