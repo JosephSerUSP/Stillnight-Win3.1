@@ -1,4 +1,4 @@
-import { randInt, shuffleArray, probabilisticRound } from "../core/utils.js";
+import { randInt, shuffleArray, probabilisticRound, pickWeighted } from "../core/utils.js";
 import { EffectManager } from "../managers/effects.js";
 import { passives as passivesData } from "../../data/passives.js";
 import { states as statesData } from "../../data/states.js";
@@ -676,6 +676,51 @@ export class Game_Event {
     if (data.id) this.id = data.id;
     this.hidden = data.hidden || false;
     this.trapValue = data.trapValue || 0;
+    this.behavior = data.behavior || null;
+    this.encounterData = data.encounterData || null;
+    this.isSneakAttack = data.isSneakAttack || false;
+  }
+
+  /**
+   * Updates the event logic (e.g. movement).
+   * @param {Game_Map} map - The map instance.
+   * @param {Game_Party} party - The party instance.
+   * @returns {Object|null} Result of update, e.g., { type: 'battle', event: this }.
+   */
+  update(map, party) {
+      if (this.behavior === 'chase' && !this.hidden) {
+          const dx = map.playerX - this.x;
+          const dy = map.playerY - this.y;
+          const dist = Math.abs(dx) + Math.abs(dy);
+
+          // Simple Manhattan chase
+          if (dist > 0 && dist < 8) { // Aggro range
+              let nx = this.x;
+              let ny = this.y;
+
+              if (Math.abs(dx) > Math.abs(dy)) {
+                  nx += Math.sign(dx);
+              } else {
+                  ny += Math.sign(dy);
+              }
+
+              // Collision check with walls
+              if (map.floors[map.floorIndex].tiles[ny][nx] !== '#') {
+                   // Check collision with player
+                   if (nx === map.playerX && ny === map.playerY) {
+                       return { type: 'collision', event: this };
+                   }
+
+                   // Check collision with other events
+                   const otherEvent = map.floors[map.floorIndex].events.find(e => e !== this && e.x === nx && e.y === ny);
+                   if (!otherEvent) {
+                       this.x = nx;
+                       this.y = ny;
+                   }
+              }
+          }
+      }
+      return null;
   }
 }
 
@@ -702,9 +747,10 @@ export class Game_Map {
    * @param {Array} mapData - Data for all floors.
    * @param {Array} eventDefs - Event definitions.
    * @param {Array} [npcData=[]] - NPC definitions.
+   * @param {Game_Party} [party=null] - The party (for initiative checks).
    */
-  initFloors(mapData, eventDefs, npcData = []) {
-    this.floors = mapData.map((meta, i) => this.generateFloor(meta, i, eventDefs, npcData));
+  initFloors(mapData, eventDefs, npcData = [], party = null) {
+    this.floors = mapData.map((meta, i) => this.generateFloor(meta, i, eventDefs, npcData, party));
     this.floors[0].discovered = true;
     this.maxReachedFloorIndex = 0;
   }
@@ -715,9 +761,10 @@ export class Game_Map {
    * @param {number} index - Floor index.
    * @param {Array} eventDefs - Event definitions.
    * @param {Array} npcData - NPC definitions.
+   * @param {Game_Party} [party=null] - The party (for initiative checks).
    * @returns {Object} The generated floor object.
    */
-  generateFloor(meta, index, eventDefs, npcData = []) {
+  generateFloor(meta, index, eventDefs, npcData = [], party = null) {
     const tiles = Array.from({ length: this.MAX_H }, () =>
       Array.from({ length: this.MAX_W }, () => "#")
     );
@@ -801,12 +848,40 @@ export class Game_Map {
           if (pos) {
             const eventData = { ...def };
 
+            // Apply overrides from config (like behavior, symbol)
+            Object.assign(eventData, config);
+
             // Special handling for NPC dynamic data
             if (def.type === "npc" && npcData.length > 0) {
               const npcDef = npcData[randInt(0, npcData.length - 1)];
               eventData.symbol = npcDef.char || "N";
               eventData.actions = [{ type: "NPC_DIALOGUE", id: npcDef.id }];
               eventData.id = npcDef.id; // Compatibility
+            }
+
+            // Determine Encounter and Sneak Attack for Battle events or Enemies
+            if (def.type === 'enemy' || config.id === 'enemy' || def.id === 'enemy') {
+                // 1. Resolve Encounter
+                if (config.encounters) {
+                    eventData.encounterData = pickWeighted(config.encounters);
+                } else if (meta.encounters && meta.encounters.length > 0) {
+                    eventData.encounterData = pickWeighted(meta.encounters);
+                }
+
+                // 2. Initiative Check (Sneak Attack)
+                if (party && !eventData.isSneakAttack) {
+                    const partyInit = party.members.reduce((sum, m) => sum + m.getPassiveValue("INITIATIVE"), 0);
+                    const playerRoll = randInt(1, 20) + partyInit;
+                    const enemyRoll = randInt(1, 20); // Base enemy initiative
+
+                    // Rear Guard Check (Active Party Members in Back Row)
+                    const hasRearGuard = party.activeMembers.some((m, idx) => idx >= 2 && m.getPassiveValue("REAR_GUARD") > 0);
+
+                    if (!hasRearGuard && enemyRoll > playerRoll) {
+                        eventData.isSneakAttack = true;
+                        eventData.hidden = true; // Invisible to player
+                    }
+                }
             }
 
             events.push(new Game_Event(pos[0], pos[1], eventData));
@@ -831,6 +906,23 @@ export class Game_Map {
       startY,
       discovered: false,
     };
+  }
+
+  /**
+   * Updates all events on the current floor.
+   * @param {Game_Party} party - The party.
+   * @returns {Array} List of results (e.g., collisions).
+   */
+  updateEvents(party) {
+      const floor = this.floors[this.floorIndex];
+      const results = [];
+      if (floor.events) {
+          floor.events.forEach(event => {
+              const res = event.update(this, party);
+              if (res) results.push(res);
+          });
+      }
+      return results;
   }
 
   /**

@@ -24,7 +24,17 @@
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 2, "max": 3 },
       { "id": "recruit", "chance": 0.5 },
-      { "id": "treasure", "count": 1 }
+      { "id": "treasure", "count": 1 },
+      {
+          "id": "enemy",
+          "count": 1,
+          "behavior": "chase",
+          "symbol": "!",
+          "cssClass": "text-danger",
+          "encounters": [
+              { "id": "imp", "weight": 10 }
+          ]
+      }
     ],
     "treasures": ["potion", "antidote"],
     "encounters": [

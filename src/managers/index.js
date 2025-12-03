@@ -567,11 +567,13 @@ export class BattleManager {
    * @param {import("../objects/objects.js").Game_Battler[]} enemies - The array of enemies for this battle.
    * @param {number} tileX - The X coordinate on the map where the battle started.
    * @param {number} tileY - The Y coordinate on the map where the battle started.
+   * @param {boolean} [isSneakAttack=false] - Whether the enemy has the initiative advantage.
    */
-  setup(enemies, tileX, tileY) {
+  setup(enemies, tileX, tileY, isSneakAttack = false) {
     this.enemies = enemies;
     this.tileX = tileX;
     this.tileY = tileY;
+    this.isSneakAttack = isSneakAttack;
     this.round = 0;
     this.isBattleFinished = false;
     this.isVictoryPending = false;
@@ -634,7 +636,7 @@ export class BattleManager {
   startRound() {
     if (this.isBattleFinished) return;
     this.round++;
-    // Create a turn order list: Party then Enemies
+    // Create a turn order list: Party then Enemies (Default)
     // Iterate slots 0-3 to preserve correct slot index for row calculation
     const partyQueue = [];
     this.party.slots.slice(0, 4).forEach((battler, index) => {
@@ -643,10 +645,15 @@ export class BattleManager {
         }
     });
 
-    this.turnQueue = [
-        ...partyQueue,
-        ...this.enemies.map((b, i) => ({ battler: b, index: i, isEnemy: true }))
-    ];
+    const enemyQueue = this.enemies.map((b, i) => ({ battler: b, index: i, isEnemy: true }));
+
+    if (this.round === 1 && this.isSneakAttack) {
+        // Sneak Attack: Enemies go first
+        this.turnQueue = [...enemyQueue, ...partyQueue];
+    } else {
+        // Default: Party goes first
+        this.turnQueue = [...partyQueue, ...enemyQueue];
+    }
   }
 
   /**

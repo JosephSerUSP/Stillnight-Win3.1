@@ -125,8 +125,10 @@ export class Scene_Battle extends Scene_Base {
    * @param {import("../objects/objects.js").Game_Map} map - The game map.
    * @param {number} tileX - The X coordinate of the battle on the map.
    * @param {number} tileY - The Y coordinate of the battle on the map.
+   * @param {Object} [encounterData] - Specific encounter data for this battle.
+   * @param {boolean} [isSneakAttack] - Whether this is a sneak attack.
    */
-  constructor(dataManager, sceneManager, windowManager, party, battleManager, windowLayer, map, tileX, tileY) {
+  constructor(dataManager, sceneManager, windowManager, party, battleManager, windowLayer, map, tileX, tileY, encounterData = null, isSneakAttack = false) {
     super(dataManager, windowManager);
     this.sceneManager = sceneManager;
     this.party = party;
@@ -135,6 +137,8 @@ export class Scene_Battle extends Scene_Base {
     this.map = map;
     this.tileX = tileX;
     this.tileY = tileY;
+    this.encounterData = encounterData;
+    this.isSneakAttack = isSneakAttack;
     this.battleBusy = false;
     this.actionTakenThisTurn = false;
 
@@ -202,42 +206,75 @@ export class Scene_Battle extends Scene_Base {
         expGrowth: 10,
       }, depth, true));
     } else {
-      // Use encounter table if available
-      if (floor.encounters && floor.encounters.length > 0) {
-        const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
-        const enemyCount = randInt(1, maxEnemies);
-        for (let i = 0; i < enemyCount; i++) {
-            const encounter = pickWeighted(floor.encounters);
-            if (encounter) {
-                const tpl = actorTemplates.find(a => a.id === encounter.id);
-                if (tpl) {
-                    enemies.push(new Game_Battler(tpl, depth, true));
-                } else {
-                    console.warn(`Encounter ID ${encounter.id} not found in actors.`);
-                    // Fallback to random
-                    const randomTpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
-                    enemies.push(new Game_Battler(randomTpl, depth, true));
-                }
+        // Use provided encounter data if available
+        if (this.encounterData) {
+            // encounterData might be single object from encounters list, or raw ID/config?
+            // The objects/objects.js logic picks from meta.encounters so it's likely { id: '...', weight: N }
+
+            // If it's just an ID string (from older logic), handle that
+            let encId = typeof this.encounterData === 'string' ? this.encounterData : this.encounterData.id;
+
+            if (encId) {
+                // If weight object, we might want to spawn multiples?
+                // Or does "Encounter" mean a group? Usually "Encounter" is a single mob type in this system.
+                // Let's spawn 1-3 of them.
+                 const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
+                 const enemyCount = randInt(1, maxEnemies);
+                 for (let i = 0; i < enemyCount; i++) {
+                     const tpl = actorTemplates.find(a => a.id === encId);
+                     if (tpl) enemies.push(new Game_Battler(tpl, depth, true));
+                 }
+            } else if (Array.isArray(this.encounterData)) {
+                // If it's a specific list of enemies
+                this.encounterData.forEach(eConfig => {
+                     const tpl = actorTemplates.find(a => a.id === eConfig.id);
+                     if (tpl) enemies.push(new Game_Battler(tpl, depth, true));
+                });
             }
         }
-      } else {
-        // Legacy fallback
-        const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
-        const enemyCount = randInt(1, maxEnemies);
-        for (let i = 0; i < enemyCount; i++) {
-          const tpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
-          enemies.push(new Game_Battler(tpl, depth, true));
+
+        if (enemies.length === 0) {
+              // Use encounter table if available
+              if (floor.encounters && floor.encounters.length > 0) {
+                const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
+                const enemyCount = randInt(1, maxEnemies);
+                for (let i = 0; i < enemyCount; i++) {
+                    const encounter = pickWeighted(floor.encounters);
+                    if (encounter) {
+                        const tpl = actorTemplates.find(a => a.id === encounter.id);
+                        if (tpl) {
+                            enemies.push(new Game_Battler(tpl, depth, true));
+                        } else {
+                            console.warn(`Encounter ID ${encounter.id} not found in actors.`);
+                            // Fallback to random
+                            const randomTpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
+                            enemies.push(new Game_Battler(randomTpl, depth, true));
+                        }
+                    }
+                }
+              } else {
+                // Legacy fallback
+                const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
+                const enemyCount = randInt(1, maxEnemies);
+                for (let i = 0; i < enemyCount; i++) {
+                  const tpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
+                  enemies.push(new Game_Battler(tpl, depth, true));
+                }
+              }
         }
-      }
     }
 
-    this.battleManager.setup(enemies, this.tileX, this.tileY);
+    this.battleManager.setup(enemies, this.tileX, this.tileY, this.isSneakAttack);
     this.battleBusy = false;
     this.battleWindow.logEl.textContent = "";
     this.battleWindow.btnRound.disabled = false;
     this.battleWindow.btnFlee.disabled = false;
 
     this.battleWindow.logEnemyEmergence(enemies, this.dataManager.terms.battle);
+    if (this.isSneakAttack) {
+        this.battleWindow.appendLog("Sneak Attack! Enemies have the upper hand.");
+        SoundManager.play('UI_ERROR');
+    }
 
     this.applyBattleStartPassives();
     this.renderBattleAscii();
@@ -1180,11 +1217,13 @@ export class Scene_Map extends Scene_Base {
    * @method startBattle
    * @param {number} x - The x coordinate of the event.
    * @param {number} y - The y coordinate of the event.
+   * @param {Object} [encounterData] - Specific encounter data.
+   * @param {boolean} [isSneakAttack] - Whether it is a sneak attack.
    */
-  startBattle(x, y) {
+  startBattle(x, y, encounterData = null, isSneakAttack = false) {
       this.setStatus("Enemy encountered!");
       this.logMessage("[Battle] Shapes uncoil from the dark.");
-      this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.battleManager, this.windowLayer, this.map, x, y));
+      this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.battleManager, this.windowLayer, this.map, x, y, encounterData, isSneakAttack));
   }
 
   /**
@@ -1209,8 +1248,8 @@ export class Scene_Map extends Scene_Base {
    */
   startNewRun() {
     if (this.sceneManager.currentScene() !== this) return;
-    this.map.initFloors(this.dataManager.maps, this.dataManager.events, this.dataManager.npcs);
     this.party.createInitialMembers(this.dataManager);
+    this.map.initFloors(this.dataManager.maps, this.dataManager.events, this.dataManager.npcs, this.party);
     this.runActive = true;
     this.map.floorIndex = 0;
     const f = this.map.floors[this.map.floorIndex];
@@ -1314,6 +1353,18 @@ export class Scene_Map extends Scene_Base {
       newY < this.map.MAX_H
     ) {
       this.onTileClick(newX, newY);
+    }
+
+    // Process Moving Enemies
+    const results = this.map.updateEvents(this.party);
+    results.forEach(res => {
+        if (res.type === 'collision') {
+            this.currentInteractionEvent = res.event;
+            this.executeEvent(res.event);
+        }
+    });
+    if (results.length > 0) {
+        this.updateGrid();
     }
   }
 
@@ -1440,7 +1491,12 @@ export class Scene_Map extends Scene_Base {
                       const v = m.getPassiveValue("SEE_TRAPS");
                       if (v > maxSee) maxSee = v;
                   });
-                  if (maxSee <= event.trapValue) {
+                  if (maxSee <= event.trapValue && !event.isSneakAttack) {
+                      // Sneak attacks are handled separately (always hidden until triggered)
+                      // But if it's just a trap, we check perception
+                      visible = false;
+                  } else if (event.isSneakAttack) {
+                      // Sneak attacks are invisible regardless of perception unless REAR_GUARD prevented them (which sets isSneakAttack=false)
                       visible = false;
                   }
               }
@@ -1566,7 +1622,11 @@ export class Scene_Map extends Scene_Base {
               const v = m.getPassiveValue("SEE_TRAPS");
               if (v > maxSee) maxSee = v;
            });
-           if (maxSee <= event.trapValue) {
+           if (maxSee <= event.trapValue && !event.isSneakAttack) {
+               isHidden = true;
+           }
+           if (event.isSneakAttack) {
+               // Sneak attacks are hidden until stepped on
                isHidden = true;
            }
        }
@@ -1602,34 +1662,16 @@ export class Scene_Map extends Scene_Base {
     this.updateGrid();
 
     if (event) {
-       let isHidden = false;
+       // If hidden, we step on it and reveal it (surprise!)
        if (event.hidden) {
-           let maxSee = 0;
-           this.party.members.forEach(m => {
-              const v = m.getPassiveValue("SEE_TRAPS");
-              if (v > maxSee) maxSee = v;
-           });
-           if (maxSee <= event.trapValue) {
-               isHidden = true;
-           }
-       }
-
-       if (isHidden) {
-           this.map.playerX = x;
-           this.map.playerY = y;
-           this.map.revealAroundPlayer();
-           this.updateGrid();
-
            event.hidden = false;
+           this.updateGrid();
            this.currentInteractionEvent = event;
            this.executeEvent(event);
            return;
        } else {
            // If it's a trap, we still move onto it (triggering it)
            if (event.type === 'trap') {
-               this.map.playerX = x;
-               this.map.playerY = y;
-               this.map.revealAroundPlayer();
                this.updateGrid();
            }
 
@@ -1655,7 +1697,9 @@ export class Scene_Map extends Scene_Base {
    * @param {import("../objects/objects.js").Game_Event} event - The event to execute.
    */
   executeEvent(event) {
-      if (event.actions) {
+      if (event.type === 'BATTLE' || (event.type === 'enemy' || event.id === 'enemy')) {
+          this.startBattle(event.x, event.y, event.encounterData, event.isSneakAttack);
+      } else if (event.actions) {
           event.actions.forEach(action => this.interpreter.execute(action, event));
       }
   }
@@ -1922,6 +1966,7 @@ export class Scene_Map extends Scene_Base {
       }
       this.confirmEffectWindow.setupEquip(target, item, oldItem, "Held Item", () => {
           this.windowManager.close(this.confirmEffectWindow);
+          this.windowManager.close(this.inventoryWindow);
           this.equipItem(target, item);
       }, swapMsg);
       this.windowManager.push(this.confirmEffectWindow);
