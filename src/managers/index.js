@@ -401,8 +401,8 @@ export class SoundManager {
               source.buffer = buffer;
               const gainNode = this._audioCtx.createGain();
 
-              // Tuned up default volume to 1.0 (was 0.5)
-              let playVol = (options.volume !== undefined ? options.volume : 1.0) * sfxVol;
+              // Default volume 0.5
+              let playVol = (options.volume !== undefined ? options.volume : 0.5) * sfxVol;
               gainNode.gain.value = playVol;
 
               if (options.pitch) source.playbackRate.value = options.pitch;
@@ -435,9 +435,9 @@ export class SoundManager {
               if (options.pitch) freq *= options.pitch;
               oscillator.frequency.value = freq;
 
-              // Tuned up default note volume to 0.3 (was 0.1)
+              // Default note volume 0.3
               let noteVol = (note.volume || 0.3);
-              let playVol = (options.volume !== undefined ? options.volume : 1.0) * noteVol * sfxVol;
+              let playVol = (options.volume !== undefined ? options.volume : 0.5) * noteVol * sfxVol;
 
               gainNode.gain.value = playVol;
 

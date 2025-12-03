@@ -1868,14 +1868,10 @@ export class Scene_Map extends Scene_Base {
         },
         {
             label: "Auto Battle",
-            type: "select",
-            value: ConfigManager.autoBattle ? "on" : "off",
-            options: [
-                { label: "On", value: "on" },
-                { label: "Off", value: "off" }
-            ],
+            type: "toggle",
+            value: ConfigManager.autoBattle,
             onChange: (val) => {
-                ConfigManager.autoBattle = (val === "on");
+                ConfigManager.autoBattle = val;
                 ConfigManager.save();
                 SoundManager.play('UI_SELECT');
             }
