@@ -5,6 +5,11 @@ test('Verify Evolution System', async ({ page }) => {
   await page.goto('/?test=true');
   await page.waitForSelector('#game-container');
 
+  // Disable animations
+  await page.evaluate(() => {
+    window.ConfigManager.windowAnimations = false;
+  });
+
   // 2. Wait for data to load
   await page.waitForFunction(() => window.dataManager && window.dataManager.actors && window.dataManager.items);
 
@@ -21,8 +26,8 @@ test('Verify Evolution System', async ({ page }) => {
     const pixie = new window.Game_Battler(pixieData);
     scene.party.addMember(pixie);
 
-    // Level up to 6
-    pixie.level = 6;
+    // Level up to 7
+    pixie.level = 7;
     pixie._baseMaxHp = 20;
     pixie.hp = 20;
 

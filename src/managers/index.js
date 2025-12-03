@@ -633,7 +633,7 @@ export class BattleManager {
    * Initializes a new round of combat by creating a turn queue sorted by the default order.
    * @method startRound
    */
-  startRound() {
+  startRound(isFirstStrike = false) {
     if (this.isBattleFinished) return;
     this.round++;
     // Create a turn order list: Party then Enemies (Default)
@@ -647,7 +647,10 @@ export class BattleManager {
 
     const enemyQueue = this.enemies.map((b, i) => ({ battler: b, index: i, isEnemy: true }));
 
-    if (this.round === 1 && this.isSneakAttack) {
+    if (isFirstStrike) {
+        // Player First Strike: Only party members get a turn
+        this.turnQueue = [...partyQueue];
+    } else if (this.round === 1 && this.isSneakAttack) {
         // Sneak Attack: Enemies go first
         this.turnQueue = [...enemyQueue, ...partyQueue];
     } else {

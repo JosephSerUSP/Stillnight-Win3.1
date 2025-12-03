@@ -5,6 +5,11 @@ test('Verify Battle Layout and Evolution Preview', async ({ page }) => {
     await page.goto('http://127.0.0.1:8080/?test=true');
     await page.waitForLoadState('networkidle');
 
+    // Disable animations
+    await page.evaluate(() => {
+        window.ConfigManager.windowAnimations = false;
+    });
+
     // --- BATTLE LAYOUT VERIFICATION ---
     await page.evaluate(async () => {
         const battleManager = new window.BattleManager(window.sceneManager.currentScene().party, window.dataManager);
@@ -57,7 +62,7 @@ test('Verify Battle Layout and Evolution Preview', async ({ page }) => {
              pixie.growToLevel(20);
         }
 
-        const evolutionData = { evolvesTo: 'high_pixie' };
+        const evolutionData = { evolvesTo: 'highPixie' };
         window.sceneManager.currentScene().openEvolution(pixie, evolutionData);
     });
 
