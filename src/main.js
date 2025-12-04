@@ -1,5 +1,5 @@
 import { DataManager, SceneManager, ThemeManager } from "./managers/index.js";
-import { Scene_Boot } from "./scenes/scenes.js";
+import { Scene_Boot, Scene_Map, Scene_Battle, Scene_Shop } from "./scenes/scenes.js";
 import { WindowManager } from "./windows/index.js";
 
 /**
@@ -38,6 +38,10 @@ async function main() {
     window.sceneManager = sceneManager;
     window.windowManager = windowManager;
     window.dataManager = dataManager;
+    window.Scene_Boot = Scene_Boot;
+    window.Scene_Map = Scene_Map;
+    window.Scene_Battle = Scene_Battle;
+    window.Scene_Shop = Scene_Shop;
   }
 }
 
