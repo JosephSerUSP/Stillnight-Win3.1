@@ -58,12 +58,6 @@ export class WindowAnimator {
      * @param {number} targetHeight - The full height of the window.
      * @param {Function} onComplete - Callback when animation finishes.
      */
-/**
-     * Animates window opening (growing height).
-     * @param {HTMLElement} element - The window element.
-     * @param {number} targetHeight - The full height of the window.
-     * @param {Function} onComplete - Callback when animation finishes.
-     */
     open(element, targetHeight, onComplete) {
          if (!element) return;
          if (this.activeAnimations.has(element)) {
@@ -74,14 +68,12 @@ export class WindowAnimator {
          const originalOverflow = element.style.overflow;
          element.style.overflow = "hidden";
 
-         // --- INSERT NEW CODE HERE ---
          // 1. Calculate the dynamic growth rate based on target height
-         let growthRate = 64; 
+         let growthRate = 64;
          if (targetHeight > 320) {
              const extraSpeed = Math.floor((targetHeight - 320) / 32) * 10;
              growthRate += extraSpeed;
          }
-         // ---------------------------
 
          let currentHeight = 0;
          let frameCounter = 0;
@@ -89,8 +81,8 @@ export class WindowAnimator {
          const animate = () => {
              // Every 3 frames
              if (frameCounter % 3 === 0) {
-                 currentHeight += growthRate; // 2. CHANGE '64' TO 'growthRate'
-                 
+                 currentHeight += growthRate;
+
                  if (currentHeight >= targetHeight) {
                      currentHeight = targetHeight;
                      element.style.height = `${currentHeight}px`;
@@ -150,6 +142,8 @@ export class Window_Base {
      * @param {Object} options
      * @param {string} [options.title]
      * @param {boolean} [options.closeButton=true]
+     * @param {string} [options.id]
+     * @param {boolean} [options.embedded]
      */
     constructor(x, y, width, height, options = {}) {
         this.embedded = options.embedded || false;
@@ -159,14 +153,40 @@ export class Window_Base {
         this.width = width;
         this.height = height;
 
+        // --- Refactoring to use UI.build more extensively ---
+
+        // Main Element Construction
+        const elementProps = {
+            className: "window-frame",
+            id: options.id || undefined,
+            style: {}
+        };
+
         if (this.embedded) {
-            this.element = document.createElement("div");
-            this.element.className = "window-frame";
-            if (options.id) this.element.id = options.id;
-            this.element.style.position = "relative";
-            if (width !== 'auto') this.element.style.width = `${width}px`;
-            if (height !== 'auto') this.element.style.height = `${height}px`;
+            elementProps.style.position = "relative";
+            if (width !== 'auto') elementProps.style.width = `${width}px`;
+            if (height !== 'auto') elementProps.style.height = `${height}px`;
         } else {
+            elementProps.style.position = "absolute";
+            const finalX = x === 'center' ? (Graphics.width - width) / 2 : x;
+            const finalY = y === 'center' ? (Graphics.height - height) / 2 : y;
+            elementProps.style.left = `${finalX}px`;
+            elementProps.style.top = `${finalY}px`;
+            elementProps.style.width = `${width}px`;
+            elementProps.style.height = height === 'auto' ? 'auto' : `${height}px`;
+            if (height === 'auto') elementProps.style.maxHeight = '90vh';
+            elementProps.style.zIndex = "10";
+            elementProps.style.display = "none";
+        }
+
+        // Build main element
+        this.element = UI.build(null, {
+            type: 'panel', // 'panel' creates a div
+            props: elementProps
+        });
+
+        // Overlay Construction (if not embedded)
+        if (!this.embedded) {
             this.overlay = document.createElement("div");
             this.overlay.className = "modal-overlay";
             this.overlay.addEventListener("mousedown", (e) => {
@@ -174,59 +194,43 @@ export class Window_Base {
                     this.onUserClose();
                 }
             });
-
-            this.element = document.createElement("div");
-            this.element.className = "window-frame";
-            if (options.id) this.element.id = options.id;
-            this.element.style.position = "absolute";
-
-            const finalX = x === 'center' ? (Graphics.width - width) / 2 : x;
-            const finalY = y === 'center' ? (Graphics.height - height) / 2 : y;
-
-            this.element.style.left = `${finalX}px`;
-            this.element.style.top = `${finalY}px`;
-            this.element.style.width = `${width}px`;
-
-            if (height === 'auto') {
-                this.element.style.height = 'auto';
-                this.element.style.maxHeight = '90vh';
-            } else {
-                this.element.style.height = `${height}px`;
-            }
-            this.element.style.zIndex = "10";
-            this.element.style.display = "none";
-
-            // this.overlay.appendChild(this.element);
         }
 
-        // 1. Header
+        // 1. Header Construction
+        const headerChildren = [
+            { type: 'label', props: { text: options.title || "" } }
+        ];
+
+        if (options.closeButton !== false && !this.embedded) {
+            headerChildren.push({
+                type: 'button',
+                props: {
+                    className: 'win-btn',
+                    label: 'X',
+                    onClick: () => this.onUserClose()
+                }
+            });
+        }
+
         const headerStruct = {
             type: 'panel',
             props: { className: 'window-header' },
-            children: [
-                { type: 'label', props: { text: options.title || "" } }
-            ]
+            children: headerChildren
         };
-        if (options.closeButton !== false && !this.embedded) {
-            headerStruct.children.push({
-                type: 'button',
-                props: { className: 'win-btn', label: 'X', onClick: () => this.onUserClose() }
-            });
-        }
         this.header = UI.build(this.element, headerStruct);
-        this.titleEl = this.header.querySelector("span"); // Assume first span is title
+        this.titleEl = this.header.querySelector("span");
 
         if (!this.embedded) {
             this.makeDraggable(this.header);
         }
 
-        // 2. Content
+        // 2. Content Construction
         this.content = UI.build(this.element, {
             type: 'panel',
             props: { className: 'window-content' }
         });
 
-        // 3. Footer
+        // 3. Footer Construction
         this.footer = UI.build(this.element, {
             type: 'panel',
             props: { className: 'window-footer' }
@@ -235,9 +239,6 @@ export class Window_Base {
         this._dragStart = null;
         this._onDragHandler = this._onDrag.bind(this);
         this._onDragEndHandler = this._onDragEnd.bind(this);
-
-        // Internal state for restoration after close animation
-        this._originalHeight = null;
     }
 
     makeDraggable(titleBar) {
@@ -270,30 +271,22 @@ export class Window_Base {
             this.element.style.display = "";
 
             if (ConfigManager.windowAnimations) {
-                // Determine target height
                 let targetHeight;
                 if (this.height === 'auto') {
-                    // Temporarily measure
                     const savedHeight = this.element.style.height;
                     this.element.style.height = 'auto';
                     targetHeight = this.element.getBoundingClientRect().height;
-                    // If height was previously 0 due to previous close, we need to reset it to auto to measure,
-                    // but the animation starts from 0.
                 } else {
                     targetHeight = this.height;
                 }
 
-                // Hide contents during animation?
-                // The prompt says "after that is finished, it draws its contents".
                 this.setChildrenVisibility('hidden');
 
                 this.animator.open(this.element, targetHeight, () => {
                     this.setChildrenVisibility('visible');
-                    // Ensure final height state is correct
                     if (this.height === 'auto') this.element.style.height = 'auto';
                 });
             } else {
-                // Ensure visible if animation disabled but previously hidden
                 this.setChildrenVisibility('visible');
             }
         }
@@ -302,14 +295,11 @@ export class Window_Base {
     close() {
         if (this.overlay) {
             if (ConfigManager.windowAnimations && this.overlay.classList.contains("active")) {
-                // Hide contents immediately
                 this.setChildrenVisibility('hidden');
 
                 this.animator.close(this.element, () => {
                     this.overlay.classList.remove("active");
                     this.element.style.display = "none";
-                    // Reset visibility/height for next open?
-                    // Better to do it on open start, but let's reset height here to avoid flash
                     this.element.style.height = '';
                     if (this.height !== 'auto') this.element.style.height = `${this.height}px`;
                 });
@@ -321,8 +311,6 @@ export class Window_Base {
     }
 
     setChildrenVisibility(visibility) {
-        // Toggle visibility of children to simulate "drawing contents after reveal"
-        // Using opacity allows layout to remain stable
         const val = visibility === 'hidden' ? '0' : '1';
         this.header.style.opacity = val;
         this.content.style.opacity = val;
@@ -348,11 +336,15 @@ export class Window_Base {
      * @returns {HTMLButtonElement}
      */
     addButton(label, onClick) {
-        const btn = document.createElement("button");
-        btn.className = "win-btn";
-        btn.textContent = label;
-        btn.onclick = onClick;
-        this.footer.appendChild(btn);
+        const structure = {
+            type: 'button',
+            props: {
+                className: 'win-btn',
+                label: label,
+                onClick: onClick
+            }
+        };
+        const btn = UI.build(this.footer, structure);
         return btn;
     }
 
@@ -361,9 +353,11 @@ export class Window_Base {
      * @returns {HTMLElement}
      */
     createPanel() {
-        const panel = document.createElement("div");
-        panel.className = "window-panel";
-        this.content.appendChild(panel);
+        const structure = {
+            type: 'panel',
+            props: { className: 'window-panel' }
+        };
+        const panel = UI.build(this.content, structure);
         return panel;
     }
 }
