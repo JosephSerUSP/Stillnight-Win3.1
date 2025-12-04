@@ -4,6 +4,7 @@ test.describe('Sacrifice and Permadeath', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/?test=true');
     await page.waitForFunction(() => window.dataManager && window.dataManager.actors);
+    await page.waitForFunction(() => window.Scene_Battle);
     await page.click('#btn-new-run');
     // Disable animations
     await page.evaluate(() => {

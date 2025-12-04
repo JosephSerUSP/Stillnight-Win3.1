@@ -2,6 +2,9 @@ import { Game_Map, Game_Party, Game_Battler, Game_Event } from "../objects/objec
 import { Game_Interpreter } from "../managers/interpreter.js";
 import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula, probabilisticRound } from "../core/utils.js";
 import { BattleManager, SoundManager, ThemeManager, ConfigManager } from "../managers/index.js";
+import { ProgressionSystem } from "../managers/progression.js";
+import { InputController } from "../managers/input_controller.js";
+import { HUDManager } from "../managers/hud_manager.js";
 import {
   Window_Battle,
   Window_Shop,
@@ -203,16 +206,9 @@ export class Scene_Battle extends Scene_Base {
     } else {
         // Use provided encounter data if available
         if (this.encounterData) {
-            // encounterData might be single object from encounters list, or raw ID/config?
-            // The objects/objects.js logic picks from meta.encounters so it's likely { id: '...', weight: N }
-
-            // If it's just an ID string (from older logic), handle that
             let encId = typeof this.encounterData === 'string' ? this.encounterData : this.encounterData.id;
 
             if (encId) {
-                // If weight object, we might want to spawn multiples?
-                // Or does "Encounter" mean a group? Usually "Encounter" is a single mob type in this system.
-                // Let's spawn 1-3 of them.
                  const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
                  const enemyCount = randInt(1, maxEnemies);
                  for (let i = 0; i < enemyCount; i++) {
@@ -220,7 +216,6 @@ export class Scene_Battle extends Scene_Base {
                      if (tpl) enemies.push(new Game_Battler(tpl, depth, true));
                  }
             } else if (Array.isArray(this.encounterData)) {
-                // If it's a specific list of enemies
                 this.encounterData.forEach(eConfig => {
                      const tpl = actorTemplates.find(a => a.id === eConfig.id);
                      if (tpl) enemies.push(new Game_Battler(tpl, depth, true));
@@ -241,14 +236,12 @@ export class Scene_Battle extends Scene_Base {
                             enemies.push(new Game_Battler(tpl, depth, true));
                         } else {
                             console.warn(`Encounter ID ${encounter.id} not found in actors.`);
-                            // Fallback to random
                             const randomTpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
                             enemies.push(new Game_Battler(randomTpl, depth, true));
                         }
                     }
                 }
               } else {
-                // Legacy fallback
                 const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
                 const enemyCount = randInt(1, maxEnemies);
                 for (let i = 0; i < enemyCount; i++) {
@@ -309,12 +302,10 @@ export class Scene_Battle extends Scene_Base {
       this.windowManager.push(this.formationWindow);
 
       this.formationWindow.refresh(this.party,
-          // onChange (unused here if onSwapAttempt is provided, or for legacy refreshes)
           () => {
              this.renderBattleAscii();
           },
           this.sceneManager.previous().getContext(),
-          // onSwapAttempt
           (idx1, idx2) => {
               this.confirmWindow.titleEl.textContent = "Confirm Swap?";
               this.confirmWindow.messageEl.textContent = "Swapping members counts as your turn action.";
@@ -334,7 +325,6 @@ export class Scene_Battle extends Scene_Base {
               };
               this.confirmWindow.btnCancel.onclick = () => {
                   this.windowManager.close(this.confirmWindow);
-                  // Do not close formation, just stay there
                   this.formationWindow.selectedSlotIndex = null;
                   this.formationWindow.renderFormationGrid();
               };
@@ -363,7 +353,6 @@ export class Scene_Battle extends Scene_Base {
                   this.windowManager.close(this.confirmEffectWindow);
                   this.windowManager.close(this.inventoryWindow);
 
-                  // Execute Use
                   const result = this.party.useItem(item, target);
                   if (result.success) {
                       this.battleWindow.appendLog(`[Item] Used ${item.name} on ${target.name}.`);
@@ -416,13 +405,11 @@ export class Scene_Battle extends Scene_Base {
   disableActionButtons() {
       this.battleWindow.btnFormation.classList.add('disabled');
       this.battleWindow.btnItem.classList.add('disabled');
-      // btnEquip is removed
   }
 
   enableActionButtons() {
       this.battleWindow.btnFormation.classList.remove('disabled');
       this.battleWindow.btnItem.classList.remove('disabled');
-      // btnEquip is removed
   }
 
   /**
@@ -458,33 +445,26 @@ export class Scene_Battle extends Scene_Base {
     this.battleWindow.btnFlee.disabled = true;
     this.disableActionButtons();
 
-    // Start a new round in the BattleManager
     this.battleManager.startRound(isFirstStrike);
 
     const delay = (ms) => new Promise((res) => setTimeout(res, ms));
     SoundManager.play('UI_SELECT');
 
-    // Loop through turns until the round is complete
     while (true) {
-        // 1. Get next battler (includes planned action)
         const battlerContext = this.battleManager.getNextBattler();
-        if (!battlerContext) break; // Round over
+        if (!battlerContext) break;
 
-        // 2. Start Turn (Passives)
         const startEvents = this.battleManager.startTurn(battlerContext);
         await this.animateEvents(startEvents);
         if (this.battleManager.isBattleFinished) break;
 
-        // 3. Execute Planned Action
         const action = battlerContext.action;
 
         if (action) {
-             // 4. Execute Action
              const actionEvents = this.battleManager.executeAction(action);
              await this.animateEvents(actionEvents);
         }
 
-        // If battle finished during this turn, break the loop
         if (this.battleManager.isBattleFinished) break;
 
         await delay(100);
@@ -500,13 +480,10 @@ export class Scene_Battle extends Scene_Base {
              this.showVictoryPopup();
              this.victoryPopupShown = true;
          }
-         // Victory handles closure, battleBusy stays true until victory confirmed
     } else if (!this.battleManager.isBattleFinished) {
       this.battleWindow.btnRound.disabled = false;
       this.battleWindow.btnFlee.disabled = false;
 
-      // Only re-enable if we are not auto-battling to avoid flicker,
-      // though auto-battle will immediately recurse.
       this.enableActionButtons();
 
       this.battleWindow.appendLog("Use Resolve Round or Flee.");
@@ -518,12 +495,11 @@ export class Scene_Battle extends Scene_Base {
           this.resolveBattleRound();
       }
     } else {
-        this.battleBusy = false; // Defeat or other end
+        this.battleBusy = false;
     }
   }
 
   showVictoryPopup() {
-      // Calculate spoils
       const enemies = this.battleManager.enemies;
       let totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
       const totalXp = enemies.reduce((sum, e) => sum + probabilisticRound(e.level * (e.expGrowth * 0.5) + 8), 0);
@@ -566,7 +542,6 @@ export class Scene_Battle extends Scene_Base {
       this.windowManager.close(this.victoryWindow);
       const { totalGold, totalXp, droppedItems } = this.victoryData;
 
-      // Logic from onBattleVictoryClick
       const living = this.party.activeMembers.filter((p) => p.hp > 0);
       const share = living.length > 0 ? Math.max(1, totalXp / living.length) : 0;
       living.forEach((m) => this.sceneManager.previous().gainXp(m, share));
@@ -598,7 +573,6 @@ export class Scene_Battle extends Scene_Base {
       this.sceneManager.pop();
       if (this.sceneManager.currentScene() && this.sceneManager.currentScene().setStatus) {
           this.sceneManager.currentScene().setStatus("Victory.");
-          // Resume map music
           this.sceneManager.currentScene().resumeMusic();
       }
   }
@@ -621,7 +595,6 @@ export class Scene_Battle extends Scene_Base {
                 this.battleWindow.appendLog(event.msg);
             }
 
-            // Determine HP values for animation
             let targetOldHp = event.target ? event.target.hp : 0;
             let targetNewHp = event.target ? event.target.hp : 0;
 
@@ -629,7 +602,6 @@ export class Scene_Battle extends Scene_Base {
                 targetOldHp = event.hpBefore;
                 targetNewHp = event.hpAfter;
             }
-            // For passive drain, we have explicit target/source keys
             if (event.type === 'passive_drain' || event.type === 'hp_drain') {
                  targetOldHp = event.hpBeforeTarget;
                  targetNewHp = event.hpAfterTarget;
@@ -643,7 +615,7 @@ export class Scene_Battle extends Scene_Base {
                     setTimeout(() => {
                         this.battleWindow.logEl.classList.remove('flash');
                     }, 200);
-                    SoundManager.play('UI_ERROR'); // Extra impact sound
+                    SoundManager.play('UI_ERROR');
                 }
 
                 await this.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
@@ -733,7 +705,6 @@ export class Scene_Battle extends Scene_Base {
       this.sceneManager.previous().logMessage("[Battle] You successfully fled!");
       SoundManager.play('ESCAPE');
       this.sceneManager.pop();
-      // Resume music
       if (this.sceneManager.currentScene().resumeMusic) {
           this.sceneManager.currentScene().resumeMusic();
       }
@@ -1175,54 +1146,28 @@ export class Scene_Map extends Scene_Base {
 
     this.addEventListeners();
 
-    this.windowLayer = new WindowLayer();
-    this.windowLayer.appendTo(gameContainer);
+    this.hudManager = new HUDManager(windowManager, gameContainer);
+    this.inputController = new InputController(this);
 
-    this.inventoryWindow = new Window_Inventory();
-    this.windowLayer.addChild(this.inventoryWindow);
-    this.eventWindow = new Window_Event();
-    this.eventWindow.onUserClose = this.interpreter.closeEvent.bind(this.interpreter);
-    this.windowLayer.addChild(this.eventWindow);
-    this.recruitWindow = new Window_Recruit();
-    this.windowLayer.addChild(this.recruitWindow)
-    this.formationWindow = new Window_Formation();
-    this.windowLayer.addChild(this.formationWindow)
-    this.inspectWindow = new Window_Inspect();
-    this.windowLayer.addChild(this.inspectWindow)
-    this.evolutionWindow = new Window_Evolution();
-    this.windowLayer.addChild(this.evolutionWindow);
-    this.confirmWindow = new Window_Confirm();
-    this.windowLayer.addChild(this.confirmWindow);
-    this.confirmEffectWindow = new Window_ConfirmEffect();
-    this.windowLayer.addChild(this.confirmEffectWindow);
-    this.partySelectWindow = new Window_PartySelect();
-    this.windowLayer.addChild(this.partySelectWindow);
-    this.equipItemSelectWindow = new Window_EquipItemSelect();
-    this.windowLayer.addChild(this.equipItemSelectWindow);
-    this.optionsWindow = new Window_Options();
-    this.windowLayer.addChild(this.optionsWindow);
-    this.audioWindow = new Window_Options("Audio Settings");
-    this.windowLayer.addChild(this.audioWindow);
-    this.audioPlayerWindow = new Window_AudioPlayer();
-    this.windowLayer.addChild(this.audioPlayerWindow);
-    this.helpWindow = new Window_Help();
-    this.windowLayer.addChild(this.helpWindow);
-
-    this.recruitWindow.onUserClose = this.interpreter.closeRecruitEvent.bind(this.interpreter);
-    this.evolutionWindow.onUserClose = () => this.windowManager.close(this.evolutionWindow);
-    this.formationWindow.onUserClose = this.closeFormation.bind(this);
-    this.confirmWindow.onUserClose = () => this.windowManager.close(this.confirmWindow);
-    this.confirmEffectWindow.onUserClose = () => this.windowManager.close(this.confirmEffectWindow);
-    this.partySelectWindow.onUserClose = () => this.windowManager.close(this.partySelectWindow);
-    this.equipItemSelectWindow.onUserClose = () => this.windowManager.close(this.equipItemSelectWindow);
-    this.optionsWindow.onUserClose = () => this.windowManager.close(this.optionsWindow);
-    this.audioWindow.onUserClose = () => this.windowManager.close(this.audioWindow);
-    this.audioPlayerWindow.onUserClose = () => this.windowManager.close(this.audioPlayerWindow);
-    this.helpWindow.onUserClose = () => this.windowManager.close(this.helpWindow);
-
-    this.inventoryWindow.onUserClose = this.closeInventory.bind(this);
+    // Callbacks mapping
+    this.hudManager.eventWindow.onUserClose = this.interpreter.closeEvent.bind(this.interpreter);
+    this.hudManager.recruitWindow.onUserClose = this.interpreter.closeRecruitEvent.bind(this.interpreter);
+    this.hudManager.evolutionWindow.onUserClose = () => this.windowManager.close(this.hudManager.evolutionWindow);
+    this.hudManager.formationWindow.onUserClose = this.closeFormation.bind(this);
+    this.hudManager.confirmWindow.onUserClose = () => this.windowManager.close(this.hudManager.confirmWindow);
+    this.hudManager.confirmEffectWindow.onUserClose = () => this.windowManager.close(this.hudManager.confirmEffectWindow);
+    this.hudManager.partySelectWindow.onUserClose = () => this.windowManager.close(this.hudManager.partySelectWindow);
+    this.hudManager.equipItemSelectWindow.onUserClose = () => this.windowManager.close(this.hudManager.equipItemSelectWindow);
+    this.hudManager.optionsWindow.onUserClose = () => this.windowManager.close(this.hudManager.optionsWindow);
+    this.hudManager.audioWindow.onUserClose = () => this.windowManager.close(this.hudManager.audioWindow);
+    this.hudManager.audioPlayerWindow.onUserClose = () => this.windowManager.close(this.hudManager.audioPlayerWindow);
+    this.hudManager.helpWindow.onUserClose = () => this.windowManager.close(this.hudManager.helpWindow);
+    this.hudManager.inventoryWindow.onUserClose = this.closeInventory.bind(this);
   }
 
+  get windowLayer() {
+      return this.hudManager.windowLayer;
+  }
 
   /**
    * Transitions to the battle scene.
@@ -1239,14 +1184,7 @@ export class Scene_Map extends Scene_Base {
   }
 
   getSharedWindows() {
-      return {
-          formation: this.formationWindow,
-          inventory: this.inventoryWindow,
-          partySelect: this.partySelectWindow,
-          confirmEffect: this.confirmEffectWindow,
-          confirm: this.confirmWindow,
-          equipItemSelect: this.equipItemSelectWindow,
-      };
+      return this.hudManager.getSharedWindows();
   }
 
   /**
@@ -1326,37 +1264,7 @@ export class Scene_Map extends Scene_Base {
    * @param {KeyboardEvent} e - The keyboard event.
    */
   onKeyDown(e) {
-    if (!this.runActive) return;
-    if (this.windowManager.stack.length > 0) return;
-
-    let dx = 0;
-    let dy = 0;
-
-    switch (e.key) {
-      case "ArrowUp":
-      case "w":
-        dy = -1;
-        break;
-      case "ArrowDown":
-      case "s":
-        dy = 1;
-        break;
-      case "ArrowLeft":
-      case "a":
-        dx = -1;
-        break;
-      case "ArrowRight":
-      case "d":
-        dx = 1;
-        break;
-      default:
-        return;
-    }
-
-    if (dx !== 0 || dy !== 0) {
-      e.preventDefault();
-      this.movePlayer(dx, dy);
-    }
+    this.inputController.onKeyDown(e);
   }
 
   /**
@@ -1409,8 +1317,8 @@ export class Scene_Map extends Scene_Base {
   logMessage(msg) {
     this.hud.logMessage(msg);
 
-    if (this.windowManager.stack.includes(this.eventWindow)) {
-        this.eventWindow.appendLog(msg);
+    if (this.windowManager.stack.includes(this.hudManager.eventWindow)) {
+        this.hudManager.eventWindow.appendLog(msg);
     }
   }
 
@@ -1771,7 +1679,7 @@ export class Scene_Map extends Scene_Base {
    * @param {number} amount - The amount of XP.
    */
   gainXp(member, amount, silent = false) {
-    const result = member.gainXp(amount);
+    const result = ProgressionSystem.gainXp(member, amount);
     if (result.leveledUp && !silent) {
       this.logMessage(
         `[Level] ${member.name} grows to Lv${result.newLevel}! HP +${result.hpGain}.`
@@ -1830,8 +1738,8 @@ export class Scene_Map extends Scene_Base {
    */
   openFormation() {
     if (this.sceneManager.currentScene() !== this) return;
-    this.windowManager.push(this.formationWindow);
-    this.formationWindow.refresh(this.party, () => {
+    this.windowManager.push(this.hudManager.formationWindow);
+    this.hudManager.formationWindow.refresh(this.party, () => {
         this.updateParty();
         this.logMessage("[Formation] Party order changed.");
     }, this.getContext());
@@ -1842,7 +1750,7 @@ export class Scene_Map extends Scene_Base {
    * @method closeFormation
    */
   closeFormation() {
-    this.windowManager.close(this.formationWindow);
+    this.windowManager.close(this.hudManager.formationWindow);
   }
 
   /**
@@ -1851,8 +1759,8 @@ export class Scene_Map extends Scene_Base {
    */
   openInventory() {
     if (this.sceneManager.currentScene() !== this) return;
-    this.windowManager.push(this.inventoryWindow);
-    this.inventoryWindow.setup(
+    this.windowManager.push(this.hudManager.inventoryWindow);
+    this.hudManager.inventoryWindow.setup(
         this.party,
         (item, action) => this.onInventoryAction(item, action),
         (item) => this.confirmDiscard(item)
@@ -1864,12 +1772,12 @@ export class Scene_Map extends Scene_Base {
    * @method closeInventory
    */
   closeInventory() {
-    this.windowManager.close(this.inventoryWindow);
+    this.windowManager.close(this.hudManager.inventoryWindow);
   }
 
   openHelp() {
     if (this.sceneManager.currentScene() !== this) return;
-    this.windowManager.push(this.helpWindow);
+    this.windowManager.push(this.hudManager.helpWindow);
   }
 
   openSettings() {
@@ -1900,7 +1808,7 @@ export class Scene_Map extends Scene_Base {
             label: "Audio Player",
             type: "action",
             action: () => {
-                this.windowManager.push(this.audioPlayerWindow);
+                this.windowManager.push(this.hudManager.audioPlayerWindow);
                 SoundManager.play('UI_SELECT');
             }
         },
@@ -1926,8 +1834,8 @@ export class Scene_Map extends Scene_Base {
         }
     ];
 
-    this.optionsWindow.setup(options);
-    this.windowManager.push(this.optionsWindow);
+    this.hudManager.optionsWindow.setup(options);
+    this.windowManager.push(this.hudManager.optionsWindow);
   }
 
   openAudioSettings() {
@@ -1963,8 +1871,8 @@ export class Scene_Map extends Scene_Base {
               }
           }
       ];
-      this.audioWindow.setup(options);
-      this.windowManager.push(this.audioWindow);
+      this.hudManager.audioWindow.setup(options);
+      this.windowManager.push(this.hudManager.audioWindow);
   }
 
   onInventoryAction(item, action) {
@@ -1973,7 +1881,7 @@ export class Scene_Map extends Scene_Base {
 
           if (item.effects && item.effects.recruit_egg) {
               const recruitId = item.effects.recruit_egg;
-              this.windowManager.close(this.inventoryWindow);
+              this.windowManager.close(this.hudManager.inventoryWindow);
               this.interpreter.openRecruitEvent({
                   forcedId: recruitId,
                   cost: 0,
@@ -1982,21 +1890,21 @@ export class Scene_Map extends Scene_Base {
               return;
           }
 
-          this.partySelectWindow.setup(this.party, `Use ${item.name} on:`, (target) => {
-              this.windowManager.close(this.partySelectWindow);
-              this.confirmEffectWindow.setupUse(target, item, () => {
-                  this.windowManager.close(this.confirmEffectWindow);
+          this.hudManager.partySelectWindow.setup(this.party, `Use ${item.name} on:`, (target) => {
+              this.windowManager.close(this.hudManager.partySelectWindow);
+              this.hudManager.confirmEffectWindow.setupUse(target, item, () => {
+                  this.windowManager.close(this.hudManager.confirmEffectWindow);
                   this.useItem(item, target);
               });
-              this.windowManager.push(this.confirmEffectWindow);
+              this.windowManager.push(this.hudManager.confirmEffectWindow);
           }, this.getContext());
-          this.windowManager.push(this.partySelectWindow);
+          this.windowManager.push(this.hudManager.partySelectWindow);
       } else if (action === 'equip') {
-          this.partySelectWindow.setup(this.party, `Equip ${item.name} on:`, (target) => {
-              this.windowManager.close(this.partySelectWindow);
+          this.hudManager.partySelectWindow.setup(this.party, `Equip ${item.name} on:`, (target) => {
+              this.windowManager.close(this.hudManager.partySelectWindow);
               this.checkEquip(target, item);
           }, this.getContext());
-          this.windowManager.push(this.partySelectWindow);
+          this.windowManager.push(this.hudManager.partySelectWindow);
       }
   }
 
@@ -2008,12 +1916,12 @@ export class Scene_Map extends Scene_Base {
       } else if (!item) {
           swapMsg = "Unequipping.";
       }
-      this.confirmEffectWindow.setupEquip(target, item, oldItem, "Held Item", () => {
-          this.windowManager.close(this.confirmEffectWindow);
-          this.windowManager.close(this.inventoryWindow);
+      this.hudManager.confirmEffectWindow.setupEquip(target, item, oldItem, "Held Item", () => {
+          this.windowManager.close(this.hudManager.confirmEffectWindow);
+          this.windowManager.close(this.hudManager.inventoryWindow);
           this.equipItem(target, item);
       }, swapMsg);
-      this.windowManager.push(this.confirmEffectWindow);
+      this.windowManager.push(this.hudManager.confirmEffectWindow);
   }
 
   useItem(item, target) {
@@ -2027,7 +1935,7 @@ export class Scene_Map extends Scene_Base {
              }
           });
           this.updateParty();
-          this.inventoryWindow.updateList();
+          this.hudManager.inventoryWindow.updateList();
           this.updateAll();
           SoundManager.play('HEAL');
       } else {
@@ -2036,16 +1944,16 @@ export class Scene_Map extends Scene_Base {
   }
 
   confirmDiscard(item) {
-      this.confirmWindow.titleEl.textContent = "Discard Item";
-      this.confirmWindow.messageEl.textContent = `Are you sure you want to discard ${item.name}?`;
-      this.windowManager.push(this.confirmWindow);
+      this.hudManager.confirmWindow.titleEl.textContent = "Discard Item";
+      this.hudManager.confirmWindow.messageEl.textContent = `Are you sure you want to discard ${item.name}?`;
+      this.windowManager.push(this.hudManager.confirmWindow);
 
-      this.confirmWindow.btnOk.onclick = () => {
-          this.windowManager.close(this.confirmWindow);
+      this.hudManager.confirmWindow.btnOk.onclick = () => {
+          this.windowManager.close(this.hudManager.confirmWindow);
           this.discardItem(item);
       };
-      this.confirmWindow.btnCancel.onclick = () => {
-          this.windowManager.close(this.confirmWindow);
+      this.hudManager.confirmWindow.btnCancel.onclick = () => {
+          this.windowManager.close(this.hudManager.confirmWindow);
       };
   }
 
@@ -2053,7 +1961,7 @@ export class Scene_Map extends Scene_Base {
       const index = this.party.inventory.indexOf(item);
       if (index > -1) {
           this.party.inventory.splice(index, 1);
-          this.inventoryWindow.updateList();
+          this.hudManager.inventoryWindow.updateList();
           this.updateAll();
           this.logMessage(`[Inventory] Discarded ${item.name}.`);
           SoundManager.play('UI_CANCEL');
@@ -2067,25 +1975,25 @@ export class Scene_Map extends Scene_Base {
    * @param {number} index - The member's index.
    */
   openInspect(member, index) {
-    this.inspectWindow.setup(member, this.getContext(), this.dataManager, {
+    this.hudManager.inspectWindow.setup(member, this.getContext(), this.dataManager, {
         onEquip: () => this.openEquipmentScreen(),
         onSacrifice: (val) => {
-             this.confirmWindow.titleEl.textContent = "Sacrifice Unit";
-             this.confirmWindow.messageEl.textContent = `Sacrifice ${member.name} for ${val} Gold? This cannot be undone.`;
-             this.windowManager.push(this.confirmWindow);
-             this.confirmWindow.btnOk.onclick = () => {
-                 this.windowManager.close(this.confirmWindow);
+             this.hudManager.confirmWindow.titleEl.textContent = "Sacrifice Unit";
+             this.hudManager.confirmWindow.messageEl.textContent = `Sacrifice ${member.name} for ${val} Gold? This cannot be undone.`;
+             this.windowManager.push(this.hudManager.confirmWindow);
+             this.hudManager.confirmWindow.btnOk.onclick = () => {
+                 this.windowManager.close(this.hudManager.confirmWindow);
                  this.sacrificeMember(member, val);
              };
         },
         onEvolve: (evoData) => this.openEvolution(member, evoData)
     });
 
-    this.windowManager.push(this.inspectWindow);
+    this.windowManager.push(this.hudManager.inspectWindow);
     this.setStatus(`Inspecting ${member.name}`);
     this.logMessage(`[Inspect] ${member.name} – Lv${member.level}, ${this.partyRow(index)}, HP ${member.hp}/${member.maxHp}.`);
 
-    this.inspectWindow.onUserClose = () => this.closeInspect();
+    this.hudManager.inspectWindow.onUserClose = () => this.closeInspect();
   }
 
   /**
@@ -2109,8 +2017,8 @@ export class Scene_Map extends Scene_Base {
    * @method closeInspect
    */
   closeInspect() {
-    this.inspectWindow.btnSacrifice.style.display = "none";
-    this.windowManager.close(this.inspectWindow);
+    this.hudManager.inspectWindow.btnSacrifice.style.display = "none";
+    this.windowManager.close(this.hudManager.inspectWindow);
     this.setStatus("Exploration");
   }
 
@@ -2119,7 +2027,7 @@ export class Scene_Map extends Scene_Base {
    * @method openEquipmentScreen
    */
   openEquipmentScreen() {
-    const member = this.inspectWindow.member;
+    const member = this.hudManager.inspectWindow.member;
     const inventoryItems = this.party.inventory.filter(i => i.type === "equipment");
     const otherMemberItems = this.party.members
       .filter((m) => m !== member && m.equipmentItem)
@@ -2130,11 +2038,11 @@ export class Scene_Map extends Scene_Base {
       }));
     const allItems = [...inventoryItems, ...otherMemberItems];
 
-    this.equipItemSelectWindow.setup(allItems, member.equipmentItem, "Equipment", (item) => {
-        this.windowManager.close(this.equipItemSelectWindow);
+    this.hudManager.equipItemSelectWindow.setup(allItems, member.equipmentItem, "Equipment", (item) => {
+        this.windowManager.close(this.hudManager.equipItemSelectWindow);
         this.checkEquip(member, item);
     });
-    this.windowManager.push(this.equipItemSelectWindow);
+    this.windowManager.push(this.hudManager.equipItemSelectWindow);
   }
 
   /**
@@ -2153,13 +2061,13 @@ export class Scene_Map extends Scene_Base {
       // Copy equipment to ensure stat preview includes equipment bonuses
       nextBattler.equipmentItem = member.equipmentItem;
 
-      this.evolutionWindow.setup(member, nextBattler, this.dataManager);
+      this.hudManager.evolutionWindow.setup(member, nextBattler, this.dataManager);
 
-      this.evolutionWindow.btnConfirm.onclick = () => {
+      this.hudManager.evolutionWindow.btnConfirm.onclick = () => {
           this.confirmEvolution(member, nextBattler, evolutionData);
       };
 
-      this.windowManager.push(this.evolutionWindow);
+      this.windowManager.push(this.hudManager.evolutionWindow);
   }
 
   /**
@@ -2181,17 +2089,17 @@ export class Scene_Map extends Scene_Base {
           msg += `\nCosts ${evolutionData.gold} Gold.`;
       }
 
-      this.confirmWindow.titleEl.textContent = "Confirm Evolution";
-      this.confirmWindow.messageEl.innerText = msg;
+      this.hudManager.confirmWindow.titleEl.textContent = "Confirm Evolution";
+      this.hudManager.confirmWindow.messageEl.innerText = msg;
 
-      this.windowManager.push(this.confirmWindow);
+      this.windowManager.push(this.hudManager.confirmWindow);
 
-      this.confirmWindow.btnOk.onclick = () => {
-          this.windowManager.close(this.confirmWindow);
+      this.hudManager.confirmWindow.btnOk.onclick = () => {
+          this.windowManager.close(this.hudManager.confirmWindow);
           this.executeEvolution(member, nextBattler, evolutionData);
       };
-      this.confirmWindow.btnCancel.onclick = () => {
-          this.windowManager.close(this.confirmWindow);
+      this.hudManager.confirmWindow.btnCancel.onclick = () => {
+          this.windowManager.close(this.hudManager.confirmWindow);
       };
   }
 
@@ -2229,7 +2137,7 @@ export class Scene_Map extends Scene_Base {
           this.logMessage(`[Evolution] ${member.name} evolved into ${nextBattler.name}!`);
           SoundManager.play('LEVEL_UP');
 
-          this.windowManager.close(this.evolutionWindow);
+          this.windowManager.close(this.hudManager.evolutionWindow);
           this.updateAll();
       }
   }
@@ -2250,7 +2158,7 @@ export class Scene_Map extends Scene_Base {
   }
 }
 
-if (window.location.search.includes("test=true")) {
+if (typeof window !== 'undefined' && window.location.search.includes("test=true")) {
     window.Scene_Battle = Scene_Battle;
     window.Scene_Shop = Scene_Shop;
     window.Scene_Map = Scene_Map;

@@ -59,7 +59,7 @@ test('Verify Battle Layout and Evolution Preview', async ({ page }) => {
 
         // Grow to level 20
         if (pixie.level < 20) {
-             pixie.growToLevel(20);
+             window.ProgressionSystem.growToLevel(pixie, 20);
         }
 
         const evolutionData = { evolvesTo: 'highPixie' };

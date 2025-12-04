@@ -1,5 +1,6 @@
 import { randInt, elementToAscii, evaluateFormula, probabilisticRound } from "../core/utils.js";
 import { MidiParser, MidiPlayer } from "./midi.js";
+import { EffectProcessor } from "./effect_processor.js";
 
 /**
  * @class DataManager
@@ -925,80 +926,57 @@ export class BattleManager {
       events.push({ type: 'use_skill', battler: battler, skillName, msg: `${battler.name} uses ${skillName}!` });
 
       skill.effects.forEach((effect) => {
-        if (effect.type === "hp_damage") {
-          let skillDmg = probabilisticRound(evaluateFormula(effect.formula, battler, target) * boost);
-          if (skillDmg < 1) skillDmg = 1;
+        const context = { boost };
+        let effectKey = effect.type;
+        let effectValue = effect.formula || effect.value;
 
-          const hpBefore = target.hp;
-          target.hp = Math.max(0, target.hp - skillDmg);
-
-          // Add DAMAGE sound logic
-          SoundManager.play('DAMAGE');
-
-          events.push({
-            type: 'damage',
-            battler: battler,
-            target: target,
-            value: skillDmg,
-            hpBefore: hpBefore,
-            hpAfter: target.hp,
-            msg: `  ${target.name} takes ${skillDmg} damage.`
-          });
+        if (effect.type === 'add_status') {
+             effectValue = { id: effect.status, chance: effect.chance };
         }
-        if (effect.type === "hp_heal") {
-          let heal = probabilisticRound(evaluateFormula(effect.formula, battler, target) * boost);
-          if (heal < 1) heal = 1;
 
-          const hpBefore = target.hp;
-          target.hp = Math.min(target.maxHp, target.hp + heal);
+        const result = EffectProcessor.apply(effectKey, effectValue, battler, target, context);
 
-          // Add HEAL sound logic
-          SoundManager.play('HEAL');
+        if (!result) return;
 
-          events.push({
-            type: 'heal',
-            battler: battler,
-            target: target,
-            value: heal,
-            hpBefore: hpBefore,
-            hpAfter: target.hp,
-            msg: `  ${target.name} heals ${heal} HP.`,
-            animation: 'healing_sparkle'
-          });
-        }
-        if (effect.type === "add_status") {
-          const chance = (effect.chance || 1) * boost;
-          if (Math.random() < chance) {
-            target.addState(effect.status);
-            events.push({ type: 'status', target: target, status: effect.status, msg: `  ${target.name} is afflicted with ${effect.status}.` });
-          }
-        }
-        if (effect.type === "hp_drain") {
-            let damage = probabilisticRound(evaluateFormula(effect.formula, battler, target) * boost);
-            if (damage < 1) damage = 1;
-
-            const hpBeforeTarget = target.hp;
-            target.hp = Math.max(0, target.hp - damage);
-            const damageDealt = hpBeforeTarget - target.hp; // Actual damage dealt
-
-            // Heal user by same amount (or capped at their maxHP, but logic handles overflow)
-            const hpBeforeSource = battler.hp;
-            battler.hp = Math.min(battler.maxHp, battler.hp + damageDealt);
-
-            SoundManager.play('DAMAGE'); // Or a specific drain sound
-
-            events.push({
-                type: 'hp_drain',
+        if (result.type === 'damage') {
+             SoundManager.play('DAMAGE');
+             events.push({
+                type: 'damage',
                 battler: battler,
-                source: battler,
                 target: target,
-                value: damageDealt,
-                hpBeforeTarget: hpBeforeTarget,
-                hpAfterTarget: target.hp,
-                hpBeforeSource: hpBeforeSource,
-                hpAfterSource: battler.hp,
-                msg: `  ${battler.name} drains ${damageDealt} HP from ${target.name}.`
-            });
+                value: result.value,
+                hpBefore: target.hp + result.value,
+                hpAfter: target.hp,
+                msg: `  ${target.name} takes ${result.value} damage.`
+             });
+        } else if (result.type === 'heal') {
+             SoundManager.play('HEAL');
+             events.push({
+                 type: 'heal',
+                 battler: battler,
+                 target: target,
+                 value: result.value,
+                 hpBefore: target.hp - result.value,
+                 hpAfter: target.hp,
+                 msg: `  ${target.name} heals ${result.value} HP.`,
+                 animation: 'healing_sparkle'
+             });
+        } else if (result.type === 'status') {
+             events.push({ type: 'status', target: target, status: result.status, msg: `  ${target.name} is afflicted with ${result.status}.` });
+        } else if (result.type === 'hp_drain') {
+             SoundManager.play('DAMAGE');
+             events.push({
+                 type: 'hp_drain',
+                 battler: battler,
+                 source: battler,
+                 target: target,
+                 value: result.value,
+                 hpBeforeTarget: result.hpBeforeTarget,
+                 hpAfterTarget: result.hpAfterTarget,
+                 hpBeforeSource: result.hpBeforeSource,
+                 hpAfterSource: result.hpAfterSource,
+                 msg: `  ${battler.name} drains ${result.value} HP from ${target.name}.`
+             });
         }
       });
     }
