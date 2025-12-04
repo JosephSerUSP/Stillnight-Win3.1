@@ -169,23 +169,23 @@ export class Game_Interpreter {
         const choices = ev.choices.map(ch => ({
             label: ch.label,
             onClick: async () => {
-                this.scene.eventWindow.appendLog(`> ${ch.label}`);
+                this.scene.hudManager.eventWindow.appendLog(`> ${ch.label}`);
                 await this.applyEventEffect(ch.effect);
-                this.scene.eventWindow.updateChoices([{
+                this.scene.hudManager.eventWindow.updateChoices([{
                     label: "Exit Shrine",
                     onClick: () => this.closeEvent()
                 }]);
             }
         }));
 
-        this.scene.eventWindow.show({
+        this.scene.hudManager.eventWindow.show({
             title: ev.title,
             description: ev.description,
             image: ev.image || "shrine.png",
             style: 'terminal',
             choices: choices
         });
-        this.windowManager.push(this.scene.eventWindow);
+        this.windowManager.push(this.scene.hudManager.eventWindow);
 
         this.scene.setStatus("Shrine event.");
         SoundManager.play('UI_SELECT');
@@ -247,7 +247,7 @@ export class Game_Interpreter {
     }
 
     triggerTrap(action) {
-        this.scene.eventWindow.show({
+        this.scene.hudManager.eventWindow.show({
             title: "Trap!",
             description: action.message || "You triggered a trap!",
             image: "trap.png",
@@ -257,7 +257,7 @@ export class Game_Interpreter {
                 onClick: () => this.resolveTrap(action)
             }]
         });
-        this.windowManager.push(this.scene.eventWindow);
+        this.windowManager.push(this.scene.hudManager.eventWindow);
         SoundManager.play('DAMAGE');
     }
 
@@ -265,7 +265,7 @@ export class Game_Interpreter {
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         try {
             const dmg = action.damage || 5;
-            this.scene.eventWindow.appendLog(`> Ouch...`);
+            this.scene.hudManager.eventWindow.appendLog(`> Ouch...`);
             await delay(500);
 
             this.party.members.forEach(m => {
@@ -277,13 +277,13 @@ export class Game_Interpreter {
             SoundManager.play('DAMAGE');
             this.scene.updateAll();
 
-            this.scene.eventWindow.updateChoices([{
+            this.scene.hudManager.eventWindow.updateChoices([{
                 label: "Close",
-                onClick: () => this.scene.eventWindow.onUserClose()
+                onClick: () => this.scene.hudManager.eventWindow.onUserClose()
             }]);
         } catch (e) {
             console.error(e);
-            this.scene.eventWindow.appendLog("Error in resolveTrap: " + e);
+            this.scene.hudManager.eventWindow.appendLog("Error in resolveTrap: " + e);
         }
     }
 
@@ -315,7 +315,7 @@ export class Game_Interpreter {
 
         const itemLabel = createInteractiveLabel(item, 'item');
 
-        this.scene.eventWindow.show({
+        this.scene.hudManager.eventWindow.show({
             title: "Treasure Found!",
             description: [
                 "You found:",
@@ -330,13 +330,13 @@ export class Game_Interpreter {
                 onClick: () => this.closeEvent()
             }]
         });
-        this.windowManager.push(this.scene.eventWindow);
+        this.windowManager.push(this.scene.hudManager.eventWindow);
         SoundManager.play('ITEM_GET');
         this.scene.updateAll();
     }
 
     closeEvent() {
-        this.windowManager.close(this.scene.eventWindow);
+        this.windowManager.close(this.scene.hudManager.eventWindow);
         this.scene.updateAll();
     }
 
@@ -370,7 +370,7 @@ export class Game_Interpreter {
 
         const cost = forcedCost !== undefined ? forcedCost : randInt(25, 75);
 
-        renderCreatureInfo(this.scene.recruitWindow.bodyEl, recruit, {
+        renderCreatureInfo(this.scene.hudManager.recruitWindow.bodyEl, recruit, {
             showElement: true,
             showEquipment: true,
             showPassives: true,
@@ -379,7 +379,7 @@ export class Game_Interpreter {
             dataManager: this.dataManager
         });
 
-        this.scene.recruitWindow.buttonsEl.innerHTML = "";
+        this.scene.hudManager.recruitWindow.buttonsEl.innerHTML = "";
         const joinBtn = document.createElement("button");
         joinBtn.className = "win-btn";
         joinBtn.textContent = `Pay ${cost} Gold`;
@@ -399,17 +399,17 @@ export class Game_Interpreter {
             this.scene.logMessage(`[Recruit] You decline ${recruit.name}'s offer.`);
             this.closeRecruitEvent();
         });
-        this.scene.recruitWindow.buttonsEl.appendChild(joinBtn);
-        this.scene.recruitWindow.buttonsEl.appendChild(declineBtn);
+        this.scene.hudManager.recruitWindow.buttonsEl.appendChild(joinBtn);
+        this.scene.hudManager.recruitWindow.buttonsEl.appendChild(declineBtn);
 
-        this.windowManager.push(this.scene.recruitWindow);
+        this.windowManager.push(this.scene.hudManager.recruitWindow);
         this.scene.setStatus("Recruit encountered.");
         SoundManager.play('UI_SELECT');
     }
 
     closeRecruitEvent() {
         this._onRecruitCallback = null;
-        this.windowManager.close(this.scene.recruitWindow);
+        this.windowManager.close(this.scene.hudManager.recruitWindow);
         this.scene.setStatus("Exploration");
     }
 
@@ -422,7 +422,7 @@ export class Game_Interpreter {
             text = npc.dialogue;
         }
 
-        this.scene.eventWindow.show({
+        this.scene.hudManager.eventWindow.show({
             title: npc.name,
             description: `"${text}"`,
             style: 'terminal',
@@ -431,7 +431,7 @@ export class Game_Interpreter {
                 onClick: () => this.closeEvent()
             }]
         });
-        this.windowManager.push(this.scene.eventWindow);
+        this.windowManager.push(this.scene.hudManager.eventWindow);
 
         this.scene.setStatus(`Talking to ${npc.name}.`);
         SoundManager.play('UI_SELECT');
@@ -463,9 +463,9 @@ export class Game_Interpreter {
             this.scene.updateParty();
             return;
         }
-        this.scene.recruitWindow.bodyEl.innerHTML =
+        this.scene.hudManager.recruitWindow.bodyEl.innerHTML =
             this.dataManager.terms.recruit.party_full;
-        this.scene.recruitWindow.buttonsEl.innerHTML = "";
+        this.scene.hudManager.recruitWindow.buttonsEl.innerHTML = "";
         this.party.members.forEach((m, idx) => {
             const btn = document.createElement("button");
             btn.className = "win-btn";
@@ -473,7 +473,7 @@ export class Game_Interpreter {
             btn.addEventListener("click", () => {
                 this.replaceMemberWithRecruit(idx, recruit);
             });
-            this.scene.recruitWindow.buttonsEl.appendChild(btn);
+            this.scene.hudManager.recruitWindow.buttonsEl.appendChild(btn);
         });
         const cancelBtn = document.createElement("button");
         cancelBtn.className = "win-btn";
@@ -482,7 +482,7 @@ export class Game_Interpreter {
             this.scene.logMessage(this.dataManager.terms.recruit.decide_not_to_replace);
             this.closeRecruitEvent();
         });
-        this.scene.recruitWindow.buttonsEl.appendChild(cancelBtn);
+        this.scene.hudManager.recruitWindow.buttonsEl.appendChild(cancelBtn);
     }
 
     replaceMemberWithRecruit(index, recruit) {

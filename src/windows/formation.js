@@ -1,6 +1,7 @@
 import { Window_Base } from "./base.js";
 import { createPartySlot, createReserveSlot } from "./utils.js";
 import { SoundManager } from "../managers/index.js";
+import { ProgressionSystem } from "../managers/progression.js";
 
 /**
  * @class Window_Formation
@@ -68,7 +69,7 @@ export class Window_Formation extends Window_Base {
     this.party.slots.forEach((m, index) => {
       let evolutionStatus = null;
       if (m && this.context) {
-          const statusObj = m.getEvolutionStatus(this.context.inventory, this.context.floorDepth, this.context.gold);
+          const statusObj = ProgressionSystem.getEvolutionStatus(m, this.context.inventory, this.context.floorDepth, this.context.gold);
           if (statusObj.status !== 'NONE') {
               evolutionStatus = statusObj.status;
           }
