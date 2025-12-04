@@ -2,6 +2,7 @@ import { Window_Base } from "./base.js";
 import { renderCreatureInfo, createInteractiveLabel } from "./utils.js";
 import { evaluateFormula } from "../core/utils.js";
 import { TRAIT_DEFINITIONS } from "../../data/traits.js";
+import { EffectProcessor } from "../managers/effect_processor.js";
 
 /**
  * @class Window_Confirm
@@ -132,36 +133,11 @@ export class Window_ConfirmEffect extends Window_Base {
         const changes = [];
         if (!item.effects) return changes;
 
-        const getVal = (effVal) => {
-            if (typeof effVal === 'string') {
-                return Math.round(evaluateFormula(effVal, member));
+        for (const [key, value] of Object.entries(item.effects)) {
+            const preview = EffectProcessor.getPreview(key, value, member);
+            if (preview) {
+                changes.push(preview);
             }
-            return effVal;
-        };
-
-        // HP
-        if (item.effects.hp) {
-            const val = getVal(item.effects.hp);
-            const newHp = Math.min(member.maxHp, member.hp + val);
-            if (newHp !== member.hp) {
-                changes.push(`HP: ${member.hp}/${member.maxHp} -> ${newHp}/${member.maxHp}`);
-            }
-        }
-        // Max HP
-        if (item.effects.maxHp) {
-            const val = getVal(item.effects.maxHp);
-            const newMax = member.maxHp + val;
-            changes.push(`Max HP: ${member.maxHp} -> ${newMax}`);
-        }
-        // XP
-        if (item.effects.xp) {
-            const val = getVal(item.effects.xp);
-            changes.push(`XP: +${val}`);
-        }
-        // Any other effect
-        for (const [key, val] of Object.entries(item.effects)) {
-            if (['hp', 'maxHp', 'xp'].includes(key)) continue;
-             changes.push(`${key}: ${val}`);
         }
 
         return changes;

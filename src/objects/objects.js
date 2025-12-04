@@ -1,5 +1,6 @@
 import { randInt, shuffleArray, probabilisticRound, pickWeighted } from "../core/utils.js";
 import { EffectManager } from "../managers/effects.js";
+import { EffectProcessor } from "../managers/effect_processor.js";
 import { passives as passivesData } from "../../data/passives.js";
 import { states as statesData } from "../../data/states.js";
 
@@ -644,19 +645,11 @@ export class Game_Party {
 
       const outcomes = [];
 
-      if (item.effects.hp) {
-          const old = targetMember.hp;
-          targetMember.hp = Math.min(targetMember.maxHp, targetMember.hp + item.effects.hp);
-          outcomes.push({ type: 'heal', value: targetMember.hp - old });
-      }
-      if (item.effects.maxHp) {
-           targetMember.maxHp += item.effects.maxHp;
-           targetMember.hp += item.effects.maxHp;
-           outcomes.push({ type: 'maxHp', value: item.effects.maxHp });
-      }
-      if (item.effects.xp) {
-           const result = targetMember.gainXp(item.effects.xp);
-           outcomes.push({ type: 'xp', value: item.effects.xp, result });
+      if (item.effects) {
+          for (const [key, value] of Object.entries(item.effects)) {
+              const result = EffectProcessor.apply(key, value, item, targetMember);
+              if (result) outcomes.push(result);
+          }
       }
 
       this.inventory.splice(index, 1);
