@@ -1,5 +1,6 @@
 import { Graphics } from "../core/utils.js";
 import { ConfigManager } from "../managers/index.js";
+import { UI } from "./builder.js";
 
 /**
  * @class WindowAnimator
@@ -159,76 +160,75 @@ export class Window_Base {
         this.height = height;
 
         if (this.embedded) {
-            this.element = document.createElement("div");
-            this.element.className = "window-frame";
-            if (options.id) this.element.id = options.id;
-            this.element.style.position = "relative";
-            if (width !== 'auto') this.element.style.width = `${width}px`;
-            if (height !== 'auto') this.element.style.height = `${height}px`;
-        } else {
-            this.overlay = document.createElement("div");
-            this.overlay.className = "modal-overlay";
-            this.overlay.addEventListener("mousedown", (e) => {
-                if (e.target === this.overlay) {
-                    this.onUserClose();
+            this.element = UI.build(null, {
+                type: 'panel',
+                props: {
+                    className: "window-frame",
+                    id: options.id,
+                    style: {
+                        position: "relative",
+                        width: width !== 'auto' ? `${width}px` : undefined,
+                        height: height !== 'auto' ? `${height}px` : undefined
+                    }
                 }
             });
-
-            this.element = document.createElement("div");
-            this.element.className = "window-frame";
-            if (options.id) this.element.id = options.id;
-            this.element.style.position = "absolute";
+        } else {
+            this.overlay = UI.build(null, {
+                type: 'panel',
+                props: {
+                    className: "modal-overlay",
+                    onClick: (e) => {
+                        if (e.target === this.overlay) this.onUserClose();
+                    }
+                }
+            });
 
             const finalX = x === 'center' ? (Graphics.width - width) / 2 : x;
             const finalY = y === 'center' ? (Graphics.height - height) / 2 : y;
 
-            this.element.style.left = `${finalX}px`;
-            this.element.style.top = `${finalY}px`;
-            this.element.style.width = `${width}px`;
-
-            if (height === 'auto') {
-                this.element.style.height = 'auto';
-                this.element.style.maxHeight = '90vh';
-            } else {
-                this.element.style.height = `${height}px`;
-            }
-            this.element.style.zIndex = "10";
-            this.element.style.display = "none";
-
-            // this.overlay.appendChild(this.element);
+            this.element = UI.build(null, {
+                type: 'panel',
+                props: {
+                    className: "window-frame",
+                    id: options.id,
+                    style: {
+                        position: "absolute",
+                        left: `${finalX}px`,
+                        top: `${finalY}px`,
+                        width: `${width}px`,
+                        height: height === 'auto' ? 'auto' : `${height}px`,
+                        maxHeight: height === 'auto' ? '90vh' : undefined,
+                        zIndex: "10",
+                        display: "none"
+                    }
+                }
+            });
         }
 
         // 1. Header
-        this.header = document.createElement("div");
-        this.header.className = "window-header";
-        this.element.appendChild(this.header);
-
-        this.titleEl = document.createElement("span");
-        this.titleEl.textContent = options.title || "";
-        this.header.appendChild(this.titleEl);
+        this.header = UI.build(this.element, { type: 'panel', props: { className: "window-header" } });
+        this.titleEl = UI.build(this.header, { type: 'label', props: { text: options.title || "" } }); // Use label component? Or span? Component_Label returns span.
 
         if (!this.embedded) {
             this.makeDraggable(this.header);
         }
 
         if (options.closeButton !== false && !this.embedded) {
-            this.btnClose = document.createElement("button");
-            this.btnClose.className = "win-btn";
-            this.btnClose.textContent = "X";
-            this.btnClose.onclick = () => this.onUserClose();
-            this.header.appendChild(this.btnClose);
+            this.btnClose = UI.build(this.header, {
+                type: 'button',
+                props: {
+                    className: "win-btn",
+                    text: "X",
+                    onClick: () => this.onUserClose()
+                }
+            });
         }
 
         // 2. Content
-        this.content = document.createElement("div");
-        this.content.className = "window-content";
-        this.element.appendChild(this.content);
+        this.content = UI.build(this.element, { type: 'panel', props: { className: "window-content" } });
 
         // 3. Footer
-        this.footer = document.createElement("div");
-        this.footer.className = "window-footer";
-        // Check if footer needs to be visible? CSS handles padding.
-        this.element.appendChild(this.footer);
+        this.footer = UI.build(this.element, { type: 'panel', props: { className: "window-footer" } });
 
         this._dragStart = null;
         this._onDragHandler = this._onDrag.bind(this);

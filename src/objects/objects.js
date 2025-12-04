@@ -44,13 +44,6 @@ class Game_Base {
     this.hp = unitData.maxHp;
 
     /**
-     * The HP of the unit at the beginning of the last event.
-     * Used for calculating HP changes for UI animations.
-     * @type {number}
-     */
-    this.prevHp = unitData.maxHp;
-
-    /**
      * The level of the unit.
      * @type {number}
      */
@@ -783,10 +776,9 @@ export class Game_Map {
    * @param {Array} mapData - Data for all floors.
    * @param {Array} eventDefs - Event definitions.
    * @param {Array} [npcData=[]] - NPC definitions.
-   * @param {Game_Party} [party=null] - The party (for initiative checks).
    */
-  initFloors(mapData, eventDefs, npcData = [], party = null, actors = []) {
-    this.floors = mapData.map((meta, i) => this.generateFloor(meta, i, eventDefs, npcData, party, actors));
+  initFloors(mapData, eventDefs, npcData = []) {
+    this.floors = mapData.map((meta, i) => this.generateFloor(meta, i, eventDefs, npcData));
     this.floors[0].discovered = true;
     this.maxReachedFloorIndex = 0;
   }
@@ -797,11 +789,9 @@ export class Game_Map {
    * @param {number} index - Floor index.
    * @param {Array} eventDefs - Event definitions.
    * @param {Array} npcData - NPC definitions.
-   * @param {Game_Party} [party=null] - The party (for initiative checks).
-   * @param {Array} [actors=[]] - The actor definitions (for enemy initiative checks).
    * @returns {Object} The generated floor object.
    */
-  generateFloor(meta, index, eventDefs, npcData = [], party = null, actors = []) {
+  generateFloor(meta, index, eventDefs, npcData = []) {
     const tiles = Array.from({ length: this.MAX_H }, () =>
       Array.from({ length: this.MAX_W }, () => "#")
     );
@@ -903,61 +893,6 @@ export class Game_Map {
                     eventData.encounterData = pickWeighted(config.encounters);
                 } else if (meta.encounters && meta.encounters.length > 0) {
                     eventData.encounterData = pickWeighted(meta.encounters);
-                }
-
-                // 2. Initiative Check (Sneak Attack)
-                if (party && !eventData.isSneakAttack) {
-                    const get_actor_data = (id) => actors.find(a => a.id === id);
-
-                    // Player Initiative
-                    const partyInitChance = party.members.reduce((sum, m) => sum + m.getPassiveValue("INITIATIVE"), 0);
-
-                    // Enemy Initiative
-                    let enemyInitChance = 0;
-                    if (eventData.encounterData && eventData.encounterData.enemies) {
-                        eventData.encounterData.enemies.forEach(enemyId => {
-                            const enemyActorData = get_actor_data(enemyId);
-                            if (enemyActorData) {
-                                const tempEnemyBattler = new Game_Battler(enemyActorData);
-                                enemyInitChance += tempEnemyBattler.getPassiveValue("INITIATIVE");
-                            }
-                        });
-                    }
-
-                    // Rear Guard negates enemy initiative
-                    const hasRearGuard = party.activeMembers.some((m, idx) => idx >= 2 && m.getPassiveValue("REAR_GUARD") > 0);
-                    if (hasRearGuard) {
-                        enemyInitChance = 0;
-                    }
-
-                    let partyWins = false;
-                    let enemyWins = false;
-
-                    // If both have initiative, it's a proportional chance
-                    if (partyInitChance > 0 && enemyInitChance > 0) {
-                        const totalInit = partyInitChance + enemyInitChance;
-                        if (Math.random() < partyInitChance / totalInit) {
-                            partyWins = true;
-                        } else {
-                            enemyWins = true;
-                        }
-                    } else if (partyInitChance > 0) {
-                        if (Math.random() < partyInitChance) {
-                            partyWins = true;
-                        }
-                    } else if (enemyInitChance > 0) {
-                        if (Math.random() < enemyInitChance) {
-                            enemyWins = true;
-                        }
-                    }
-
-                    // If enemy wins, they get a sneak attack. Otherwise, the player gets the first turn by default.
-                    if (enemyWins) {
-                        eventData.isSneakAttack = true;
-                        eventData.hidden = true; // Invisible to player
-                    } else if (partyWins) {
-                        eventData.isPlayerFirstStrike = true;
-                    }
                 }
             }
 

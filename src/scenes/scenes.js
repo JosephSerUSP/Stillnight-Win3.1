@@ -1,7 +1,7 @@
 import { Game_Map, Game_Party, Game_Battler, Game_Event } from "../objects/objects.js";
 import { Game_Interpreter } from "../managers/interpreter.js";
 import { randInt, shuffleArray, getPrimaryElements, elementToAscii, elementToIconId, getIconStyle, pickWeighted, evaluateFormula, probabilisticRound } from "../core/utils.js";
-import { BattleManager, SoundManager, ThemeManager, ConfigManager } from "../managers/index.js";
+import { BattleManager, SoundManager, ThemeManager, ConfigManager, ExplorationManager } from "../managers/index.js";
 import {
   Window_Battle,
   Window_Shop,
@@ -1164,6 +1164,7 @@ export class Scene_Map extends Scene_Base {
     this.party = new Game_Party();
     this.interpreter = new Game_Interpreter(this);
     this.battleManager = new BattleManager(this.party, this.dataManager);
+    this.explorationManager = new ExplorationManager(this.map, this.party, this.dataManager);
     this.runActive = true;
     this.draggedIndex = null;
     this.currentInteractionEvent = null;
@@ -1272,9 +1273,12 @@ export class Scene_Map extends Scene_Base {
   startNewRun() {
     if (this.sceneManager.currentScene() !== this) return;
     this.party.createInitialMembers(this.dataManager);
-    this.map.initFloors(this.dataManager.maps, this.dataManager.events, this.dataManager.npcs, this.party);
+    this.map.initFloors(this.dataManager.maps, this.dataManager.events, this.dataManager.npcs);
     this.runActive = true;
     this.map.floorIndex = 0;
+
+    this.explorationManager.resolveAmbushStates(this.map.floorIndex);
+
     const f = this.map.floors[this.map.floorIndex];
     this.map.playerX = f.startX;
     this.map.playerY = f.startY;
@@ -1366,29 +1370,22 @@ export class Scene_Map extends Scene_Base {
    * @param {number} dy - Y delta.
    */
   movePlayer(dx, dy) {
-    const newX = this.map.playerX + dx;
-    const newY = this.map.playerY + dy;
+      // Use Manager for interaction logic (implicit adjacency via delta)
+      const result = this.explorationManager.moveBy(dx, dy);
+      this._handleExplorationResult(result);
 
-    if (
-      newX >= 0 &&
-      newX < this.map.MAX_W &&
-      newY >= 0 &&
-      newY < this.map.MAX_H
-    ) {
-      this.onTileClick(newX, newY);
-    }
+      // Process Moving Enemies
+      const entityUpdate = this.explorationManager.updateEntities();
+      if (entityUpdate.collisions.length > 0) {
+          entityUpdate.collisions.forEach(event => {
+              this.currentInteractionEvent = event;
+              this.executeEvent(event);
+          });
+      }
 
-    // Process Moving Enemies
-    const results = this.map.updateEvents(this.party);
-    results.forEach(res => {
-        if (res.type === 'collision') {
-            this.currentInteractionEvent = res.event;
-            this.executeEvent(res.event);
-        }
-    });
-    if (results.length > 0) {
-        this.updateGrid();
-    }
+      if (entityUpdate.refresh) {
+          this.updateGrid();
+      }
   }
 
   /**
@@ -1593,6 +1590,7 @@ export class Scene_Map extends Scene_Base {
         this.map.maxReachedFloorIndex,
         (idx) => {
             this.map.floorIndex = idx;
+            this.explorationManager.resolveAmbushStates(this.map.floorIndex);
             const floor = this.map.floors[this.map.floorIndex];
             this.map.playerX = floor.startX;
             this.map.playerY = floor.startY;
@@ -1638,97 +1636,41 @@ export class Scene_Map extends Scene_Base {
     }
     if (this.sceneManager.currentScene() !== this) return;
 
-    const floor = this.map.floors[this.map.floorIndex];
+    const result = this.explorationManager.interactWithTile(x, y);
+    this._handleExplorationResult(result);
+  }
 
-    const dx = Math.abs(x - this.map.playerX);
-    const dy = Math.abs(y - this.map.playerY);
-    const isAdjacent = dx + dy === 1;
+  _handleExplorationResult(result) {
+      if (!result.success && result.messages.length > 0) {
+          result.messages.forEach(m => this.setStatus(m)); // Status bar for errors
+      } else {
+          result.messages.forEach(m => this.logMessage(m)); // Log for success/flavor
+      }
 
-    if (!isAdjacent && !(x === this.map.playerX && y === this.map.playerY)) {
-      this.setStatus(this.dataManager.terms.status.only_adjacent_tiles);
-      SoundManager.play('UI_ERROR');
-      return;
-    }
+      if (result.sound) {
+          SoundManager.play(result.sound);
+      }
 
-    const ch = floor.tiles[y][x];
-    const event = floor.events ? floor.events.find(e => e.x === x && e.y === y) : null;
+      if (result.refresh) {
+          this.updateGrid();
+          // Auto-reveal check
+          if (this.map.checkFloorExploration()) {
+              this.map.revealCurrentFloor();
+              this.logMessage("Map fully explored! The entire floor is revealed.");
+              SoundManager.play('ITEM_GET');
+              this.updateGrid();
+          }
+      }
 
-    // Check for events BEFORE blocking on walls, to allow interaction with "Breakable Walls" or similar
-    if (event) {
-       let isHidden = false;
-       if (event.hidden) {
-           let maxSee = 0;
-           this.party.members.forEach(m => {
-              const v = m.getPassiveValue("SEE_TRAPS");
-              if (v > maxSee) maxSee = v;
-           });
-           if (maxSee <= event.trapValue && !event.isSneakAttack) {
-               isHidden = true;
-           }
-           if (event.isSneakAttack) {
-               // Sneak attacks are hidden until stepped on
-               isHidden = true;
-           }
-       }
+      if (result.moved) {
+          this.applyMovePassives();
+          this.updateAll();
+      }
 
-       if (!isHidden) {
-           // If interaction is allowed, do not move the player but execute the event
-           // Specifically for breakable walls or similar blockers on '#' tiles
-           if (ch === '#') {
-                this.currentInteractionEvent = event;
-                this.executeEvent(event);
-                return;
-           }
-       }
-    }
-
-    if (ch === "#") {
-      this.setStatus(this.dataManager.terms.log.wall_blocks);
-      SoundManager.play('UI_ERROR');
-      return;
-    }
-
-    this.map.playerX = x;
-    this.map.playerY = y;
-    this.map.revealAroundPlayer();
-
-    // Auto-reveal check
-    if (this.map.checkFloorExploration()) {
-        this.map.revealCurrentFloor();
-        this.logMessage("Map fully explored! The entire floor is revealed.");
-        SoundManager.play('ITEM_GET');
-    }
-
-    this.updateGrid();
-
-    if (event) {
-       // If hidden, we step on it and reveal it (surprise!)
-       if (event.hidden) {
-           event.hidden = false;
-           this.updateGrid();
-           this.currentInteractionEvent = event;
-           this.executeEvent(event);
-           return;
-       } else {
-           // If it's a trap, we still move onto it (triggering it)
-           if (event.type === 'trap') {
-               this.updateGrid();
-           }
-
-           this.currentInteractionEvent = event;
-           this.executeEvent(event);
-           return;
-       }
-    }
-
-    if (ch === ".") {
-      this.logMessage("[Step] Your footsteps echo softly.");
-      this.setStatus("You move.");
-    }
-
-    SoundManager.play('UI_SELECT');
-    this.applyMovePassives();
-    this.updateAll();
+      if (result.interaction && result.interaction.event) {
+          this.currentInteractionEvent = result.interaction.event;
+          this.executeEvent(result.interaction.event);
+      }
   }
 
   /**

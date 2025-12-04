@@ -134,8 +134,13 @@ export class Window_Inventory extends Window_Selectable {
             },
             children: [
                 {
-                    type: 'panel', // Label Wrapper
-                    props: { style: { flexGrow: '1', display: 'flex', alignItems: 'center' } }
+                    type: 'interactive-label',
+                    props: {
+                        data: item,
+                        type: 'item',
+                        options: { tooltipText },
+                        style: { flexGrow: '1', display: 'inline-flex' }
+                    }
                 },
                 {
                     type: 'flex', // Buttons
@@ -162,13 +167,7 @@ export class Window_Inventory extends Window_Selectable {
             ]
         };
 
-        const row = UI.build(this.listEl, rowStructure);
-        const labelWrapper = row.children[0];
-
-        const label = createInteractiveLabel(item, 'item', { tooltipText });
-        // Ensure the label component is inline-flex to align nicely
-        label.style.display = 'inline-flex';
-        labelWrapper.appendChild(label);
+        UI.build(this.listEl, rowStructure);
       });
     }
   }

@@ -144,6 +144,8 @@ export class Window_PartyPanel extends Window_Base {
         super(0, 0, '100%', 'auto', { title: "Party Status", embedded: true });
         this.element.classList.add("party-panel");
 
+        this._prevHpMap = new Map();
+
         const btnContainer = document.createElement("div");
         btnContainer.style.display = "flex";
         btnContainer.style.gap = "2px";
@@ -193,7 +195,7 @@ export class Window_PartyPanel extends Window_Base {
             if (member) {
                 const gaugeFill = slot.querySelector('.hp-fill');
                 if (gaugeFill) {
-                    const startHp = member.prevHp !== undefined ? member.prevHp : member.hp;
+                    const startHp = this._prevHpMap.has(member) ? this._prevHpMap.get(member) : member.hp;
                     gaugeFill.style.width = `${Math.max(0, (startHp / member.maxHp) * 100)}%`;
                     this.animateGauge(
                         gaugeFill,
@@ -203,7 +205,7 @@ export class Window_PartyPanel extends Window_Base {
                         500
                     );
                 }
-                member.prevHp = member.hp;
+                this._prevHpMap.set(member, member.hp);
             }
             this.partyGridEl.appendChild(slot);
         });
