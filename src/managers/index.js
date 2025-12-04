@@ -694,6 +694,13 @@ export class BattleManager {
 
     // 1. Gather all potential combatants
     const combatants = [];
+
+    // Add Summoner
+    if (this.party.summoner) {
+        // Summoner has no index in the slot array, use -1 or similar unique ID
+        combatants.push({ battler: this.party.summoner, index: -1, isEnemy: false, isSummoner: true });
+    }
+
     this.party.slots.slice(0, 4).forEach((battler, index) => {
         if (battler) {
             combatants.push({ battler, index, isEnemy: false });
@@ -703,6 +710,11 @@ export class BattleManager {
 
     // 2. Plan Actions & Calculate Total Speed
     const plannedQueue = combatants.map(ctx => {
+        if (ctx.isSummoner) {
+            // Summoner speed depends on SYN, action is chosen at runtime (null for now)
+            return { ...ctx, action: null, totalSpeed: ctx.battler.asp };
+        }
+
         const action = this.getAIAction(ctx); // Plan the action
         let actionSpeed = 0;
         if (action && action.skillId) {
@@ -722,10 +734,10 @@ export class BattleManager {
 
     // 4. Determine Execution Order
     if (isFirstStrike) {
-        this.turnQueue = sortBySpeed(plannedQueue.filter(c => !c.isEnemy));
+        this.turnQueue = sortBySpeed(plannedQueue.filter(c => !c.isEnemy || c.isSummoner)); // Include Summoner? Logic choice.
     } else if (this.round === 1 && this.isSneakAttack) {
         const enemies = sortBySpeed(plannedQueue.filter(c => c.isEnemy));
-        const party = sortBySpeed(plannedQueue.filter(c => !c.isEnemy));
+        const party = sortBySpeed(plannedQueue.filter(c => !c.isEnemy)); // Summoner is in party list
         this.turnQueue = [...enemies, ...party];
     } else {
         this.turnQueue = sortBySpeed(plannedQueue);

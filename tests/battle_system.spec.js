@@ -35,13 +35,14 @@ test.describe('Battle System', () => {
             bm.setup([enemy], 0, 0);
             bm.startRound();
 
+            // Expected queue: 1 Hero + 1 Enemy + 1 Summoner = 3
             return {
                 queueLength: bm.turnQueue.length,
                 firstBattlerName: bm.turnQueue[0].battler.name
             };
         });
 
-        expect(result.queueLength).toBe(2);
+        expect(result.queueLength).toBe(3);
     });
 
     test('Damage calculation considers elemental weakness', async ({ page }) => {
@@ -235,9 +236,11 @@ test.describe('Battle System', () => {
             bm.setup([enemy], 0, 0);
             bm.startRound();
 
+            // Count friendly combatants (Party Members + Summoner)
+            // 3 Active Members + 1 Summoner = 4
             return bm.turnQueue.filter(t => !t.isEnemy).length;
         });
 
-        expect(queueLength).toBe(3);
+        expect(queueLength).toBe(4);
     });
 });
