@@ -1,89 +1,104 @@
 # Architectural Analysis Report
 
 ## Executive Summary
-The codebase follows a traditional Object-Oriented structure common in game development (Scenes, Managers, Objects, Windows). However, it suffers from significant "God Class" anti-patterns, tight coupling between Logic and UI, and inconsistent architectural styles due to partial refactoring.
+The "Stillnight" codebase demonstrates a transition from a legacy imperative style to a modern modular architecture. However, this transition is incomplete, resulting in a "split personality" system. While the directory structure is clean (Scenes, Managers, Windows, Objects), the *logic distribution* within these files suffers from severe coupling and responsibility violations.
 
-The most critical issue is the `Scene_Map` class, which acts as a monolithic controller for the entire exploration phase, managing everything from DOM construction to input handling and game state.
+The most critical structural flaw is the **`Scene_Map`** class, which acts as a "God Class" controlling almost every aspect of the game's exploration phase, preventing effective testing and scalability. Additionally, the **`BattleManager`** violates the Open/Closed Principle by hardcoding skill logic, making the combat system rigid and difficult to extend.
 
-## 1. Structural Flaws (Grave)
+## 1. Critical Structural Flaws (The Roots)
 
-### 1.1. The `Scene_Map` God Class
+### 1.1. The `Scene_Map` Monolith
 **Severity:** Critical
 **Location:** `src/scenes/scenes.js`
 
 *   **Violation:** Single Responsibility Principle (SRP).
-*   **Analysis:** `Scene_Map` is responsible for:
-    *   **State Management:** Holds `runActive`, `party`, `map` instances.
-    *   **UI Orchestration:** Instantiates and manages *every* window (`inventoryWindow`, `recruitWindow`, `formationWindow`, etc.) regardless of whether they are currently needed.
-    *   **Input Handling:** Directly listens to keyboard events and maps them to movement logic.
-    *   **Game Logic:** Handles player movement, collision detection, and even specific event execution logic (`executeEvent`).
-*   **Consequence:** The class is fragile, difficult to test (requires mocking the entire Window system), and hard to extend. Adding a new feature (e.g., a Quest system) would require modifying this already bloated file.
+*   **Analysis:** `Scene_Map` is not just a Scene; it is an Input Controller, a UI Manager, a Game State Machine, and an Event Router.
+    *   **Input Handling:** It directly listens to keyboard events (`onKeyDown`) and maps them to movement logic.
+    *   **UI Orchestration:** It manually instantiates and manages the lifecycle of 12 different windows (`inventoryWindow`, `formationWindow`, etc.), regardless of whether they are active.
+    *   **Game Logic:** It implements core mechanics like `movePlayer`, `checkPermadeath`, and `executeEvolution`.
+*   **Impact:**
+    *   **Untestable:** You cannot test map logic without instantiating the entire UI and DOM.
+    *   **Rigid:** Adding a new feature (e.g., a Quest Log) requires modifying this central file, increasing the risk of regressions.
 
-### 1.2. Logic Leakage in `BattleManager`
-**Severity:** High
-**Location:** `src/managers/index.js` (BattleManager)
+### 1.2. `BattleManager` Logic Leakage
+**Severity:** Critical
+**Location:** `src/managers/index.js`
 
-*   **Violation:** Open/Closed Principle (OCP) and Separation of Concerns.
-*   **Analysis:**
-    *   **Hardcoded Effects:** The `_executeSkill` method contains hardcoded `if/else` blocks for every effect type (`hp_damage`, `hp_heal`, `hp_drain`). Adding a new effect requires modifying the core manager.
-    *   **UI/Sound Coupling:** The manager directly calls `SoundManager.play()` and formats UI strings (`msg` properties in events). The "Manager" is doing "View" work.
-*   **Consequence:** The battle system is rigid. Custom skills or new mechanics require invasive changes to the core engine rather than just data definitions or plugin-like extensions.
+*   **Violation:** Open/Closed Principle (OCP) & Separation of Concerns.
+*   **Analysis:** The `BattleManager` mixes high-level flow control with low-level implementation details.
+    *   **Hardcoded Effects:** The `_executeSkill` method contains explicit `if/else` blocks for every effect type (`hp_damage`, `hp_heal`, `hp_drain`). Adding a new effect type requires modifying the core manager.
+    *   **View Coupling:** The manager constructs UI message strings (`msg`) and calls `SoundManager.play()` directly. It knows too much about *how* the battle is presented, not just *what* happened.
+*   **Impact:** The battle system cannot be easily extended with new mechanics (e.g., Plugins) without altering core files.
 
-### 1.3. `Game_Battler` Responsibilities
+## 2. Core Object Responsibility Violations (The Trunk)
+
+### 2.1. `Game_Battler`: The Overloaded Model
 **Severity:** High
 **Location:** `src/objects/objects.js`
 
-*   **Violation:** SRP / Separation of Concerns.
-*   **Analysis:** `Game_Battler` handles:
-    *   **Data:** Stats, traits.
-    *   **Logic:** Leveling up (`gainXp`), evolution checks.
-    *   **View State:** Stores `prevHp` explicitly for UI animation purposes.
-    *   **Procedural Gen:** `growToLevel` and `create` factory contain logic for procedural scaling.
-*   **Consequence:** The entity is overloaded. View-specific data (`prevHp`) should be in the View/Window, not the Domain Model.
+*   **Violation:** Separation of Data and Logic.
+*   **Analysis:** `Game_Battler` is a "fat model" that handles concerns that belong in Managers or Views.
+    *   **View State:** It stores `prevHp` solely for the purpose of UI animation. This is a display concern leaking into the data model.
+    *   **Business Logic:** It handles XP curves (`xpNeeded`), Leveling (`gainXp`), and Evolution checks (`checkEvolution`). This logic belongs in a `ProgressionManager` or specific Strategy classes.
+*   **Impact:** The Model is not a "Plain Old Data" object, making it heavy to serialize/deserialize (e.g., for saving games) and complex to mock.
 
-## 2. Structural Flaws (Moderate)
+### 2.2. `Game_Map`: The Rules-Aware Container
+**Severity:** Medium
+**Location:** `src/objects/objects.js`
 
-### 2.1. Inconsistent UI Architecture
+*   **Violation:** SRP (Cohesion).
+*   **Analysis:** The `generateFloor` method is responsible for procedural generation, but it also enforces specific Game Rules.
+    *   **Rule Leakage:** It calculates Initiative, Sneak Attack chances, and checks for specific Traits (`REAR_GUARD`) during map generation.
+*   **Impact:** The map generator is coupled to the Combat System's rules. Changing how Initiative works requires editing the Map Generator.
+
+## 3. Systemic Inconsistencies (The Branches)
+
+### 3.1. The UI Schism: Imperative vs. Declarative
 **Severity:** Medium
 **Location:** `src/windows/`
 
-*   **Issue:** The codebase is split between two UI paradigms:
-    1.  **Imperative (Legacy):** `Window_Base` and `Scene_Map` manually create DOM elements (`document.createElement`), assign classes, and append them.
-    2.  **Declarative (Modern):** `UI.build` (in `src/windows/builder.js`) allows for component-based construction.
-*   **Analysis:** `Window_Inventory` and others seemingly still rely on the legacy approach (or a mix), leading to code duplication and inconsistency.
-*   **Consequence:** New developers won't know which pattern to follow. The imperative code is verbose and error-prone.
+*   **Issue:** The codebase is split between two conflicting UI paradigms.
+    1.  **Legacy Imperative:** `Window_Base` and `Scene_Map` use `document.createElement` and manual DOM manipulation.
+    2.  **Modern Declarative:** `UI.build` (`src/windows/builder.js`) offers a component-based approach.
+*   **Analysis:** New features like `Window_Inspect` use the new system, while core windows like `Window_Inventory` rely on the old one.
+*   **Impact:** Inconsistent code style, duplicated logic, and increased cognitive load for developers who must switch contexts between "building DOM nodes" and "declaring components."
 
-### 2.2. Tight Coupling in Scenes
+### 3.2. Effect Handling Dichotomy
 **Severity:** Medium
-**Location:** `src/scenes/scenes.js`
+**Location:** `src/managers/`
 
-*   **Issue:** `Scene_Battle` is tightly coupled to `Window_Battle`. It calls methods like `animateBattler` which directly manipulate DOM classes (`blink`, `shake`).
-*   **Principle:** The Scene (Controller) should tell the Window (View) *what* to show, not *how* to animate specific CSS classes.
+*   **Issue:** There are two separate systems for handling game effects.
+    1.  **`EffectManager`:** Handles Passive Traits (`turnStart` triggers).
+    2.  **`BattleManager`:** Handles Active Skill Effects (hardcoded).
+*   **Impact:** This split makes it impossible to create a unified "Effect" definition that works for both Passives and Skills (e.g., a "Heal" effect that can be a passive regen OR a spell).
 
-### 2.3. Global State & Singletons
-**Severity:** Medium
-**Location:** `src/managers/index.js`
+## 4. Project Structure & Dependency Analysis
 
-*   **Issue:** `ConfigManager` and `SoundManager` are static classes or singletons.
-*   **Consequence:** This makes unit testing difficult because state persists between tests unless explicitly reset. Dependencies are hidden (implicit global access) rather than injected.
+### 4.1. Tight View-Controller Coupling
+**Location:** `src/scenes/scenes.js` -> `src/windows/battle.js`
 
-## 3. Structural Flaws (Minor)
+*   **Issue:** `Scene_Battle` is intimately aware of `Window_Battle`'s internal DOM structure.
+*   **Evidence:** The Scene calls `animateBattler`, which toggles specific CSS classes (`blink`, `shake`) on elements retrieved via `getBattlerElement`.
+*   **Correction:** The Scene should update the *State* (e.g., `battler.isFlashing = true`) and the Window should reactively render that state.
 
-### 3.1. Hardcoded Data Imports
-**Location:** `src/managers/index.js` (DataManager)
+### 4.2. Base Class "Anemia" vs "Bloat"
+*   **`Scene_Base` (Anemic):** It does almost nothing. It could standardized Input routing or Window management, but currently, `Scene_Map` re-implements everything.
+*   **`Window_Base` (Bloated Implementation):** It hardcodes the HTML structure (Header, Content, Footer) in the constructor, making it difficult to create windows that don't fit this exact mold (like HUD overlays) without awkward overrides (`embedded: true`).
 
-*   **Issue:** The code uses dynamic imports for `skills.js`, `passives.js`, etc., but the paths are hardcoded.
-*   **Consequence:** Harder to swap out data sets for testing or modding.
+## 5. Strategic Recommendations
 
-### 3.2. Magic Numbers in Logic
-**Location:** `src/objects/objects.js`
+1.  **Refactor `Scene_Map` into Sub-Managers:**
+    *   Create `InputController` to handle keyboard mapping.
+    *   Create `HUDManager` to manage the lifecycle of the 12 UI windows.
+    *   `Scene_Map` should only coordinate the high-level flow.
 
-*   **Issue:** Formulas for XP (`level * 0.5 + 10`) and Damage are hardcoded within the class methods.
-*   **Recommendation:** These should be moved to a `Formula` helper or defined in external data files to allow for balancing without code changes.
+2.  **Unify Effect Logic:**
+    *   Refactor `BattleManager` to delegate skill effects to `EffectProcessor` (or `EffectManager`), removing the hardcoded `if (type === 'hp_damage')` blocks.
 
-## Recommendations
+3.  **Standardize UI:**
+    *   Deprecate direct `document.createElement` usage in Windows.
+    *   Refactor `Window_Base` to use `UI.build` internally for its structure.
 
-1.  **Refactor `Scene_Map`:** Extract input handling to an `InputController` and UI management to a `HUDManager`. The Scene should only coordinate high-level state flow.
-2.  **Implement `EffectProcessor`:** Move the `if (effect.type === ...)` logic out of `BattleManager` into a dedicated processor class or registry of handlers.
-3.  **Standardize UI:** Aggressively refactor all Windows to use `UI.build`. Deprecate direct `document.createElement` usage in `Window` subclasses.
-4.  **Decouple View from Model:** Remove `prevHp` from `Game_Battler`. The `Window_Battle` should track the "displayed HP" vs "actual HP" for animation purposes.
+4.  **Purify the Data Model:**
+    *   Remove `prevHp` from `Game_Battler`. Move animation state tracking to the `Window_Battle` or a generic `ViewProxy`.
+    *   Extract Leveling/Evolution logic into a `ProgressionSystem` static class.
