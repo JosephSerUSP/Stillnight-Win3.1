@@ -1,6 +1,8 @@
-import { DataManager, SceneManager, ThemeManager } from "./managers/index.js";
+import { DataManager, SceneManager, ThemeManager, ConfigManager, SoundManager, BattleManager } from "./managers/index.js";
 import { Scene_Boot, Scene_Map, Scene_Battle, Scene_Shop } from "./scenes/scenes.js";
 import { WindowManager } from "./windows/index.js";
+import { Game_Interpreter } from "./managers/interpreter.js";
+import { Game_Battler, Game_Party, Game_Map, Game_Event } from "./objects/objects.js";
 
 /**
  * The main entry point for the game application.
@@ -42,6 +44,15 @@ async function main() {
     window.Scene_Map = Scene_Map;
     window.Scene_Battle = Scene_Battle;
     window.Scene_Shop = Scene_Shop;
+    window.ConfigManager = ConfigManager;
+    window.SoundManager = SoundManager;
+    window.BattleManager = BattleManager;
+    window.Game_Interpreter = Game_Interpreter;
+    window.ThemeManager = ThemeManager;
+    window.Game_Battler = Game_Battler;
+    window.Game_Party = Game_Party;
+    window.Game_Map = Game_Map;
+    window.Game_Event = Game_Event;
   }
 }
 
