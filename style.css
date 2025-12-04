@@ -531,7 +531,7 @@ html, body {
     background-color: var(--bezel-light);
 }
 .party-slot-name {
-    /* font-weight: bold; Removed per request */
+     font-weight: bold;
 }
 .gauge {
     border: 1px solid #000000;
