@@ -559,7 +559,7 @@ export class Scene_Battle extends Scene_Base {
 
       this.victoryWindow.setup(spoilText, () => this.claimVictoryRewards());
       this.windowManager.push(this.victoryWindow);
-      SoundManager.play('VICTORY');
+      SoundManager.playMusic('victory1');
   }
 
   claimVictoryRewards() {
