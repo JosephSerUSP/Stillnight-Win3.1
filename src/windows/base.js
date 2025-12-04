@@ -1,5 +1,6 @@
 import { Graphics } from "../core/utils.js";
 import { ConfigManager } from "../managers/index.js";
+import { UI } from "./builder.js";
 
 /**
  * @class WindowAnimator
@@ -199,36 +200,37 @@ export class Window_Base {
         }
 
         // 1. Header
-        this.header = document.createElement("div");
-        this.header.className = "window-header";
-        this.element.appendChild(this.header);
-
-        this.titleEl = document.createElement("span");
-        this.titleEl.textContent = options.title || "";
-        this.header.appendChild(this.titleEl);
+        const headerStruct = {
+            type: 'panel',
+            props: { className: 'window-header' },
+            children: [
+                { type: 'label', props: { text: options.title || "" } }
+            ]
+        };
+        if (options.closeButton !== false && !this.embedded) {
+            headerStruct.children.push({
+                type: 'button',
+                props: { className: 'win-btn', label: 'X', onClick: () => this.onUserClose() }
+            });
+        }
+        this.header = UI.build(this.element, headerStruct);
+        this.titleEl = this.header.querySelector("span"); // Assume first span is title
 
         if (!this.embedded) {
             this.makeDraggable(this.header);
         }
 
-        if (options.closeButton !== false && !this.embedded) {
-            this.btnClose = document.createElement("button");
-            this.btnClose.className = "win-btn";
-            this.btnClose.textContent = "X";
-            this.btnClose.onclick = () => this.onUserClose();
-            this.header.appendChild(this.btnClose);
-        }
-
         // 2. Content
-        this.content = document.createElement("div");
-        this.content.className = "window-content";
-        this.element.appendChild(this.content);
+        this.content = UI.build(this.element, {
+            type: 'panel',
+            props: { className: 'window-content' }
+        });
 
         // 3. Footer
-        this.footer = document.createElement("div");
-        this.footer.className = "window-footer";
-        // Check if footer needs to be visible? CSS handles padding.
-        this.element.appendChild(this.footer);
+        this.footer = UI.build(this.element, {
+            type: 'panel',
+            props: { className: 'window-footer' }
+        });
 
         this._dragStart = null;
         this._onDragHandler = this._onDrag.bind(this);

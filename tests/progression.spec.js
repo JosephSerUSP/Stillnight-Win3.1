@@ -19,10 +19,10 @@ test.describe('Progression and State', () => {
 
             const initialLevel = battler.level;
             const initialHp = battler.maxHp;
-            const needed = battler.xpNeeded(1);
+            const needed = window.ProgressionSystem.xpNeeded(1, battler.expGrowth);
 
             // Gain enough XP to level up
-            const gainResult = battler.gainXp(needed + 5);
+            const gainResult = window.ProgressionSystem.gainXp(battler, needed + 5);
 
             return {
                 leveledUp: gainResult.leveledUp,

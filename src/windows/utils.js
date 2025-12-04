@@ -1,6 +1,7 @@
 import { getPrimaryElements, elementToAscii, getIconStyle, elementToIconId, evaluateFormula } from "../core/utils.js";
 import { tooltip } from "../core/tooltip.js";
 import { Component_Icon, Component_ElementIcon, Component_Gauge, Component_InteractiveLabel, Component_Label } from "./components.js";
+import { ProgressionSystem } from "../managers/progression.js";
 
 /**
  * Creates a DOM element representing a standard icon.
@@ -121,7 +122,7 @@ export function drawBattlerStats(battler) {
     hpFill.classList.add('hp-fill');
 
     // XP Gauge
-    const xpNeeded = battler.xpNeeded(battler.level);
+    const xpNeeded = ProgressionSystem.xpNeeded(battler.level, battler.expGrowth);
     const xpPercent = Math.min(100, Math.max(0, ((battler.xp || 0) / xpNeeded) * 100));
     const { fill: xpFill } = Component_Gauge(container, {
         height: "4px",

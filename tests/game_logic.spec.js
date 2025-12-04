@@ -9,6 +9,8 @@ test.describe('Game Logic', () => {
     await page.evaluate(() => {
       window.ConfigManager.windowAnimations = false;
     });
+    // Wait for Scene classes to be exposed
+    await page.waitForFunction(() => window.Scene_Battle);
   });
 
   test('Battle window shake on close attempt', async ({ page }) => {
