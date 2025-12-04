@@ -13,13 +13,13 @@ All UI generation must be **Declarative**.
 *   **Mandated:** `UI.build(parent, structure)` from `src/windows/builder.js`.
 
 ### Execution Plan
-1.  **Refactor `Window_Base`**:
+1.  **Refactor `Window_Base`** [x]:
     *   Rewrite the constructor to use `UI.build` for creating the Overlay, Frame, Header, Content, and Footer.
     *   Convert `makeDraggable` from a method that attaches raw listeners to a `Component` behavior or a cleaner composition utility.
-2.  **Refactor Legacy Windows**:
+2.  **Refactor Legacy Windows** [x]:
     *   Identify any windows still using manual DOM manipulation (e.g., `Window_Desktop` internals).
     *   Convert them to return a JSON-like structure passed to `UI.build`.
-3.  **Standardize Components**:
+3.  **Standardize Components** [x]:
     *   Move all common UI patterns (Draggable, Close Button, Modal Overlay) into `src/windows/components.js` as reusable functional components.
 
 ## 2. Breaking the God Class (`Scene_Map`)
@@ -34,18 +34,18 @@ All UI generation must be **Declarative**.
 `Scene_Map` must only be a **Controller/View Orchestrator**. It should bind input to logic and logic to view, but contain **zero** game rules.
 
 ### Execution Plan
-1.  **Create `ExplorationEngine` (or `MapLogic`)**:
+1.  **Create `ExplorationEngine` (or `MapLogic`)** [x]:
     *   **Location:** `src/managers/exploration.js`
     *   **Responsibilities:**
         *   Validating movement (Walls, Bounds).
         *   Handling collision checks (Events, Traps).
         *   Updating `Game_Map` state (Player X/Y, Visited flags).
         *   Returning distinct *Events* or *Results* (e.g., `{ type: 'MOVED', x: 10, y: 10 }`, `{ type: 'BLOCKED', reason: 'wall' }`).
-2.  **Refactor `Scene_Map`**:
+2.  **Refactor `Scene_Map`** [x]:
     *   Remove `movePlayer`, `onTileClick` *logic*.
     *   Replace with calls to `this.explorationEngine.tryMove(dx, dy)`.
     *   Switch on the result to update the UI (e.g., `if (result.type === 'MOVED') this.hud.updateGrid()`).
-3.  **Extract Permadeath Logic**:
+3.  **Extract Permadeath Logic** [x]:
     *   Move `checkPermadeath` to `Game_Party` or a `DeathManager`.
     *   The Scene should only query `party.isDefeated()` or listen for a `DEATH` signal.
 
