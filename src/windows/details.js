@@ -2,6 +2,7 @@ import { Window_Base } from "./base.js";
 import { createBattlerNameLabel, renderElements, createInteractiveLabel, createGauge } from "./utils.js";
 import { UI } from "./builder.js";
 import { evaluateFormula } from "../core/utils.js";
+import { ProgressionSystem } from "../managers/progression.js";
 
 /**
  * @class Window_Inspect
@@ -67,7 +68,7 @@ export class Window_Inspect extends Window_Base {
       const floorDepth = context.floorDepth || 1;
       const gold = context.gold || 0;
       const inventory = context.inventory || [];
-      const evoStatus = member.getEvolutionStatus(inventory, floorDepth, gold);
+      const evoStatus = ProgressionSystem.getEvolutionStatus(member, inventory, floorDepth, gold);
 
       const headerRow = document.createElement("div");
       headerRow.className = "inspect-header";
@@ -127,7 +128,7 @@ export class Window_Inspect extends Window_Base {
       addRow("HP", hpContainer);
 
       // XP Bar
-      const xpNeeded = member.xpNeeded(member.level);
+      const xpNeeded = ProgressionSystem.xpNeeded(member.level, member.expGrowth);
       const xpContainer = document.createElement("div");
       xpContainer.style.width = "100%";
       xpContainer.style.display = "flex";

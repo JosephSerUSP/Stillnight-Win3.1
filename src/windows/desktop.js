@@ -1,5 +1,6 @@
 import { Window_Base } from "./base.js";
 import { createPartySlot } from "./utils.js";
+import { ProgressionSystem } from "../managers/progression.js";
 
 /**
  * @class Window_StackNav
@@ -144,6 +145,8 @@ export class Window_PartyPanel extends Window_Base {
         super(0, 0, '100%', 'auto', { title: "Party Status", embedded: true });
         this.element.classList.add("party-panel");
 
+        this.prevHpMap = new WeakMap();
+
         const btnContainer = document.createElement("div");
         btnContainer.style.display = "flex";
         btnContainer.style.gap = "2px";
@@ -179,7 +182,7 @@ export class Window_PartyPanel extends Window_Base {
         party.slots.slice(0, 4).forEach((member, index) => {
             let evolutionStatus = null;
             if (member && context) {
-                const statusObj = member.getEvolutionStatus(context.inventory, context.floorDepth, context.gold);
+                const statusObj = ProgressionSystem.getEvolutionStatus(member, context.inventory, context.floorDepth, context.gold);
                 if (statusObj.status !== 'NONE') {
                     evolutionStatus = statusObj.status;
                 }
@@ -193,7 +196,7 @@ export class Window_PartyPanel extends Window_Base {
             if (member) {
                 const gaugeFill = slot.querySelector('.hp-fill');
                 if (gaugeFill) {
-                    const startHp = member.prevHp !== undefined ? member.prevHp : member.hp;
+                    const startHp = this.prevHpMap.has(member) ? this.prevHpMap.get(member) : member.hp;
                     gaugeFill.style.width = `${Math.max(0, (startHp / member.maxHp) * 100)}%`;
                     this.animateGauge(
                         gaugeFill,
@@ -203,7 +206,7 @@ export class Window_PartyPanel extends Window_Base {
                         500
                     );
                 }
-                member.prevHp = member.hp;
+                this.prevHpMap.set(member, member.hp);
             }
             this.partyGridEl.appendChild(slot);
         });
