@@ -52,6 +52,44 @@ export class Game_Party {
   }
 
   /**
+   * Checks for party members with 0 HP and handles permadeath or rebirth traits.
+   * @returns {Array<Object>} List of events (e.g., { type: 'DEATH', member: ... }, { type: 'REBIRTH', member: ... })
+   */
+  checkDeaths() {
+      const events = [];
+      const members = [...this.members];
+
+      for (const member of members) {
+          if (member.hp <= 0) {
+              const permadeathTraits = member.traits.filter(t => t.code === 'ON_PERMADEATH');
+
+              if (permadeathTraits.length > 0) {
+                   const heal = Math.floor(member.maxHp * 0.2) || 1;
+                   member.hp = heal;
+
+                   const oldLevel = member.level;
+                   const levelsLost = 2;
+                   member.level = Math.max(1, member.level - levelsLost);
+
+                   if (member.level < oldLevel) {
+                       const lost = oldLevel - member.level;
+                       member._baseMaxHp = Math.max(1, member._baseMaxHp - (lost * 3));
+                       member.xp = 0;
+                   }
+
+                   if (member.hp > member.maxHp) member.hp = member.maxHp;
+
+                   events.push({ type: 'REBIRTH', member });
+              } else {
+                  this.removeMember(member);
+                  events.push({ type: 'DEATH', member });
+              }
+          }
+      }
+      return events;
+  }
+
+  /**
    * Initializes the party members based on starting data.
    * @param {import("./managers.js").DataManager} dataManager - The data manager.
    */

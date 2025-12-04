@@ -8,6 +8,7 @@ import { InputController } from "../managers/input_controller.js";
 import { HUDManager } from "../managers/hud_manager.js";
 import { Window_Desktop } from "../windows/index.js";
 import { ProgressionSystem } from "../managers/progression.js";
+import { ExplorationEngine } from "../managers/exploration.js";
 
 /**
  * @class Scene_Map
@@ -42,6 +43,7 @@ export class Scene_Map extends Scene_Base {
 
     this.hudManager = new HUDManager(windowManager, gameContainer);
     this.inputController = new InputController(this);
+    this.explorationEngine = new ExplorationEngine(this.map, this.party);
 
     // Callbacks mapping
     this.hudManager.eventWindow.onUserClose = this.interpreter.closeEvent.bind(this.interpreter);
@@ -172,29 +174,61 @@ export class Scene_Map extends Scene_Base {
    * @param {number} dy - Y delta.
    */
   movePlayer(dx, dy) {
-    const newX = this.map.playerX + dx;
-    const newY = this.map.playerY + dy;
+    const result = this.explorationEngine.tryMove(dx, dy);
+    this.handleExplorationResult(result);
+  }
 
-    if (
-      newX >= 0 &&
-      newX < this.map.MAX_W &&
-      newY >= 0 &&
-      newY < this.map.MAX_H
-    ) {
-      this.onTileClick(newX, newY);
-    }
+  handleExplorationResult(result) {
+      if (result.type === 'BLOCKED') {
+          if (result.reason === 'wall') {
+              this.setStatus(this.dataManager.terms.log.wall_blocks);
+              SoundManager.play('UI_ERROR');
+          }
+          return;
+      }
 
-    // Process Moving Enemies
-    const results = this.map.updateEvents(this.party);
-    results.forEach(res => {
-        if (res.type === 'collision') {
-            this.currentInteractionEvent = res.event;
-            this.executeEvent(res.event);
-        }
-    });
-    if (results.length > 0) {
-        this.updateGrid();
-    }
+      if (result.type === 'INTERACT') {
+           this.currentInteractionEvent = result.event;
+           this.executeEvent(result.event);
+           return;
+      }
+
+      if (result.type === 'SEQUENCE') {
+           result.results.forEach(r => this.handleExplorationResult(r));
+           // After sequence (movement), apply general updates
+           this.updateGrid();
+           if (result.results.some(r => r.type === 'MOVED')) {
+               SoundManager.play('UI_SELECT');
+               this.applyMovePassives();
+           }
+           this.updateAll();
+
+           // Check entity updates
+           const entityResults = this.explorationEngine.updateEntities();
+           entityResults.forEach(r => this.handleExplorationResult(r));
+           if (entityResults.length > 0) this.updateGrid();
+
+           return;
+      }
+
+      if (result.type === 'MOVED') {
+           this.logMessage("[Step] Your footsteps echo softly.");
+           this.setStatus("You move.");
+      }
+
+      if (result.type === 'EXPLORED_ALL') {
+           this.logMessage("Map fully explored! The entire floor is revealed.");
+           SoundManager.play('ITEM_GET');
+      }
+
+      if (result.type === 'EVENT' || result.type === 'REVEALED') {
+           if (result.type === 'REVEALED') this.updateGrid();
+           if (result.event) {
+               if (result.event.type === 'trap') this.updateGrid(); // Trap triggered
+               this.currentInteractionEvent = result.event;
+               this.executeEvent(result.event);
+           }
+      }
   }
 
   /**
@@ -444,97 +478,19 @@ export class Scene_Map extends Scene_Base {
     }
     if (this.sceneManager.currentScene() !== this) return;
 
-    const floor = this.map.floors[this.map.floorIndex];
-
     const dx = Math.abs(x - this.map.playerX);
     const dy = Math.abs(y - this.map.playerY);
     const isAdjacent = dx + dy === 1;
+    const isSelf = x === this.map.playerX && y === this.map.playerY;
 
-    if (!isAdjacent && !(x === this.map.playerX && y === this.map.playerY)) {
+    if (!isAdjacent && !isSelf) {
       this.setStatus(this.dataManager.terms.status.only_adjacent_tiles);
       SoundManager.play('UI_ERROR');
       return;
     }
 
-    const ch = floor.tiles[y][x];
-    const event = floor.events ? floor.events.find(e => e.x === x && e.y === y) : null;
-
-    // Check for events BEFORE blocking on walls, to allow interaction with "Breakable Walls" or similar
-    if (event) {
-       let isHidden = false;
-       if (event.hidden) {
-           let maxSee = 0;
-           this.party.members.forEach(m => {
-              const v = m.getPassiveValue("SEE_TRAPS");
-              if (v > maxSee) maxSee = v;
-           });
-           if (maxSee <= event.trapValue && !event.isSneakAttack) {
-               isHidden = true;
-           }
-           if (event.isSneakAttack) {
-               // Sneak attacks are hidden until stepped on
-               isHidden = true;
-           }
-       }
-
-       if (!isHidden) {
-           // If interaction is allowed, do not move the player but execute the event
-           // Specifically for breakable walls or similar blockers on '#' tiles
-           if (ch === '#') {
-                this.currentInteractionEvent = event;
-                this.executeEvent(event);
-                return;
-           }
-       }
-    }
-
-    if (ch === "#") {
-      this.setStatus(this.dataManager.terms.log.wall_blocks);
-      SoundManager.play('UI_ERROR');
-      return;
-    }
-
-    this.map.playerX = x;
-    this.map.playerY = y;
-    this.map.revealAroundPlayer();
-
-    // Auto-reveal check
-    if (this.map.checkFloorExploration()) {
-        this.map.revealCurrentFloor();
-        this.logMessage("Map fully explored! The entire floor is revealed.");
-        SoundManager.play('ITEM_GET');
-    }
-
-    this.updateGrid();
-
-    if (event) {
-       // If hidden, we step on it and reveal it (surprise!)
-       if (event.hidden) {
-           event.hidden = false;
-           this.updateGrid();
-           this.currentInteractionEvent = event;
-           this.executeEvent(event);
-           return;
-       } else {
-           // If it's a trap, we still move onto it (triggering it)
-           if (event.type === 'trap') {
-               this.updateGrid();
-           }
-
-           this.currentInteractionEvent = event;
-           this.executeEvent(event);
-           return;
-       }
-    }
-
-    if (ch === ".") {
-      this.logMessage("[Step] Your footsteps echo softly.");
-      this.setStatus("You move.");
-    }
-
-    SoundManager.play('UI_SELECT');
-    this.applyMovePassives();
-    this.updateAll();
+    const result = this.explorationEngine.handleTileInteraction(x, y);
+    this.handleExplorationResult(result);
   }
 
   /**
