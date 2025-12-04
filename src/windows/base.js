@@ -1,6 +1,7 @@
 import { Graphics } from "../core/utils.js";
 import { ConfigManager } from "../managers/index.js";
 import { UI } from "./builder.js";
+import { makeDraggable } from "./components.js";
 
 /**
  * @class WindowAnimator
@@ -187,11 +188,14 @@ export class Window_Base {
 
         // Overlay Construction (if not embedded)
         if (!this.embedded) {
-            this.overlay = document.createElement("div");
-            this.overlay.className = "modal-overlay";
-            this.overlay.addEventListener("mousedown", (e) => {
-                if (e.target === this.overlay) {
-                    this.onUserClose();
+            this.overlay = UI.build(null, {
+                type: 'overlay',
+                props: {
+                    onClick: (e) => {
+                         if (e.target === this.overlay) {
+                             this.onUserClose();
+                         }
+                    }
                 }
             });
         }
@@ -203,10 +207,8 @@ export class Window_Base {
 
         if (options.closeButton !== false && !this.embedded) {
             headerChildren.push({
-                type: 'button',
+                type: 'close-button',
                 props: {
-                    className: 'win-btn',
-                    label: 'X',
                     onClick: () => this.onUserClose()
                 }
             });
@@ -221,7 +223,7 @@ export class Window_Base {
         this.titleEl = this.header.querySelector("span");
 
         if (!this.embedded) {
-            this.makeDraggable(this.header);
+            makeDraggable(this.element, this.header);
         }
 
         // 2. Content Construction
@@ -235,34 +237,6 @@ export class Window_Base {
             type: 'panel',
             props: { className: 'window-footer' }
         });
-
-        this._dragStart = null;
-        this._onDragHandler = this._onDrag.bind(this);
-        this._onDragEndHandler = this._onDragEnd.bind(this);
-    }
-
-    makeDraggable(titleBar) {
-        titleBar.addEventListener("mousedown", (e) => {
-            this._dragStart = {
-                x: e.clientX - this.element.offsetLeft,
-                y: e.clientY - this.element.offsetTop,
-            };
-            document.addEventListener("mousemove", this._onDragHandler);
-            document.addEventListener("mouseup", this._onDragEndHandler);
-        });
-    }
-
-    _onDrag(e) {
-        if (this._dragStart) {
-            this.element.style.left = `${e.clientX - this._dragStart.x}px`;
-            this.element.style.top = `${e.clientY - this._dragStart.y}px`;
-        }
-    }
-
-    _onDragEnd() {
-        this._dragStart = null;
-        document.removeEventListener("mousemove", this._onDragHandler);
-        document.removeEventListener("mouseup", this._onDragEndHandler);
     }
 
     open() {
@@ -275,7 +249,8 @@ export class Window_Base {
                 if (this.height === 'auto') {
                     const savedHeight = this.element.style.height;
                     this.element.style.height = 'auto';
-                    targetHeight = this.element.getBoundingClientRect().height;
+                    targetHeight = this.element.scrollHeight; // Use scrollHeight for reliability
+                    if (targetHeight === 0) targetHeight = this.element.getBoundingClientRect().height;
                 } else {
                     targetHeight = this.height;
                 }
