@@ -1,4 +1,3 @@
-
 import { Window_Base } from "./base.js";
 import { SoundManager } from "../managers/index.js";
 import { elementToAscii } from "../core/utils.js";
@@ -157,8 +156,8 @@ export class Window_AudioPlayer extends Window_Base {
         this.btnClose = this.addButton("Close", () => this.onUserClose());
     }
 
-    onOpen() {
-        super.onOpen();
+    open() {
+        super.open();
         // Store current music to resume later
         this.originalMusicKey = SoundManager._currentMusicKey;
         if (this.originalMusicKey) {
