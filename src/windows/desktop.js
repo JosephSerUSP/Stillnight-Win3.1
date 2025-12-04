@@ -1,6 +1,7 @@
 import { Window_Base } from "./base.js";
 import { createPartySlot } from "./utils.js";
 import { ProgressionSystem } from "../managers/progression.js";
+import { UI } from "./builder.js";
 
 /**
  * @class Window_StackNav
@@ -10,50 +11,84 @@ export class Window_StackNav extends Window_Base {
         super(0, 0, 210, '100%', { title: "Stillnight Stack", embedded: true });
         this.element.classList.add("stack-nav");
 
-        // Content:
-        // Group Run
-        this.groupRun = document.createElement("div");
-        this.groupRun.className = "group-box";
-        this.groupRun.innerHTML = `
-          <legend>Run</legend>
-          <div class="stack-nav-buttons">
-            <button class="win-btn" id="btn-new-run">New Run</button>
-            <button class="win-btn" id="btn-reveal-all">Reveal</button>
-            <button class="win-btn" id="btn-help" style="width: 24px; min-width: 24px; padding: 0;">?</button>
-          </div>
-          <div style="margin-top:2px;">
-             <button class="win-btn" id="btn-settings" style="width:100%">Settings</button>
-          </div>
-          <div style="margin-top:4px;">
-            <div>Card: <span id="card-index-label">1 / 1</span></div>
-            <div>Floor depth: <span id="card-depth-label">1</span></div>
-          </div>
-        `;
-        this.content.appendChild(this.groupRun);
+        const structure = {
+            type: 'panel',
+            props: { className: 'stack-nav-content' },
+            children: [
+                // Group Run
+                {
+                    type: 'panel',
+                    props: { className: 'group-box' },
+                    children: [
+                        { type: 'label', props: { tag: 'legend', text: 'Run' } },
+                        {
+                            type: 'panel',
+                            props: { className: 'stack-nav-buttons' },
+                            children: [
+                                { type: 'button', props: { id: 'btn-new-run', className: 'win-btn', label: 'New Run' } },
+                                { type: 'button', props: { id: 'btn-reveal-all', className: 'win-btn', label: 'Reveal' } },
+                                { type: 'button', props: { id: 'btn-help', className: 'win-btn', label: '?', style: { width: '24px', minWidth: '24px', padding: '0' } } }
+                            ]
+                        },
+                        {
+                            type: 'panel',
+                            props: { style: { marginTop: '2px' } },
+                            children: [
+                                { type: 'button', props: { id: 'btn-settings', className: 'win-btn', label: 'Settings', style: { width: '100%' } } }
+                            ]
+                        },
+                        {
+                            type: 'panel',
+                            props: { style: { marginTop: '4px' } },
+                            children: [
+                                {
+                                    type: 'panel',
+                                    children: [
+                                        { type: 'label', props: { text: 'Card: ' } },
+                                        { type: 'label', props: { id: 'card-index-label', text: '1 / 1' } }
+                                    ]
+                                },
+                                {
+                                    type: 'panel',
+                                    children: [
+                                        { type: 'label', props: { text: 'Floor depth: ' } },
+                                        { type: 'label', props: { id: 'card-depth-label', text: '1' } }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                // Location Art
+                {
+                    type: 'panel',
+                    props: { className: 'location-art-container' },
+                    children: [
+                        { type: 'image', props: { id: 'location-art', className: 'location-art-img', src: 'assets/eventArt/default.png' } }
+                    ]
+                },
+                // Group Cards
+                {
+                    type: 'panel',
+                    props: { className: 'group-box' },
+                    children: [
+                        { type: 'label', props: { tag: 'legend', text: 'Cards (Floors)' } },
+                        { type: 'panel', props: { id: 'card-list', className: 'card-list' } }
+                    ]
+                }
+            ]
+        };
 
-        // Location Art
-        this.artContainer = document.createElement("div");
-        this.artContainer.className = "location-art-container";
-        this.artContainer.innerHTML = `<img id="location-art" class="location-art-img" src="assets/eventArt/default.png">`;
-        this.content.appendChild(this.artContainer);
+        const root = UI.build(this.content, structure);
 
-        // Group Cards
-        this.groupCards = document.createElement("div");
-        this.groupCards.className = "group-box";
-        this.groupCards.innerHTML = `<legend>Cards (Floors)</legend><div class="card-list" id="card-list"></div>`;
-        this.content.appendChild(this.groupCards);
-
-        // Cache buttons for Window_HUD to expose
-        this.btnNewRun = this.groupRun.querySelector("#btn-new-run");
-        this.btnRevealAll = this.groupRun.querySelector("#btn-reveal-all");
-        this.btnSettings = this.groupRun.querySelector("#btn-settings");
-        this.btnHelp = this.groupRun.querySelector("#btn-help");
-
-        // Cache elements for updates
-        this.cardIndexLabelEl = this.groupRun.querySelector("#card-index-label");
-        this.cardDepthLabelEl = this.groupRun.querySelector("#card-depth-label");
-        this.locationArtEl = this.artContainer.querySelector("#location-art");
-        this.cardListEl = this.groupCards.querySelector("#card-list");
+        this.btnNewRun = root.querySelector("#btn-new-run");
+        this.btnRevealAll = root.querySelector("#btn-reveal-all");
+        this.btnSettings = root.querySelector("#btn-settings");
+        this.btnHelp = root.querySelector("#btn-help");
+        this.cardIndexLabelEl = root.querySelector("#card-index-label");
+        this.cardDepthLabelEl = root.querySelector("#card-depth-label");
+        this.locationArtEl = root.querySelector("#location-art");
+        this.cardListEl = root.querySelector("#card-list");
     }
 
     updateCardHeader(floor, index, total) {
@@ -69,18 +104,20 @@ export class Window_StackNav extends Window_Base {
     updateCardList(floors, currentIndex, maxReachedIndex, onSelect) {
         this.cardListEl.innerHTML = "";
         floors.forEach((f, idx) => {
-            const item = document.createElement("div");
-            let cls = "card-item";
-            if (idx === currentIndex) cls += " selected";
-            if (!f.discovered) cls += " disabled";
-            item.className = cls;
-            const title = f.discovered ? f.title : "Unknown Floor";
-            item.textContent = `${idx + 1}. ${title}`;
-
-            if (f.discovered && idx <= maxReachedIndex) {
-                item.addEventListener("click", () => onSelect(idx));
-            }
-            this.cardListEl.appendChild(item);
+            // Using UI.build for list items
+            const item = UI.build(this.cardListEl, {
+                type: 'panel',
+                props: {
+                    className: `card-item${idx === currentIndex ? ' selected' : ''}${!f.discovered ? ' disabled' : ''}`,
+                    text: `${idx + 1}. ${f.discovered ? f.title : "Unknown Floor"}`,
+                    onClick: (f.discovered && idx <= maxReachedIndex) ? () => onSelect(idx) : undefined
+                }
+            });
+            // Component_Panel defaults to div. Using text prop I assume I implemented support or use innerText if supported?
+            // Component_Panel implementation: applyBaseProps(el, props). applyBaseProps doesn't set text.
+            // I need to use Component_Label or set textContent manually.
+            // Let's use Component_Label with div tag.
+            item.textContent = `${idx + 1}. ${f.discovered ? f.title : "Unknown Floor"}`;
         });
     }
 }
@@ -94,22 +131,25 @@ export class Window_Exploration extends Window_Base {
         this.element.classList.add("card-main");
 
         // Header extra: "Mode: Exploration"
-        this.modeLabelContainer = document.createElement("div");
-        this.modeLabelContainer.innerHTML = `<span class="label">Mode:</span><span id="mode-label">Exploration</span>`;
-        this.header.appendChild(this.modeLabelContainer);
+        UI.build(this.header, {
+            type: 'panel', // Wrapper
+            children: [
+                 { type: 'label', props: { text: 'Mode:', className: 'label' } },
+                 { type: 'label', props: { text: 'Exploration', id: 'mode-label' } }
+            ]
+        });
 
-        // Ensure title element has ID for Scene_Map compatibility
         this.titleEl.id = "card-title";
 
-        // Content: Exploration Frame
-        this.explorationFrame = document.createElement("div");
-        this.explorationFrame.className = "exploration-frame panel";
-        this.explorationGrid = document.createElement("div");
-        this.explorationGrid.className = "exploration-grid";
-        this.explorationGrid.id = "exploration-grid";
-        this.explorationFrame.appendChild(this.explorationGrid);
-
-        this.content.appendChild(this.explorationFrame);
+        // Content
+        const root = UI.build(this.content, {
+            type: 'panel',
+            props: { className: 'exploration-frame panel' },
+            children: [
+                { type: 'panel', props: { className: 'exploration-grid', id: 'exploration-grid' } }
+            ]
+        });
+        this.explorationGrid = root.querySelector("#exploration-grid");
     }
 
     updateTitle(title) {
@@ -124,15 +164,16 @@ export class Window_Exploration extends Window_Base {
     renderGrid(gridData, onTileClick) {
         this.explorationGrid.innerHTML = "";
         gridData.forEach(cell => {
-             const tileEl = document.createElement("div");
-             tileEl.className = "tile";
-             if (cell.cssClass) tileEl.className += " " + cell.cssClass;
-             tileEl.dataset.x = cell.x;
-             tileEl.dataset.y = cell.y;
-             if (cell.symbol) tileEl.textContent = cell.symbol;
-
-             tileEl.addEventListener("click", (e) => onTileClick(cell.x, cell.y));
-             this.explorationGrid.appendChild(tileEl);
+             UI.build(this.explorationGrid, {
+                 type: 'label', // Use label to support text
+                 props: {
+                     tag: 'div',
+                     className: `tile ${cell.cssClass || ''}`,
+                     dataset: { x: cell.x, y: cell.y },
+                     text: cell.symbol,
+                     onClick: () => onTileClick(cell.x, cell.y)
+                 }
+             });
         });
     }
 }
@@ -147,34 +188,22 @@ export class Window_PartyPanel extends Window_Base {
 
         this.prevHpMap = new WeakMap();
 
-        const btnContainer = document.createElement("div");
-        btnContainer.style.display = "flex";
-        btnContainer.style.gap = "2px";
+        UI.build(this.header, {
+            type: 'flex',
+            props: { gap: '2px' },
+            children: [
+                { type: 'button', props: { id: 'btn-formation', className: 'win-btn', label: 'Formation...', style: { fontSize: '10px', padding: '0 6px' } } },
+                { type: 'button', props: { id: 'btn-inventory', className: 'win-btn', label: 'Inventory...', testId: 'btn-inventory', style: { fontSize: '10px', padding: '0 6px' } } }
+            ]
+        });
 
-        this.btnFormation = document.createElement("button");
-        this.btnFormation.className = "win-btn";
-        this.btnFormation.style.fontSize = "10px";
-        this.btnFormation.style.padding = "0 6px";
-        this.btnFormation.id = "btn-formation";
-        this.btnFormation.textContent = "Formation...";
-        btnContainer.appendChild(this.btnFormation);
+        this.btnFormation = this.header.querySelector("#btn-formation");
+        this.btnInventory = this.header.querySelector("#btn-inventory");
 
-        this.btnInventory = document.createElement("button");
-        this.btnInventory.className = "win-btn";
-        this.btnInventory.style.fontSize = "10px";
-        this.btnInventory.style.padding = "0 6px";
-        this.btnInventory.id = "btn-inventory";
-        this.btnInventory.dataset.testid = "btn-inventory"; // Added testid
-        this.btnInventory.textContent = "Inventory...";
-        btnContainer.appendChild(this.btnInventory);
-
-        this.header.appendChild(btnContainer);
-
-        // Content
-        this.partyGridEl = document.createElement("div");
-        this.partyGridEl.className = "party-grid";
-        this.partyGridEl.id = "party-grid";
-        this.content.appendChild(this.partyGridEl);
+        this.partyGridEl = UI.build(this.content, {
+            type: 'panel',
+            props: { className: 'party-grid', id: 'party-grid' }
+        });
     }
 
     updateParty(party, onInspect, context = null) {
@@ -188,6 +217,7 @@ export class Window_PartyPanel extends Window_Base {
                 }
             }
 
+            // createPartySlot is still imperative but permitted for now as utility
             const slot = createPartySlot(member, index, {
                 onClick: onInspect,
                 testId: `party-slot-${index}`,
@@ -239,18 +269,15 @@ export class Window_LogPanel extends Window_Base {
         super(0, 0, '100%', '230', { title: "Event Log", embedded: true });
         this.element.classList.add("log-panel");
 
-        this.btnClear = document.createElement("button");
-        this.btnClear.className = "win-btn";
-        this.btnClear.style.fontSize = "10px";
-        this.btnClear.style.padding = "0 6px";
-        this.btnClear.id = "btn-clear-log";
-        this.btnClear.textContent = "Clear";
-        this.header.appendChild(this.btnClear);
+        this.btnClear = UI.build(this.header, {
+            type: 'button',
+            props: { id: 'btn-clear-log', className: 'win-btn', label: 'Clear', style: { fontSize: '10px', padding: '0 6px' } }
+        });
 
-        this.logEl = document.createElement("div");
-        this.logEl.className = "log-content";
-        this.logEl.id = "log-content";
-        this.content.appendChild(this.logEl);
+        this.logEl = UI.build(this.content, {
+            type: 'panel',
+            props: { className: 'log-content', id: 'log-content' }
+        });
     }
 
     add(msg) {
@@ -272,22 +299,19 @@ export class Window_Desktop extends Window_Base {
     constructor() {
         super(0, 0, 960, 560, { title: "Desktop", embedded: true, id: "desktop-window" });
 
-        // Desktop specific styling
         this.element.style.display = "flex";
         this.element.style.flexDirection = "row";
         this.element.style.position = "relative";
-        this.element.style.border = "none"; // Remove border for the root window
-        this.element.style.boxShadow = "none"; // Remove shadow
-        this.element.style.backgroundColor = "transparent"; // Let global background show through? Or specific bg.
+        this.element.style.border = "none";
+        this.element.style.boxShadow = "none";
+        this.element.style.backgroundColor = "transparent";
 
-        // Hide standard window chrome
         this.header.style.display = "none";
         this.footer.style.display = "none";
 
-        // Setup content area
         this.content.style.padding = "0";
         this.content.style.flexDirection = "row";
-        this.content.style.border = "none"; // Remove internal border/shadow of content if any
+        this.content.style.border = "none";
 
         this.createUI();
     }
@@ -296,63 +320,71 @@ export class Window_Desktop extends Window_Base {
         const container = this.content;
         container.innerHTML = "";
 
-        // Inject grid dimensions for CSS
         this.element.style.setProperty('--grid-cols', '19');
         this.element.style.setProperty('--grid-rows', '19');
 
-        // 1. Stack Nav Window
         this.stackNav = new Window_StackNav();
-        container.appendChild(this.stackNav.element);
-
-        // --- Right Side Container ---
-        const rightSide = document.createElement("div");
-        rightSide.className = "right-side";
-        container.appendChild(rightSide);
-
-        // --- Card Area Container ---
-        const cardArea = document.createElement("div");
-        cardArea.className = "card-area";
-        rightSide.appendChild(cardArea);
-
-        // 2. Exploration Window (Main)
         this.explorationWindow = new Window_Exploration();
-        cardArea.appendChild(this.explorationWindow.element);
-
-        // --- Side Panels Container ---
-        const sidePanels = document.createElement("div");
-        sidePanels.className = "card-side-panels";
-        cardArea.appendChild(sidePanels);
-
-        // 3. Party Panel
         this.partyPanel = new Window_PartyPanel();
-        sidePanels.appendChild(this.partyPanel.element);
-
-        // 4. Log Panel
         this.logPanel = new Window_LogPanel();
-        sidePanels.appendChild(this.logPanel.element);
 
-        // Status Bar
-        this.statusBar = document.createElement("div");
-        this.statusBar.className = "status-bar";
-        this.statusBar.innerHTML = `
-          <div><span id="status-message">Ready.</span></div>
-          <div>
-            <span>Gold: <span id="status-gold">0</span></span>
-            <span>| Floor: <span id="status-floor">1</span></span>
-            <span>| Cards: <span id="status-cards">1</span></span>
-            <span>| Run: <span id="status-run">Active</span></span>
-            <span>| Items: <span id="status-items">0</span></span>
-          </div>
-        `;
-        rightSide.appendChild(this.statusBar);
+        const layout = UI.build(container, {
+            type: 'panel',
+            props: { style: { display: 'flex', flexDirection: 'row', width: '100%', height: '100%' } },
+            children: [
+                 { type: 'panel', props: { id: 'left-col' } },
+                 {
+                     type: 'panel',
+                     props: { className: 'right-side' },
+                     children: [
+                         {
+                             type: 'panel',
+                             props: { className: 'card-area' },
+                             children: [
+                                 { type: 'panel', props: { id: 'exploration-slot' } },
+                                 {
+                                     type: 'panel',
+                                     props: { className: 'card-side-panels' },
+                                     children: [
+                                         { type: 'panel', props: { id: 'party-slot' } },
+                                         { type: 'panel', props: { id: 'log-slot' } }
+                                     ]
+                                 }
+                             ]
+                         },
+                         {
+                             type: 'panel',
+                             props: { className: 'status-bar' },
+                             children: [
+                                 { type: 'panel', children: [{ type: 'label', props: { id: 'status-message', text: 'Ready.' } }] },
+                                 {
+                                     type: 'panel',
+                                     children: [
+                                         { type: 'label', props: { text: 'Gold: ' } }, { type: 'label', props: { id: 'status-gold', text: '0' } },
+                                         { type: 'label', props: { text: ' | Floor: ' } }, { type: 'label', props: { id: 'status-floor', text: '1' } },
+                                         { type: 'label', props: { text: ' | Cards: ' } }, { type: 'label', props: { id: 'status-cards', text: '1' } },
+                                         { type: 'label', props: { text: ' | Run: ' } }, { type: 'label', props: { id: 'status-run', text: 'Active' } },
+                                         { type: 'label', props: { text: ' | Items: ' } }, { type: 'label', props: { id: 'status-items', text: '0' } },
+                                     ]
+                                 }
+                             ]
+                         }
+                     ]
+                 }
+            ]
+        });
 
-        // Cache status elements
-        this.statusMessageEl = this.statusBar.querySelector("#status-message");
-        this.statusGoldEl = this.statusBar.querySelector("#status-gold");
-        this.statusFloorEl = this.statusBar.querySelector("#status-floor");
-        this.statusCardsEl = this.statusBar.querySelector("#status-cards");
-        this.statusRunEl = this.statusBar.querySelector("#status-run");
-        this.statusItemsEl = this.statusBar.querySelector("#status-items");
+        layout.querySelector("#left-col").replaceWith(this.stackNav.element);
+        layout.querySelector("#exploration-slot").replaceWith(this.explorationWindow.element);
+        layout.querySelector("#party-slot").replaceWith(this.partyPanel.element);
+        layout.querySelector("#log-slot").replaceWith(this.logPanel.element);
+
+        this.statusMessageEl = layout.querySelector("#status-message");
+        this.statusGoldEl = layout.querySelector("#status-gold");
+        this.statusFloorEl = layout.querySelector("#status-floor");
+        this.statusCardsEl = layout.querySelector("#status-cards");
+        this.statusRunEl = layout.querySelector("#status-run");
+        this.statusItemsEl = layout.querySelector("#status-items");
     }
 
     get btnSettings() { return this.stackNav.btnSettings; }
@@ -404,5 +436,11 @@ export class Window_Desktop extends Window_Base {
 
     renderGrid(gridData, onTileClick) {
         this.explorationWindow.renderGrid(gridData, onTileClick);
+    }
+
+    mount(parent) {
+        if (!parent) return;
+        parent.innerHTML = "";
+        parent.appendChild(this.element);
     }
 }
