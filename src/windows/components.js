@@ -264,6 +264,55 @@ export function Component_ElementIcon(parent, props = {}) {
  * @param {string} [props.tooltipText] - Override tooltip text
  * @param {string[]} [props.elements] - Override elements
  */
+export function Component_Overlay(parent, props = {}) {
+    const el = document.createElement("div");
+    el.className = "modal-overlay";
+    applyBaseProps(el, props);
+    appendToParent(parent, el);
+    return el;
+}
+
+export function Component_CloseButton(parent, props = {}) {
+    const defaultProps = {
+        className: 'win-btn',
+        label: 'X',
+        ...props
+    };
+    return Component_Button(parent, defaultProps);
+}
+
+export function Component_Image(parent, props = {}) {
+    const el = document.createElement("img");
+    if (props.src) el.src = props.src;
+    applyBaseProps(el, props);
+    appendToParent(parent, el);
+    return el;
+}
+
+export function makeDraggable(element, handle) {
+    let dragStart = null;
+    const onDrag = (e) => {
+        if (dragStart) {
+            element.style.left = `${e.clientX - dragStart.x}px`;
+            element.style.top = `${e.clientY - dragStart.y}px`;
+        }
+    };
+    const onDragEnd = () => {
+        dragStart = null;
+        document.removeEventListener("mousemove", onDrag);
+        document.removeEventListener("mouseup", onDragEnd);
+    };
+
+    handle.addEventListener("mousedown", (e) => {
+        dragStart = {
+            x: e.clientX - element.offsetLeft,
+            y: e.clientY - element.offsetTop,
+        };
+        document.addEventListener("mousemove", onDrag);
+        document.addEventListener("mouseup", onDragEnd);
+    });
+}
+
 export function Component_InteractiveLabel(parent, props = {}) {
     const { data, type } = props;
     const container = document.createElement("span");

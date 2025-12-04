@@ -7,7 +7,10 @@ import {
     Component_GridContainer,
     Component_Gauge,
     Component_ElementIcon,
-    Component_InteractiveLabel
+    Component_InteractiveLabel,
+    Component_Overlay,
+    Component_CloseButton,
+    Component_Image
 } from "./components.js";
 
 const COMPONENT_MAP = {
@@ -19,7 +22,10 @@ const COMPONENT_MAP = {
     'grid': Component_GridContainer,
     'gauge': Component_Gauge,
     'element-icon': Component_ElementIcon,
-    'interactive-label': Component_InteractiveLabel
+    'interactive-label': Component_InteractiveLabel,
+    'overlay': Component_Overlay,
+    'close-button': Component_CloseButton,
+    'image': Component_Image
 };
 
 export const UI = {
