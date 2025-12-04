@@ -22,7 +22,26 @@ export const TRAIT_DEFINITIONS = {
     },
     'HRG': {
         label: () => "HP Regen",
-        format: (value) => `${value > 0 ? '+' : ''}${Math.round(value * 100)}%`
+        format: (value) => `${value > 0 ? '+' : ''}${Math.round(value * 100)}%`,
+        trigger: 'turnStart',
+        execute: (value, battler, context) => {
+            const amount = Math.floor(battler.maxHp * value);
+            if (amount <= 0) return null;
+
+            const hpBefore = battler.hp;
+            battler.hp = Math.min(battler.maxHp, battler.hp + amount);
+
+            return {
+                type: 'heal',
+                battler: battler,
+                target: battler,
+                value: amount,
+                hpBefore: hpBefore,
+                hpAfter: battler.hp,
+                msg: `${battler.name} regenerates ${amount} HP.`,
+                animation: 'healing_sparkle'
+            };
+        }
     },
     'EVA': {
         label: () => "Evasion",
@@ -152,7 +171,41 @@ export const TRAIT_DEFINITIONS = {
     },
     'SYMBIOSIS': {
         label: () => "Symbiosis",
-        format: (value) => `Heals neighbors ${value} HP`
+        format: (value) => `Heals neighbors ${value} HP`,
+        trigger: 'turnStart',
+        execute: (value, battler, context) => {
+            const { allies } = context;
+            if (!allies || value <= 0) return null;
+
+            const myIndex = allies.indexOf(battler);
+            if (myIndex === -1) return null;
+
+            // Heal neighbor (Front <-> Front, Back <-> Back in same column)
+            const targetIndex = myIndex % 2 === 0 ? myIndex + 1 : myIndex - 1;
+
+            if (targetIndex < 0 || targetIndex >= allies.length) return null;
+
+            const target = allies[targetIndex];
+            if (!target || target.hp <= 0) return null;
+
+            const healAmount = value;
+
+            const hpBeforeTarget = target.hp;
+            target.hp = Math.min(target.maxHp, target.hp + healAmount);
+
+            if (target.hp === hpBeforeTarget) return null; // No effective heal
+
+            return {
+                type: 'heal',
+                battler: battler,
+                target: target,
+                value: healAmount,
+                hpBefore: hpBeforeTarget,
+                hpAfter: target.hp,
+                msg: `[Passive] ${battler.name} heals ${target.name} for ${healAmount} HP via Symbiosis.`,
+                animation: 'healing_sparkle'
+            };
+        }
     },
     'SEE_WALLS': {
         label: () => "Vision",
@@ -196,7 +249,43 @@ export const TRAIT_DEFINITIONS = {
     },
     'PARASITE': {
         label: () => "Parasite",
-        format: (value) => `Drains ${value} HP from ally`
+        format: (value) => `Drains ${value} HP from ally`,
+        trigger: 'turnStart',
+        execute: (value, battler, context) => {
+            const { allies } = context;
+            if (!allies || value <= 0) return null;
+
+            const myIndex = allies.indexOf(battler);
+            if (myIndex === -1) return null;
+
+            // Drain from neighbor (Front <-> Front, Back <-> Back in same column)
+            const targetIndex = myIndex % 2 === 0 ? myIndex + 1 : myIndex - 1;
+
+            if (targetIndex < 0 || targetIndex >= allies.length) return null;
+
+            const target = allies[targetIndex];
+            if (!target || target.hp <= 0) return null;
+
+            const parasiteDrain = value;
+
+            const hpBeforeTarget = target.hp;
+            const hpBeforeSource = battler.hp;
+
+            target.hp = Math.max(0, target.hp - parasiteDrain);
+            battler.hp = Math.min(battler.maxHp, battler.hp + parasiteDrain);
+
+            return {
+                type: 'passive_drain',
+                source: battler,
+                target: target,
+                value: parasiteDrain,
+                hpBeforeTarget: hpBeforeTarget,
+                hpAfterTarget: target.hp,
+                hpBeforeSource: hpBeforeSource,
+                hpAfterSource: battler.hp,
+                msg: `[Passive] ${battler.name} drains ${parasiteDrain} HP from ${target.name}.`
+            };
+        }
     },
     'XP_RATE': {
         combine: 'multiply',
