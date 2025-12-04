@@ -268,40 +268,16 @@ export class Scene_Map extends Scene_Base {
    * @method checkPermadeath
    */
   checkPermadeath() {
-    let deadFound = false;
-    const members = [...this.party.members];
-    for (const member of members) {
-        if (member.hp <= 0) {
-            deadFound = true;
-            const permadeathTraits = member.traits.filter(t => t.code === 'ON_PERMADEATH');
-
-            if (permadeathTraits.length > 0) {
-                 this.logMessage(`[Passive] ${member.name}'s Rebirth activates!`);
-
-                 const heal = Math.floor(member.maxHp * 0.2) || 1;
-                 member.hp = heal;
-
-                 const oldLevel = member.level;
-                 const levelsLost = 2;
-                 member.level = Math.max(1, member.level - levelsLost);
-
-                 if (member.level < oldLevel) {
-                     const lost = oldLevel - member.level;
-                     member._baseMaxHp = Math.max(1, member._baseMaxHp - (lost * 3));
-                     member.xp = 0;
-                 }
-
-                 if (member.hp > member.maxHp) member.hp = member.maxHp;
-
-                 this.logMessage(`${member.name} returned at Lv${member.level}.`);
-            } else {
-                this.party.removeMember(member);
-                this.logMessage(`[Death] ${member.name} has fallen and is lost forever.`);
+    const events = this.party.checkDeaths();
+    if (events.length > 0) {
+        events.forEach(e => {
+            if (e.type === 'REBIRTH') {
+                this.logMessage(`[Passive] ${e.member.name}'s Rebirth activates!`);
+                this.logMessage(`${e.member.name} returned at Lv${e.member.level}.`);
+            } else if (e.type === 'DEATH') {
+                this.logMessage(`[Death] ${e.member.name} has fallen and is lost forever.`);
             }
-        }
-    }
-
-    if (deadFound) {
+        });
         this.updateAll();
     }
   }
