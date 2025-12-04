@@ -1,6 +1,7 @@
 import { randInt, shuffleArray, probabilisticRound, pickWeighted } from "../core/utils.js";
 import { EffectManager } from "../managers/effects.js";
 import { EffectProcessor } from "../managers/effect_processor.js";
+import { Game_Summoner } from "./summoner.js";
 import { passives as passivesData } from "../../data/passives.js";
 import { states as statesData } from "../../data/states.js";
 
@@ -143,6 +144,15 @@ export class Game_Battler extends Game_Base {
       this._baseMaxHp += (depth - 1) * 4;
       this.hp = this.maxHp;
     }
+  }
+
+  /**
+   * Gets the Magnetite upkeep cost for this unit.
+   * Formula: 1 + Floor(Level / 2)
+   * @type {number}
+   */
+  get cost() {
+      return 1 + Math.floor(this.level / 2);
   }
 
   /**
@@ -526,6 +536,12 @@ export class Game_Party {
      * @type {Array}
      */
     this.inventory = [];
+
+    /**
+     * The Summoner character.
+     * @type {Game_Summoner}
+     */
+    this.summoner = new Game_Summoner();
   }
 
   /**
@@ -654,6 +670,29 @@ export class Game_Party {
 
       this.inventory.splice(index, 1);
       return { success: true, outcomes, item };
+  }
+
+  /**
+   * Called by the map when a step is taken.
+   * Handles Magnetite consumption.
+   * @returns {Object} Result of the step { magDepleted: boolean }
+   */
+  onStep() {
+      if (!this.summoner) return { magDepleted: false };
+
+      const totalCost = this.activeMembers.reduce((sum, member) => sum + member.cost, 0);
+      const hasMag = this.summoner.consumeMag(totalCost);
+
+      if (!hasMag && totalCost > 0) {
+          // Apply MAG Depletion Penalty (e.g. 5% Max HP damage)
+          this.activeMembers.forEach(member => {
+              const dmg = Math.max(1, Math.floor(member.maxHp * 0.05));
+              member.hp = Math.max(0, member.hp - dmg);
+          });
+          return { magDepleted: true, damage: true };
+      }
+
+      return { magDepleted: false };
   }
 
   /**
@@ -1083,4 +1122,5 @@ if (typeof window !== 'undefined' && window.location.search.includes("test=true"
     window.Game_Party = Game_Party;
     window.Game_Map = Game_Map;
     window.Game_Event = Game_Event;
+    window.Game_Summoner = Game_Summoner;
 }
