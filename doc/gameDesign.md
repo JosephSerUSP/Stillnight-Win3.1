@@ -24,13 +24,17 @@ Both Effects and Traits also must generate description strings. These are going 
 Characteristics such as Scope and Condition must also be dynamically shown on the description.
 
 TRAIT OBJECTS:
+all trait objects have:
+'condition' - a condition for which this object's traits are inherited.
+
 1.Passives: Trait Objects that are innate or learned by creatures. a and b are the same subject. 
-'condition' - a condition for which this object's traits are inherited. 
+
 2.Equipment: Trait Objects that are equipped to creatures. a and b are the same subject.
 Equipment can be modified to have different traits. 
-'condition' - a condition for which this object's traits are inherited.
+'price' - how much currency is required to purchase this equipment at a shop.
+
 3.States: Trait Objects that are temporarily applied to creatures; a is the state applier, b is the state subject.
-'condition' - a condition for which this object's traits are inherited.
+States expire. The architecture for handling state expiry should be flexible, not hardcoded. States can expire after X turns, random chance every turn, on certain triggers, etc. 
 
 4.Battlers: The battle units. They're both allies and enemies. They inherit traits from Passives, Equipment, States and the PC.
 They have the following:
