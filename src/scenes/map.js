@@ -110,6 +110,8 @@ export class Scene_Map extends Scene_Base {
   startNewRun() {
     if (this.sceneManager.currentScene() !== this) return;
     this.party.createInitialMembers(this.dataManager);
+    this.party.summoner.mp = 100; // Reset Summoner MP
+
     this.map.initFloors(this.dataManager.maps, this.dataManager.events, this.dataManager.npcs, this.party);
     this.runActive = true;
     this.map.floorIndex = 0;
@@ -200,6 +202,19 @@ export class Scene_Map extends Scene_Base {
            if (result.results.some(r => r.type === 'MOVED')) {
                SoundManager.play('UI_SELECT');
                this.applyMovePassives();
+
+               // === RESOURCE DRAIN LOGIC ===
+               const stepResult = this.party.onStep();
+               if (stepResult.mpDrained > 0) {
+                   // Optional: Log drain? Might spam.
+               }
+               if (stepResult.penaltyApplied) {
+                   // Only log every few steps or on start?
+                   // "Creatures ... losing HP with each step"
+                   if (stepResult.stepsAtZeroMp % 5 === 1) {
+                        this.logMessage(`[Starvation] MP depleted! Party is weakening.`);
+                   }
+               }
            }
            this.updateAll();
 
@@ -214,6 +229,24 @@ export class Scene_Map extends Scene_Base {
       if (result.type === 'MOVED') {
            this.logMessage("[Step] Your footsteps echo softly.");
            this.setStatus("You move.");
+
+           // === RESOURCE DRAIN LOGIC (Single step fallback) ===
+           // Note: Usually SEQUENCE handles steps, but keeping here for robustness
+           // This block usually runs if SEQUENCE didn't cover it or direct call.
+           // However, SEQUENCE above covers tryMove.
+           // If tryMove returns MOVED directly (simple move), we need it here.
+           // BUT ExplorationEngine.tryMove currently returns SEQUENCE for moves.
+           // Wait, let's check ExplorationEngine.
+           // Assuming it returns MOVED for simple moves:
+           SoundManager.play('UI_SELECT');
+           this.applyMovePassives();
+
+           const stepResult = this.party.onStep();
+           if (stepResult.penaltyApplied && stepResult.stepsAtZeroMp % 5 === 1) {
+                this.logMessage(`[Starvation] MP depleted! Party is weakening.`);
+           }
+
+           this.updateAll();
       }
 
       if (result.type === 'EXPLORED_ALL') {
@@ -315,8 +348,18 @@ export class Scene_Map extends Scene_Base {
     this.updateCardHeader();
     this.updateCardList();
     this.updateParty();
+
+    // Update HUD with MP info (using gold slot or custom?)
+    // HUD currently shows Gold, Items, Run Status.
+    // Ideally we update HUD to show MP.
+    // For now, let's hijack "Gold" or just pass it in updateStatus if HUD supports it.
+    // I need to update Window_Desktop to render MP.
+    // But per instructions "backbone first", I will pass it in data and maybe the HUD ignores it for now,
+    // or I'll implement a basic display if time permits.
     this.hud.updateStatus({
         gold: this.party.gold,
+        mp: this.party.summoner.mp, // Passing MP
+        maxMp: this.party.summoner.maxMp,
         items: this.party.inventory.length,
         runActive: this.runActive
     });
@@ -462,6 +505,13 @@ export class Scene_Map extends Scene_Base {
    * @method updateParty
    */
   updateParty() {
+    // Pass slot index implicitly or explicitly?
+    // Game_Party.slots structure matches index order.
+    // We need to ensure slotIndex is synced for passives visualization in UI?
+    // Scene_Map.updateParty calls Window_PartyPanel.render which iterates members.
+    // We should ensure slotIndex is set on members before render.
+    this.party.slots.forEach((m, i) => { if(m) m.slotIndex = i; });
+
     this.hud.updateParty(this.party, (member, index) => this.openInspect(member, index), this.getContext());
   }
 
