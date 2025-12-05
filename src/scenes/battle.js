@@ -517,6 +517,8 @@ export class Scene_Battle extends Scene_Base {
                         this.battleWindow.logEl.classList.remove('flash');
                     }, 200);
                     SoundManager.play('UI_ERROR');
+                } else {
+                    SoundManager.play('DAMAGE');
                 }
 
                 await this.battleWindow.animateBattleHpGauge(event.target, targetOldHp, targetNewHp, this.battleManager.enemies, this.party.slots.slice(0,4));
@@ -526,12 +528,16 @@ export class Scene_Battle extends Scene_Base {
                 }
 
             } else if (event.type === 'heal' && event.target) {
+                SoundManager.play('HEAL');
                 if (event.animation) {
                      await this.battleWindow.playAnimation(event.target, event.animation, this.dataManager, this.battleManager.enemies, this.party.slots.slice(0,4));
                 }
                 await this.battleWindow.animateBattleHpGauge(event.target, targetOldHp, targetNewHp, this.battleManager.enemies, this.party.slots.slice(0,4));
 
+            } else if (event.type === 'miss') {
+                SoundManager.play('UI_CANCEL');
             } else if (event.type === 'passive_drain' || event.type === 'hp_drain') {
+                SoundManager.play('DAMAGE');
                 this.battleWindow.animateBattler(event.target, 'flash', this.battleManager.enemies, this.party.slots.slice(0,4));
                 await this.battleWindow.animateBattleHpGauge(event.target, targetOldHp, targetNewHp, this.battleManager.enemies, this.party.slots.slice(0,4));
                 if (event.source) {
@@ -540,6 +546,7 @@ export class Scene_Battle extends Scene_Base {
 
             } else if (event.type === 'end') {
                 if (event.result === 'defeat') {
+                    SoundManager.play('GAME_OVER');
                     if (this.sceneManager.previous().logMessage) {
                          this.sceneManager.previous().logMessage(this.dataManager.terms.log.party_falls);
                     }
