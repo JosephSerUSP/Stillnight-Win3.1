@@ -35,12 +35,10 @@ export const UI = {
      * @param {Object} structure - The structure definition.
      * @param {string} structure.type - The component type (e.g., 'panel', 'label').
      * @param {Object} [structure.props] - Properties to pass to the component.
-     * @param {string} [structure.ref] - Key to store the component reference in the refs object.
      * @param {Array<Object>} [structure.children] - Child structures.
-     * @param {Object} [refs={}] - Mutable object to store named references.
-     * @returns {HTMLElement|Object} - The created element (or object for complex components).
+     * @returns {HTMLElement|Object} - The created element (or object for complex components like Gauge).
      */
-    build(parent, structure, refs = {}) {
+    build(parent, structure) {
         if (!structure || !structure.type) {
             console.warn("UI.build: Invalid structure", structure);
             return null;
@@ -55,11 +53,6 @@ export const UI = {
         // Create the element
         const result = componentFn(parent, structure.props || {});
 
-        // Store reference if requested
-        if (structure.ref) {
-            refs[structure.ref] = result;
-        }
-
         // Handle complex components that return an object { container, fill } instead of just element
         // Convention: If an object is returned and has a 'container' property, use that as the parent for children.
         // Otherwise, assume the result itself is the element.
@@ -71,7 +64,7 @@ export const UI = {
         // Process children
         if (structure.children && Array.isArray(structure.children)) {
             structure.children.forEach(child => {
-                this.build(element, child, refs);
+                this.build(element, child);
             });
         }
 

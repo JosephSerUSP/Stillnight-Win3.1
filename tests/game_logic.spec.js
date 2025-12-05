@@ -8,8 +8,6 @@ test.describe('Game Logic', () => {
     // Disable animations
     await page.evaluate(() => {
       window.ConfigManager.windowAnimations = false;
-      window.ConfigManager.autoBattle = false;
-      window.ConfigManager.save();
     });
     // Wait for Scene classes to be exposed
     await page.waitForFunction(() => window.Scene_Battle);

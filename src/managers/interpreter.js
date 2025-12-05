@@ -1,6 +1,12 @@
 import { Game_Battler } from "../objects/objects.js";
-import { randInt, pickWeighted } from "../core/utils.js";
-import { EventBus, Events } from "../core/events.js";
+import { randInt, pickWeighted, evaluateFormula } from "../core/utils.js";
+import { SoundManager } from "../managers/index.js";
+import {
+  createInteractiveLabel,
+  createBattlerNameLabel,
+  renderCreatureInfo,
+  renderElements
+} from "../windows/index.js";
 
 /**
  * @class Game_Interpreter
@@ -9,17 +15,18 @@ import { EventBus, Events } from "../core/events.js";
 export class Game_Interpreter {
     /**
      * Creates a new Game_Interpreter.
-     * @param {Object} context - The context object { party, map, dataManager }.
+     * @param {Object} sceneContext - The scene context (Scene_Map interface).
      */
-    constructor(context) {
-        this.context = context;
+    constructor(sceneContext) {
+        this.scene = sceneContext;
         this._onRecruitCallback = null;
-        this.currentEvent = null;
     }
 
-    get dataManager() { return this.context.dataManager; }
-    get party() { return this.context.party; }
-    get map() { return this.context.map; }
+    get dataManager() { return this.scene.dataManager; }
+    get windowManager() { return this.scene.windowManager; }
+    get sceneManager() { return this.scene.sceneManager; }
+    get party() { return this.scene.party; }
+    get map() { return this.scene.map; }
 
     /**
      * Executes a map event action.
@@ -27,16 +34,15 @@ export class Game_Interpreter {
      * @param {import("../objects/objects.js").Game_Event} event - The source event.
      */
     execute(action, event) {
-        this.currentEvent = event;
         switch(action.type) {
             case 'BATTLE':
-                EventBus.emit(Events.START_BATTLE, { x: event.x, y: event.y });
+                this.scene.startBattle(event.x, event.y);
                 break;
             case 'SHOP':
-                EventBus.emit(Events.START_SHOP);
+                this.scene.startShop();
                 break;
             case 'SHRINE':
-                EventBus.emit(Events.LOG_MESSAGE, "[Shrine] You encounter a shrine.");
+                this.scene.logMessage("[Shrine] You encounter a shrine.");
                 this.openShrineEvent();
                 break;
             case 'RECRUIT':
@@ -44,18 +50,18 @@ export class Game_Interpreter {
                 break;
             case 'NPC_DIALOGUE':
                 this.openNpcEvent(action.id);
-                EventBus.emit(Events.UPDATE_HUD);
+                this.scene.updateAll();
                 break;
             case 'DESCEND':
                 this.descendStairs();
-                EventBus.emit(Events.PLAY_SOUND, 'STAIRS');
+                SoundManager.play('STAIRS');
                 break;
             case 'HEAL_PARTY':
                 this.healParty();
                 break;
             case 'MESSAGE':
-                if (action.text) EventBus.emit(Events.LOG_MESSAGE, action.text);
-                EventBus.emit(Events.UPDATE_HUD);
+                if (action.text) this.scene.logMessage(action.text);
+                this.scene.updateAll();
                 break;
             case 'TREASURE':
                 this.openTreasureEvent();
@@ -70,6 +76,7 @@ export class Game_Interpreter {
     }
 
     triggerBreakableWall(action, event) {
+        // Initialize HP if not present (stored in the event instance, not the data def)
         if (event.hp === undefined) {
              event.hp = action.hp || 3;
         }
@@ -77,46 +84,61 @@ export class Game_Interpreter {
         event.hp--;
 
         if (event.hp > 0) {
-            EventBus.emit(Events.LOG_MESSAGE, action.hitMessage || "The wall shudders under your touch.");
-            EventBus.emit(Events.STATUS_CHANGE, "It seems weak...");
-            EventBus.emit(Events.PLAY_SOUND, 'UI_SELECT');
-            EventBus.emit(Events.UPDATE_HUD);
+            this.scene.logMessage(action.hitMessage || "The wall shudders under your touch.");
+            this.scene.setStatus("It seems weak...");
+            SoundManager.play('UI_SELECT'); // or a thud sound
+            this.scene.updateAll();
         } else {
-            EventBus.emit(Events.LOG_MESSAGE, action.breakMessage || "The wall crumbles away!");
-            EventBus.emit(Events.STATUS_CHANGE, "Path opened.");
-            EventBus.emit(Events.PLAY_SOUND, 'DAMAGE');
+            this.scene.logMessage(action.breakMessage || "The wall crumbles away!");
+            this.scene.setStatus("Path opened.");
+            SoundManager.play('DAMAGE'); // Crumble sound
 
+            // Remove the event
             this.map.removeEvent(this.map.floorIndex, event.x, event.y);
 
+            // Change the tile to floor
             const floor = this.map.floors[this.map.floorIndex];
             floor.tiles[event.y][event.x] = '.';
+
+            // Reveal if needed (auto-reveal check handles it on next move, but we can do it here)
             floor.visited[event.y][event.x] = true;
 
-            EventBus.emit(Events.UPDATE_HUD);
+            // Update grid
+            this.scene.updateGrid();
+            this.scene.updateAll();
         }
     }
 
+    /**
+     * Fully heals the party.
+     */
     healParty() {
         this.party.members.forEach((m) => (m.hp = m.maxHp));
-        EventBus.emit(Events.LOG_MESSAGE, "[Recover] A soft glow restores your party.");
+        this.scene.logMessage("[Recover] A soft glow restores your party.");
         this.party.members.forEach((member) => {
             const xpBonus = member.getPassiveValue("RECOVERY_XP_BONUS");
             if (xpBonus > 0) {
-                EventBus.emit(Events.GAIN_XP, { member, amount: xpBonus });
-                EventBus.emit(Events.LOG_MESSAGE, `[Passive] ${member.name} gains ${xpBonus} bonus XP.`);
+            this.scene.gainXp(member, xpBonus);
+            this.scene.logMessage(
+                `[Passive] ${member.name} gains ${xpBonus} bonus XP.`
+            );
             }
         });
-        EventBus.emit(Events.STATUS_CHANGE, "Recovered HP.");
-        EventBus.emit(Events.PLAY_SOUND, 'HEAL');
-        EventBus.emit(Events.APPLY_PASSIVES);
-        EventBus.emit(Events.UPDATE_HUD);
+        this.scene.setStatus("Recovered HP.");
+        SoundManager.play('HEAL');
+        this.scene.applyMovePassives();
+        this.scene.updateAll();
     }
 
+    /**
+     * Handles descending to the next floor.
+     */
     descendStairs() {
         if (this.map.floorIndex + 1 >= this.map.floors.length) {
-            EventBus.emit(Events.LOG_MESSAGE, "[Floor] You find no further descent. The run ends here.");
-            EventBus.emit(Events.STATUS_CHANGE, "No deeper floors. Run over (for now).");
-            EventBus.emit(Events.UPDATE_HUD);
+            this.scene.logMessage("[Floor] You find no further descent. The run ends here.");
+            this.scene.runActive = false;
+            this.scene.setStatus("No deeper floors. Run over (for now).");
+            this.scene.updateAll();
             return;
         }
         this.map.floorIndex++;
@@ -128,18 +150,18 @@ export class Game_Interpreter {
         this.map.playerX = f.startX;
         this.map.playerY = f.startY;
         this.map.revealAroundPlayer();
-        EventBus.emit(Events.LOG_MESSAGE, `[Floor] You descend to: ${f.title}`);
-        EventBus.emit(Events.LOG_MESSAGE, `[Floor] ${f.intro}`);
-        EventBus.emit(Events.STATUS_CHANGE, "Descending.");
-        EventBus.emit(Events.PLAY_SOUND, 'STAIRS');
-        EventBus.emit(Events.UPDATE_HUD);
-        EventBus.emit(Events.MUSIC_CHANGE);
+        this.scene.logMessage(`[Floor] You descend to: ${f.title}`);
+        this.scene.logMessage(`[Floor] ${f.intro}`);
+        this.scene.setStatus("Descending.");
+        SoundManager.play('STAIRS');
+        this.scene.updateAll();
+        this.scene.checkMusic();
     }
 
     openShrineEvent() {
         const scenarios = this.dataManager.events.filter(e => e.type === 'shrine_scenario');
         if (scenarios.length === 0) {
-            EventBus.emit(Events.LOG_MESSAGE, this.dataManager.terms.shrine.silent);
+            this.scene.logMessage(this.dataManager.terms.shrine.silent);
             return;
         }
         const ev = scenarios[randInt(0, scenarios.length - 1)];
@@ -147,29 +169,30 @@ export class Game_Interpreter {
         const choices = ev.choices.map(ch => ({
             label: ch.label,
             onClick: async () => {
-                EventBus.emit(Events.DIALOG_LOG, `> ${ch.label}`);
+                this.scene.hudManager.eventWindow.appendLog(`> ${ch.label}`);
                 await this.applyEventEffect(ch.effect);
-                EventBus.emit(Events.UPDATE_DIALOG_CHOICES, [{
+                this.scene.hudManager.eventWindow.updateChoices([{
                     label: "Exit Shrine",
                     onClick: () => this.closeEvent()
                 }]);
             }
         }));
 
-        EventBus.emit(Events.SHOW_DIALOG, {
+        this.scene.hudManager.eventWindow.show({
             title: ev.title,
             description: ev.description,
             image: ev.image || "shrine.png",
             style: 'terminal',
             choices: choices
         });
+        this.windowManager.push(this.scene.hudManager.eventWindow);
 
-        EventBus.emit(Events.STATUS_CHANGE, "Shrine event.");
-        EventBus.emit(Events.PLAY_SOUND, 'UI_SELECT');
+        this.scene.setStatus("Shrine event.");
+        SoundManager.play('UI_SELECT');
     }
 
     async applyEventEffect(effect) {
-        const log = (msg) => EventBus.emit(Events.LOG_MESSAGE, msg);
+        const log = (msg) => this.scene.logMessage(msg);
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
         await delay(300);
@@ -188,7 +211,7 @@ export class Game_Interpreter {
             log(this.dataManager.terms.shrine.max_hp_change.replace("{0}", effect.value));
             break;
         case "xp":
-            this.party.members.forEach((m) => EventBus.emit(Events.GAIN_XP, { member: m, amount: effect.value }));
+            this.party.members.forEach((m) => this.scene.gainXp(m, effect.value));
             log(this.dataManager.terms.shrine.xp_gain.replace("{0}", effect.value));
             break;
         case "gold":
@@ -220,11 +243,11 @@ export class Game_Interpreter {
             }
             break;
         }
-        EventBus.emit(Events.UPDATE_HUD);
+        this.scene.updateAll();
     }
 
     triggerTrap(action) {
-        EventBus.emit(Events.SHOW_DIALOG, {
+        this.scene.hudManager.eventWindow.show({
             title: "Trap!",
             description: action.message || "You triggered a trap!",
             image: "trap.png",
@@ -234,32 +257,33 @@ export class Game_Interpreter {
                 onClick: () => this.resolveTrap(action)
             }]
         });
-        EventBus.emit(Events.PLAY_SOUND, 'DAMAGE');
+        this.windowManager.push(this.scene.hudManager.eventWindow);
+        SoundManager.play('DAMAGE');
     }
 
     async resolveTrap(action) {
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         try {
             const dmg = action.damage || 5;
-            EventBus.emit(Events.DIALOG_LOG, `> Ouch...`);
+            this.scene.hudManager.eventWindow.appendLog(`> Ouch...`);
             await delay(500);
 
             this.party.members.forEach(m => {
                 m.hp = Math.max(0, m.hp - dmg);
             });
 
-            EventBus.emit(Events.LOG_MESSAGE, `The party takes ${dmg} damage.`);
-            EventBus.emit(Events.PLAY_SOUND, 'DAMAGE');
-            EventBus.emit(Events.CHECK_PERMADEATH);
-            EventBus.emit(Events.UPDATE_HUD);
+            this.scene.logMessage(`The party takes ${dmg} damage.`);
+            this.scene.checkPermadeath();
+            SoundManager.play('DAMAGE');
+            this.scene.updateAll();
 
-            EventBus.emit(Events.UPDATE_DIALOG_CHOICES, [{
+            this.scene.hudManager.eventWindow.updateChoices([{
                 label: "Close",
-                onClick: () => EventBus.emit(Events.CLOSE_DIALOG)
+                onClick: () => this.scene.hudManager.eventWindow.onUserClose()
             }]);
         } catch (e) {
             console.error(e);
-            EventBus.emit(Events.DIALOG_LOG, "Error in resolveTrap: " + e);
+            this.scene.hudManager.eventWindow.appendLog("Error in resolveTrap: " + e);
         }
     }
 
@@ -289,11 +313,13 @@ export class Game_Interpreter {
         this.party.inventory.push(item);
         this.clearEventTile();
 
-        EventBus.emit(Events.SHOW_DIALOG, {
+        const itemLabel = createInteractiveLabel(item, 'item');
+
+        this.scene.hudManager.eventWindow.show({
             title: "Treasure Found!",
             description: [
                 "You found:",
-                { type: 'item', value: item },
+                itemLabel,
                 "",
                 item.description
             ],
@@ -304,23 +330,19 @@ export class Game_Interpreter {
                 onClick: () => this.closeEvent()
             }]
         });
-        EventBus.emit(Events.PLAY_SOUND, 'ITEM_GET');
-        EventBus.emit(Events.UPDATE_HUD);
+        this.windowManager.push(this.scene.hudManager.eventWindow);
+        SoundManager.play('ITEM_GET');
+        this.scene.updateAll();
     }
 
     closeEvent() {
-        EventBus.emit(Events.CLOSE_DIALOG);
-        EventBus.emit(Events.UPDATE_HUD);
+        this.windowManager.close(this.scene.hudManager.eventWindow);
+        this.scene.updateAll();
     }
 
     openRecruitEvent(options = {}) {
         const { forcedId, cost: forcedCost, onRecruit } = options;
         this._onRecruitCallback = onRecruit;
-
-        // Reset currentEvent if forcedId is present (implies not map event)
-        if (forcedId) {
-             this.currentEvent = null;
-        }
 
         let recruit;
         if (forcedId) {
@@ -328,16 +350,18 @@ export class Game_Interpreter {
         }
 
         if (!recruit) {
+            // Check for floor-specific recruit pool
             const floor = this.map.floors[this.map.floorIndex];
             if (floor && floor.recruits && floor.recruits.length > 0) {
                 const recruitId = floor.recruits[randInt(0, floor.recruits.length - 1)];
                 recruit = this.dataManager.actors.find(a => a.id === recruitId);
             }
 
+            // Fallback to global recruits
             if (!recruit) {
                 const availableCreatures = this.dataManager.actors.filter(creature => creature.isRecruitable);
                 if (availableCreatures.length === 0) {
-                    EventBus.emit(Events.LOG_MESSAGE, this.dataManager.terms.recruit.no_one_here);
+                    this.scene.logMessage(this.dataManager.terms.recruit.no_one_here);
                     return;
                 }
                 recruit = availableCreatures[randInt(0, availableCreatures.length - 1)];
@@ -346,32 +370,47 @@ export class Game_Interpreter {
 
         const cost = forcedCost !== undefined ? forcedCost : randInt(25, 75);
 
-        EventBus.emit(Events.SHOW_RECRUIT, {
-            recruit,
-            cost,
-            onRecruit: () => {
-                 if (this.party.gold >= cost) {
-                    this.party.gold -= cost;
-                    this.attemptRecruit(recruit);
-                } else {
-                    EventBus.emit(Events.LOG_MESSAGE, `[Recruit] You don't have enough gold.`);
-                    this.closeRecruitEvent();
-                }
-            },
-            onDecline: () => {
-                EventBus.emit(Events.LOG_MESSAGE, `[Recruit] You decline ${recruit.name}'s offer.`);
+        renderCreatureInfo(this.scene.hudManager.recruitWindow.bodyEl, recruit, {
+            showElement: true,
+            showEquipment: true,
+            showPassives: true,
+            showSkills: true,
+            showFlavor: true,
+            dataManager: this.dataManager
+        });
+
+        this.scene.hudManager.recruitWindow.buttonsEl.innerHTML = "";
+        const joinBtn = document.createElement("button");
+        joinBtn.className = "win-btn";
+        joinBtn.textContent = `Pay ${cost} Gold`;
+        joinBtn.addEventListener("click", () => {
+            if (this.party.gold >= cost) {
+                this.party.gold -= cost;
+                this.attemptRecruit(recruit);
+            } else {
+                this.scene.logMessage(`[Recruit] You don't have enough gold.`);
                 this.closeRecruitEvent();
             }
         });
+        const declineBtn = document.createElement("button");
+        declineBtn.className = "win-btn";
+        declineBtn.textContent = "Decline";
+        declineBtn.addEventListener("click", () => {
+            this.scene.logMessage(`[Recruit] You decline ${recruit.name}'s offer.`);
+            this.closeRecruitEvent();
+        });
+        this.scene.hudManager.recruitWindow.buttonsEl.appendChild(joinBtn);
+        this.scene.hudManager.recruitWindow.buttonsEl.appendChild(declineBtn);
 
-        EventBus.emit(Events.STATUS_CHANGE, "Recruit encountered.");
-        EventBus.emit(Events.PLAY_SOUND, 'UI_SELECT');
+        this.windowManager.push(this.scene.hudManager.recruitWindow);
+        this.scene.setStatus("Recruit encountered.");
+        SoundManager.play('UI_SELECT');
     }
 
     closeRecruitEvent() {
         this._onRecruitCallback = null;
-        EventBus.emit(Events.CLOSE_RECRUIT);
-        EventBus.emit(Events.STATUS_CHANGE, "Exploration");
+        this.windowManager.close(this.scene.hudManager.recruitWindow);
+        this.scene.setStatus("Exploration");
     }
 
     openNpcEvent(npcId) {
@@ -383,7 +422,7 @@ export class Game_Interpreter {
             text = npc.dialogue;
         }
 
-        EventBus.emit(Events.SHOW_DIALOG, {
+        this.scene.hudManager.eventWindow.show({
             title: npc.name,
             description: `"${text}"`,
             style: 'terminal',
@@ -392,24 +431,27 @@ export class Game_Interpreter {
                 onClick: () => this.closeEvent()
             }]
         });
+        this.windowManager.push(this.scene.hudManager.eventWindow);
 
-        EventBus.emit(Events.STATUS_CHANGE, `Talking to ${npc.name}.`);
-        EventBus.emit(Events.PLAY_SOUND, 'UI_SELECT');
+        this.scene.setStatus(`Talking to ${npc.name}.`);
+        SoundManager.play('UI_SELECT');
     }
 
     clearEventTile() {
-        if (this.currentEvent) {
-            this.map.removeEvent(this.map.floorIndex, this.currentEvent.x, this.currentEvent.y);
-            this.currentEvent = null;
+        if (this.scene.currentInteractionEvent) {
+            this.map.removeEvent(this.map.floorIndex, this.scene.currentInteractionEvent.x, this.scene.currentInteractionEvent.y);
+            this.scene.currentInteractionEvent = null;
         }
-        EventBus.emit(Events.UPDATE_HUD);
+        this.scene.updateGrid();
     }
 
     attemptRecruit(recruit) {
         if (this.party.hasEmptySlot()) {
             this.party.addMember(Game_Battler.create(recruit));
-            EventBus.emit(Events.LOG_MESSAGE, `[Recruit] ${recruit.name} joins your party.`);
-            EventBus.emit(Events.STATUS_CHANGE, this.dataManager.terms.recruit.recruited.replace("{0}", recruit.name));
+            this.scene.logMessage(`[Recruit] ${recruit.name} joins your party.`);
+            this.scene.setStatus(
+                this.dataManager.terms.recruit.recruited.replace("{0}", recruit.name)
+            );
 
             if (this._onRecruitCallback) {
                 this._onRecruitCallback();
@@ -418,25 +460,34 @@ export class Game_Interpreter {
 
             this.clearEventTile();
             this.closeRecruitEvent();
-            EventBus.emit(Events.UPDATE_HUD);
+            this.scene.updateParty();
             return;
         }
-
-        EventBus.emit(Events.SHOW_RECRUIT, {
-            mode: 'replace',
-            recruit,
-            candidates: this.party.members,
-            onReplace: (index) => this.replaceMemberWithRecruit(index, recruit),
-            onCancel: () => {
-                EventBus.emit(Events.LOG_MESSAGE, this.dataManager.terms.recruit.decide_not_to_replace);
-                this.closeRecruitEvent();
-            }
+        this.scene.hudManager.recruitWindow.bodyEl.innerHTML =
+            this.dataManager.terms.recruit.party_full;
+        this.scene.hudManager.recruitWindow.buttonsEl.innerHTML = "";
+        this.party.members.forEach((m, idx) => {
+            const btn = document.createElement("button");
+            btn.className = "win-btn";
+            btn.textContent = m.name;
+            btn.addEventListener("click", () => {
+                this.replaceMemberWithRecruit(idx, recruit);
+            });
+            this.scene.hudManager.recruitWindow.buttonsEl.appendChild(btn);
         });
+        const cancelBtn = document.createElement("button");
+        cancelBtn.className = "win-btn";
+        cancelBtn.textContent = "Cancel";
+        cancelBtn.addEventListener("click", () => {
+            this.scene.logMessage(this.dataManager.terms.recruit.decide_not_to_replace);
+            this.closeRecruitEvent();
+        });
+        this.scene.hudManager.recruitWindow.buttonsEl.appendChild(cancelBtn);
     }
 
     replaceMemberWithRecruit(index, recruit) {
         const replaced = this.party.members[index];
-        EventBus.emit(Events.LOG_MESSAGE,
+        this.scene.logMessage(
             this.dataManager.terms.recruit.replace_member
                 .replace("{0}", replaced.name)
                 .replace("{1}", recruit.name)
@@ -449,7 +500,7 @@ export class Game_Interpreter {
         }
 
         this.clearEventTile();
-        EventBus.emit(Events.UPDATE_HUD);
+        this.scene.updateParty();
         this.closeRecruitEvent();
     }
 }
