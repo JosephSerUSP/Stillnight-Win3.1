@@ -115,6 +115,17 @@ The distinction between `param` (Base Parameters), `xparam` (Ex-Parameters), and
 **Conclusion:**
 We will **maintain the distinction** in the method signatures to ensure clarity of default values and mathematical behavior, which are distinct enough to warrant separation. However, the internal implementation should share a common trait aggregation logic.
 
+### 4.6. Clarification: Traits vs. Parameters
+It is important to distinguish between the **Trait** (the modifier) and the **Parameter** (the result), even if they share a name like "Hit".
+
+*   **The Trait (`HIT`)**: This is the **Input**. It is a property of objects (Weapons, Armors, States). A battler can have multiple `HIT` traits (e.g., +10% from a Weapon, +5% from a Passive).
+*   **The Parameter (`xparam('hit')`)**: This is the **Output**. It is the battler's final, effective Hit Rate used in battle calculations.
+
+**The Flow:**
+`battler.xparam('hit')` starts at **0% (Base for XParams)** and sums the values of all `HIT` traits on the battler.
+
+Therefore, "Hit" exists as a Trait code for data entry, and as an XParam ID for logic retrieval.
+
 ---
 
 ## 5. Implementation Steps
