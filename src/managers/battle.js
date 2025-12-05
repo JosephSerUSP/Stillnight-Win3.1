@@ -1,6 +1,7 @@
 import { randInt, elementToAscii, probabilisticRound } from "../core/utils.js";
 import { SoundManager } from "./sound.js";
 import { EffectProcessor } from "./effect_processor.js";
+import { Game_Action } from "../objects/objects.js";
 
 /**
  * @class BattleManager
@@ -254,6 +255,19 @@ export class BattleManager {
    * @returns {Object} The action object.
    */
   createAction(battlerContext, type, target, options = {}) {
+      if (type === 'skill') {
+          const action = new Game_Action(battlerContext.battler);
+          const skill = this.dataManager.skills[options.skillId];
+          action.setItem(skill);
+          action.setTarget(target);
+
+          // Attach properties expected by BattleManager
+          action.type = 'skill';
+          action.sourceContext = battlerContext;
+          action.skillId = options.skillId;
+
+          return action;
+      }
       return {
           type,
           sourceContext: battlerContext,
@@ -357,76 +371,7 @@ export class BattleManager {
    * @private
    */
   _executeSkill(action) {
-    const { sourceContext, target } = action;
-    const { battler } = sourceContext;
-    const events = [];
-
-    const skill = this.dataManager.skills[action.skillId];
-    if (skill) {
-      let boost = 1;
-      if (skill.element) {
-        const matches = battler.elements.filter((e) => e === skill.element).length;
-        boost += matches * 0.25;
-      }
-      const skillName = `${elementToAscii(skill.element)}${skill.name}`;
-      events.push({ type: 'use_skill', battler: battler, skillName, msg: `${battler.name} uses ${skillName}!` });
-
-      skill.effects.forEach((effect) => {
-        const context = { boost };
-        let effectKey = effect.type;
-        let effectValue = effect.formula || effect.value;
-
-        if (effect.type === 'add_status') {
-             effectValue = { id: effect.status, chance: effect.chance };
-        }
-
-        const result = EffectProcessor.apply(effectKey, effectValue, battler, target, context);
-
-        if (!result) return;
-
-        if (result.type === 'damage') {
-             SoundManager.play('DAMAGE');
-             events.push({
-                type: 'damage',
-                battler: battler,
-                target: target,
-                value: result.value,
-                hpBefore: target.hp + result.value,
-                hpAfter: target.hp,
-                msg: `  ${target.name} takes ${result.value} damage.`
-             });
-        } else if (result.type === 'heal') {
-             SoundManager.play('HEAL');
-             events.push({
-                 type: 'heal',
-                 battler: battler,
-                 target: target,
-                 value: result.value,
-                 hpBefore: target.hp - result.value,
-                 hpAfter: target.hp,
-                 msg: `  ${target.name} heals ${result.value} HP.`,
-                 animation: 'healing_sparkle'
-             });
-        } else if (result.type === 'status') {
-             events.push({ type: 'status', target: target, status: result.status, msg: `  ${target.name} is afflicted with ${result.status}.` });
-        } else if (result.type === 'hp_drain') {
-             SoundManager.play('DAMAGE');
-             events.push({
-                 type: 'hp_drain',
-                 battler: battler,
-                 source: battler,
-                 target: target,
-                 value: result.value,
-                 hpBeforeTarget: result.hpBeforeTarget,
-                 hpAfterTarget: result.hpAfterTarget,
-                 hpBeforeSource: result.hpBeforeSource,
-                 hpAfterSource: result.hpAfterSource,
-                 msg: `  ${battler.name} drains ${result.value} HP from ${target.name}.`
-             });
-        }
-      });
-    }
-    return events;
+    return action.execute();
   }
 
   /**
