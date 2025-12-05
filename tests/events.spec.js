@@ -127,6 +127,7 @@ test.describe('Event System', () => {
             name: 'Eagle Eye',
             traits: [{ code: 'SEE_TRAPS', value: 101 }]
         });
+        if (p.refreshStats) p.refreshStats();
         window.sceneManager.currentScene().updateGrid();
     });
 
