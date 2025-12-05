@@ -1,15 +1,148 @@
 import { Window_Base } from "./base.js";
+import { UI } from "./builder.js";
+import { createBattlerNameLabel, createIcon } from "./utils.js";
+import { DataManager } from "../managers/index.js";
 
 /**
  * @class Window_Recruit
  */
 export class Window_Recruit extends Window_Base {
   constructor() {
-    super('center', 'center', 480, 320, { title: "Recruit – Stillnight", id: "recruit-window" });
+    super('center', 'center', 500, 480, { title: "Recruit", id: "recruit-window" });
 
-    this.bodyEl = this.createPanel(); // used by Scene_Map to populate content
-    this.buttonsEl = this.footer; // used by Scene_Map to populate buttons
-    // Scene_Map appends to buttonsEl.
+    // Scene_Map expects bodyEl and buttonsEl
+    this.bodyEl = this.content;
+    this.buttonsEl = this.footer;
+  }
+
+  /**
+   * Renders the recruit information using a layout similar to Window_Inspect.
+   * @param {import("../objects/battler.js").Game_Battler} recruit
+   * @param {string} [quote] - Optional flavor text/quote.
+   */
+  render(recruit, quote) {
+    this.content.innerHTML = "";
+    this.setTitle(`Recruit: ${recruit.name}`);
+
+    const structure = {
+        type: 'div',
+        class: 'inspect-container',
+        style: { display: 'flex', flexDirection: 'column', gap: '8px', height: '100%', paddingBottom: '4px' },
+        children: [
+            this._buildHeader(recruit),
+            this._buildStats(recruit),
+            this._buildDetails(recruit),
+            quote ? this._buildQuote(quote) : null
+        ].filter(Boolean)
+    };
+
+    UI.build(this.content, structure);
+  }
+
+  _buildHeader(battler) {
+      return {
+          type: 'div',
+          class: 'inspect-header window-panel',
+          style: { display: 'flex', alignItems: 'center', padding: '8px', gap: '8px' },
+          children: [
+              createBattlerNameLabel(battler, { evolutionStatus: 'NONE' }) // Recruits don't show evo status usually
+          ]
+      };
+  }
+
+  _buildStats(battler) {
+      const stats = [
+          { label: 'HP', value: `${battler.hp}/${battler.maxHp}`, icon: 162 },
+          { label: 'ATK', value: battler.atk, icon: 76 },
+          { label: 'ASP', value: battler.asp, icon: 82 },
+      ];
+
+      return {
+          type: 'div',
+          class: 'inspect-stats window-panel',
+          style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', padding: '8px' },
+          children: stats.map(s => ({
+              type: 'div',
+              style: { display: 'flex', alignItems: 'center', gap: '4px' },
+              children: [
+                  createIcon(s.icon),
+                  { type: 'span', text: `${s.label}: ${s.value}` }
+              ]
+          }))
+      };
+  }
+
+  _buildDetails(battler) {
+      return {
+          type: 'div',
+          class: 'inspect-details window-panel',
+          style: { flexGrow: '1', display: 'flex', flexDirection: 'column', gap: '8px', padding: '8px', overflowY: 'auto' },
+          children: [
+              this._buildSection('Skills', battler.skills.map(sId => DataManager.getSkill(sId))),
+              this._buildSection('Passives', battler.passives.map(pId => DataManager.getPassive(pId))),
+              this._buildEquipment(battler),
+              // We could add Elements here if needed
+          ]
+      };
+  }
+
+  _buildSection(title, items) {
+      if (!items || items.length === 0) return null;
+
+      return {
+          type: 'div',
+          children: [
+              { type: 'div', class: 'text-functional', text: title, style: { marginBottom: '4px' } },
+              {
+                  type: 'div',
+                  style: { display: 'flex', flexWrap: 'wrap', gap: '4px' },
+                  children: items.map(item => ({
+                      type: 'span',
+                      class: 'window-tag',
+                      text: item.name,
+                      tooltip: item, // Enables tooltip
+                      style: { padding: '2px 6px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '4px', cursor: 'help' }
+                  }))
+              }
+          ]
+      };
+  }
+
+  _buildEquipment(battler) {
+      const slots = ['weapon', 'armor', 'accessory'];
+      const items = slots.map(slot => battler.equipment[slot]).filter(i => i);
+
+      if (items.length === 0) return null;
+
+      return {
+          type: 'div',
+          children: [
+              { type: 'div', class: 'text-functional', text: 'Equipment', style: { marginBottom: '4px' } },
+               {
+                  type: 'div',
+                  style: { display: 'flex', flexWrap: 'wrap', gap: '4px' },
+                  children: items.map(item => ({
+                      type: 'span',
+                      class: 'window-tag',
+                      children: [
+                          createIcon(item.icon),
+                          { type: 'span', text: item.name, style: { marginLeft: '4px' } }
+                      ],
+                      tooltip: item,
+                      style: { display: 'inline-flex', alignItems: 'center', padding: '2px 6px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '4px', cursor: 'help' }
+                  }))
+              }
+          ]
+      };
+  }
+
+  _buildQuote(text) {
+      return {
+          type: 'div',
+          class: 'window-panel',
+          style: { padding: '8px', fontStyle: 'italic', marginTop: 'auto', textAlign: 'center' },
+          text: `"${text}"`
+      };
   }
 }
 

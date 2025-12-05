@@ -169,6 +169,7 @@ export class Game_Map {
       music: meta.music,
       encounters: meta.encounters,
       treasures: meta.treasures,
+      recruits: meta.recruits,
       tiles,
       events,
       visited,
