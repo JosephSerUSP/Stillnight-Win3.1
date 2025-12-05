@@ -6,8 +6,9 @@ import { Game_Interpreter } from "../managers/interpreter.js";
 import { BattleManager, SoundManager, ConfigManager, ThemeManager } from "../managers/index.js";
 import { InputController } from "../managers/input_controller.js";
 import { HUDManager } from "../managers/hud_manager.js";
-import { Window_Desktop } from "../windows/index.js";
+import { Window_Desktop, createInteractiveLabel, renderCreatureInfo } from "../windows/index.js";
 import { ProgressionSystem } from "../managers/progression.js";
+import { EventBus, Events } from "../core/events.js";
 import { ExplorationEngine } from "../managers/exploration.js";
 
 /**
@@ -28,9 +29,16 @@ export class Scene_Map extends Scene_Base {
     this.sceneManager = sceneManager;
     this.map = new Game_Map();
     this.party = new Game_Party();
-    this.interpreter = new Game_Interpreter(this);
+
+    const interpreterContext = {
+        party: this.party,
+        map: this.map,
+        dataManager: this.dataManager
+    };
+    this.interpreter = new Game_Interpreter(interpreterContext);
     this.battleManager = new BattleManager(this.party, this.dataManager);
     this.runActive = true;
+    this.registerEventHandlers();
     this.draggedIndex = null;
     this.currentInteractionEvent = null;
 
@@ -59,6 +67,117 @@ export class Scene_Map extends Scene_Base {
     this.hudManager.audioPlayerWindow.onUserClose = () => this.windowManager.close(this.hudManager.audioPlayerWindow);
     this.hudManager.helpWindow.onUserClose = () => this.windowManager.close(this.hudManager.helpWindow);
     this.hudManager.inventoryWindow.onUserClose = this.closeInventory.bind(this);
+  }
+
+  registerEventHandlers() {
+    this._handlers = {
+        [Events.LOG_MESSAGE]: (msg) => this.logMessage(msg),
+        [Events.PLAY_SOUND]: (key) => { if (this.sceneManager.currentScene() === this) SoundManager.play(key); },
+        [Events.UPDATE_HUD]: () => this.updateAll(),
+        [Events.STATUS_CHANGE]: (msg) => this.setStatus(msg),
+        [Events.MUSIC_CHANGE]: () => this.checkMusic(),
+        [Events.START_BATTLE]: (p) => this.startBattle(p.x, p.y),
+        [Events.START_SHOP]: () => this.startShop(),
+        [Events.GAIN_XP]: (p) => this.gainXp(p.member, p.amount),
+        [Events.APPLY_PASSIVES]: () => this.applyMovePassives(),
+        [Events.SHOW_DIALOG]: (p) => this.handleShowDialog(p),
+        [Events.DIALOG_LOG]: (msg) => this.hudManager.eventWindow.appendLog(msg),
+        [Events.UPDATE_DIALOG_CHOICES]: (c) => this.hudManager.eventWindow.updateChoices(c),
+        [Events.CLOSE_DIALOG]: () => this.windowManager.close(this.hudManager.eventWindow),
+        [Events.SHOW_RECRUIT]: (p) => this.handleShowRecruit(p),
+        [Events.CLOSE_RECRUIT]: () => {
+             this.windowManager.close(this.hudManager.recruitWindow);
+             this.setStatus("Exploration");
+        },
+        [Events.CHECK_PERMADEATH]: () => this.checkPermadeath()
+    };
+
+    Object.keys(this._handlers).forEach(event => {
+        EventBus.on(event, this._handlers[event]);
+    });
+  }
+
+  stop() {
+      if (this._handlers) {
+          Object.keys(this._handlers).forEach(event => {
+              EventBus.off(event, this._handlers[event]);
+          });
+      }
+      super.stop();
+  }
+
+  handleShowDialog(payload) {
+    let description = payload.description;
+    if (Array.isArray(description)) {
+        description = description.map(part => {
+            if (part && typeof part === 'object' && part.type === 'item') {
+                return createInteractiveLabel(part.value, 'item');
+            }
+            return part;
+        });
+    }
+
+    this.hudManager.eventWindow.show({
+        ...payload,
+        description: description
+    });
+    this.windowManager.push(this.hudManager.eventWindow);
+  }
+
+  handleShowRecruit(payload) {
+    if (payload.mode === 'replace') {
+        this.showRecruitReplace(payload);
+        return;
+    }
+
+    const { recruit, cost, onRecruit, onDecline } = payload;
+
+    renderCreatureInfo(this.hudManager.recruitWindow.bodyEl, recruit, {
+            showElement: true,
+            showEquipment: true,
+            showPassives: true,
+            showSkills: true,
+            showFlavor: true,
+            dataManager: this.dataManager
+    });
+
+    this.hudManager.recruitWindow.buttonsEl.innerHTML = "";
+
+    const joinBtn = document.createElement("button");
+    joinBtn.className = "win-btn";
+    joinBtn.textContent = `Pay ${cost} Gold`;
+    joinBtn.addEventListener("click", onRecruit);
+
+    const declineBtn = document.createElement("button");
+    declineBtn.className = "win-btn";
+    declineBtn.textContent = "Decline";
+    declineBtn.addEventListener("click", onDecline);
+
+    this.hudManager.recruitWindow.buttonsEl.appendChild(joinBtn);
+    this.hudManager.recruitWindow.buttonsEl.appendChild(declineBtn);
+
+    this.windowManager.push(this.hudManager.recruitWindow);
+  }
+
+  showRecruitReplace(payload) {
+    const { candidates, onReplace, onCancel } = payload;
+
+    this.hudManager.recruitWindow.bodyEl.innerHTML = this.dataManager.terms.recruit.party_full;
+    this.hudManager.recruitWindow.buttonsEl.innerHTML = "";
+
+    candidates.forEach((m, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "win-btn";
+        btn.textContent = m.name;
+        btn.addEventListener("click", () => onReplace(idx));
+        this.hudManager.recruitWindow.buttonsEl.appendChild(btn);
+    });
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.className = "win-btn";
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.addEventListener("click", onCancel);
+    this.hudManager.recruitWindow.buttonsEl.appendChild(cancelBtn);
   }
 
   get windowLayer() {
@@ -268,40 +387,16 @@ export class Scene_Map extends Scene_Base {
    * @method checkPermadeath
    */
   checkPermadeath() {
-    let deadFound = false;
-    const members = [...this.party.members];
-    for (const member of members) {
-        if (member.hp <= 0) {
-            deadFound = true;
-            const permadeathTraits = member.traits.filter(t => t.code === 'ON_PERMADEATH');
-
-            if (permadeathTraits.length > 0) {
-                 this.logMessage(`[Passive] ${member.name}'s Rebirth activates!`);
-
-                 const heal = Math.floor(member.maxHp * 0.2) || 1;
-                 member.hp = heal;
-
-                 const oldLevel = member.level;
-                 const levelsLost = 2;
-                 member.level = Math.max(1, member.level - levelsLost);
-
-                 if (member.level < oldLevel) {
-                     const lost = oldLevel - member.level;
-                     member._baseMaxHp = Math.max(1, member._baseMaxHp - (lost * 3));
-                     member.xp = 0;
-                 }
-
-                 if (member.hp > member.maxHp) member.hp = member.maxHp;
-
-                 this.logMessage(`${member.name} returned at Lv${member.level}.`);
-            } else {
-                this.party.removeMember(member);
-                this.logMessage(`[Death] ${member.name} has fallen and is lost forever.`);
+    const events = this.party.checkDeaths();
+    if (events.length > 0) {
+        events.forEach(e => {
+            if (e.type === 'REBIRTH') {
+                this.logMessage(`[Passive] ${e.member.name}'s Rebirth activates!`);
+                this.logMessage(`${e.member.name} returned at Lv${e.member.level}.`);
+            } else if (e.type === 'DEATH') {
+                this.logMessage(`[Death] ${e.member.name} has fallen and is lost forever.`);
             }
-        }
-    }
-
-    if (deadFound) {
+        });
         this.updateAll();
     }
   }

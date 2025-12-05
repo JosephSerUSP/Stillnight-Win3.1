@@ -56,6 +56,7 @@ export class Game_Party {
    * @returns {Array<Object>} List of events (e.g., { type: 'DEATH', member: ... }, { type: 'REBIRTH', member: ... })
    */
   checkDeaths() {
+      // Phase 1: Logic moved from Scene_Map to handle permadeath/rebirth centrally
       const events = [];
       const members = [...this.members];
 

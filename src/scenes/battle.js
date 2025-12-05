@@ -3,6 +3,7 @@ import { Game_Battler } from "../objects/objects.js";
 import { randInt, pickWeighted, probabilisticRound } from "../core/utils.js";
 import { SoundManager, ConfigManager } from "../managers/index.js";
 import { Window_Battle, Window_Victory } from "../windows/index.js";
+import { EventBus, Events } from "../core/events.js";
 
 /**
  * @class Scene_Battle
@@ -68,6 +69,11 @@ export class Scene_Battle extends Scene_Base {
         onItem: () => this.onItemClick(),
         onAutoToggle: (val) => this.toggleAutoBattle(val)
     });
+
+    this._playSoundHandler = (key) => {
+        if (this.sceneManager.currentScene() === this) SoundManager.play(key);
+    };
+    EventBus.on(Events.PLAY_SOUND, this._playSoundHandler);
   }
 
   /**
@@ -297,13 +303,11 @@ export class Scene_Battle extends Scene_Base {
   }
 
   disableActionButtons() {
-      this.battleWindow.btnFormation.classList.add('disabled');
-      this.battleWindow.btnItem.classList.add('disabled');
+      this.battleWindow.disableActionButtons();
   }
 
   enableActionButtons() {
-      this.battleWindow.btnFormation.classList.remove('disabled');
-      this.battleWindow.btnItem.classList.remove('disabled');
+      this.battleWindow.enableActionButtons();
   }
 
   /**
@@ -313,6 +317,7 @@ export class Scene_Battle extends Scene_Base {
   stop() {
     this.windowManager.close(this.battleWindow);
     document.getElementById("mode-label").textContent = "Exploration";
+    EventBus.off(Events.PLAY_SOUND, this._playSoundHandler);
   }
 
   /**
@@ -510,6 +515,8 @@ export class Scene_Battle extends Scene_Base {
                         this.battleWindow.logEl.classList.remove('flash');
                     }, 200);
                     SoundManager.play('UI_ERROR');
+                } else {
+                    SoundManager.play('DAMAGE');
                 }
 
                 await this.battleWindow.animateBattleHpGauge(event.target, targetOldHp, targetNewHp, this.battleManager.enemies, this.party.slots.slice(0,4));
@@ -519,12 +526,16 @@ export class Scene_Battle extends Scene_Base {
                 }
 
             } else if (event.type === 'heal' && event.target) {
+                SoundManager.play('HEAL');
                 if (event.animation) {
                      await this.battleWindow.playAnimation(event.target, event.animation, this.dataManager, this.battleManager.enemies, this.party.slots.slice(0,4));
                 }
                 await this.battleWindow.animateBattleHpGauge(event.target, targetOldHp, targetNewHp, this.battleManager.enemies, this.party.slots.slice(0,4));
 
+            } else if (event.type === 'miss') {
+                SoundManager.play('UI_CANCEL');
             } else if (event.type === 'passive_drain' || event.type === 'hp_drain') {
+                SoundManager.play('DAMAGE');
                 this.battleWindow.animateBattler(event.target, 'flash', this.battleManager.enemies, this.party.slots.slice(0,4));
                 await this.battleWindow.animateBattleHpGauge(event.target, targetOldHp, targetNewHp, this.battleManager.enemies, this.party.slots.slice(0,4));
                 if (event.source) {
@@ -533,6 +544,7 @@ export class Scene_Battle extends Scene_Base {
 
             } else if (event.type === 'end') {
                 if (event.result === 'defeat') {
+                    SoundManager.play('GAME_OVER');
                     if (this.sceneManager.previous().logMessage) {
                          this.sceneManager.previous().logMessage(this.dataManager.terms.log.party_falls);
                     }
@@ -542,7 +554,7 @@ export class Scene_Battle extends Scene_Base {
                 }
             }
 
-            await delay(300);
+            await delay(50);
       }
   }
 
