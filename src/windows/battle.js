@@ -242,6 +242,13 @@ export class Window_Battle extends Window_Base {
                  // Use maxHp from battler, but currentHp from animation
                  hpEl.textContent = this.createHpGauge(currentHp, battler.maxHp);
              }
+             const battlerElement = this.getBattlerElement(ctx.index, ctx.isEnemy);
+             if (battlerElement) {
+                 const nameEl = battlerElement.parentElement;
+                 const primaryElements = getPrimaryElements(battler.elements);
+                 const elementAscii = primaryElements.map(el => elementToAscii(el)).join('');
+                 nameEl.innerHTML = `${elementAscii}<span id="${this.getBattlerId(ctx.index, ctx.isEnemy)}">${battler.name}</span> (HP ${currentHp}/${battler.maxHp})`;
+             }
         }
 
         if (progress < 1) {
@@ -397,9 +404,8 @@ export class Window_Battle extends Window_Base {
                        this.animateBattler(target, 'flash', enemies, partySlots);
                        await delay(200);
                        target.hidden = true;
-                       // We don't have access to full renderBattleAscii here directly unless passed or we rely on Scene to update it later.
-                       // But the element is hidden via data, we might need to manually hide it or let the next refresh handle it.
-                       // For now, let's just resolve.
+                       const container = battlerElement.closest('.battler-container');
+                       if (container) container.style.display = 'none';
                    }
                    resolve();
                };
