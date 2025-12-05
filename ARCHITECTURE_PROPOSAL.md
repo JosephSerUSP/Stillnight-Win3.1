@@ -100,6 +100,21 @@ We will merge `EffectProcessor` logic into `Game_Action` and a refined `EffectMa
 *   **Game_Battler** handles "Passive Effects" (Param Plus, Element Rate) via the `param()` method.
 *   **Triggers**: Traits that trigger effects (like "Counter Attack" or "Heal on Turn Start") will generate a `Game_Action` to be executed.
 
+### 4.5. Design Discussion: Parameter Architecture
+The distinction between `param` (Base Parameters), `xparam` (Ex-Parameters), and `sparam` (Special Parameters) is deliberate.
+
+**Arguments In Favor (Segregation):**
+1.  **Origin of Base Values**: `param`s (e.g., HP, ATK) typically derive their base value from Actor/Class/Level curves. `xparam`s (e.g., Hit Rate, Crit) default to 0%. `sparam`s (e.g., Target Rate, Pharmacology) default to 100%. Segregating them clarifies the source of the "Base" value before traits are applied.
+2.  **Mathematical Models**: Core parameters generally use an `(Base + Plus) * Rate` model to scale integers. Ex-parameters typically use an additive `Base + Plus` model (stacking percentages). Special parameters typically use a multiplicative `Base * Rate` model. Hardcoding these flows prevents configuration errors where a "Crit Rate" trait accidentally multiplies a base 0.
+3.  **Convention**: This pattern mirrors established RPG development frameworks, easing the transition for designers familiar with standard JRPG architecture.
+
+**Arguments Against (Unification):**
+1.  **API Redundancy**: Having three methods increases the API surface area. A single `stat(id)` method would be cleaner.
+2.  **Rigidity**: A unified system driven purely by metadata (e.g., `traits.js` defining if a stat is additive or multiplicative) offers more flexibility. For instance, if a designer wants "Hit Rate" to be halved by a Blind state, a rigid `xparam` (additive) system makes this difficult, whereas a unified system could handle it via configuration.
+
+**Conclusion:**
+We will **maintain the distinction** in the method signatures to ensure clarity of default values and mathematical behavior, which are distinct enough to warrant separation. However, the internal implementation should share a common trait aggregation logic.
+
 ---
 
 ## 5. Implementation Steps
