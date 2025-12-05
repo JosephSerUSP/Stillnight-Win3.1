@@ -11,14 +11,14 @@
 Logic modules must be **Blind** to the View. They should emit signals that the View listens to.
 
 ### Execution Plan
-1.  **Create `EventBus`** [x]:
+1.  **Create `EventBus`**:
     *   **Location:** `src/core/events.js`
     *   **API:** `emit(event, payload)`, `on(event, handler)`, `off(event, handler)`.
     *   **Events Enum:** Define standard events: `LOG_MESSAGE`, `PLAY_SOUND`, `UPDATE_HUD`, `SHOW_DIALOG`.
-2.  **Refactor Managers** [x]:
+2.  **Refactor Managers**:
     *   Replace `scene.logMessage("...")` with `EventBus.emit('LOG_MESSAGE', "...")`.
     *   Replace `SoundManager.play` calls inside logic loops with `EventBus.emit('PLAY_SOUND', '...')`.
-3.  **Refactor Scenes** [x]:
+3.  **Refactor Scenes**:
     *   `Scene_Map` subscribes to `LOG_MESSAGE` and updates `Window_Log`.
     *   `Scene_Battle` subscribes to `BATTLE_EVENT` and triggers animations.
 
@@ -31,12 +31,12 @@ Logic modules must be **Blind** to the View. They should emit signals that the V
 Depend on Abstractions, not Concretions.
 
 ### Execution Plan
-1.  **Define `InterpreterContext` Interface** [x]:
+1.  **Define `InterpreterContext` Interface**:
     *   A simple object or class that defines *only* what the interpreter needs (e.g., `showDialog(config)`, `startBattle(x, y)`).
-2.  **Refactor `Game_Interpreter`** [x]:
+2.  **Refactor `Game_Interpreter`**:
     *   Accept `context` instead of `scene`.
     *   All calls to `this.scene.*` must be mapped to `this.context.*`.
-3.  **Adapter Pattern in Scene** [x]:
+3.  **Adapter Pattern in Scene**:
     *   `Scene_Map` creates an adapter object that implements `InterpreterContext` and passes *that* to the interpreter, keeping the Scene instance private.
 
 ## 3. Strict Restrictions for Phase 2

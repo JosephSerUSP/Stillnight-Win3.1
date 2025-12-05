@@ -191,7 +191,6 @@ export class Window_Base {
             this.overlay = UI.build(null, {
                 type: 'overlay',
                 props: {
-                    style: { zIndex: "9" },
                     onClick: (e) => {
                          if (e.target === this.overlay) {
                              this.onUserClose();

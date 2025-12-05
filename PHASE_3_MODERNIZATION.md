@@ -11,13 +11,11 @@ Code like `shopBody.children[0].children[0]` is brittle. Changing the UI layout 
 UI Components must be accessible via **Named References**, not DOM traversal.
 
 ### Execution Plan
-1.  **Update `UI.build`** [x]:
+1.  **Update `UI.build`**:
     *   Add support for a `ref` property in the structure: `{ type: 'button', ref: 'btnBuy', ... }`.
     *   `UI.build` should return an object containing the root element *and* a map of refs: `{ element, refs: { btnBuy: ... } }`.
-2.  **Refactor Windows** [~]:
+2.  **Refactor Windows**:
     *   Update `Window_Shop`, `Window_Battle`, etc., to use refs.
-    *   `Window_Battle` [x]
-    *   `Window_Shop` [ ]
     *   Example: `this.refs.btnBuy.addEventListener(...)` instead of traversing `children`.
 
 ## 2. Pure Logic Battle System
@@ -31,12 +29,12 @@ The **Battle Engine** must be a pure state machine.
 *   **Output:** New State + Semantic Event Log.
 
 ### Execution Plan
-1.  **Isolate `BattleEngine`** [x]:
-    *   **Location:** `src/managers/battle.js` (Refactored BattleManager)
+1.  **Isolate `BattleEngine`**:
+    *   Create `src/managers/battle_engine.js`.
     *   It should have **zero dependencies** on `SoundManager` or `DataManager` (pass data in).
-2.  **Semantic Returns** [x]:
+2.  **Semantic Returns**:
     *   Instead of `events.push({ msg: "Player attacks!" })`, return `{ type: 'ATTACK', source: A, target: B, damage: 10, isCrit: true }`.
-3.  **View Layer Interpreter** [x]:
+3.  **View Layer Interpreter**:
     *   `Scene_Battle` takes these semantic events and translates them into:
         *   Visuals (Flash screen).
         *   Audio (Play 'DAMAGE' sound).

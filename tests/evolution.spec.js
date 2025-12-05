@@ -8,8 +8,6 @@ test('Verify Evolution System', async ({ page }) => {
   // Disable animations
   await page.evaluate(() => {
     window.ConfigManager.windowAnimations = false;
-    window.ConfigManager.autoBattle = false;
-    window.ConfigManager.save();
   });
 
   // 2. Wait for data to load
