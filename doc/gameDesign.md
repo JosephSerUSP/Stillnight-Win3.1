@@ -30,3 +30,7 @@ Performing actions (such as moving) in the dungeon drains their MP. When it hits
 
 The summoner has access to unique equipment that yields party-wide or exploration effects. 
 The summoner also has access to a skill tree and can choose their stats on level up.
+
+
+Quests: 
+Inspired by Diablo, mostly. NPCs can yield the player Quests, which can be tracked in a dedicated Quest window. 
