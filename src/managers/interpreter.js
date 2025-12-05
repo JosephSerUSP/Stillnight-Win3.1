@@ -20,11 +20,12 @@ export class Game_Interpreter {
     constructor(sceneContext) {
         this.scene = sceneContext;
         this._onRecruitCallback = null;
+        this.currentRecruit = null;
     }
 
     get dataManager() { return this.scene.dataManager; }
+    get hudManager() { return this.scene.hudManager; }
     get windowManager() { return this.scene.windowManager; }
-    get sceneManager() { return this.scene.sceneManager; }
     get party() { return this.scene.party; }
     get map() { return this.scene.map; }
 
@@ -46,7 +47,7 @@ export class Game_Interpreter {
                 this.openShrineEvent();
                 break;
             case 'RECRUIT':
-                this.openRecruitEvent();
+                this.openRecruitEvent({ event });
                 break;
             case 'NPC_DIALOGUE':
                 this.openNpcEvent(action.id);
@@ -341,68 +342,107 @@ export class Game_Interpreter {
     }
 
     openRecruitEvent(options = {}) {
-        const { forcedId, cost: forcedCost, onRecruit } = options;
+        const { forcedId, cost: forcedCost, onRecruit, event } = options;
         this._onRecruitCallback = onRecruit;
 
-        let recruit;
-        if (forcedId) {
-             recruit = this.dataManager.actors.find(a => a.id === forcedId);
-        }
-
-        if (!recruit) {
-            // Check for floor-specific recruit pool
-            const floor = this.map.floors[this.map.floorIndex];
-            if (floor && floor.recruits && floor.recruits.length > 0) {
-                const recruitId = floor.recruits[randInt(0, floor.recruits.length - 1)];
-                recruit = this.dataManager.actors.find(a => a.id === recruitId);
-            }
-
-            // Fallback to global recruits
-            if (!recruit) {
-                const availableCreatures = this.dataManager.actors.filter(creature => creature.isRecruitable);
-                if (availableCreatures.length === 0) {
-                    this.scene.logMessage(this.dataManager.terms.recruit.no_one_here);
-                    return;
+        // Task: Persistent Recruit
+        let recruitData = null;
+        if (event && event.recruitData) {
+            recruitData = event.recruitData;
+        } else {
+             // Generate new recruit data
+             let recruitDef = null;
+             if (forcedId) {
+                 recruitDef = this.dataManager.actors.find(a => a.id === forcedId);
+             } else {
+                const floor = this.map.floors[this.map.floorIndex];
+                if (floor && floor.recruits && floor.recruits.length > 0) {
+                    const recruitId = floor.recruits[randInt(0, floor.recruits.length - 1)];
+                    recruitDef = this.dataManager.actors.find(a => a.id === recruitId);
                 }
-                recruit = availableCreatures[randInt(0, availableCreatures.length - 1)];
-            }
+                if (!recruitDef) {
+                    const availableCreatures = this.dataManager.actors.filter(creature => creature.isRecruitable);
+                    if (availableCreatures.length === 0) {
+                        this.scene.logMessage(this.dataManager.terms.recruit.no_one_here);
+                        return;
+                    }
+                    recruitDef = availableCreatures[randInt(0, availableCreatures.length - 1)];
+                }
+             }
+
+             if (!recruitDef) {
+                 this.scene.logMessage("No one is here.");
+                 this.closeRecruitEvent();
+                 return;
+             }
+
+             const cost = forcedCost !== undefined ? forcedCost : randInt(recruitDef.gold || 25, (recruitDef.gold || 50) * 1.5);
+
+             // Task: Random Initial Equipment (30% chance)
+             let equipmentId = null;
+             if (Math.random() < 0.3) {
+                 const equipable = this.dataManager.items.filter(i => (i.type === 'weapon' || i.type === 'armor') && !i.unique);
+                 if (equipable.length > 0) {
+                     equipmentId = equipable[randInt(0, equipable.length - 1)].id;
+                 }
+             }
+
+             recruitData = {
+                 actorId: recruitDef.id,
+                 cost: Math.floor(cost),
+                 equipmentId: equipmentId
+             };
+
+             if (event) {
+                 event.recruitData = recruitData;
+             }
         }
 
-        const cost = forcedCost !== undefined ? forcedCost : randInt(25, 75);
+        const recruitActor = this.dataManager.actors.find(a => a.id === recruitData.actorId);
+        if (!recruitActor) {
+             this.scene.logMessage("Error: Recruit data invalid.");
+             this.closeRecruitEvent();
+             return;
+        }
 
-        renderCreatureInfo(this.scene.hudManager.recruitWindow.bodyEl, recruit, {
-            showElement: true,
-            showEquipment: true,
-            showPassives: true,
-            showSkills: true,
-            showFlavor: true,
+        this.currentRecruit = recruitData;
+
+        // Create preview battler to ensure stats and tooltips work correctly
+        const previewBattler = Game_Battler.create(recruitActor);
+        if (recruitData.equipmentId) {
+             const item = this.dataManager.items.find(i => i.id === recruitData.equipmentId);
+             if (item) {
+                 previewBattler.equipmentItem = item;
+             }
+        }
+
+        const win = this.scene.hudManager.recruitWindow;
+        win.setTitle(`Recruit – ${recruitActor.name}`);
+
+        win.bodyEl.innerHTML = "";
+
+        renderCreatureInfo(win.bodyEl, previewBattler, {
             dataManager: this.dataManager
         });
 
-        this.scene.hudManager.recruitWindow.buttonsEl.innerHTML = "";
-        const joinBtn = document.createElement("button");
-        joinBtn.className = "win-btn";
-        joinBtn.textContent = `Pay ${cost} Gold`;
-        joinBtn.addEventListener("click", () => {
-            if (this.party.gold >= cost) {
-                this.party.gold -= cost;
-                this.attemptRecruit(recruit);
-            } else {
-                this.scene.logMessage(`[Recruit] You don't have enough gold.`);
-                this.closeRecruitEvent();
-            }
+        const costEl = document.createElement("div");
+        costEl.style.marginTop = "10px";
+        costEl.style.textAlign = "center";
+        costEl.style.color = "var(--text-highlight)";
+        costEl.textContent = `Cost: ${recruitData.cost} Gold`;
+        win.bodyEl.appendChild(costEl);
+
+        // Buttons
+        win.footer.innerHTML = "";
+        win.addButton("Accept", () => {
+             this.attemptRecruit();
         });
-        const declineBtn = document.createElement("button");
-        declineBtn.className = "win-btn";
-        declineBtn.textContent = "Decline";
-        declineBtn.addEventListener("click", () => {
-            this.scene.logMessage(`[Recruit] You decline ${recruit.name}'s offer.`);
+        win.addButton("Decline", () => {
+            this.scene.logMessage(`[Recruit] You decline ${recruitActor.name}'s offer.`);
             this.closeRecruitEvent();
         });
-        this.scene.hudManager.recruitWindow.buttonsEl.appendChild(joinBtn);
-        this.scene.hudManager.recruitWindow.buttonsEl.appendChild(declineBtn);
 
-        this.windowManager.push(this.scene.hudManager.recruitWindow);
+        this.windowManager.push(win);
         this.scene.setStatus("Recruit encountered.");
         SoundManager.play('UI_SELECT');
     }
@@ -445,12 +485,29 @@ export class Game_Interpreter {
         this.scene.updateGrid();
     }
 
-    attemptRecruit(recruit) {
+    attemptRecruit() {
+        const recruitData = this.currentRecruit;
+        const recruitDef = this.dataManager.actors.find(a => a.id === recruitData.actorId);
+
+        if (this.party.gold < recruitData.cost) {
+             this.scene.logMessage(`[Recruit] You don't have enough gold.`);
+             this.closeRecruitEvent();
+             return;
+        }
+
         if (this.party.hasEmptySlot()) {
-            this.party.addMember(Game_Battler.create(recruit));
-            this.scene.logMessage(`[Recruit] ${recruit.name} joins your party.`);
+            this.party.gold -= recruitData.cost;
+
+            const newMember = Game_Battler.create(recruitDef);
+            if (recruitData.equipmentId) {
+                const item = this.dataManager.items.find(i => i.id === recruitData.equipmentId);
+                if (item) newMember.equipmentItem = item;
+            }
+
+            this.party.addMember(newMember);
+            this.scene.logMessage(`[Recruit] ${recruitDef.name} joins your party.`);
             this.scene.setStatus(
-                this.dataManager.terms.recruit.recruited.replace("{0}", recruit.name)
+                this.dataManager.terms.recruit.recruited.replace("{0}", recruitDef.name)
             );
 
             if (this._onRecruitCallback) {
@@ -463,6 +520,8 @@ export class Game_Interpreter {
             this.scene.updateParty();
             return;
         }
+
+        // Party full logic
         this.scene.hudManager.recruitWindow.bodyEl.innerHTML =
             this.dataManager.terms.recruit.party_full;
         this.scene.hudManager.recruitWindow.buttonsEl.innerHTML = "";
@@ -471,7 +530,7 @@ export class Game_Interpreter {
             btn.className = "win-btn";
             btn.textContent = m.name;
             btn.addEventListener("click", () => {
-                this.replaceMemberWithRecruit(idx, recruit);
+                this.replaceMemberWithRecruit(idx);
             });
             this.scene.hudManager.recruitWindow.buttonsEl.appendChild(btn);
         });
@@ -485,14 +544,26 @@ export class Game_Interpreter {
         this.scene.hudManager.recruitWindow.buttonsEl.appendChild(cancelBtn);
     }
 
-    replaceMemberWithRecruit(index, recruit) {
+    replaceMemberWithRecruit(index) {
+        const recruitData = this.currentRecruit;
+        const recruitDef = this.dataManager.actors.find(a => a.id === recruitData.actorId);
         const replaced = this.party.members[index];
+
+        this.party.gold -= recruitData.cost;
+
         this.scene.logMessage(
             this.dataManager.terms.recruit.replace_member
                 .replace("{0}", replaced.name)
-                .replace("{1}", recruit.name)
+                .replace("{1}", recruitDef.name)
         );
-        this.party.replaceMember(index, Game_Battler.create(recruit));
+
+        const newMember = Game_Battler.create(recruitDef);
+        if (recruitData.equipmentId) {
+            const item = this.dataManager.items.find(i => i.id === recruitData.equipmentId);
+            if (item) newMember.equipmentItem = item;
+        }
+
+        this.party.replaceMember(index, newMember);
 
         if (this._onRecruitCallback) {
             this._onRecruitCallback();
