@@ -122,29 +122,48 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
-   * Gets the effective maximum HP.
-   * @type {number}
+   * Gets the base value for a parameter.
+   * @param {string} paramId
+   * @returns {number}
    */
-  get maxHp() {
-      const base = this._baseMaxHp;
-      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'maxHp')
+  baseParam(paramId) {
+      if (paramId === 'maxHp') return this._baseMaxHp;
+      if (paramId === 'atk') {
+           if (this.isEnemy) return this.level;
+           return 3 + Math.floor(this.level / 2);
+      }
+      return 0;
+  }
+
+  /**
+   * Gets the effective value of a parameter.
+   * @param {string} paramId
+   * @returns {number}
+   */
+  param(paramId) {
+      const base = this.baseParam(paramId);
+      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === paramId)
                                .reduce((sum, t) => sum + t.value, 0);
-      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'maxHp')
+      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === paramId)
                                .reduce((acc, t) => acc * t.value, 1.0);
       return Math.floor((base + plus) * rate);
   }
 
+  /**
+   * Gets the effective maximum HP.
+   * @type {number}
+   */
+  get maxHp() {
+      return this.param('maxHp');
+  }
+
   set maxHp(value) {
-      // Inverse calculation for setting base max hp is tricky with rates.
-      // We assume this setter is mostly used for initialization or direct manipulation where
-      // we want the FINAL value to be 'value'.
       const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'maxHp')
                                .reduce((sum, t) => sum + t.value, 0);
       const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'maxHp')
                                .reduce((acc, t) => acc * t.value, 1.0);
 
-      // (base + plus) * rate = value  =>  base = (value / rate) - plus
-      if (rate === 0) this._baseMaxHp = 0; // Avoid division by zero
+      if (rate === 0) this._baseMaxHp = 0;
       else this._baseMaxHp = Math.ceil((value / rate) - plus);
   }
 
@@ -153,20 +172,7 @@ export class Game_Battler extends Game_Base {
    * @type {number}
    */
   get atk() {
-      let base = 0;
-      if (this.isEnemy) {
-           // Base enemy logic: ~level. Variance handled in BattleManager.
-           base = this.level;
-      } else {
-           // Base actor logic: 3 + level/2.
-           base = 3 + Math.floor(this.level / 2);
-      }
-
-      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'atk')
-                               .reduce((sum, t) => sum + t.value, 0);
-      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'atk')
-                               .reduce((acc, t) => acc * t.value, 1.0);
-      return Math.floor((base + plus) * rate);
+      return this.param('atk');
   }
 
   /**
@@ -174,11 +180,7 @@ export class Game_Battler extends Game_Base {
    * @type {number}
    */
   get asp() {
-      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'asp')
-                               .reduce((sum, t) => sum + t.value, 0);
-      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'asp')
-                               .reduce((acc, t) => acc * t.value, 1.0);
-      return Math.floor(plus * rate);
+      return this.param('asp');
   }
 
   /**
