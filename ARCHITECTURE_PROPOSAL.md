@@ -126,6 +126,17 @@ It is important to distinguish between the **Trait** (the modifier) and the **Pa
 
 Therefore, "Hit" exists as a Trait code for data entry, and as an XParam ID for logic retrieval.
 
+### 4.7. Handling Non-Numeric Traits (e.g., Elements, State Resist)
+Traits like `eleChg` (Change Element) or `eleAdd` (Add Element) do not return a single number, so they fall outside the `param`/`xparam`/`sparam` system. Instead, they are handled by **functional getters** that iterate over the trait list.
+
+*   **Example: `battler.elements`**
+    1.  Starts with the actor's innate element (if any).
+    2.  Iterates `this.traitObjects()` (and their traits) looking for `ELEMENT_CHANGE`. If found, it overrides the base element.
+    3.  Iterates `this.traitObjects()` looking for `ELEMENT_ADD`. These are appended to the list.
+    4.  Returns the final array of active elements.
+
+This pattern applies to any trait that modifies the "State" of the battler rather than a "Statistic".
+
 ---
 
 ## 5. Implementation Steps
