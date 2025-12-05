@@ -386,8 +386,7 @@ export function renderCreatureInfo(container, battler, options = {}) {
             battler.passives.forEach((pData, i) => {
                 let def = pData;
                 if (options.dataManager && options.dataManager.passives) {
-                     let code = pData.code || pData.id;
-                     if (typeof pData === 'string') code = pData;
+                     const code = pData.code || pData.id;
                      const found = Object.values(options.dataManager.passives).find(p => p.id === code || p.code === code);
                      if (found) def = found;
                 }

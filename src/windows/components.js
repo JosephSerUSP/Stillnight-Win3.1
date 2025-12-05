@@ -373,7 +373,7 @@ export function Component_InteractiveLabel(parent, props = {}) {
              }
 
              // Effects (Consumables)
-             if (data.effects && typeof data.effects === 'object' && !Array.isArray(data.effects)) {
+             if (data.effects && typeof data.effects === 'object') {
                   const effectDescs = Object.entries(data.effects).map(([k, v]) => generateEffectDescription(k, v)).filter(Boolean);
                   if (effectDescs.length > 0) {
                       if (functionalText) functionalText += "<br/>";
