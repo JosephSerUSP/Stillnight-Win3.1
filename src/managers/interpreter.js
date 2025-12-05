@@ -5,7 +5,8 @@ import {
   createInteractiveLabel,
   createBattlerNameLabel,
   renderCreatureInfo,
-  renderElements
+  renderElements,
+  Window_Recruit
 } from "../windows/index.js";
 
 /**
@@ -46,7 +47,7 @@ export class Game_Interpreter {
                 this.openShrineEvent();
                 break;
             case 'RECRUIT':
-                this.openRecruitEvent();
+                this.startRecruit(event, action);
                 break;
             case 'NPC_DIALOGUE':
                 this.openNpcEvent(action.id);
@@ -340,77 +341,111 @@ export class Game_Interpreter {
         this.scene.updateAll();
     }
 
-    openRecruitEvent(options = {}) {
-        const { forcedId, cost: forcedCost, onRecruit } = options;
-        this._onRecruitCallback = onRecruit;
+    startRecruit(event, action) {
+        // Check for persistent recruit data on this event instance
+        let recruitId, level, equipmentIds;
 
-        let recruit;
-        if (forcedId) {
-             recruit = this.dataManager.actors.find(a => a.id === forcedId);
-        }
-
-        if (!recruit) {
-            // Check for floor-specific recruit pool
-            const floor = this.map.floors[this.map.floorIndex];
-            if (floor && floor.recruits && floor.recruits.length > 0) {
-                const recruitId = floor.recruits[randInt(0, floor.recruits.length - 1)];
-                recruit = this.dataManager.actors.find(a => a.id === recruitId);
-            }
-
-            // Fallback to global recruits
-            if (!recruit) {
-                const availableCreatures = this.dataManager.actors.filter(creature => creature.isRecruitable);
-                if (availableCreatures.length === 0) {
-                    this.scene.logMessage(this.dataManager.terms.recruit.no_one_here);
-                    return;
+        if (event._recruitData) {
+            recruitId = event._recruitData.recruitId;
+            level = event._recruitData.level;
+            equipmentIds = event._recruitData.equipmentIds;
+        } else {
+            // Generate new recruit data
+            recruitId = action.recruitId;
+            if (!recruitId) {
+                // Pick random from map recruits
+                const mapData = this.scene.map.mapData;
+                if (mapData.recruits && mapData.recruits.length > 0) {
+                    recruitId = mapData.recruits[randInt(0, mapData.recruits.length - 1)];
+                } else {
+                    // Global fallback
+                    const recruitables = Object.values(this.dataManager.actors).filter(a => a.isRecruitable && !a.isEvolved);
+                    const r = recruitables[randInt(0, recruitables.length - 1)];
+                    recruitId = r ? r.id : 'pixie';
                 }
-                recruit = availableCreatures[randInt(0, availableCreatures.length - 1)];
             }
+
+            level = action.level || this.party.members.reduce((a,b) => a + b.level, 0) / Math.max(1, this.party.members.length);
+            level = Math.max(1, Math.floor(level));
+            equipmentIds = [];
+
+            // Random equipment chance (50%)
+            if (Math.random() < 0.5) {
+                // Try to find a weapon and/or armor
+                const weapons = Object.values(this.dataManager.items).filter(i => i.type === 'weapon');
+                const armors = Object.values(this.dataManager.items).filter(i => i.type === 'armor');
+
+                if (weapons.length > 0 && Math.random() < 0.5) {
+                    equipmentIds.push(weapons[randInt(0, weapons.length - 1)].id);
+                }
+                if (armors.length > 0 && Math.random() < 0.5) {
+                    equipmentIds.push(armors[randInt(0, armors.length - 1)].id);
+                }
+            }
+
+            // Persist data to the event instance
+            event._recruitData = { recruitId, level, equipmentIds };
         }
 
-        const cost = forcedCost !== undefined ? forcedCost : randInt(25, 75);
+        const actorData = this.dataManager.getActor(recruitId);
+        // Create preview battler
+        const recruit = Game_Battler.create(actorData, level);
 
-        renderCreatureInfo(this.scene.hudManager.recruitWindow.bodyEl, recruit, {
-            showElement: true,
-            showEquipment: true,
-            showPassives: true,
-            showSkills: true,
-            showFlavor: true,
-            dataManager: this.dataManager
-        });
+        // Equip items if any
+        if (equipmentIds && equipmentIds.length > 0) {
+            equipmentIds.forEach(itemId => {
+                const item = this.dataManager.getItem(itemId);
+                if (item) {
+                     // Use battler's equip method directly to support multi-slots correctly for recruits
+                     if (item.type === 'weapon') {
+                          recruit.equip('weapon', item);
+                     } else if (['armor','accessory','head','arms','legs'].includes(item.type)) {
+                          recruit.equip(item.type, item);
+                     }
+                }
+            });
+        }
 
-        this.scene.hudManager.recruitWindow.buttonsEl.innerHTML = "";
-        const joinBtn = document.createElement("button");
-        joinBtn.className = "win-btn";
-        joinBtn.textContent = `Pay ${cost} Gold`;
-        joinBtn.addEventListener("click", () => {
+        // Use the new Window_Recruit if available via windowManager or instantiate
+        // The previous code used this.scene.hudManager.recruitWindow.
+        // We should check if we can reuse it or need a new one.
+        // The new Window_Recruit class has a `render` method.
+        // We will assume hudManager uses the updated class or we push a new one.
+        // Given we updated src/windows/event.js, we should instantiate a new one to be safe
+        // OR rely on hudManager if it initializes it correctly.
+        // BUT, Scene_Map likely initializes it once.
+        // Let's use a new instance to ensure we use the new `render` method logic.
+
+        const win = new Window_Recruit();
+        win.render(recruit, "Join you? I suppose...");
+
+        // Buttons
+        const cost = level * 10;
+        win.addButton(`Recruit (${cost} G)`, () => {
             if (this.party.gold >= cost) {
-                this.party.gold -= cost;
-                this.attemptRecruit(recruit);
+                if (this.party.addMember(recruit)) {
+                    this.party.gold -= cost;
+                    this.scene.hud.logMessage(`Recruited ${recruit.name}!`);
+                    event.isExhausted = true; // Mark event as done
+                    this.scene.updateAll();
+                    win.close();
+                    this.clearEventTile();
+                } else {
+                     // Party full handling
+                     // For now just log message, or implement replacement logic if needed
+                     this.scene.hud.logMessage("Party is full!");
+                }
             } else {
-                this.scene.logMessage(`[Recruit] You don't have enough gold.`);
-                this.closeRecruitEvent();
+                this.scene.hud.logMessage("Not enough gold!");
             }
         });
-        const declineBtn = document.createElement("button");
-        declineBtn.className = "win-btn";
-        declineBtn.textContent = "Decline";
-        declineBtn.addEventListener("click", () => {
-            this.scene.logMessage(`[Recruit] You decline ${recruit.name}'s offer.`);
-            this.closeRecruitEvent();
+
+        win.addButton("Leave", () => {
+            win.close();
+            // Do NOT clear _recruitData so persistence holds
         });
-        this.scene.hudManager.recruitWindow.buttonsEl.appendChild(joinBtn);
-        this.scene.hudManager.recruitWindow.buttonsEl.appendChild(declineBtn);
 
-        this.windowManager.push(this.scene.hudManager.recruitWindow);
-        this.scene.setStatus("Recruit encountered.");
-        SoundManager.play('UI_SELECT');
-    }
-
-    closeRecruitEvent() {
-        this._onRecruitCallback = null;
-        this.windowManager.close(this.scene.hudManager.recruitWindow);
-        this.scene.setStatus("Exploration");
+        this.windowManager.push(win);
     }
 
     openNpcEvent(npcId) {
