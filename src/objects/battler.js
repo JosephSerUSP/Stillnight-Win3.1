@@ -71,6 +71,29 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
+   * Gets the equipment object.
+   * @type {Object}
+   */
+  get equipment() {
+      return this._equipment;
+  }
+
+  /**
+   * Equips an item to a specific slot.
+   * @param {string} slot - The equipment slot (weapon, armor, etc).
+   * @param {Object} item - The item to equip.
+   */
+  equip(slot, item) {
+      if (this._equipment.hasOwnProperty(slot)) {
+          this._equipment[slot] = item;
+          // Sync legacy property for weapons
+          if (slot === 'weapon') {
+              this.equipmentItem = item;
+          }
+      }
+  }
+
+  /**
    * Aggregates all traits from Actor, Equipment, Passives, and States.
    * @type {Array}
    */
@@ -81,9 +104,21 @@ export class Game_Battler extends Game_Base {
           traits.push(...this.actorData.traits);
       }
 
-      // Equipment traits
+      // Equipment traits (Legacy single slot)
       if (this.equipmentItem && this.equipmentItem.traits) {
           traits.push(...this.equipmentItem.traits);
+      }
+
+      // Equipment traits (Multi-slot)
+      if (this._equipment) {
+          Object.entries(this._equipment).forEach(([slot, item]) => {
+              // Avoid double counting weapon if equipmentItem is also set
+              if (slot === 'weapon' && this.equipmentItem === item) return;
+
+              if (item && item.traits) {
+                  traits.push(...item.traits);
+              }
+          });
       }
 
       // Passive traits
