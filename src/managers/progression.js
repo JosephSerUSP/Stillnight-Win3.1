@@ -44,6 +44,11 @@ export class ProgressionSystem {
           leveledUp = true;
         }
 
+        // Refresh stats after leveling/HP gain
+        if (leveledUp) {
+            battler.refreshStats();
+        }
+
         if (battler.hp > battler.maxHp) battler.hp = battler.maxHp;
 
         return {
@@ -113,6 +118,7 @@ export class ProgressionSystem {
             const hpGain = randInt(2, 4);
             battler._baseMaxHp += hpGain;
         }
+        battler.refreshStats();
         battler.hp = battler.maxHp;
     }
 }
