@@ -1,5 +1,5 @@
 import { randInt, elementToAscii, probabilisticRound } from "../core/utils.js";
-import { SoundManager } from "./sound.js";
+import { EventBus, Events } from "../core/events.js";
 import { EffectProcessor } from "./effect_processor.js";
 
 /**
@@ -385,7 +385,7 @@ export class BattleManager {
         if (!result) return;
 
         if (result.type === 'damage') {
-             SoundManager.play('DAMAGE');
+             EventBus.emit(Events.PLAY_SOUND, 'DAMAGE');
              events.push({
                 type: 'damage',
                 battler: battler,
@@ -396,7 +396,7 @@ export class BattleManager {
                 msg: `  ${target.name} takes ${result.value} damage.`
              });
         } else if (result.type === 'heal') {
-             SoundManager.play('HEAL');
+             EventBus.emit(Events.PLAY_SOUND, 'HEAL');
              events.push({
                  type: 'heal',
                  battler: battler,
@@ -410,7 +410,7 @@ export class BattleManager {
         } else if (result.type === 'status') {
              events.push({ type: 'status', target: target, status: result.status, msg: `  ${target.name} is afflicted with ${result.status}.` });
         } else if (result.type === 'hp_drain') {
-             SoundManager.play('DAMAGE');
+             EventBus.emit(Events.PLAY_SOUND, 'DAMAGE');
              events.push({
                  type: 'hp_drain',
                  battler: battler,
@@ -455,7 +455,7 @@ export class BattleManager {
     // Evasion is determined by EVA trait on target
     const evasionChance = target.getPassiveValue("EVA");
     if (evasionChance > 0 && Math.random() < evasionChance) {
-        SoundManager.play('UI_CANCEL'); // Or miss sound
+        EventBus.emit(Events.PLAY_SOUND, 'UI_CANCEL'); // Or miss sound
         events.push({
             type: "miss",
             battler: battler,
@@ -487,7 +487,7 @@ export class BattleManager {
     target.hp = Math.max(0, target.hp - dmg);
 
     // Play ATTACK/DAMAGE sound
-    SoundManager.play('DAMAGE');
+    EventBus.emit(Events.PLAY_SOUND, 'DAMAGE');
 
     const msg = isCritical
         ? `CRITICAL! ${battler.name} deals ${dmg} damage to ${target.name}!`
@@ -526,7 +526,7 @@ export class BattleManager {
     if (!anyPartyAlive) {
       this.isBattleFinished = true;
       this.turnQueue = [];
-      SoundManager.play('GAME_OVER');
+      EventBus.emit(Events.PLAY_SOUND, 'GAME_OVER');
       events.push({ type: "end", result: "defeat", msg: this.dataManager.terms.battle.your_party_collapses });
     } else if (!anyEnemyAlive) {
       this.isBattleFinished = true;

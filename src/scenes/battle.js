@@ -3,6 +3,7 @@ import { Game_Battler } from "../objects/objects.js";
 import { randInt, pickWeighted, probabilisticRound } from "../core/utils.js";
 import { SoundManager, ConfigManager } from "../managers/index.js";
 import { Window_Battle, Window_Victory } from "../windows/index.js";
+import { EventBus, Events } from "../core/events.js";
 
 /**
  * @class Scene_Battle
@@ -68,6 +69,11 @@ export class Scene_Battle extends Scene_Base {
         onItem: () => this.onItemClick(),
         onAutoToggle: (val) => this.toggleAutoBattle(val)
     });
+
+    this._playSoundHandler = (key) => {
+        if (this.sceneManager.currentScene() === this) SoundManager.play(key);
+    };
+    EventBus.on(Events.PLAY_SOUND, this._playSoundHandler);
   }
 
   /**
@@ -313,6 +319,7 @@ export class Scene_Battle extends Scene_Base {
   stop() {
     this.windowManager.close(this.battleWindow);
     document.getElementById("mode-label").textContent = "Exploration";
+    EventBus.off(Events.PLAY_SOUND, this._playSoundHandler);
   }
 
   /**
@@ -542,7 +549,7 @@ export class Scene_Battle extends Scene_Base {
                 }
             }
 
-            await delay(300);
+            await delay(50);
       }
   }
 
