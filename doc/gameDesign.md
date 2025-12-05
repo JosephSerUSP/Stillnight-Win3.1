@@ -13,6 +13,8 @@ They are properties of Items and actions. (And Traits too, possibly?)
 'elementAdd' - Adds a new element to the battler.
 'elementChange' - Changes all elements of this battler to the target element. If the battler has no elements, it should now have one.
 Effects should be flexible. I should be able to cover novel effects without hardcoding them. For example, I should be able to write an effect that changes a battler's maxActions on the fly, even if a 'changeMaxActions' effect doesn't exist.
+'changeGold' - adds or removes gold from the party.
+
 
 -Creatures: Trait Objects. They will generally not have any innate traits, as the Passives system is used for that. They also track things such as parameters and experience. 
 The battle units. They're both allies and enemies. 
@@ -21,6 +23,8 @@ The battle units. They're both allies and enemies.
 'maxActions' - the maximum number of actions the creature can have.
 'passives' - an array of all the passives the creature has.
 'maxPassives' - the maximum number of passives the creature can have.
+'buyPrice' - modulates purchasing prices on shops.
+'sellPrice' - modulates sales prices on shops.
 
 -Actions: Apply Effects on Targets.
 'actionSpeed' - a decisive factor in deciding turn order. A action with a higher final actionSpeed will ALWAYS act first. This can be negative.
