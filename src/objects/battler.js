@@ -51,6 +51,18 @@ export class Game_Battler extends Game_Base {
     this.spriteKey = actorData.spriteKey;
     this.flavor = actorData.flavor;
     this.xp = 0;
+    this._equipment = {
+        weapon: null,
+        gun: null,
+        armor: null,
+        head: null,
+        arms: null,
+        legs: null,
+        accessory: null
+    };
+    if (actorData.equipment) {
+         Object.assign(this._equipment, actorData.equipment);
+    }
     this.baseEquipment = actorData.equipment || null;
     this.equipmentItem = null;
     this.expGrowth = actorData.expGrowth || 5;
@@ -71,6 +83,29 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
+   * Gets the equipment object.
+   * @type {Object}
+   */
+  get equipment() {
+      return this._equipment;
+  }
+
+  /**
+   * Equips an item to a specific slot.
+   * @param {string} slot - The equipment slot (weapon, armor, etc).
+   * @param {Object} item - The item to equip.
+   */
+  equip(slot, item) {
+      if (this._equipment.hasOwnProperty(slot)) {
+          this._equipment[slot] = item;
+          // Sync legacy property for weapons
+          if (slot === 'weapon') {
+              this.equipmentItem = item;
+          }
+      }
+  }
+
+  /**
    * Aggregates all traits from Actor, Equipment, Passives, and States.
    * @type {Array}
    */
@@ -81,9 +116,21 @@ export class Game_Battler extends Game_Base {
           traits.push(...this.actorData.traits);
       }
 
-      // Equipment traits
+      // Equipment traits (Legacy single slot)
       if (this.equipmentItem && this.equipmentItem.traits) {
           traits.push(...this.equipmentItem.traits);
+      }
+
+      // Equipment traits (Multi-slot)
+      if (this._equipment) {
+          Object.entries(this._equipment).forEach(([slot, item]) => {
+              // Avoid double counting weapon if equipmentItem is also set
+              if (slot === 'weapon' && this.equipmentItem === item) return;
+
+              if (item && item.traits) {
+                  traits.push(...item.traits);
+              }
+          });
       }
 
       // Passive traits
