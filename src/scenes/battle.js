@@ -303,13 +303,11 @@ export class Scene_Battle extends Scene_Base {
   }
 
   disableActionButtons() {
-      this.battleWindow.btnFormation.classList.add('disabled');
-      this.battleWindow.btnItem.classList.add('disabled');
+      this.battleWindow.disableActionButtons();
   }
 
   enableActionButtons() {
-      this.battleWindow.btnFormation.classList.remove('disabled');
-      this.battleWindow.btnItem.classList.remove('disabled');
+      this.battleWindow.enableActionButtons();
   }
 
   /**
