@@ -10,6 +10,8 @@ export class Window_Battle extends Window_Base {
   constructor() {
     super('center', 'center', 528, 360, { title: "Battle – Stillnight" });
 
+    this.refs = {};
+
     // 1. Content: Terminal with Viewport and Log
     const contentStructure = {
         type: 'flex',
@@ -17,19 +19,20 @@ export class Window_Battle extends Window_Base {
         children: [
             {
                 type: 'panel',
-                props: { className: 'terminal-viewport', id: 'battle-viewport' }
+                props: { className: 'terminal-viewport', id: 'battle-viewport' },
+                ref: 'viewport'
             },
             {
                 type: 'panel',
-                props: { className: 'terminal-log', id: 'battle-log' }
+                props: { className: 'terminal-log', id: 'battle-log' },
+                ref: 'log'
             }
         ]
     };
 
-    const terminal = UI.build(this.content, contentStructure);
-    // Flex container children: [0] viewport, [1] log
-    this.viewportEl = terminal.children[0];
-    this.logEl = terminal.children[1];
+    UI.build(this.content, contentStructure, this.refs);
+    this.logEl = this.refs.log;
+    this.viewportEl = this.refs.viewport;
 
     // 2. Footer: Action Buttons
     this.btnRound = this.addButton("Resolve Round", () => {
@@ -55,7 +58,8 @@ export class Window_Battle extends Window_Base {
                     className: 'win-btn',
                     label: 'Formation',
                     onClick: () => { if (this.handlers.onFormation) this.handlers.onFormation(); }
-                }
+                },
+                ref: 'btnFormation'
             },
             {
                 type: 'button',
@@ -63,17 +67,15 @@ export class Window_Battle extends Window_Base {
                     className: 'win-btn',
                     label: 'Item',
                     onClick: () => { if (this.handlers.onItem) this.handlers.onItem(); }
-                }
+                },
+                ref: 'btnItem'
             }
         ]
     };
 
     // Build detached and insert
-    const actionRow = UI.build(null, actionRowStructure);
+    const actionRow = UI.build(null, actionRowStructure, this.refs);
     this.footer.insertBefore(actionRow, this.footer.firstChild);
-
-    this.btnFormation = actionRow.children[0];
-    this.btnItem = actionRow.children[1];
 
     // Auto Toggle
     // The helper createToggleSwitch returns a label containing a checkbox.
@@ -108,12 +110,12 @@ export class Window_Battle extends Window_Base {
   appendLog(msg) {
     const div = document.createElement("div");
     div.textContent = msg;
-    this.logEl.appendChild(div);
-    this.logEl.scrollTop = this.logEl.scrollHeight;
+    this.refs.log.appendChild(div);
+    this.refs.log.scrollTop = this.refs.log.scrollHeight;
   }
 
   logEnemyEmergence(enemies, terms) {
-    this.logEl.textContent = "";
+    this.refs.log.textContent = "";
     this.appendLog(terms.enemies_emerge);
     enemies.forEach((e) => {
         const primaryElements = getPrimaryElements(e.elements);
@@ -123,9 +125,9 @@ export class Window_Battle extends Window_Base {
   }
 
   refresh(battlers, party) {
-    this.viewportEl.innerHTML = "";
+    this.refs.viewport.innerHTML = "";
 
-    UI.build(this.viewportEl, {
+    UI.build(this.refs.viewport, {
           type: 'label',
           props: {
               text: "== BATTLE ==",
@@ -145,7 +147,7 @@ export class Window_Battle extends Window_Base {
         const battlerId = isEnemy ? `battler-enemy-${idx}` : `battler-party-${idx}`;
 
         // Use UI.build for the battler container
-        const container = UI.build(this.viewportEl, {
+        const container = UI.build(this.refs.viewport, {
             type: 'panel',
             props: {
                 className: 'battler-container',
@@ -193,7 +195,7 @@ export class Window_Battle extends Window_Base {
   }
 
   getBattlerElement(index, isEnemy) {
-      return this.viewportEl.querySelector(`#${this.getBattlerId(index, isEnemy)}`);
+      return this.refs.viewport.querySelector(`#${this.getBattlerId(index, isEnemy)}`);
   }
 
   getHpElement(index, isEnemy) {
@@ -237,6 +239,7 @@ export class Window_Battle extends Window_Base {
         if (ctx) {
              const hpEl = this.getHpElement(ctx.index, ctx.isEnemy);
              if (hpEl) {
+                 // Use maxHp from battler, but currentHp from animation
                  hpEl.textContent = this.createHpGauge(currentHp, battler.maxHp);
              }
         }
@@ -244,9 +247,6 @@ export class Window_Battle extends Window_Base {
         if (progress < 1) {
           setTimeout(interpolator, interval);
         } else {
-          // Re-render ensures state consistency at end
-          // Ideally we call refresh here, but refresh requires data passed in.
-          // For now, we resolve and let the caller re-render if needed or trust the DOM update.
           resolve();
         }
       };
@@ -339,6 +339,16 @@ export class Window_Battle extends Window_Base {
 
       animator();
     });
+  }
+
+  disableActionButtons() {
+      if (this.refs.btnFormation) this.refs.btnFormation.classList.add('disabled');
+      if (this.refs.btnItem) this.refs.btnItem.classList.add('disabled');
+  }
+
+  enableActionButtons() {
+      if (this.refs.btnFormation) this.refs.btnFormation.classList.remove('disabled');
+      if (this.refs.btnItem) this.refs.btnItem.classList.remove('disabled');
   }
 
   /**
@@ -485,6 +495,8 @@ export class Window_Victory extends Window_Base {
   constructor() {
     super('center', 'center', 320, 240, { title: "Victory!", id: "victory-window" });
 
+    this.refs = {};
+
     const structure = {
         type: 'flex',
         props: {
@@ -504,20 +516,19 @@ export class Window_Victory extends Window_Base {
                 type: 'panel', // Spoils container
                 props: {
                     style: { flex: '1', whiteSpace: 'pre-wrap', overflowY: 'auto', fontSize: '11px' }
-                }
+                },
+                ref: 'spoils'
             }
         ]
     };
 
-    const panel = UI.build(this.content, structure);
-    this.messageEl = panel.children[0];
-    this.spoilsEl = panel.children[1];
+    UI.build(this.content, structure, this.refs);
 
     this.btnClaim = this.addButton("Claim Rewards", () => {});
   }
 
   setup(spoils, onClaim) {
-      this.spoilsEl.textContent = spoils;
+      this.refs.spoils.textContent = spoils;
       this.btnClaim.onclick = onClaim;
   }
 }
