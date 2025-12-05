@@ -4,6 +4,7 @@ Baseline:
 'elementChange' - Changes all elements of this battler to the target element. If the battler has no elements, it should now have one.
 Some traits will execute effects on certain triggers, such as restoring HP when winning a battle.
 'actionSpeed' - a flat modifier applied to a trait object's actions' 'actionSpeed'.
+Traits should be flexible. 
 
 -Effects: These directly affect battlers, such as changing hp, applying states, changing level / xp / parameters, etc. 
 They are properties of Items and actions. (And Traits too, possibly?)
@@ -11,6 +12,7 @@ They are properties of Items and actions. (And Traits too, possibly?)
 'learnPassive' - Teaches a passive to a creature. 
 'elementAdd' - Adds a new element to the battler.
 'elementChange' - Changes all elements of this battler to the target element. If the battler has no elements, it should now have one.
+Effects should be flexible. For example, I should be able to write an effect that changes a battler's maxActions on the fly without it needing to be hardcoded.
 
 -Creatures: Trait Objects. They will generally not have any innate traits, as the Passives system is used for that. They also track things such as parameters and experience. 
 The battle units. They're both allies and enemies. 
