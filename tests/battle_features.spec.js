@@ -4,9 +4,11 @@ test('Battle UI Features', async ({ page }) => {
   await page.goto('/?test=true');
   await page.waitForLoadState('networkidle');
 
-  // Disable animations
+  // Disable animations and Auto Battle
   await page.evaluate(() => {
     window.ConfigManager.windowAnimations = false;
+    window.ConfigManager.autoBattle = false;
+    window.ConfigManager.save();
   });
 
   // Start New Run
