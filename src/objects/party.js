@@ -1,4 +1,4 @@
-import { EffectProcessor } from "../managers/effect_processor.js";
+import { ActionEffectSystem } from "../managers/action_effects.js";
 import { Game_Battler } from "./battler.js";
 
 /**
@@ -192,7 +192,7 @@ export class Game_Party {
 
       if (item.effects) {
           for (const [key, value] of Object.entries(item.effects)) {
-              const result = EffectProcessor.apply(key, value, item, targetMember);
+              const result = ActionEffectSystem.apply({ type: key, value }, item, targetMember);
               if (result) outcomes.push(result);
           }
       }

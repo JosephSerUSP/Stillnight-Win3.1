@@ -2,7 +2,7 @@ import { Window_Base } from "./base.js";
 import { renderCreatureInfo, createInteractiveLabel } from "./utils.js";
 import { evaluateFormula } from "../core/utils.js";
 import { TRAIT_DEFINITIONS } from "../../data/traits.js";
-import { EffectProcessor } from "../managers/effect_processor.js";
+import { ActionEffectSystem } from "../managers/action_effects.js";
 
 /**
  * @class Window_Confirm
@@ -134,7 +134,7 @@ export class Window_ConfirmEffect extends Window_Base {
         if (!item.effects) return changes;
 
         for (const [key, value] of Object.entries(item.effects)) {
-            const preview = EffectProcessor.getPreview(key, value, member);
+            const preview = ActionEffectSystem.getPreview(key, value, member);
             if (preview) {
                 changes.push(preview);
             }

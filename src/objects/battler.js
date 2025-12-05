@@ -3,6 +3,7 @@ import { EffectManager } from "../managers/effects.js";
 import { ProgressionSystem } from "../managers/progression.js";
 import { passives as passivesData } from "../../data/passives.js";
 import { states as statesData } from "../../data/states.js";
+import { TRAIT_DEFINITIONS } from "../../data/traits.js";
 import { Game_Base } from "./game_base.js";
 
 /**
@@ -187,14 +188,16 @@ export class Game_Battler extends Game_Base {
    * @returns {number} The aggregated value.
    */
   getPassiveValue(code) {
-    // New implementation using traits
-    // First, check direct traits with this code
-    const traitSum = this.traits.filter(t => t.code === code)
-                                .reduce((sum, t) => sum + t.value, 0);
+    const def = TRAIT_DEFINITIONS[code];
+    const combine = def ? def.combine : 'add';
 
-    if (traitSum !== 0) return traitSum;
+    const traits = this.traits.filter(t => t.code === code);
 
-    return 0;
+    if (combine === 'multiply') {
+        return traits.reduce((acc, t) => acc * t.value, 1.0);
+    } else {
+        return traits.reduce((sum, t) => sum + t.value, 0);
+    }
   }
 
   /**
