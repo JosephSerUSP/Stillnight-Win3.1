@@ -21,4 +21,3 @@ Skills: Apply Effects on Targets.
 
 Passives:
 'formationSlots' - an array of formation slots in which that passive is active.
-
