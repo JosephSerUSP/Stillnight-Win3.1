@@ -21,13 +21,16 @@ export class Game_Battler extends Game_Base {
    * @param {string[]} [actorData.elements] - Elemental types.
    * @param {string} [actorData.role] - The role or class of the actor.
    * @param {Array<string|Object>} [actorData.passives] - List of passive IDs or objects.
-   * @param {string[]} [actorData.skills] - List of skill IDs.
+   * @param {string[]} [actorData.skills] - List of skill IDs (Actions).
+   * @param {number} [actorData.maxSkills] - Max number of skills.
+   * @param {number} [actorData.maxPassives] - Max number of passives.
    * @param {string} [actorData.spriteKey] - The key for the actor's sprite/portrait.
    * @param {string} [actorData.flavor] - Flavor text for the actor.
    * @param {Object} [actorData.equipment] - Base equipment.
    * @param {number} [actorData.expGrowth] - XP growth rate.
    * @param {Array} [actorData.evolutions] - Evolution paths.
    * @param {number} [actorData.gold] - Gold dropped (for enemies).
+   * @param {number} [actorData.cost] - MP cost per map step.
    * @param {Array} [actorData.traits] - Innate traits.
    * @param {number} [depth=1] - The dungeon depth (scales enemy stats).
    * @param {boolean} [isEnemy=false] - Whether this battler is an enemy.
@@ -48,6 +51,9 @@ export class Game_Battler extends Game_Base {
     });
 
     this.skills = actorData.skills ? actorData.skills.slice() : [];
+    this.maxSkills = actorData.maxSkills || 8;
+    this.maxPassives = actorData.maxPassives || 8;
+
     this.spriteKey = actorData.spriteKey;
     this.flavor = actorData.flavor;
     this.xp = 0;
@@ -56,13 +62,20 @@ export class Game_Battler extends Game_Base {
     this.expGrowth = actorData.expGrowth || 5;
     this.evolutions = actorData.evolutions || [];
     this.gold = actorData.gold || 0;
+    this.cost = actorData.cost || 0;
     this.isEnemy = isEnemy;
+
+    // Tracks current slot index for formation logic. Expected to be updated by Game_Party.
+    this.slotIndex = -1;
 
     /**
      * Active states on the battler.
      * @type {Array<{id: string, turns: number}>}
      */
     this.states = [];
+
+    // Storage for dynamic modifications applied via Effects (MOD_PROPERTY)
+    this._paramPlus = {};
 
     if (this.isEnemy) {
       this._baseMaxHp += (depth - 1) * 4;
@@ -72,6 +85,7 @@ export class Game_Battler extends Game_Base {
 
   /**
    * Aggregates all traits from Actor, Equipment, Passives, and States.
+   * Filters passives based on formationSlots.
    * @type {Array}
    */
   get traits() {
@@ -86,8 +100,15 @@ export class Game_Battler extends Game_Base {
           traits.push(...this.equipmentItem.traits);
       }
 
-      // Passive traits
+      // Passive traits - CHECK FORMATION SLOTS
       this.passives.forEach(p => {
+          // If passive has formationSlots restriction, check against current slotIndex
+          if (p.formationSlots && Array.isArray(p.formationSlots)) {
+              if (this.slotIndex === -1 || !p.formationSlots.includes(this.slotIndex)) {
+                  return; // Passive inactive
+              }
+          }
+
           if (p.traits) traits.push(...p.traits);
       });
 
@@ -104,21 +125,108 @@ export class Game_Battler extends Game_Base {
 
   /**
    * Gets the effective elements, including traits.
+   * Handles ELEMENT_CHANGE (replace all) and ELEMENT_ADD (append).
    * @type {string[]}
    */
   get elements() {
       const base = this._baseElements || [];
-      const changeTraits = this.traits.filter(t => t.code === 'ELEMENT_CHANGE');
+      const traits = this.traits;
 
+      const changeTraits = traits.filter(t => t.code === 'ELEMENT_CHANGE');
+      const addTraits = traits.filter(t => t.code === 'ELEMENT_ADD');
+
+      let currentElements = [...base];
+
+      // ELEMENT_CHANGE replaces everything
       if (changeTraits.length > 0) {
+          // Apply the most recent one
           const newColor = changeTraits[changeTraits.length - 1].dataId;
-          if (base.length === 0) {
-              return [newColor];
+
+          if (currentElements.length === 0) {
+              currentElements = [newColor];
           } else {
-              return base.map(() => newColor);
+              currentElements = currentElements.map(() => newColor);
           }
       }
-      return base;
+
+      // ELEMENT_ADD appends
+      addTraits.forEach(t => {
+          currentElements.push(t.dataId);
+      });
+
+      return currentElements;
+  }
+
+  /**
+   * Generic method to calculate any parameter/statistic.
+   * Calculates: (Base + DynamicMods + TraitPlus) * TraitRate
+   * Applies Starvation Penalty if applicable.
+   * @param {string} statId - The ID of the statistic (e.g., 'maxHp', 'atk', 'maxActions', 'wisdom').
+   * @returns {number} The calculated value.
+   */
+  getStat(statId) {
+      // 1. Determine Base
+      // Priority: Internal Base Property (_baseX) > ActorData Property > Default 0
+      // Special case for maxHp which uses _baseMaxHp
+      let base = 0;
+      if (statId === 'maxHp') {
+          base = this._baseMaxHp;
+      } else if (statId === 'atk') {
+          // Backward compatibility for existing logic
+          if (this.isEnemy) {
+               base = this.level;
+          } else {
+               base = 3 + Math.floor(this.level / 2);
+          }
+      } else if (statId === 'asp') {
+          // ASP base is usually 0 unless defined
+          base = this.actorData[statId] || 0;
+      } else {
+          // Fallback to reading raw property or actorData
+          if (this.hasOwnProperty('_base' + statId)) {
+              base = this['_base' + statId];
+          } else if (this.actorData && this.actorData[statId] !== undefined) {
+              base = this.actorData[statId];
+          } else if (this[statId] !== undefined && typeof this[statId] === 'number') {
+              // Be careful not to recurse if getter calls getStat
+              // This branch assumes it's a plain property if accessed directly,
+              // but we are usually defining getters that call THIS.
+              // So we should look for _base or actorData.
+              base = 0;
+          }
+      }
+
+      // 2. Dynamic Modifications (from Effects)
+      const dynamicPlus = this._paramPlus[statId] || 0;
+
+      // 3. Trait Modifications (PARAM_PLUS)
+      const traitPlus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === statId)
+                                   .reduce((sum, t) => sum + t.value, 0);
+
+      // 4. Trait Rate (PARAM_RATE)
+      let traitRate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === statId)
+                                   .reduce((acc, t) => acc * t.value, 1.0);
+
+      // 5. Starvation Penalty (if MP 0)
+      // We need access to Game_Party stepsAtZeroMp? Or injection.
+      // Game_Battler doesn't have direct ref to Game_Party.
+      // We can use a global check via window.sceneManager or inject it.
+      // Given the architecture, using window global for deep state in generic classes is common in RPG Maker but frowned upon here.
+      // However, we implemented 0 MP HP drain in Game_Party.onStep.
+      // Stat penalty logic should ideally be here.
+      // "When it hits 0, creatures get progressively weaker... penalty to damage and success rates".
+      // Let's modify traitRate if this battler is in a starving party.
+      // Since we don't have party reference, we might need to rely on a 'starving' state being applied?
+      // But requirement says "worse every turn".
+      // Let's assume the Party injects a "STARVATION" state or we check a global flag.
+      // OR: We check a custom property `this.starvationLevel` which Game_Party updates on step.
+      if (this.starvationLevel > 0) {
+          // e.g. -5% per step
+          const penalty = Math.min(0.9, this.starvationLevel * 0.05); // Cap at 90%?
+          traitRate *= (1.0 - penalty);
+      }
+
+      return Math.floor((base + dynamicPlus + traitPlus) * traitRate);
   }
 
   /**
@@ -126,26 +234,30 @@ export class Game_Battler extends Game_Base {
    * @type {number}
    */
   get maxHp() {
-      const base = this._baseMaxHp;
-      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'maxHp')
-                               .reduce((sum, t) => sum + t.value, 0);
-      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'maxHp')
-                               .reduce((acc, t) => acc * t.value, 1.0);
-      return Math.floor((base + plus) * rate);
+      return this.getStat('maxHp');
   }
 
   set maxHp(value) {
-      // Inverse calculation for setting base max hp is tricky with rates.
-      // We assume this setter is mostly used for initialization or direct manipulation where
-      // we want the FINAL value to be 'value'.
-      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'maxHp')
-                               .reduce((sum, t) => sum + t.value, 0);
-      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'maxHp')
-                               .reduce((acc, t) => acc * t.value, 1.0);
+      // Inverse calculation logic remains complex due to rates.
+      // We assume setting maxHp sets the BASE.
+      // value = (base + plus) * rate
+      // base = (value / rate) - plus
 
-      // (base + plus) * rate = value  =>  base = (value / rate) - plus
-      if (rate === 0) this._baseMaxHp = 0; // Avoid division by zero
-      else this._baseMaxHp = Math.ceil((value / rate) - plus);
+      // Re-calculate traits to invert
+      const statId = 'maxHp';
+      const dynamicPlus = this._paramPlus[statId] || 0;
+      const traitPlus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === statId)
+                                   .reduce((sum, t) => sum + t.value, 0);
+      let traitRate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === statId)
+                                   .reduce((acc, t) => acc * t.value, 1.0);
+
+      if (this.starvationLevel > 0) {
+          const penalty = Math.min(0.9, this.starvationLevel * 0.05);
+          traitRate *= (1.0 - penalty);
+      }
+
+      if (traitRate === 0) this._baseMaxHp = 0;
+      else this._baseMaxHp = Math.ceil((value / traitRate) - traitPlus - dynamicPlus);
   }
 
   /**
@@ -153,20 +265,7 @@ export class Game_Battler extends Game_Base {
    * @type {number}
    */
   get atk() {
-      let base = 0;
-      if (this.isEnemy) {
-           // Base enemy logic: ~level. Variance handled in BattleManager.
-           base = this.level;
-      } else {
-           // Base actor logic: 3 + level/2.
-           base = 3 + Math.floor(this.level / 2);
-      }
-
-      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'atk')
-                               .reduce((sum, t) => sum + t.value, 0);
-      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'atk')
-                               .reduce((acc, t) => acc * t.value, 1.0);
-      return Math.floor((base + plus) * rate);
+      return this.getStat('atk');
   }
 
   /**
@@ -174,11 +273,7 @@ export class Game_Battler extends Game_Base {
    * @type {number}
    */
   get asp() {
-      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'asp')
-                               .reduce((sum, t) => sum + t.value, 0);
-      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'asp')
-                               .reduce((acc, t) => acc * t.value, 1.0);
-      return Math.floor(plus * rate);
+      return this.getStat('asp');
   }
 
   /**

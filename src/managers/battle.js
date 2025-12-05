@@ -61,6 +61,12 @@ export class BattleManager {
      * @type {Array}
      */
     this.turnQueue = [];
+
+    /**
+     * Number of times the player has attempted to flee this battle.
+     * @type {number}
+     */
+    this.fleeAttempts = 0;
   }
 
   /**
@@ -80,6 +86,55 @@ export class BattleManager {
     this.isBattleFinished = false;
     this.isVictoryPending = false;
     this.turnQueue = [];
+    this.fleeAttempts = 0;
+
+    // Assign slot indices to party members for this battle
+    this.party.slots.forEach((member, index) => {
+        if (member) member.slotIndex = index;
+    });
+  }
+
+  /**
+   * Attempts to flee from battle.
+   * Consumes MP/Gold and calculates success based on attempts.
+   * @returns {Object} Result { success: boolean, cost: { mp: number, gold: number } }
+   */
+  attemptFlee() {
+      this.fleeAttempts++;
+
+      // Calculate costs (semi-random)
+      // MP Cost: 1-5 MP?
+      // Gold Cost: 1-10% of held gold? Or flat amount?
+      // "Costs a semi-random amount of MP and money."
+      const mpCost = randInt(2, 5);
+      const goldCost = Math.floor(this.party.gold * (randInt(1, 5) / 100)) + randInt(1, 10);
+
+      // Consume costs
+      this.party.summoner.consumeMp(mpCost);
+      this.party.gold = Math.max(0, this.party.gold - goldCost);
+
+      // Calculate Chance
+      // "Chances increase with every attempt."
+      // Base chance + bonus per attempt
+      let chance = 0.4 + (this.fleeAttempts * 0.1);
+
+      // Add Traits bonus
+      // This logic should probably be in Scene_Battle or Game_Party, but BattleManager handles battle logic.
+      // We need to iterate party for 'FLEE_CHANCE_BONUS'
+      let bonus = 0;
+      this.party.activeMembers.forEach(m => {
+          if (m.hp > 0) bonus += m.getPassiveValue('FLEE_CHANCE_BONUS');
+      });
+
+      chance += bonus;
+
+      const success = Math.random() < chance;
+
+      if (success) {
+          this.isBattleFinished = true;
+      }
+
+      return { success, cost: { mp: mpCost, gold: goldCost } };
   }
 
   /**
@@ -153,9 +208,20 @@ export class BattleManager {
         const action = this.getAIAction(ctx); // Plan the action
         let actionSpeed = 0;
         if (action && action.skillId) {
-            // Check skill speed if available (default 0)
+            // Check skill speed
             const skill = this.dataManager.skills[action.skillId];
-            if (skill && skill.speed) actionSpeed = skill.speed;
+            // Apply actionSpeed trait logic here if skills are Trait Objects (not yet full implementation, using data)
+            // Design: 'actionSpeed' is a flat modifier applied to a trait object's Skills' 'actionSpeed'
+
+            // Base skill speed
+            let baseSkillSpeed = skill.speed || 0;
+
+            // Apply 'actionSpeed' trait from battler (if battler has traits that modify this skill's speed)
+            // Implementation note: The design implies "Trait Objects" (Items/Passives) have actions, and traits on THOSE objects modify THOSE actions.
+            // Current system: Skills are on Battler.
+            // Simplified: Battler 'actionSpeed' trait adds to ALL skill speeds.
+            const speedMod = ctx.battler.getPassiveValue('actionSpeed');
+            actionSpeed = baseSkillSpeed + speedMod;
         }
 
         // Total Speed = Battler Speed + Action Speed
@@ -269,12 +335,23 @@ export class BattleManager {
    * @returns {Object|null} An Action object, or null if no action can be taken.
    */
   getAIAction(battlerContext) {
-      const { battler } = battlerContext;
+      const { battler, index } = battlerContext;
+
+      // Filter usable skills based on formationSlots
+      const usableSkills = (battler.skills || []).filter(skillId => {
+          const skill = this.dataManager.skills[skillId];
+          if (!skill) return false;
+          // Check formation restriction
+          if (skill.formationSlots && Array.isArray(skill.formationSlots)) {
+              if (!skill.formationSlots.includes(index)) return false;
+          }
+          return true;
+      });
 
       // 1. Decide Action Type (Skill or Attack)
       // Simple logic: 60% chance to use skill if available
-      const skillId = (battler.skills && battler.skills.length && Math.random() < 0.6)
-          ? battler.skills[randInt(0, battler.skills.length - 1)]
+      const skillId = (usableSkills.length && Math.random() < 0.6)
+          ? usableSkills[randInt(0, usableSkills.length - 1)]
           : null;
 
       if (skillId) {
@@ -364,9 +441,20 @@ export class BattleManager {
     const skill = this.dataManager.skills[action.skillId];
     if (skill) {
       let boost = 1;
+      // Design: Damage is increased by *1.25 for every instance of that element that the caster also has
       if (skill.element) {
         const matches = battler.elements.filter((e) => e === skill.element).length;
-        boost += matches * 0.25;
+        if (matches > 0) {
+            // "increased by *1.25" usually means Multiplier += 0.25 * matches, or Multiplier *= (1.25 ^ matches)?
+            // Design doc says: "damage is increased by *1.25 for every instance"
+            // Interpreting as Multiplier * (1.25 * matches) or Multiplier * (1.25 ^ matches)?
+            // Phrasing "increased by *1.25" is slightly ambiguous math.
+            // Often means "Apply 1.25 multiplier per instance".
+            // So 1 match = x1.25, 2 matches = x1.5625 (1.25*1.25).
+            // Code was: boost += matches * 0.25 (Additive).
+            // I will switch to Multiplicative to match "*1.25" phrasing strictly.
+            boost = Math.pow(1.25, matches);
+        }
       }
       const skillName = `${elementToAscii(skill.element)}${skill.name}`;
       events.push({ type: 'use_skill', battler: battler, skillName, msg: `${battler.name} uses ${skillName}!` });

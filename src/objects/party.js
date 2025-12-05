@@ -1,9 +1,10 @@
 import { EffectProcessor } from "../managers/effect_processor.js";
 import { Game_Battler } from "./battler.js";
+import { Game_Summoner } from "./summoner.js";
 
 /**
  * @class Game_Party
- * @description Manages the party, inventory, and gold.
+ * @description Manages the party, inventory, gold, and the Summoner.
  */
 export class Game_Party {
   /**
@@ -33,6 +34,25 @@ export class Game_Party {
      * @type {Array}
      */
     this.inventory = [];
+
+    /**
+     * The Summoner (Player Character).
+     * @type {Game_Summoner}
+     */
+    this.summoner = new Game_Summoner();
+
+    /**
+     * Tracks the number of steps taken while MP is 0.
+     * Used for calculating progressive penalties.
+     * @type {number}
+     */
+    this.stepsAtZeroMp = 0;
+
+    /**
+     * Tracks the magnetie resource.
+     * @type {number}
+     */
+    this.mag = 0;
   }
 
   /**
@@ -231,5 +251,42 @@ export class Game_Party {
           }
           return { success: true, msg: `${member.name} equipped ${item.name}.` };
       }
+  }
+
+  /**
+   * Executes a map step: Drains MP based on active members' cost.
+   * @returns {Object} { mpDrained, penaltyApplied, damageTaken }
+   */
+  onStep() {
+      // Calculate total cost of active members (slots 0-3)
+      const activeCost = this.activeMembers.reduce((sum, member) => sum + (member.cost || 0), 0);
+
+      // Drain MP
+      this.summoner.mp = Math.max(0, this.summoner.mp - activeCost);
+      const mpDrained = activeCost;
+
+      let penaltyApplied = false;
+      let damageTaken = 0;
+
+      if (this.summoner.mp <= 0) {
+          this.stepsAtZeroMp++;
+          penaltyApplied = true;
+
+          // Lose HP with each step when MP is 0
+          // "Creatures ... losing HP with each step"
+          this.activeMembers.forEach(member => {
+              const dmg = Math.ceil(member.maxHp * 0.05) + this.stepsAtZeroMp; // 5% + progressive
+              member.hp = Math.max(0, member.hp - dmg);
+              damageTaken += dmg;
+              // Also update starvationLevel for stat penalty calc
+              member.starvationLevel = this.stepsAtZeroMp;
+          });
+      } else {
+          this.stepsAtZeroMp = 0; // Reset if MP restored
+          // Reset starvation
+          this.activeMembers.forEach(m => m.starvationLevel = 0);
+      }
+
+      return { mpDrained, penaltyApplied, damageTaken, stepsAtZeroMp: this.stepsAtZeroMp };
   }
 }

@@ -94,6 +94,98 @@ export class EffectProcessor {
                 };
             }
 
+            case 'learnAction': {
+                const skillId = effectValue;
+                if (!target.skills.includes(skillId)) {
+                    if (target.skills.length < target.maxSkills) {
+                        target.skills.push(skillId);
+                        return { type: 'learnAction', skillId, target, msg: `${target.name} learned skill ${skillId}!` };
+                    } else {
+                        return { type: 'learnAction_fail', msg: `${target.name} cannot learn more skills.` };
+                    }
+                }
+                return null;
+            }
+
+            case 'learnPassive': {
+                const passiveId = effectValue;
+                const alreadyHas = target.passives.some(p => (p.id === passiveId || p === passiveId));
+
+                if (!alreadyHas) {
+                     if (target.passives.length < target.maxPassives) {
+                         if (target.addPassive && typeof target.addPassive === 'function') {
+                             target.addPassive(passiveId);
+                             return { type: 'learnPassive', passiveId, target, msg: `${target.name} learned passive ${passiveId}!` };
+                         } else {
+                             target.passives.push({ id: passiveId, name: passiveId, traits: [] }); // Placeholder
+                         }
+                     } else {
+                         return { type: 'learnPassive_fail', msg: `${target.name} cannot learn more passives.` };
+                     }
+                }
+                return null;
+            }
+
+            case 'elementAdd': {
+                const element = effectValue;
+                target._baseElements.push(element);
+                return { type: 'elementAdd', element, target, msg: `${target.name} gained element ${element}!` };
+            }
+
+            case 'elementChange': {
+                const element = effectValue;
+                if (target._baseElements.length === 0) {
+                    target._baseElements = [element];
+                } else {
+                    target._baseElements = target._baseElements.map(() => element);
+                }
+                 return { type: 'elementChange', element, target, msg: `${target.name}'s elements changed to ${element}!` };
+            }
+
+            case 'mod_prop':
+            case 'set_prop': {
+                // Generic Property Modifier
+                // { property: 'maxActions', value: 1, operation: 'add' }
+                // Supports deep property access? For now, top-level battler properties or `_paramPlus`.
+
+                let propKey = null;
+                let value = 0;
+                let op = 'add';
+
+                if (typeof effectValue === 'object') {
+                    propKey = effectValue.property;
+                    value = effectValue.value;
+                    op = effectValue.operation || 'add';
+                } else {
+                    // Fallback or specific parsing? Assumes object structure for flexibility.
+                    return null;
+                }
+
+                // If modifying a stat managed by `getStat`, we should write to `_paramPlus`.
+                // Otherwise, write directly to the property if it exists.
+
+                // Check if target tracks dynamic mods
+                if (target._paramPlus) {
+                    // It's a Battler
+                    if (target._paramPlus[propKey] === undefined) target._paramPlus[propKey] = 0;
+
+                    if (op === 'add') target._paramPlus[propKey] += value;
+                    else if (op === 'sub') target._paramPlus[propKey] -= value;
+                    else if (op === 'set') target._paramPlus[propKey] = value;
+
+                    return { type: 'mod_prop', property: propKey, value, target, msg: `${target.name}'s ${propKey} modified.` };
+                } else {
+                    // Direct modification fallback
+                    if (target[propKey] !== undefined) {
+                        if (op === 'add') target[propKey] += value;
+                        else if (op === 'sub') target[propKey] -= value;
+                        else if (op === 'set') target[propKey] = value;
+                        return { type: 'mod_prop', property: propKey, value, target };
+                    }
+                }
+                return null;
+            }
+
             default:
                 console.warn(`Unknown effect key: ${effectKey}`);
                 return null;
@@ -132,6 +224,25 @@ export class EffectProcessor {
 
             case 'hp_damage':
                 return `Damage: ${value}`;
+
+            case 'learnAction':
+                return `Learn Action: ${value}`;
+
+            case 'learnPassive':
+                return `Learn Passive: ${value}`;
+
+            case 'elementAdd':
+                return `Add Element: ${value}`;
+
+            case 'elementChange':
+                return `Change Element: ${value}`;
+
+            case 'mod_prop':
+            case 'set_prop':
+                if (typeof effectValue === 'object') {
+                    return `Mod ${effectValue.property}: ${effectValue.operation || 'add'} ${effectValue.value}`;
+                }
+                return `Mod Property`;
 
             default:
                 return `${effectKey}: ${value}`;
