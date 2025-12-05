@@ -1,12 +1,11 @@
--Effects: These directly affect battlers, such as changing hp, applying states, changing level / xp / parameters, etc. 
-'learnAction' - Teaches an action to a creature. 
-'learnPassive' - Teaches a passive to a creature. 
-'elementAdd' - Adds a new element to the battler.
-'elementChange' - Changes all elements of this battler to the target element. If the battler has no elements, it should now have one.
-Effects should be flexible. I should be able to cover novel effects without hardcoding them. For example, I should be able to write an effect that changes a battler's maxActions on the fly, even if a 'changeMaxActions' effect doesn't exist.
+# Game Design Document
 
+## 1. Core Philosophy: The Unified System
+The game's architecture is built on a unified "Effect & Trait" system. Everything that modifies a battler's state—whether temporary (like a buff), permanent (like equipment), or innate (like stats)—is handled through this system. This ensures maximum flexibility for creating novel mechanics.
 
--Traits: These modify or change characteristics of battlers, or/and trigger Effects. They are properties of Equipment, Passives and States. 
+---
+
+Traits: These modify or change characteristics of battlers, or/and trigger Effects. They are properties of Equipment, Passives and States. 
 Some examples:
 'hit' - for calculating the chance of hitting enemies with meelee physical attacks. default is 0 (means 100% chance. 10 would mean a 110% chance.)
 'eva' - for calculating the chance of evading enemy melee physical attacks. default is 0. (means 0% evasion chance. 10% would mean a 10% chance.)
@@ -20,34 +19,44 @@ Some examples:
 Traits should be flexible. I should be able to cover novel traits without needing to hardcode them.
 
 
+-Effects: These directly affect battlers, such as changing hp, applying states, changing level / xp / parameters, etc. 
+'learnAction' - Teaches an action to a creature. 
+'learnPassive' - Teaches a passive to a creature. 
+'elementAdd' - Adds a new element to the battler.
+'elementChange' - Changes all elements of this battler to the target element. If the battler has no elements, it should now have one.
+Effects should be flexible. I should be able to cover novel effects without hardcoding them. For example, I should be able to write an effect that changes a battler's maxActions on the fly, even if a 'changeMaxActions' effect doesn't exist.
+
+
+-
+
+
 Both Effects and Traits also must generate description strings. These are going to be attached to an object's description. For example, a "Mythril Sword"'s "Description" field might just say "A sword made from legendary ore.", but, dynamically, "Increases ATK by 5." will be appended to its description, and (ATK 12 -> ATK 17 (+5)) will be shown in the equip preview when equipping this item.
 Characteristics such as Scope and Condition must also be dynamically shown on the description.
 
-TRAIT OBJECTS:
-all trait objects have:
-'condition' - a condition for which this object's traits are inherited.
+## 2. Trait Objects (The Sources)
+A **Trait Object** is any entity that carries **Traits**. A `Game_Battler` aggregates traits from all its active Trait Objects to calculate its final parameters and state.
 
-1.Passives: Trait Objects that are innate or learned by creatures. a and b are the same subject. 
+All Trait Objects have:
+*   `condition`: A condition that must be met for the object's traits to be active (e.g., "HP < 50%").
 
-2.Equipment: Trait Objects that are equipped to creatures. a and b are the same subject.
-Equipment can be modified to have different traits. 
-'price' - how much currency is required to purchase this equipment at a shop.
-
-3.States: Trait Objects that are temporarily applied to creatures; a is the state applier, b is the state subject.
-States expire. The architecture for handling state expiry should be flexible, not hardcoded. States can expire after X turns, random chance every turn, on certain triggers, etc. 
-
-4.Battlers: The battle units. They're both allies and enemies. They inherit traits from Passives, Equipment, States and the PC.
-They have the following:
-'lvl', 'exp' etc. 
--'mHp' - how much hp they can have at maximum.
--'mpd' - how much mp they drain from the summoner on every action. 
--'atk' - an outgoing multiplier for physical abilities. default is 10 = 100% damage. 
--'mat' - an outgoing multiplier for magical abilities. default is 10 = 100% damage.
--'def' - an incoming multiplier for physical abilities. default is 10 = 100% damage.
--'mdf' - an incoming multiplier for magical abilities. default is 10 = 100% damage.
--'mxa' - the maximum amount of abilities this battler can have learned. Default is 4. 
--'mxp' - the maximum amoutn of passives this battler can have learned. Default is 2.
--'ele' - an array of elements the creature is aligned with. This can be repeated instances of the same element. It is used as: an outcoing multiplier for all abilities (1.25x for each instance of an 'same' elemental match), 2. an incoming multiplier for all abilities (1.25x for each instance of a 'resistance' or 'weakness' type elemental match )
+**Types of Trait Objects:**
+1.  **Passives**: Innate or learned abilities.
+2.  **Equipment**: Only one weapon can be equipped. Any combination of any other equipment type can be equipped. (Most units have only 1 equipment slot.)
+    *   `price`: Cost in shops.
+3.  **States**: Temporary conditions applied to battlers.
+    *   **Expiry**: States expire based on flexible criteria (turn count, probability, triggers).
+4.  **Battlers**: The units themselves. They are the base Trait Object for themselves and inherit traits from Passives, Equipment, States and the PC.
+    * `lvl`, `exp` etc. 
+    * `mHp` - how much hp they can have at maximum.
+    * `mpd` - how much mp they drain from the summoner on every action. 
+    * `atk` - an outgoing multiplier for physical abilities. default is 10 = 100% damage. 
+    * `mat` - an outgoing multiplier for magical abilities. default is 10 = 100% damage.
+    * `def` - an incoming multiplier for physical abilities. default is 10 = 100% damage.
+    * `mdf` - an incoming multiplier for magical abilities. default is 10 = 100% damage.
+    * `mxa` - the maximum amount of abilities this battler can have learned. Default is 4. 
+    * `mxp` - the maximum amoutn of passives this battler can have learned. Default is 2.
+    * `ele` - an array of elements the creature is aligned with. This can be repeated instances of the same element. It is used as: an outcoing multiplier for all abilities (1.25x for each instance of an 'same' elemental match), 2. an incoming multiplier for all abilities (1.25x for each instance of a 'resistance' or 'weakness' type elemental match )
+    * `eqs` - how many equipment slots that unit has. Default is 1.
 
 EFFECT OBJECTS:
 1.Actions: Apply Effects to targets. They can be:
