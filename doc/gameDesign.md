@@ -64,13 +64,15 @@ PC Actions (Spells and Skills) don't care for this - they're always instant as t
 
 
 -Summoner:
-The Player Character, mostly a non-combatant. 
+The Player Character. 
+'mmp / mp' - for exploration mechanics and spellcasting. 
 Performing actions (such as moving) in the dungeon drains their MP. When it hits 0, the creatures get progressively weaker, gaining a penalty to damage and success rates and losing HP with each step. This weakness gets worse every turn the PC has 0 MP.
-The summoner has access to unique equipment that yields party-wide or exploration effects. 
-The summoner also has access to a skill tree and can choose their stats on level up.
-Every turn the Summoner can perform one action: Use Item, Formation or Spell.
-The Summoner can attempt to Flee as much as they want, without consuming a turn. It costs a semi-random amount of MP and money. The chances increase with every attempt.
 
+Instead of acting automatically, after every round the Summoner has access to a direct action:
+Use Item, Formation, Spell or Flee.
+Flee does not consume a turn and can be attempted unlimitedly; it results in a random loss of money and counts as an action for the purposes of MP loss. Flee chance increases with every attempt.
+
+The summoner will only perform basic attacks if all its creatures are downed or in reserve; Only then will they be targetable by single target enemy attacks. They are targeted by multi-hit skills. 
 
 
 
