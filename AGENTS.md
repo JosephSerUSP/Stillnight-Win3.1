@@ -1,1 +1,1 @@
-Either disable window animations or wait until they're fully open when trying to take window screenshots.
+Disable window animations when running tests, unless otherwise required.
