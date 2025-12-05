@@ -1,4 +1,5 @@
 Baseline:
+
 -Traits: These modify or change characteristics of battlers, including triggering behaviors. They are properties of Equipment, Passives and States. 
 'elementAdd' - Adds a new element to the battler.
 'elementChange' - Changes all elements of this battler to the target element. If the battler has no elements, it should now have one.
@@ -14,6 +15,9 @@ They are properties of Items and actions. (And Traits too, possibly?)
 'elementChange' - Changes all elements of this battler to the target element. If the battler has no elements, it should now have one.
 Effects should be flexible. I should be able to cover novel effects without hardcoding them. For example, I should be able to write an effect that changes a battler's maxActions on the fly, even if a 'changeMaxActions' effect doesn't exist.
 'changeGold' - adds or removes gold from the party.
+
+ALL OBJECTS THAT HAVE TRAITS AND / OR EFFECTS DISPLAY THESE DYNAMICALLY ON THEIR DESCRIPTION.
+This means, for example, that a "Hermes Shoes" doesn't need to explicitly say in its data description string that it provides +1 actionSpeed. That'll be appended to the description instead.
 
 
 -Creatures: Trait Objects. They will generally not have any innate traits, as the Passives system is used for that. They also track things such as parameters and experience. 
