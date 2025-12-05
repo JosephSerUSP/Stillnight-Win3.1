@@ -4,6 +4,7 @@ import { ProgressionSystem } from "../managers/progression.js";
 import { passives as passivesData } from "../../data/passives.js";
 import { states as statesData } from "../../data/states.js";
 import { Game_Base } from "./game_base.js";
+import { Game_ActionResult } from "./action.js";
 
 /**
  * @class Game_Battler
@@ -68,6 +69,27 @@ export class Game_Battler extends Game_Base {
       this._baseMaxHp += (depth - 1) * 4;
       this.hp = this.maxHp;
     }
+
+    /**
+     * The result of the last action on this battler.
+     * @type {Game_ActionResult}
+     */
+    this._result = new Game_ActionResult();
+  }
+
+  /**
+   * Gets the current action result.
+   * @returns {Game_ActionResult}
+   */
+  result() {
+      return this._result;
+  }
+
+  /**
+   * Clears the current action result.
+   */
+  clearResult() {
+      this._result.clear();
   }
 
   /**
@@ -182,7 +204,7 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
-   * Gets the value of a specific passive code from traits.
+   * Gets the value of a specific passive code from traits (Additive).
    * @param {string} code - The trait code (e.g., 'HRG').
    * @returns {number} The aggregated value.
    */
@@ -195,6 +217,25 @@ export class Game_Battler extends Game_Base {
     if (traitSum !== 0) return traitSum;
 
     return 0;
+  }
+
+  /**
+   * Standardized accessor for "Extra Parameters" (Additive traits like Critical Rate, Evasion).
+   * @param {string} code - The parameter code (e.g., 'cri', 'eva').
+   * @returns {number}
+   */
+  xparam(code) {
+      return this.getPassiveValue(code.toUpperCase());
+  }
+
+  /**
+   * Standardized accessor for "Special Parameters" (Multiplicative traits).
+   * @param {string} code - The parameter code.
+   * @returns {number}
+   */
+  sparam(code) {
+      return this.traits.filter(t => t.code === code.toUpperCase())
+                        .reduce((acc, t) => acc * t.value, 1.0);
   }
 
   /**
