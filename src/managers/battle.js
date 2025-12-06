@@ -1,17 +1,11 @@
 import { randInt, elementToAscii, probabilisticRound } from "../core/utils.js";
 import { SoundManager } from "./sound.js";
-import { EffectProcessor } from "./effect_processor.js";
+import { Game_Action } from "../objects/action.js";
 
 /**
  * @class BattleManager
  * @description Manages the state and flow of a single battle instance.
  * Handles turn order, action execution, and victory/defeat conditions.
- * The flow is:
- * 1. startRound() - Initializes the turn queue.
- * 2. getNextBattler() - Gets the next active battler.
- * 3. startTurn(battler) - Processes start-of-turn effects (passives).
- * 4. getAIAction(battler) - Generates an action for AI or auto-battle.
- * 5. executeAction(action) - Resolves the action and returns events.
  */
 export class BattleManager {
   /**
@@ -20,46 +14,12 @@ export class BattleManager {
    * @param {import("./data.js").DataManager} dataManager - The game's data manager.
    */
   constructor(party, dataManager) {
-    /**
-     * The player's party.
-     * @type {import("../objects/objects.js").Game_Party}
-     */
     this.party = party;
-
-    /**
-     * The global data manager.
-     * @type {import("./data.js").DataManager}
-     */
     this.dataManager = dataManager;
-
-    /**
-     * The list of enemies in the current battle.
-     * @type {import("../objects/objects.js").Game_Battler[]}
-     */
     this.enemies = [];
-
-    /**
-     * The current round number.
-     * @type {number}
-     */
     this.round = 0;
-
-    /**
-     * Whether the battle has finished.
-     * @type {boolean}
-     */
     this.isBattleFinished = false;
-
-    /**
-     * Whether victory has been achieved and is pending processing.
-     * @type {boolean}
-     */
     this.isVictoryPending = false;
-
-    /**
-     * The queue of battlers for the current turn.
-     * @type {Array}
-     */
     this.turnQueue = [];
   }
 
@@ -84,10 +44,7 @@ export class BattleManager {
 
   /**
    * Calculates the damage multiplier based on elemental affinities.
-   * @method elementMultiplier
-   * @param {string[]} attackerElements - The elements of the attacker.
-   * @param {string[]} defenderElements - The elements of the defender.
-   * @returns {number} The final damage multiplier (e.g., 1.5 for weakness, 0.75 for resistance).
+   * Kept for compatibility.
    */
   elementMultiplier(attackerElements, defenderElements) {
     let multiplier = 1;
@@ -122,10 +79,7 @@ export class BattleManager {
 
   /**
    * Gets the row name ("Front" or "Back") for a party member based on their index.
-   * @method _partyRow
    * @private
-   * @param {number} index - The index of the party member.
-   * @returns {string} "Front" or "Back".
    */
   _partyRow(index) {
     return index <= 1 ? "Front" : "Back";
@@ -150,12 +104,10 @@ export class BattleManager {
 
     // 2. Plan Actions & Calculate Total Speed
     const plannedQueue = combatants.map(ctx => {
-        const action = this.getAIAction(ctx); // Plan the action
+        const action = this.getAIAction(ctx); // Plan the action (Game_Action)
         let actionSpeed = 0;
-        if (action && action.skillId) {
-            // Check skill speed if available (default 0)
-            const skill = this.dataManager.skills[action.skillId];
-            if (skill && skill.speed) actionSpeed = skill.speed;
+        if (action && action.item && action.item.speed) {
+            actionSpeed = action.item.speed;
         }
 
         // Total Speed = Battler Speed + Action Speed
@@ -219,18 +171,11 @@ export class BattleManager {
   getValidTargets(battlerContext, scope = 'enemy') {
       const { isEnemy } = battlerContext;
 
-      // Determine logical side
-      // if scope is 'enemy', we want the Opposing side.
-      // if scope is 'ally', we want the Same side.
-
       let targetSide = [];
 
       if (scope.includes('self')) {
           return [battlerContext.battler];
       }
-
-      // "Enemy" means "The opposing team"
-      // "Ally" means "My team"
 
       const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
       const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
@@ -251,22 +196,24 @@ export class BattleManager {
    * @param {string} type - The type of action ('attack', 'skill').
    * @param {import("../objects/objects.js").Game_Battler} target - The target of the action.
    * @param {Object} [options] - Additional options (e.g., skillId).
-   * @returns {Object} The action object.
+   * @returns {Game_Action} The action object.
    */
   createAction(battlerContext, type, target, options = {}) {
-      return {
-          type,
-          sourceContext: battlerContext,
-          target,
-          ...options
-      };
+      const action = new Game_Action(battlerContext.battler, this.dataManager);
+      action.setTarget(target);
+      if (type === 'skill') {
+          action.setSkill(options.skillId);
+      } else if (type === 'attack') {
+          action.setAttack();
+      }
+      return action;
   }
 
   /**
    * Determines the AI action for a battler (or auto-battle for player).
    * @method getAIAction
    * @param {Object} battlerContext - The context of the battler.
-   * @returns {Object|null} An Action object, or null if no action can be taken.
+   * @returns {Game_Action|null} An Action object, or null if no action can be taken.
    */
   getAIAction(battlerContext) {
       const { battler } = battlerContext;
@@ -282,12 +229,11 @@ export class BattleManager {
           const scope = skill ? skill.target : 'enemy';
           const targets = this.getValidTargets(battlerContext, scope);
 
-          if (targets.length === 0) return null; // No valid targets for this skill, maybe fallback to attack?
+          if (targets.length === 0) return null;
 
-          // Smart targeting for healing: prefer lowest HP
+          // Smart targeting for healing
           let target;
-          if (scope.includes('ally') && (skill.effects.some(e => e.type === 'hp_heal'))) {
-              // Find ally with lowest HP percentage
+          if (scope.includes('ally') && (skill.effects && skill.effects.some(e => e.type === 'hp_heal'))) {
               target = targets.reduce((prev, curr) => {
                   return (curr.hp / curr.maxHp) < (prev.hp / prev.maxHp) ? curr : prev;
               });
@@ -307,210 +253,118 @@ export class BattleManager {
 
   /**
    * Executes the provided action and returns a list of resulting events.
-   * Handles damage calculation, status application, and event generation.
    * @method executeAction
-   * @param {Object} action - The action object {type, sourceContext, target, skillId}.
+   * @param {Game_Action} action - The action object.
    * @returns {Array} List of events describing the outcome.
    */
   executeAction(action) {
     if (!action) return [];
 
-    const { sourceContext } = action;
-    const { battler } = sourceContext;
-    let { target } = action;
+    const battler = action.subject;
+    let target = action._target;
 
     if (battler.hp <= 0) return [];
 
-    // Re-validate target (Smart re-targeting)
+    // Re-validate target
     if (!target || target.hp <= 0) {
-        // If target is dead, try to find a new target
-        const skill = action.skillId ? this.dataManager.skills[action.skillId] : null;
+        const skill = action.item;
         const scope = skill ? skill.target : 'enemy';
-        const targets = this.getValidTargets(sourceContext, scope);
+        const context = { battler, isEnemy: battler.isEnemy };
+        const targets = this.getValidTargets(context, scope);
         if (targets.length > 0) {
             target = targets[randInt(0, targets.length - 1)];
-            action.target = target; // Update action
+            action.setTarget(target);
         } else {
-            return []; // Fizzle if no valid targets
+            return [];
         }
     }
 
-    let events = [];
-    switch (action.type) {
-      case 'skill':
-        events = this._executeSkill(action);
-        break;
-      case 'attack':
-        events = this._executeAttack(action);
-        break;
-      default:
-        console.warn(`Unknown action type: ${action.type}`);
-        break;
-    }
+    action.apply(target);
+    const events = this._makeActionEvents(action);
 
     this._checkBattleEnd(events);
     return events;
   }
 
   /**
-   * Internal handler for skill actions.
+   * Generates events based on the action result.
    * @private
    */
-  _executeSkill(action) {
-    const { sourceContext, target } = action;
-    const { battler } = sourceContext;
-    const events = [];
+  _makeActionEvents(action) {
+      const events = [];
+      const subject = action.subject;
+      const target = action._target;
+      const result = target.result();
 
-    const skill = this.dataManager.skills[action.skillId];
-    if (skill) {
-      let boost = 1;
-      if (skill.element) {
-        const matches = battler.elements.filter((e) => e === skill.element).length;
-        boost += matches * 0.25;
+      // 1. Use Skill Event
+      if (action.item) {
+           const skillName = action.item.name;
+           const nameWithIcon = action.item.element ? `${elementToAscii(action.item.element)}${skillName}` : skillName;
+           events.push({
+               type: 'use_skill',
+               battler: subject,
+               skillName: nameWithIcon,
+               msg: `${subject.name} uses ${nameWithIcon}!`
+           });
       }
-      const skillName = `${elementToAscii(skill.element)}${skill.name}`;
-      events.push({ type: 'use_skill', battler: battler, skillName, msg: `${battler.name} uses ${skillName}!` });
 
-      skill.effects.forEach((effect) => {
-        const context = { boost };
-        let effectKey = effect.type;
-        let effectValue = effect.formula || effect.value;
+      if (!result.used) return events;
 
-        if (effect.type === 'add_status') {
-             effectValue = { id: effect.status, chance: effect.chance };
-        }
+      // 2. Miss/Evade
+      if (result.missed || result.evaded) {
+           SoundManager.play('UI_CANCEL');
+           events.push({
+               type: 'miss',
+               battler: subject,
+               target: target,
+               msg: `${subject.name} attacks ${target.name} but misses!`
+           });
+           return events;
+      }
 
-        const result = EffectProcessor.apply(effectKey, effectValue, battler, target, context);
+      // 3. Damage / Heal
+      if (result.hpDamage !== 0) {
+          if (result.hpDamage > 0) {
+              SoundManager.play('DAMAGE');
+              events.push({
+                  type: 'damage',
+                  battler: subject,
+                  target: target,
+                  value: result.hpDamage,
+                  hpBefore: target.hp + result.hpDamage,
+                  hpAfter: target.hp,
+                  isCritical: result.critical,
+                  msg: result.critical
+                      ? `CRITICAL! ${subject.name} deals ${result.hpDamage} damage to ${target.name}!`
+                      : `  ${target.name} takes ${result.hpDamage} damage.`
+              });
+          } else if (result.hpDamage < 0) {
+              const healed = -result.hpDamage;
+              SoundManager.play('HEAL');
+              events.push({
+                  type: 'heal',
+                  battler: subject,
+                  target: target,
+                  value: healed,
+                  hpBefore: target.hp - healed,
+                  hpAfter: target.hp,
+                  animation: 'healing_sparkle',
+                  msg: `  ${target.name} heals ${healed} HP.`
+              });
+          }
+      }
 
-        if (!result) return;
-
-        if (result.type === 'damage') {
-             SoundManager.play('DAMAGE');
-             events.push({
-                type: 'damage',
-                battler: battler,
-                target: target,
-                value: result.value,
-                hpBefore: target.hp + result.value,
-                hpAfter: target.hp,
-                msg: `  ${target.name} takes ${result.value} damage.`
-             });
-        } else if (result.type === 'heal') {
-             SoundManager.play('HEAL');
-             events.push({
-                 type: 'heal',
-                 battler: battler,
-                 target: target,
-                 value: result.value,
-                 hpBefore: target.hp - result.value,
-                 hpAfter: target.hp,
-                 msg: `  ${target.name} heals ${result.value} HP.`,
-                 animation: 'healing_sparkle'
-             });
-        } else if (result.type === 'status') {
-             events.push({ type: 'status', target: target, status: result.status, msg: `  ${target.name} is afflicted with ${result.status}.` });
-        } else if (result.type === 'hp_drain') {
-             SoundManager.play('DAMAGE');
-             events.push({
-                 type: 'hp_drain',
-                 battler: battler,
-                 source: battler,
-                 target: target,
-                 value: result.value,
-                 hpBeforeTarget: result.hpBeforeTarget,
-                 hpAfterTarget: result.hpAfterTarget,
-                 hpBeforeSource: result.hpBeforeSource,
-                 hpAfterSource: result.hpAfterSource,
-                 msg: `  ${battler.name} drains ${result.value} HP from ${target.name}.`
-             });
-        }
+      // 4. States
+      result.addedStates.forEach(stateId => {
+          events.push({
+              type: 'status',
+              target: target,
+              status: stateId,
+              msg: `  ${target.name} is afflicted with ${stateId}.`
+          });
       });
-    }
-    return events;
-  }
 
-  /**
-   * Internal handler for attack actions.
-   * @private
-   */
-  _executeAttack(action) {
-    const { sourceContext, target } = action;
-    const { battler, index, isEnemy } = sourceContext;
-    const events = [];
-
-    // Normal Attack
-    // Base logic moved to Game_Battler.atk (includes traits)
-    // BattleManager adds variance (+/- 1)
-    let base = battler.atk + randInt(-1, 1);
-
-    if (!isEnemy) {
-      const row = this._partyRow(index);
-      if (row === "Front") base += 1;
-      else base -= 1;
-    }
-
-    if (base < 1) base = 1;
-
-    // Evasion Check
-    // Evasion is determined by EVA trait on target
-    const evasionChance = target.getPassiveValue("EVA");
-    if (evasionChance > 0 && Math.random() < evasionChance) {
-        SoundManager.play('UI_CANCEL'); // Or miss sound
-        events.push({
-            type: "miss",
-            battler: battler,
-            target: target,
-            msg: `${battler.name} attacks ${target.name} but misses!`,
-        });
-        return events;
-    }
-
-    // Critical Hit Check
-    // Crit chance is determined by CRI trait on attacker
-    let isCritical = false;
-    const critChance = battler.getPassiveValue("CRI");
-    if (critChance > 0 && Math.random() < critChance) {
-        isCritical = true;
-    }
-
-    const mult = this.elementMultiplier(battler.elements, target.elements);
-    let dmg = probabilisticRound(base * mult);
-    dmg += battler.getPassiveValue("DEAL_DAMAGE_MOD");
-
-    if (isCritical) {
-        dmg = Math.floor(dmg * 2);
-    }
-
-    if (dmg < 1) dmg = 1;
-
-    const hpBefore = target.hp;
-    target.hp = Math.max(0, target.hp - dmg);
-
-    // Play ATTACK/DAMAGE sound
-    SoundManager.play('DAMAGE');
-
-    const msg = isCritical
-        ? `CRITICAL! ${battler.name} deals ${dmg} damage to ${target.name}!`
-        : `${battler.name} attacks ${target.name} for ${dmg}.`;
-
-    if (isCritical) {
-        // Flash logic handled by animation helper if needed, but we can signal it in event
-        // The animateEvents in Scene_Battle handles 'damage' type.
-        // We can add a property to trigger extra flash.
-    }
-
-    events.push({
-      type: "damage",
-      battler: battler,
-      target: target,
-      value: dmg,
-      hpBefore: hpBefore,
-      hpAfter: target.hp,
-      isCritical: isCritical, // Pass flag for UI
-      msg: msg,
-    });
-
-    return events;
+      return events;
   }
 
   /**
