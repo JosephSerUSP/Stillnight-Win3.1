@@ -1,6 +1,7 @@
 import { randInt, elementToAscii, probabilisticRound } from "../core/utils.js";
 import { SoundManager } from "./sound.js";
 import { EffectProcessor } from "./effect_processor.js";
+import { Game_Action } from "../objects/action.js";
 
 /**
  * @class BattleManager
@@ -251,15 +252,17 @@ export class BattleManager {
    * @param {string} type - The type of action ('attack', 'skill').
    * @param {import("../objects/objects.js").Game_Battler} target - The target of the action.
    * @param {Object} [options] - Additional options (e.g., skillId).
-   * @returns {Object} The action object.
+   * @returns {Game_Action} The action object.
    */
   createAction(battlerContext, type, target, options = {}) {
-      return {
-          type,
-          sourceContext: battlerContext,
-          target,
-          ...options
-      };
+      const action = new Game_Action(battlerContext);
+      if (type === 'skill' && options.skillId) {
+          action.setSkill(options.skillId);
+      } else {
+          action.setAttack();
+      }
+      action.target = target;
+      return action;
   }
 
   /**
