@@ -83,6 +83,9 @@ Flee does not consume a turn and can be attempted unlimitedly; it results in a r
 
 The summoner will only perform basic attacks if all its creatures are downed or in reserve; Only then will they be targetable by single target enemy attacks. They are targeted by multi-hit skills. 
 
+Summoner Spells: - In exchange for MP (and thus, lasting less in the dungeon), the Summoner can favorably intervene in a battle.
+Cure -> Cure All -> Raise  
+Protect -> Wall
 
 
 
@@ -91,7 +94,7 @@ EXAMPLE COMPLEX ACTIONS:
 Potion Rain: 
 Condition: Having one of a few different types of healing items in the inventory.
 Cost: Consuming the healing item.
-Effect: Restores HP equal to the healing item's normal restoration effect to every party member. Effect is multiplied by 75% for every valid target.
+Effect: Restores HP equal to the healing item's normal restoration effect to every party member. Effect is multiplied by 80% for every valid target. (on a )
 
 
 EXAMPLE COMPLEX TRAITS:
@@ -99,3 +102,7 @@ EXAMPLE COMPLEX TRAITS:
 Mug: 
 Trigger: On dealing damage.
 Effect: Gains gold equal to damage dealt. 
+
+Proficient: 
+Trait: Increases the effect of other traits bestowed by equipment by 'value'%. 
+
