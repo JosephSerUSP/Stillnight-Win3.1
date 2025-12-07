@@ -247,7 +247,7 @@ export class Scene_Battle extends Scene_Base {
                   this.windowManager.close(this.confirmEffectWindow);
                   this.windowManager.close(this.inventoryWindow);
 
-                  const result = this.party.useItem(item, target);
+                  const result = this.party.useItem(item, target, this.dataManager);
                   if (result.success) {
                       this.battleWindow.appendLog(`[Item] Used ${item.name} on ${target.name}.`);
                       this.renderBattleAscii();

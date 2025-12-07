@@ -1,5 +1,6 @@
 import { EffectProcessor } from "../managers/effect_processor.js";
 import { Game_Battler } from "./battler.js";
+import { Game_Action } from "./action.js";
 
 /**
  * @class Game_Party
@@ -182,23 +183,19 @@ export class Game_Party {
    * Consumes an item on a target member.
    * @param {Object} item - The item object (from inventory).
    * @param {import("./objects.js").Game_Battler} targetMember - The target.
+   * @param {import("../managers/data.js").DataManager} dataManager - The data manager.
    * @returns {Object} Result of the operation.
    */
-  useItem(item, targetMember) {
+  useItem(item, targetMember, dataManager) {
       const index = this.inventory.indexOf(item);
       if (index === -1) return { success: false, msg: "Item not in inventory." };
 
-      const outcomes = [];
-
-      if (item.effects) {
-          for (const [key, value] of Object.entries(item.effects)) {
-              const result = EffectProcessor.apply(key, value, item, targetMember);
-              if (result) outcomes.push(result);
-          }
-      }
+      const action = new Game_Action(targetMember);
+      action.setItem(item, dataManager);
+      const events = action.apply(targetMember, dataManager);
 
       this.inventory.splice(index, 1);
-      return { success: true, outcomes, item };
+      return { success: true, outcomes: events, item };
   }
 
   /**

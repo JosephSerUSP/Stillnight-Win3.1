@@ -34,8 +34,17 @@ export class Game_Action {
 
     setItem(itemId, dataManager) {
         this._isAttack = false;
-        this._itemId = itemId;
-        this._item = dataManager.items[itemId];
+        if (typeof itemId === 'object') {
+            this._item = itemId;
+            this._itemId = itemId.id;
+        } else {
+            this._itemId = itemId;
+            if (Array.isArray(dataManager.items)) {
+                this._item = dataManager.items.find(i => i.id === itemId);
+            } else {
+                this._item = dataManager.items[itemId];
+            }
+        }
     }
 
     setRowBonus(bonus) {
@@ -102,9 +111,66 @@ export class Game_Action {
             this._applyAttack(target, dataManager, events);
         } else if (this._skillId) {
             this._applySkill(target, dataManager, events);
+        } else if (this._item) {
+            this._applyItem(target, dataManager, events);
         }
 
         return events;
+    }
+
+    _applyItem(target, dataManager, events) {
+        const battler = this.subject;
+        const item = this._item;
+
+        if (!item) return;
+
+        events.push({ type: 'use_item', battler: battler, item: item, msg: `${battler.name} uses ${item.name}.` });
+
+        if (item.effects) {
+            for (const [key, value] of Object.entries(item.effects)) {
+                const context = {};
+                const result = EffectProcessor.apply(key, value, item, target, context);
+
+                if (!result) continue;
+
+                if (result.type === 'damage') {
+                     SoundManager.play('DAMAGE');
+                     events.push({
+                        type: 'damage',
+                        battler: battler,
+                        target: target,
+                        value: result.value,
+                        hpBefore: target.hp + result.value,
+                        hpAfter: target.hp,
+                        msg: `  ${target.name} takes ${result.value} damage.`
+                     });
+                } else if (result.type === 'heal') {
+                     SoundManager.play('HEAL');
+                     events.push({
+                         type: 'heal',
+                         battler: battler,
+                         target: target,
+                         value: result.value,
+                         hpBefore: target.hp - result.value,
+                         hpAfter: target.hp,
+                         msg: `  ${target.name} heals ${result.value} HP.`,
+                         animation: 'healing_sparkle'
+                     });
+                } else if (result.type === 'maxHp') {
+                     SoundManager.play('HEAL');
+                     events.push({ type: 'buff', target: target, msg: `  ${target.name}'s Max HP increased by ${result.value}.` });
+                } else if (result.type === 'xp') {
+                     SoundManager.play('ITEM_GET');
+                     if (result.result.leveledUp) {
+                         events.push({ type: 'level_up', target: target, level: result.result.newLevel, msg: `  ${target.name} grows to Lv${result.result.newLevel}!`, result: result.result });
+                     } else {
+                         events.push({ type: 'xp', target: target, value: result.value, msg: `  ${target.name} gains ${result.value} XP.`, result: result.result });
+                     }
+                } else if (result.type === 'status') {
+                     events.push({ type: 'status', target: target, status: result.status, msg: `  ${target.name} is afflicted with ${result.status}.` });
+                }
+            }
+        }
     }
 
     _applyAttack(target, dataManager, events) {

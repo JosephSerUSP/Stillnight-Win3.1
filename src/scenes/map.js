@@ -779,7 +779,7 @@ export class Scene_Map extends Scene_Base {
   }
 
   useItem(item, target) {
-      const result = this.party.useItem(item, target);
+      const result = this.party.useItem(item, target, this.dataManager);
       if (result.success) {
           this.logMessage(`[Inventory] Used ${item.name} on ${target.name}.`);
           result.outcomes.forEach(o => {

@@ -136,28 +136,6 @@ export class Window_Inventory extends Window_Selectable {
                 {
                     type: 'panel', // Label Wrapper
                     props: { style: { flexGrow: '1', display: 'flex', alignItems: 'center' } }
-                },
-                {
-                    type: 'flex', // Buttons
-                    props: { gap: '4px' },
-                    children: [
-                        {
-                            type: 'button',
-                            props: {
-                                className: 'win-btn',
-                                label: this.currentTab === 'equipment' ? 'Equip' : 'Use',
-                                dataset: { action: this.currentTab === 'equipment' ? 'equip' : 'use' }
-                            }
-                        },
-                        {
-                            type: 'button',
-                            props: {
-                                className: 'win-btn',
-                                label: 'Discard',
-                                dataset: { action: 'discard' }
-                            }
-                        }
-                    ]
                 }
             ]
         };
@@ -166,9 +144,42 @@ export class Window_Inventory extends Window_Selectable {
         const labelWrapper = row.children[0];
 
         const label = createInteractiveLabel(item, 'item', { tooltipText });
-        // Ensure the label component is inline-flex to align nicely
         label.style.display = 'inline-flex';
         labelWrapper.appendChild(label);
+
+        // Buttons
+        const btnContainer = document.createElement("div");
+        btnContainer.style.display = "flex";
+        btnContainer.style.gap = "4px";
+
+        const actionLabel = this.currentTab === 'equipment' ? 'Equip' : 'Use';
+        const actionCode = this.currentTab === 'equipment' ? 'equip' : 'use';
+
+        const btnUse = document.createElement("button");
+        btnUse.className = "win-btn";
+        btnUse.type = "button";
+        btnUse.textContent = actionLabel;
+        btnUse.dataset.action = actionCode; // For tests
+        btnUse.onclick = (e) => {
+            e.stopPropagation();
+            this.select(idx);
+            if (this.onAction) this.onAction(item, actionCode);
+        };
+        btnContainer.appendChild(btnUse);
+
+        const btnDiscard = document.createElement("button");
+        btnDiscard.className = "win-btn";
+        btnDiscard.type = "button";
+        btnDiscard.textContent = "Discard";
+        btnDiscard.dataset.action = "discard"; // For tests
+        btnDiscard.onclick = (e) => {
+            e.stopPropagation();
+            this.select(idx);
+            if (this.onDiscard) this.onDiscard(item);
+        };
+        btnContainer.appendChild(btnDiscard);
+
+        row.appendChild(btnContainer);
       });
     }
   }
