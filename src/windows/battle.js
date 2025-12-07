@@ -238,6 +238,16 @@ export class Window_Battle extends Window_Base {
              const hpEl = this.getHpElement(ctx.index, ctx.isEnemy);
              if (hpEl) {
                  hpEl.textContent = this.createHpGauge(currentHp, battler.maxHp);
+
+                 const container = hpEl.parentElement;
+                 const nameEl = container.querySelector('.battler-name');
+                 if (nameEl) {
+                      const primaryElements = getPrimaryElements(battler.elements);
+                      const elementAscii = primaryElements.map(el => elementToAscii(el)).join('');
+                      const battlerId = this.getBattlerId(ctx.index, ctx.isEnemy);
+
+                      nameEl.innerHTML = `${elementAscii}<span id="${battlerId}">${battler.name}</span> (HP ${currentHp}/${battler.maxHp})`;
+                 }
              }
         }
 

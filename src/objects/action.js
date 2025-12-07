@@ -8,7 +8,7 @@ import { EffectProcessor } from "../managers/effect_processor.js";
  */
 export class Game_Action {
     /**
-     * @param {import("./battler.js").Game_Battler} subject - The battler performing the action.
+     * @param {import("./battler.js").Game_Battler|import("./party.js").Game_Party} subject - The battler or party performing the action.
      */
     constructor(subject) {
         this.subject = subject;
@@ -35,7 +35,11 @@ export class Game_Action {
     setItem(itemId, dataManager) {
         this._isAttack = false;
         this._itemId = itemId;
-        this._item = dataManager.items[itemId];
+        if (Array.isArray(dataManager.items)) {
+            this._item = dataManager.items.find(i => i.id === itemId);
+        } else {
+            this._item = dataManager.items[itemId];
+        }
     }
 
     setRowBonus(bonus) {
@@ -58,7 +62,7 @@ export class Game_Action {
      * Speed of the action for turn order.
      */
     get speed() {
-        let s = this.subject.asp;
+        let s = this.subject.asp || 0;
         if (this._item && this._item.speed) {
             s += this._item.speed;
         }
@@ -102,6 +106,8 @@ export class Game_Action {
             this._applyAttack(target, dataManager, events);
         } else if (this._skillId) {
             this._applySkill(target, dataManager, events);
+        } else if (this._itemId) {
+            this._applyItem(target, dataManager, events);
         }
 
         return events;
@@ -251,6 +257,59 @@ export class Game_Action {
                  });
             }
         });
+    }
+
+    _applyItem(target, dataManager, events) {
+        const subject = this.subject;
+        const item = this._item;
+
+        if (!item) return;
+
+        // Consumption logic: if subject has inventory, remove item.
+        if (item.type !== 'equipment' && subject.inventory && Array.isArray(subject.inventory)) {
+             const idx = subject.inventory.findIndex(i => i.id === item.id);
+             if (idx !== -1) {
+                 subject.inventory.splice(idx, 1);
+             }
+        }
+
+        const subjectName = subject.name || "Player";
+        events.push({ type: 'use_item', battler: subject, itemName: item.name, msg: `${subjectName} uses ${item.name} on ${target.name}.` });
+
+        if (item.effects) {
+            for (const [key, value] of Object.entries(item.effects)) {
+                // Determine context/boost if needed
+                const context = {};
+                // Pass item as source
+                const result = EffectProcessor.apply(key, value, item, target, context);
+
+                if (result) {
+                    if (!result.battler) result.battler = subject;
+
+                    if (!result.msg) {
+                         if (result.type === 'heal') {
+                             result.msg = `  ${target.name} heals ${result.value} HP.`;
+                             result.animation = 'healing_sparkle';
+                             SoundManager.play('HEAL'); // ensure sound
+                         } else if (result.type === 'damage') {
+                             result.msg = `  ${target.name} takes ${result.value} damage.`;
+                             SoundManager.play('DAMAGE');
+                         } else if (result.type === 'recruit_egg') {
+                             result.msg = `  The egg hatches!`;
+                         } else if (result.type === 'maxHp') {
+                             result.msg = `  ${target.name}'s Max HP increased by ${result.value}.`;
+                         } else if (result.type === 'xp') {
+                             result.msg = `  ${target.name} gains ${result.value} XP.`;
+                         }
+                    } else if (result.type === 'heal' && !result.animation) {
+                        result.animation = 'healing_sparkle';
+                        SoundManager.play('HEAL');
+                    }
+
+                    events.push(result);
+                }
+            }
+        }
     }
 
     _elementMultiplier(attackerElements, defenderElements, dataManager) {

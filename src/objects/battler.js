@@ -70,6 +70,10 @@ export class Game_Battler extends Game_Base {
     }
   }
 
+  getEvolutionStatus(inventory, floorDepth, gold) {
+      return ProgressionSystem.getEvolutionStatus(this, inventory, floorDepth, gold);
+  }
+
   /**
    * Aggregates all traits from Actor, Equipment, Passives, and States.
    * @type {Array}
