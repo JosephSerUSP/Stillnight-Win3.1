@@ -488,7 +488,7 @@ export class Scene_Battle extends Scene_Base {
       const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
       for (const event of events) {
-            if (event.battler) {
+            if (event.battler && event.battler.name) {
                 await this.battleWindow.animateBattlerName(event.battler, this.battleManager.enemies, this.party.slots.slice(0,4));
             }
 
