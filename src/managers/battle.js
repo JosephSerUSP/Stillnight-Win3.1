@@ -1,6 +1,6 @@
-import { randInt, elementToAscii, probabilisticRound } from "../core/utils.js";
+import { randInt } from "../core/utils.js";
 import { SoundManager } from "./sound.js";
-import { EffectProcessor } from "./effect_processor.js";
+import { Game_Action } from "../objects/game_action.js";
 
 /**
  * @class BattleManager
@@ -151,15 +151,7 @@ export class BattleManager {
     // 2. Plan Actions & Calculate Total Speed
     const plannedQueue = combatants.map(ctx => {
         const action = this.getAIAction(ctx); // Plan the action
-        let actionSpeed = 0;
-        if (action && action.skillId) {
-            // Check skill speed if available (default 0)
-            const skill = this.dataManager.skills[action.skillId];
-            if (skill && skill.speed) actionSpeed = skill.speed;
-        }
-
-        // Total Speed = Battler Speed + Action Speed
-        const totalSpeed = ctx.battler.asp + actionSpeed;
+        const totalSpeed = action ? action.speed : ctx.battler.asp;
 
         return { ...ctx, action, totalSpeed };
     });
@@ -254,12 +246,7 @@ export class BattleManager {
    * @returns {Object} The action object.
    */
   createAction(battlerContext, type, target, options = {}) {
-      return {
-          type,
-          sourceContext: battlerContext,
-          target,
-          ...options
-      };
+      return new Game_Action(this, battlerContext, type, target, options);
   }
 
   /**
@@ -315,201 +302,9 @@ export class BattleManager {
   executeAction(action) {
     if (!action) return [];
 
-    const { sourceContext } = action;
-    const { battler } = sourceContext;
-    let { target } = action;
-
-    if (battler.hp <= 0) return [];
-
-    // Re-validate target (Smart re-targeting)
-    if (!target || target.hp <= 0) {
-        // If target is dead, try to find a new target
-        const skill = action.skillId ? this.dataManager.skills[action.skillId] : null;
-        const scope = skill ? skill.target : 'enemy';
-        const targets = this.getValidTargets(sourceContext, scope);
-        if (targets.length > 0) {
-            target = targets[randInt(0, targets.length - 1)];
-            action.target = target; // Update action
-        } else {
-            return []; // Fizzle if no valid targets
-        }
-    }
-
-    let events = [];
-    switch (action.type) {
-      case 'skill':
-        events = this._executeSkill(action);
-        break;
-      case 'attack':
-        events = this._executeAttack(action);
-        break;
-      default:
-        console.warn(`Unknown action type: ${action.type}`);
-        break;
-    }
+    const events = action.execute();
 
     this._checkBattleEnd(events);
-    return events;
-  }
-
-  /**
-   * Internal handler for skill actions.
-   * @private
-   */
-  _executeSkill(action) {
-    const { sourceContext, target } = action;
-    const { battler } = sourceContext;
-    const events = [];
-
-    const skill = this.dataManager.skills[action.skillId];
-    if (skill) {
-      let boost = 1;
-      if (skill.element) {
-        const matches = battler.elements.filter((e) => e === skill.element).length;
-        boost += matches * 0.25;
-      }
-      const skillName = `${elementToAscii(skill.element)}${skill.name}`;
-      events.push({ type: 'use_skill', battler: battler, skillName, msg: `${battler.name} uses ${skillName}!` });
-
-      skill.effects.forEach((effect) => {
-        const context = { boost };
-        let effectKey = effect.type;
-        let effectValue = effect.formula || effect.value;
-
-        if (effect.type === 'add_status') {
-             effectValue = { id: effect.status, chance: effect.chance };
-        }
-
-        const result = EffectProcessor.apply(effectKey, effectValue, battler, target, context);
-
-        if (!result) return;
-
-        if (result.type === 'damage') {
-             SoundManager.play('DAMAGE');
-             events.push({
-                type: 'damage',
-                battler: battler,
-                target: target,
-                value: result.value,
-                hpBefore: target.hp + result.value,
-                hpAfter: target.hp,
-                msg: `  ${target.name} takes ${result.value} damage.`
-             });
-        } else if (result.type === 'heal') {
-             SoundManager.play('HEAL');
-             events.push({
-                 type: 'heal',
-                 battler: battler,
-                 target: target,
-                 value: result.value,
-                 hpBefore: target.hp - result.value,
-                 hpAfter: target.hp,
-                 msg: `  ${target.name} heals ${result.value} HP.`,
-                 animation: 'healing_sparkle'
-             });
-        } else if (result.type === 'status') {
-             events.push({ type: 'status', target: target, status: result.status, msg: `  ${target.name} is afflicted with ${result.status}.` });
-        } else if (result.type === 'hp_drain') {
-             SoundManager.play('DAMAGE');
-             events.push({
-                 type: 'hp_drain',
-                 battler: battler,
-                 source: battler,
-                 target: target,
-                 value: result.value,
-                 hpBeforeTarget: result.hpBeforeTarget,
-                 hpAfterTarget: result.hpAfterTarget,
-                 hpBeforeSource: result.hpBeforeSource,
-                 hpAfterSource: result.hpAfterSource,
-                 msg: `  ${battler.name} drains ${result.value} HP from ${target.name}.`
-             });
-        }
-      });
-    }
-    return events;
-  }
-
-  /**
-   * Internal handler for attack actions.
-   * @private
-   */
-  _executeAttack(action) {
-    const { sourceContext, target } = action;
-    const { battler, index, isEnemy } = sourceContext;
-    const events = [];
-
-    // Normal Attack
-    // Base logic moved to Game_Battler.atk (includes traits)
-    // BattleManager adds variance (+/- 1)
-    let base = battler.atk + randInt(-1, 1);
-
-    if (!isEnemy) {
-      const row = this._partyRow(index);
-      if (row === "Front") base += 1;
-      else base -= 1;
-    }
-
-    if (base < 1) base = 1;
-
-    // Evasion Check
-    // Evasion is determined by EVA trait on target
-    const evasionChance = target.getPassiveValue("EVA");
-    if (evasionChance > 0 && Math.random() < evasionChance) {
-        SoundManager.play('UI_CANCEL'); // Or miss sound
-        events.push({
-            type: "miss",
-            battler: battler,
-            target: target,
-            msg: `${battler.name} attacks ${target.name} but misses!`,
-        });
-        return events;
-    }
-
-    // Critical Hit Check
-    // Crit chance is determined by CRI trait on attacker
-    let isCritical = false;
-    const critChance = battler.getPassiveValue("CRI");
-    if (critChance > 0 && Math.random() < critChance) {
-        isCritical = true;
-    }
-
-    const mult = this.elementMultiplier(battler.elements, target.elements);
-    let dmg = probabilisticRound(base * mult);
-    dmg += battler.getPassiveValue("DEAL_DAMAGE_MOD");
-
-    if (isCritical) {
-        dmg = Math.floor(dmg * 2);
-    }
-
-    if (dmg < 1) dmg = 1;
-
-    const hpBefore = target.hp;
-    target.hp = Math.max(0, target.hp - dmg);
-
-    // Play ATTACK/DAMAGE sound
-    SoundManager.play('DAMAGE');
-
-    const msg = isCritical
-        ? `CRITICAL! ${battler.name} deals ${dmg} damage to ${target.name}!`
-        : `${battler.name} attacks ${target.name} for ${dmg}.`;
-
-    if (isCritical) {
-        // Flash logic handled by animation helper if needed, but we can signal it in event
-        // The animateEvents in Scene_Battle handles 'damage' type.
-        // We can add a property to trigger extra flash.
-    }
-
-    events.push({
-      type: "damage",
-      battler: battler,
-      target: target,
-      value: dmg,
-      hpBefore: hpBefore,
-      hpAfter: target.hp,
-      isCritical: isCritical, // Pass flag for UI
-      msg: msg,
-    });
-
     return events;
   }
 
