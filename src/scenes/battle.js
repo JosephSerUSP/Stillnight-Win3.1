@@ -1,5 +1,5 @@
 import { Scene_Base } from "./base.js";
-import { Game_Battler } from "../objects/objects.js";
+import { Game_Battler, Game_Action } from "../objects/objects.js";
 import { randInt, pickWeighted, probabilisticRound } from "../core/utils.js";
 import { SoundManager, ConfigManager } from "../managers/index.js";
 import { Window_Battle, Window_Victory } from "../windows/index.js";
@@ -237,6 +237,23 @@ export class Scene_Battle extends Scene_Base {
       );
   }
 
+  async processItemAction(item, target) {
+      const action = new Game_Action(this.party);
+      action.setItem(item.id, this.dataManager);
+      action.target = target;
+
+      const events = this.battleManager.executeAction(action);
+
+      if (events.length > 0) {
+           await this.animateEvents(events);
+           this.renderBattleAscii();
+           this.actionTakenThisTurn = true;
+           this.disableActionButtons();
+      } else {
+           this.battleWindow.appendLog("No effect.");
+      }
+  }
+
   onInventoryAction(item, action) {
       if (action === 'use') {
           if (item.type === 'equipment') return;
@@ -246,17 +263,7 @@ export class Scene_Battle extends Scene_Base {
               this.confirmEffectWindow.setupUse(target, item, () => {
                   this.windowManager.close(this.confirmEffectWindow);
                   this.windowManager.close(this.inventoryWindow);
-
-                  const result = this.party.useItem(item, target);
-                  if (result.success) {
-                      this.battleWindow.appendLog(`[Item] Used ${item.name} on ${target.name}.`);
-                      this.renderBattleAscii();
-                      this.actionTakenThisTurn = true;
-                      this.disableActionButtons();
-                      SoundManager.play('HEAL');
-                  } else {
-                       this.battleWindow.appendLog(result.msg);
-                  }
+                  this.processItemAction(item, target);
               });
               this.windowManager.push(this.confirmEffectWindow);
           }, this.sceneManager.previous().getContext());
@@ -516,6 +523,7 @@ export class Scene_Battle extends Scene_Base {
 
                 if (targetNewHp <= 0) {
                      await this.battleWindow.playAnimation(event.target, 'death', this.dataManager, this.battleManager.enemies, this.party.slots.slice(0,4));
+                     this.renderBattleAscii();
                 }
 
             } else if (event.type === 'heal' && event.target) {

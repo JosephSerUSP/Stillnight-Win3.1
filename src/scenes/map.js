@@ -1,7 +1,7 @@
 import { Scene_Base } from "./base.js";
 import { Scene_Battle } from "./battle.js";
 import { Scene_Shop } from "./shop.js";
-import { Game_Map, Game_Party, Game_Battler } from "../objects/objects.js";
+import { Game_Map, Game_Party, Game_Battler, Game_Action } from "../objects/objects.js";
 import { Game_Interpreter } from "../managers/interpreter.js";
 import { BattleManager, SoundManager, ConfigManager, ThemeManager } from "../managers/index.js";
 import { InputController } from "../managers/input_controller.js";
@@ -779,21 +779,26 @@ export class Scene_Map extends Scene_Base {
   }
 
   useItem(item, target) {
-      const result = this.party.useItem(item, target);
-      if (result.success) {
-          this.logMessage(`[Inventory] Used ${item.name} on ${target.name}.`);
-          result.outcomes.forEach(o => {
-             if (o.type === 'xp' && o.result.leveledUp) {
-                 this.logMessage(`[Level] ${target.name} grows to Lv${o.result.newLevel}! HP +${o.result.hpGain}.`);
+      const action = new Game_Action(this.party);
+      action.setItem(item.id, this.dataManager);
+
+      const events = action.apply(target, this.dataManager);
+
+      if (events.length > 0) {
+          events.forEach(e => {
+              if (e.msg) this.logMessage(e.msg);
+
+              if (e.type === 'xp' && e.result && e.result.leveledUp) {
+                 this.logMessage(`[Level] ${target.name} grows to Lv${e.result.newLevel}! HP +${e.result.hpGain}.`);
                  SoundManager.play('LEVEL_UP');
-             }
+              }
           });
+
           this.updateParty();
           this.hudManager.inventoryWindow.updateList();
           this.updateAll();
-          SoundManager.play('HEAL');
       } else {
-          this.logMessage(result.msg);
+          this.logMessage("No effect.");
       }
   }
 
