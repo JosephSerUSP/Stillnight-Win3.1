@@ -12,7 +12,8 @@ test.describe('Battle System', () => {
             window.dataManager.elements &&
             window.dataManager.skills &&
             window.dataManager.passives &&
-            window.dataManager.startingParty
+            window.dataManager.startingParty &&
+            window.Game_Action
         );
     });
 
@@ -46,7 +47,7 @@ test.describe('Battle System', () => {
 
     test('Damage calculation considers elemental weakness', async ({ page }) => {
         const result = await page.evaluate(() => {
-            const { BattleManager, Game_Battler, Game_Party } = window;
+            const { BattleManager, Game_Battler, Game_Party, Game_Action } = window;
             const dataManager = window.dataManager;
             const party = new Game_Party();
             const bm = new BattleManager(party, dataManager);
@@ -69,7 +70,8 @@ test.describe('Battle System', () => {
             const attacker = new Game_Battler({ name: "Attacker", maxHp: 100, level: 10, elements: [attackerElem] });
             const defender = new Game_Battler({ name: "Defender", maxHp: 100, level: 10, elements: [defenderElem] }, 1, true);
 
-            const multiplier = bm.elementMultiplier(attacker.elements, defender.elements);
+            const action = new Game_Action(attacker);
+            const multiplier = action._elementMultiplier(attacker.elements, defender.elements, dataManager);
 
             return { multiplier, attackerElem, defenderElem };
         });
@@ -80,7 +82,7 @@ test.describe('Battle System', () => {
 
     test('Healing skill restores HP', async ({ page }) => {
         const result = await page.evaluate(() => {
-            const { BattleManager, Game_Battler, Game_Party } = window;
+            const { BattleManager, Game_Battler, Game_Party, Game_Action } = window;
             const dataManager = window.dataManager;
             const party = new Game_Party();
             const bm = new BattleManager(party, dataManager);
@@ -102,8 +104,9 @@ test.describe('Battle System', () => {
             if (!healSkillId) return { error: "No healing skill found" };
 
             // Execute heal action
-            const sourceContext = { battler: healer, index: 0, isEnemy: false };
-            const action = bm.createAction(sourceContext, 'skill', ally, { skillId: healSkillId });
+            const action = new Game_Action(healer);
+            action.setSkill(healSkillId, dataManager);
+            action.target = ally;
 
             const events = bm.executeAction(action);
             const healEvent = events.find(e => e.type === 'heal');
@@ -120,7 +123,7 @@ test.describe('Battle System', () => {
 
     test('Battle ends when all enemies are defeated', async ({ page }) => {
         const isVictory = await page.evaluate(() => {
-            const { BattleManager, Game_Battler, Game_Party } = window;
+            const { BattleManager, Game_Battler, Game_Party, Game_Action } = window;
             const dataManager = window.dataManager;
             const party = new Game_Party();
             const hero = new Game_Battler({ name: "Hero", maxHp: 100, level: 1 });
@@ -133,8 +136,9 @@ test.describe('Battle System', () => {
 
             bm.setup([enemy], 0, 0);
 
-            const sourceContext = { battler: hero, index: 0, isEnemy: false };
-            const action = bm.createAction(sourceContext, 'attack', enemy);
+            const action = new Game_Action(hero);
+            action.setAttack();
+            action.target = enemy;
 
             // Mock high damage to ensure kill
             hero.getPassiveValue = () => 999;
@@ -154,9 +158,7 @@ test.describe('Battle System', () => {
             const dataManager = window.dataManager;
             const party = new Game_Party();
 
-            // Ensure PARASITE is available
             const parasiteCode = "PARASITE";
-            // Use existing data or mock if missing in data files (but typically it's in passives.js)
 
             const hero = new Game_Battler({
                 name: "Hero",
@@ -165,17 +167,9 @@ test.describe('Battle System', () => {
                 passives: [parasiteCode]
             });
 
-            // Mock getPassiveValue if data isn't perfectly aligned or just rely on it working if data is good.
-            // Game_Battler constructor resolves string passives to objects.
-            // If PARASITE isn't in passives.js, value will be 0.
-            // Let's force it for the test if needed, but better to trust the data.
-            // We can inject it into the battler instance if needed.
-            // Check if passive is loaded and has traits, or force it for test
             const hasTrait = hero.traits.some(t => t.code === parasiteCode);
 
             if (!hasTrait) {
-                 // Manually add/update for test reliability
-                 // Note: Logic now requires 'traits' array in passive object
                  hero.passives.push({
                      id: 'testParasite',
                      name: 'Parasite',

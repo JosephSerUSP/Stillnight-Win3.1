@@ -1,6 +1,6 @@
-import { randInt, elementToAscii, probabilisticRound } from "../core/utils.js";
+import { randInt } from "../core/utils.js";
 import { SoundManager } from "./sound.js";
-import { EffectProcessor } from "./effect_processor.js";
+import { Game_Action } from "../objects/objects.js";
 
 /**
  * @class BattleManager
@@ -83,44 +83,6 @@ export class BattleManager {
   }
 
   /**
-   * Calculates the damage multiplier based on elemental affinities.
-   * @method elementMultiplier
-   * @param {string[]} attackerElements - The elements of the attacker.
-   * @param {string[]} defenderElements - The elements of the defender.
-   * @returns {number} The final damage multiplier (e.g., 1.5 for weakness, 0.75 for resistance).
-   */
-  elementMultiplier(attackerElements, defenderElements) {
-    let multiplier = 1;
-    let advantageFound = false;
-    let disadvantageFound = false;
-
-    for (const attackerEl of attackerElements) {
-      if (advantageFound || disadvantageFound) break;
-      for (const defenderEl of defenderElements) {
-        const row = this.dataManager.elements[attackerEl];
-        if (row) {
-          if (row.strong && row.strong.includes(defenderEl)) {
-            advantageFound = true;
-            break;
-          }
-          if (row.weak && row.weak.includes(defenderEl)) {
-            disadvantageFound = true;
-            break;
-          }
-        }
-      }
-    }
-
-    if (advantageFound) {
-      multiplier = 1.5;
-    } else if (disadvantageFound) {
-      multiplier = 0.75;
-    }
-
-    return multiplier;
-  }
-
-  /**
    * Gets the row name ("Front" or "Back") for a party member based on their index.
    * @method _partyRow
    * @private
@@ -151,15 +113,11 @@ export class BattleManager {
     // 2. Plan Actions & Calculate Total Speed
     const plannedQueue = combatants.map(ctx => {
         const action = this.getAIAction(ctx); // Plan the action
-        let actionSpeed = 0;
-        if (action && action.skillId) {
-            // Check skill speed if available (default 0)
-            const skill = this.dataManager.skills[action.skillId];
-            if (skill && skill.speed) actionSpeed = skill.speed;
-        }
 
-        // Total Speed = Battler Speed + Action Speed
-        const totalSpeed = ctx.battler.asp + actionSpeed;
+        let totalSpeed = ctx.battler.asp;
+        if (action) {
+            totalSpeed = action.speed;
+        }
 
         return { ...ctx, action, totalSpeed };
     });
@@ -210,66 +168,26 @@ export class BattleManager {
   }
 
   /**
-   * Returns a list of valid targets for the battler based on the specified scope.
-   * @method getValidTargets
-   * @param {Object} battlerContext - The context of the battler.
-   * @param {string} [scope='enemy'] - The target scope ('enemy', 'ally', 'self', etc.).
-   * @returns {import("../objects/objects.js").Game_Battler[]} List of valid targets.
-   */
-  getValidTargets(battlerContext, scope = 'enemy') {
-      const { isEnemy } = battlerContext;
-
-      // Determine logical side
-      // if scope is 'enemy', we want the Opposing side.
-      // if scope is 'ally', we want the Same side.
-
-      let targetSide = [];
-
-      if (scope.includes('self')) {
-          return [battlerContext.battler];
-      }
-
-      // "Enemy" means "The opposing team"
-      // "Ally" means "My team"
-
-      const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
-      const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
-
-      if (scope.includes('ally')) {
-          targetSide = myTeam;
-      } else {
-          targetSide = opposingTeam;
-      }
-
-      return targetSide.filter(b => b.hp > 0);
-  }
-
-  /**
-   * Factory method to create an action object.
-   * @method createAction
-   * @param {Object} battlerContext - The source of the action.
-   * @param {string} type - The type of action ('attack', 'skill').
-   * @param {import("../objects/objects.js").Game_Battler} target - The target of the action.
-   * @param {Object} [options] - Additional options (e.g., skillId).
-   * @returns {Object} The action object.
-   */
-  createAction(battlerContext, type, target, options = {}) {
-      return {
-          type,
-          sourceContext: battlerContext,
-          target,
-          ...options
-      };
-  }
-
-  /**
    * Determines the AI action for a battler (or auto-battle for player).
    * @method getAIAction
    * @param {Object} battlerContext - The context of the battler.
    * @returns {Object|null} An Action object, or null if no action can be taken.
    */
   getAIAction(battlerContext) {
-      const { battler } = battlerContext;
+      const { battler, index, isEnemy } = battlerContext;
+
+      // Create Action
+      const action = new Game_Action(battler);
+
+      // Set Row Bonus if player
+      if (!isEnemy) {
+          const row = this._partyRow(index);
+          action.setRowBonus(row === "Front" ? 1 : -1);
+      }
+
+      // Context for targeting
+      const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
+      const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
 
       // 1. Decide Action Type (Skill or Attack)
       // Simple logic: 60% chance to use skill if available
@@ -278,13 +196,15 @@ export class BattleManager {
           : null;
 
       if (skillId) {
-          const skill = this.dataManager.skills[skillId];
-          const scope = skill ? skill.target : 'enemy';
-          const targets = this.getValidTargets(battlerContext, scope);
+          action.setSkill(skillId, this.dataManager);
+          const targets = action.makeTargets(myTeam, opposingTeam);
 
           if (targets.length === 0) return null; // No valid targets for this skill, maybe fallback to attack?
 
           // Smart targeting for healing: prefer lowest HP
+          const skill = this.dataManager.skills[skillId];
+          const scope = skill ? skill.target : 'enemy';
+
           let target;
           if (scope.includes('ally') && (skill.effects.some(e => e.type === 'hp_heal'))) {
               // Find ally with lowest HP percentage
@@ -295,13 +215,16 @@ export class BattleManager {
               target = targets[randInt(0, targets.length - 1)];
           }
 
-          return this.createAction(battlerContext, 'skill', target, { skillId });
+          action.target = target;
+          return action;
       } else {
           // Attack (Scope: enemy)
-          const targets = this.getValidTargets(battlerContext, 'enemy');
+          action.setAttack();
+          const targets = action.makeTargets(myTeam, opposingTeam);
           if (targets.length === 0) return null;
           const target = targets[randInt(0, targets.length - 1)];
-          return this.createAction(battlerContext, 'attack', target);
+          action.target = target;
+          return action;
       }
   }
 
@@ -315,18 +238,19 @@ export class BattleManager {
   executeAction(action) {
     if (!action) return [];
 
-    const { sourceContext } = action;
-    const { battler } = sourceContext;
+    const { subject } = action;
     let { target } = action;
 
-    if (battler.hp <= 0) return [];
+    if (subject.hp <= 0) return [];
 
     // Re-validate target (Smart re-targeting)
     if (!target || target.hp <= 0) {
         // If target is dead, try to find a new target
-        const skill = action.skillId ? this.dataManager.skills[action.skillId] : null;
-        const scope = skill ? skill.target : 'enemy';
-        const targets = this.getValidTargets(sourceContext, scope);
+        const isEnemy = subject.isEnemy;
+        const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
+        const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
+
+        const targets = action.makeTargets(myTeam, opposingTeam);
         if (targets.length > 0) {
             target = targets[randInt(0, targets.length - 1)];
             action.target = target; // Update action
@@ -335,181 +259,9 @@ export class BattleManager {
         }
     }
 
-    let events = [];
-    switch (action.type) {
-      case 'skill':
-        events = this._executeSkill(action);
-        break;
-      case 'attack':
-        events = this._executeAttack(action);
-        break;
-      default:
-        console.warn(`Unknown action type: ${action.type}`);
-        break;
-    }
+    const events = action.apply(target, this.dataManager);
 
     this._checkBattleEnd(events);
-    return events;
-  }
-
-  /**
-   * Internal handler for skill actions.
-   * @private
-   */
-  _executeSkill(action) {
-    const { sourceContext, target } = action;
-    const { battler } = sourceContext;
-    const events = [];
-
-    const skill = this.dataManager.skills[action.skillId];
-    if (skill) {
-      let boost = 1;
-      if (skill.element) {
-        const matches = battler.elements.filter((e) => e === skill.element).length;
-        boost += matches * 0.25;
-      }
-      const skillName = `${elementToAscii(skill.element)}${skill.name}`;
-      events.push({ type: 'use_skill', battler: battler, skillName, msg: `${battler.name} uses ${skillName}!` });
-
-      skill.effects.forEach((effect) => {
-        const context = { boost };
-        let effectKey = effect.type;
-        let effectValue = effect.formula || effect.value;
-
-        if (effect.type === 'add_status') {
-             effectValue = { id: effect.status, chance: effect.chance };
-        }
-
-        const result = EffectProcessor.apply(effectKey, effectValue, battler, target, context);
-
-        if (!result) return;
-
-        if (result.type === 'damage') {
-             SoundManager.play('DAMAGE');
-             events.push({
-                type: 'damage',
-                battler: battler,
-                target: target,
-                value: result.value,
-                hpBefore: target.hp + result.value,
-                hpAfter: target.hp,
-                msg: `  ${target.name} takes ${result.value} damage.`
-             });
-        } else if (result.type === 'heal') {
-             SoundManager.play('HEAL');
-             events.push({
-                 type: 'heal',
-                 battler: battler,
-                 target: target,
-                 value: result.value,
-                 hpBefore: target.hp - result.value,
-                 hpAfter: target.hp,
-                 msg: `  ${target.name} heals ${result.value} HP.`,
-                 animation: 'healing_sparkle'
-             });
-        } else if (result.type === 'status') {
-             events.push({ type: 'status', target: target, status: result.status, msg: `  ${target.name} is afflicted with ${result.status}.` });
-        } else if (result.type === 'hp_drain') {
-             SoundManager.play('DAMAGE');
-             events.push({
-                 type: 'hp_drain',
-                 battler: battler,
-                 source: battler,
-                 target: target,
-                 value: result.value,
-                 hpBeforeTarget: result.hpBeforeTarget,
-                 hpAfterTarget: result.hpAfterTarget,
-                 hpBeforeSource: result.hpBeforeSource,
-                 hpAfterSource: result.hpAfterSource,
-                 msg: `  ${battler.name} drains ${result.value} HP from ${target.name}.`
-             });
-        }
-      });
-    }
-    return events;
-  }
-
-  /**
-   * Internal handler for attack actions.
-   * @private
-   */
-  _executeAttack(action) {
-    const { sourceContext, target } = action;
-    const { battler, index, isEnemy } = sourceContext;
-    const events = [];
-
-    // Normal Attack
-    // Base logic moved to Game_Battler.atk (includes traits)
-    // BattleManager adds variance (+/- 1)
-    let base = battler.atk + randInt(-1, 1);
-
-    if (!isEnemy) {
-      const row = this._partyRow(index);
-      if (row === "Front") base += 1;
-      else base -= 1;
-    }
-
-    if (base < 1) base = 1;
-
-    // Evasion Check
-    // Evasion is determined by EVA trait on target
-    const evasionChance = target.getPassiveValue("EVA");
-    if (evasionChance > 0 && Math.random() < evasionChance) {
-        SoundManager.play('UI_CANCEL'); // Or miss sound
-        events.push({
-            type: "miss",
-            battler: battler,
-            target: target,
-            msg: `${battler.name} attacks ${target.name} but misses!`,
-        });
-        return events;
-    }
-
-    // Critical Hit Check
-    // Crit chance is determined by CRI trait on attacker
-    let isCritical = false;
-    const critChance = battler.getPassiveValue("CRI");
-    if (critChance > 0 && Math.random() < critChance) {
-        isCritical = true;
-    }
-
-    const mult = this.elementMultiplier(battler.elements, target.elements);
-    let dmg = probabilisticRound(base * mult);
-    dmg += battler.getPassiveValue("DEAL_DAMAGE_MOD");
-
-    if (isCritical) {
-        dmg = Math.floor(dmg * 2);
-    }
-
-    if (dmg < 1) dmg = 1;
-
-    const hpBefore = target.hp;
-    target.hp = Math.max(0, target.hp - dmg);
-
-    // Play ATTACK/DAMAGE sound
-    SoundManager.play('DAMAGE');
-
-    const msg = isCritical
-        ? `CRITICAL! ${battler.name} deals ${dmg} damage to ${target.name}!`
-        : `${battler.name} attacks ${target.name} for ${dmg}.`;
-
-    if (isCritical) {
-        // Flash logic handled by animation helper if needed, but we can signal it in event
-        // The animateEvents in Scene_Battle handles 'damage' type.
-        // We can add a property to trigger extra flash.
-    }
-
-    events.push({
-      type: "damage",
-      battler: battler,
-      target: target,
-      value: dmg,
-      hpBefore: hpBefore,
-      hpAfter: target.hp,
-      isCritical: isCritical, // Pass flag for UI
-      msg: msg,
-    });
-
     return events;
   }
 
