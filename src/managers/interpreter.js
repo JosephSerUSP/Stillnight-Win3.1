@@ -276,7 +276,7 @@ export class Game_Interpreter {
 
     async resolveTrap(action) {
         // Restore default close behavior to prevent loops
-        delete this.scene.hudManager.eventWindow.onUserClose;
+        this.scene.hudManager.eventWindow.onUserClose = this.closeEvent.bind(this);
 
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         try {
