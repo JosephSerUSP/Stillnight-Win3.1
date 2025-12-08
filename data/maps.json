@@ -1,7 +1,7 @@
 [
   {
-    "title": "Town of Stillnight",
-    "intro": "A quiet settlement on the edge of the void.",
+    "title": "Shinjuku Station",
+    "intro": "The ruins of the old world. Demons roam the subway lines.",
     "depth": 0,
     "music": "town1",
     "events": [
@@ -15,8 +15,8 @@
     "recruits": []
   },
   {
-    "title": "Floor 1: Entry Hall",
-    "intro": "You cross the threshold into the dark.",
+    "title": "Floor 1: Underground Mall",
+    "intro": "Shattered glass and echoes of the past.",
     "depth": 1,
     "music": "dungeon1",
     "events": [
@@ -24,29 +24,18 @@
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 2, "max": 3 },
       { "id": "recruit", "chance": 0.5 },
-      { "id": "treasure", "count": 1 },
-      {
-          "id": "enemy",
-          "count": 1,
-          "behavior": "chase",
-          "symbol": "!",
-          "cssClass": "text-danger",
-          "encounters": [
-              { "id": "imp", "weight": 10 }
-          ]
-      }
+      { "id": "treasure", "count": 1 }
     ],
-    "treasures": ["potion", "antidote"],
+    "treasures": ["hp_tonic", "hp_tonic"],
     "encounters": [
       { "id": "pixie", "weight": 5 },
-      { "id": "skeleton", "weight": 5 },
-      { "id": "imp", "weight": 3 }
+      { "id": "slime", "weight": 5 }
     ],
-    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat","candle"]
+    "recruits": ["pixie", "slime"]
   },
   {
-    "title": "Floor 2: Chasm Crossing",
-    "intro": "Wind howls across a broken bridge.",
+    "title": "Floor 2: Yoyogi Park",
+    "intro": "Overgrown vegetation chokes the concrete.",
     "depth": 2,
     "music": "dungeon1",
     "events": [
@@ -56,60 +45,58 @@
       { "id": "shrine", "chance": 0.5 },
       { "id": "shop", "chance": 0.5 },
       { "id": "recruit", "chance": 0.6 },
-      { "id": "trap", "min": 1, "max": 2 },
       { "id": "treasure", "chance": 0.5 }
     ],
-    "treasures": ["hi_potion", "iron_sword"],
+    "treasures": ["sigil_ink"],
     "encounters": [
-      { "id": "skeleton", "weight": 8 },
-      { "id": "imp", "weight": 5 },
-      { "id": "wisp", "weight": 4 },
-      { "id": "ooze", "weight": 3 }
+      { "id": "jackFrost", "weight": 5 },
+      { "id": "pyroJack", "weight": 5 },
+      { "id": "pixie", "weight": 3 }
     ],
-    "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
+    "recruits": ["jackFrost", "pyroJack", "pixie"]
   },
   {
-    "title": "Floor 3: Rusted Choir",
-    "intro": "Broken bells sway above a dry pit.",
+    "title": "Floor 3: Shibuya Ruins",
+    "intro": "The famous crossing is now a battlefield.",
     "depth": 3,
     "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 4, "max": 6 },
+      { "id": "enemy", "min": 4, "max": 5 },
       { "id": "shrine", "chance": 0.5 },
       { "id": "recruit", "chance": 0.7 }
     ],
     "encounters": [
-      { "id": "golem", "weight": 6 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 3 }
+      { "id": "lilim", "weight": 5 },
+      { "id": "angel", "weight": 5 },
+      { "id": "slime", "weight": 3 }
     ],
-    "recruits": ["golem", "demon", "angel", "larva","flauros"]
+    "recruits": ["lilim", "angel"]
   },
   {
-    "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
+    "title": "Floor 4: Ikebukuro",
+    "intro": "Thugs and demons rule these streets.",
     "depth": 4,
     "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 7 },
+      { "id": "enemy", "min": 5, "max": 6 },
       { "id": "shrine", "chance": 0.5 },
       { "id": "shop", "chance": 0.5 },
       { "id": "recruit", "chance": 0.5 }
     ],
     "encounters": [
-      { "id": "demon", "weight": 8 },
+      { "id": "demon", "weight": 6 },
       { "id": "highPixie", "weight": 4 },
-      { "id": "ghoul", "weight": 4 }
+      { "id": "mothman", "weight": 4 }
     ],
-    "recruits": ["demon", "angel", "golem","flauros"]
+    "recruits": ["demon", "mothman"]
   },
   {
-    "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
+    "title": "Floor 5: Diet Building",
+    "intro": "The seat of power, now corrupted.",
     "depth": 5,
     "music": "dungeon1",
     "events": [
@@ -120,15 +107,15 @@
       { "id": "recruit", "chance": 0.4 }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 2 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
+      { "id": "archangel", "weight": 4 },
+      { "id": "demon", "weight": 4 },
+      { "id": "cerberus", "weight": 2 }
     ],
-    "recruits": ["demon", "angel"]
+    "recruits": ["archangel", "demon"]
   },
   {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
+    "title": "Floor 6: Throne of Chaos",
+    "intro": "The Demon Lord awaits.",
     "depth": 6,
     "music": "dungeon1",
     "events": [
@@ -136,8 +123,7 @@
       { "id": "enemy", "min": 1, "max": 1 }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
+      { "id": "abaddon", "weight": 10 }
     ],
     "recruits": []
   }

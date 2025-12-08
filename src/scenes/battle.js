@@ -66,6 +66,7 @@ export class Scene_Battle extends Scene_Base {
         onFlee: () => this.attemptFlee(),
         onFormation: () => this.onFormationClick(),
         onItem: () => this.onItemClick(),
+        onTalk: () => this.onTalkClick(),
         onAutoToggle: (val) => this.toggleAutoBattle(val)
     });
   }
@@ -85,15 +86,16 @@ export class Scene_Battle extends Scene_Base {
     const actorTemplates = this.dataManager.actors;
 
     if (this.map.floorIndex === this.map.floors.length - 1) {
-      const bossHp = 40 + (depth - 3) * 5;
+      // SMT Boss: Abaddon
+      const bossHp = 500 + (depth * 20);
       enemies.push(new Game_Battler({
-        name: "🌑 Eternal Warden",
+        name: "Abaddon",
         role: "Boss",
         maxHp: bossHp,
-        elements: ["Black"],
-        skills: ["shadowClaw", "infernalPact"],
-        gold: 100,
-        expGrowth: 10,
+        elements: ["Dark", "Dark", "Fire"],
+        skills: ["mudoon", "hellFire", "gigantomachia"],
+        gold: 1000,
+        expGrowth: 50,
       }, depth, true));
     } else {
         // Use provided encounter data if available
@@ -118,7 +120,7 @@ export class Scene_Battle extends Scene_Base {
         if (enemies.length === 0) {
               // Use encounter table if available
               if (floor.encounters && floor.encounters.length > 0) {
-                const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
+                const maxEnemies = this.map.floorIndex === 0 ? 2 : 4;
                 const enemyCount = randInt(1, maxEnemies);
                 for (let i = 0; i < enemyCount; i++) {
                     const encounter = pickWeighted(floor.encounters);
@@ -174,11 +176,9 @@ export class Scene_Battle extends Scene_Base {
   }
 
   toggleAutoBattle(e) {
-      // Logic adjusted to handle both direct boolean and event
       if (typeof e === 'boolean') {
           ConfigManager.autoBattle = e;
       } else {
-          // Fallback if event is passed directly (though handler wrapper handles this)
           ConfigManager.autoBattle = !ConfigManager.autoBattle;
       }
       ConfigManager.save();
@@ -235,6 +235,91 @@ export class Scene_Battle extends Scene_Base {
           (item, action) => this.onInventoryAction(item, action),
           (item) => {}
       );
+  }
+
+  onTalkClick() {
+      if (this.actionTakenThisTurn || this.battleBusy) return;
+
+      const enemies = this.battleManager.enemies.filter(e => e.hp > 0);
+      if (enemies.length === 0) return;
+
+      // Pick a random enemy to talk to (simplification)
+      const target = enemies[randInt(0, enemies.length - 1)];
+      this.startNegotiation(target);
+  }
+
+  startNegotiation(target) {
+      this.battleWindow.appendLog(`You call out to ${target.name}.`);
+
+      if (!target.actorData || !target.actorData.isRecruitable) {
+          setTimeout(() => {
+              this.battleWindow.appendLog(`${target.name} ignores you.`);
+              this.actionTakenThisTurn = true;
+              this.disableActionButtons();
+          }, 500);
+          return;
+      }
+
+      // Check for space
+      if (this.party.reserveMembers.length >= 20) { // arbitrary limit or based on party size
+           // actually party.addMember handles limit?
+      }
+
+      const cost = (target.level * 10) + randInt(0, 20);
+
+      this.confirmWindow.titleEl.textContent = "Negotiation";
+      this.confirmWindow.messageEl.textContent = `${target.name}: "Give me ${cost} Macca and I'll join you. Deal?"`;
+      this.windowManager.push(this.confirmWindow);
+
+      this.confirmWindow.btnOk.onclick = () => {
+          this.windowManager.close(this.confirmWindow);
+          if (this.party.gold >= cost) {
+              this.party.gold -= cost;
+              // Success chance based on level diff?
+              // For now 100% if paid
+              this.battleWindow.appendLog(`You paid ${cost} Macca.`);
+              this.recruitEnemy(target);
+          } else {
+              this.battleWindow.appendLog("You don't have enough Macca!");
+              this.battleWindow.appendLog(`${target.name} attacks in anger!`);
+              this.actionTakenThisTurn = true;
+              this.disableActionButtons();
+          }
+      };
+
+      this.confirmWindow.btnCancel.onclick = () => {
+          this.windowManager.close(this.confirmWindow);
+          this.battleWindow.appendLog(`${target.name}: "Cheapskate!"`);
+          this.actionTakenThisTurn = true;
+          this.disableActionButtons();
+      };
+  }
+
+  recruitEnemy(target) {
+      if (this.party.isFull()) {
+           this.battleWindow.appendLog("Party is full! Cannot recruit.");
+           // Refund? No, SMT is cruel.
+           return;
+      }
+
+      // Add to party
+      // Create a new actor instance from data
+      // We need to fetch the original data to ensure clean state
+      const tpl = this.dataManager.actors.find(a => a.id === target.actorData.id);
+      if (tpl) {
+          const newMember = new Game_Battler(tpl, target.level);
+          this.party.addMember(newMember);
+          this.battleWindow.appendLog(`${target.name} joined the party!`);
+          SoundManager.play('UI_SUCCESS'); // Recruit sound
+
+          // Remove from battle
+          target.hp = 0; // Kill it so it disappears
+          target.hidden = true; // Hide it
+          this.renderBattleAscii();
+
+          this.actionTakenThisTurn = true;
+          this.disableActionButtons();
+      }
   }
 
   async processItemAction(item, target) {
@@ -306,11 +391,13 @@ export class Scene_Battle extends Scene_Base {
   disableActionButtons() {
       this.battleWindow.btnFormation.classList.add('disabled');
       this.battleWindow.btnItem.classList.add('disabled');
+      this.battleWindow.btnTalk.classList.add('disabled');
   }
 
   enableActionButtons() {
       this.battleWindow.btnFormation.classList.remove('disabled');
       this.battleWindow.btnItem.classList.remove('disabled');
+      this.battleWindow.btnTalk.classList.remove('disabled');
   }
 
   /**
@@ -495,6 +582,17 @@ export class Scene_Battle extends Scene_Base {
                 await this.battleWindow.animateBattlerName(event.battler, this.battleManager.enemies, this.party.slots.slice(0,4));
             }
 
+            // Handle One More
+            if (event.type === 'one_more') {
+                this.battleWindow.appendLog(">>> ONE MORE! <<<");
+                SoundManager.play('UI_SUCCESS');
+                if (event.battler) {
+                    await this.battleWindow.animateBattler(event.battler, 'flash', this.battleManager.enemies, this.party.slots.slice(0,4));
+                }
+                await delay(300);
+                continue;
+            }
+
             if (event.type === 'use_skill' || event.type === 'use_item') {
                 // Look ahead to see if there is exactly one dependent result (starts with spaces)
                 let resultCount = 0;
@@ -508,6 +606,11 @@ export class Scene_Battle extends Scene_Base {
                 appendNextResult = (resultCount === 1);
             }
 
+            // WEAKNESS / CRIT Log
+            if (event.isWeakness) {
+                 this.battleWindow.appendLog("WEAKNESS!", { priority: 'low' });
+            }
+
             if (event.msg) {
                 const isDependentResult = event.msg.startsWith('  ');
                 const priority = isDependentResult ? 'low' : undefined;
@@ -517,12 +620,6 @@ export class Scene_Battle extends Scene_Base {
                      this.battleWindow.appendToLastLog(trimmedMsg, { priority });
                      appendNextResult = false; // Only append the first one
                 } else {
-                     // If it's a dependent result but not appended (e.g. multi-target), use priority 'low'
-                     // Also trim leading spaces for cleaner log if not appending?
-                     // Existing code had leading spaces. If we print on new line, leading spaces provide indentation.
-                     // The user asked for "low priority".
-                     // If we keep leading spaces, it looks indented.
-                     // Let's keep spaces if we don't append.
                      this.battleWindow.appendLog(isDependentResult && priority === 'low' ? trimmedMsg : event.msg, { priority });
                 }
             }

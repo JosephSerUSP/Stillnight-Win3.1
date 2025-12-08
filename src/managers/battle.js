@@ -101,6 +101,10 @@ export class BattleManager {
     if (this.isBattleFinished) return;
     this.round++;
 
+    // Reset One More flag
+    this.party.activeMembers.forEach(m => m._hasActedOneMore = false);
+    this.enemies.forEach(m => m._hasActedOneMore = false);
+
     // 1. Gather all potential combatants
     const combatants = [];
     this.party.slots.slice(0, 4).forEach((battler, index) => {
@@ -190,10 +194,14 @@ export class BattleManager {
       const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
 
       // 1. Decide Action Type (Skill or Attack)
-      // Simple logic: 60% chance to use skill if available
-      const skillId = (battler.skills && battler.skills.length && Math.random() < 0.6)
-          ? battler.skills[randInt(0, battler.skills.length - 1)]
-          : null;
+      // Logic: If has weakness hitting skill, use it. Else random.
+      // 60% chance to use skill if available
+      let skillId = null;
+      if (battler.skills && battler.skills.length) {
+          if (Math.random() < 0.6) {
+              skillId = battler.skills[randInt(0, battler.skills.length - 1)];
+          }
+      }
 
       if (skillId) {
           action.setSkill(skillId, this.dataManager);
@@ -261,8 +269,33 @@ export class BattleManager {
 
     const events = action.apply(target, this.dataManager);
 
+    // One More Logic
+    const oneMoreTriggered = events.some(e => (e.isWeakness || e.isCritical) && e.type === 'damage');
+    if (oneMoreTriggered && !subject._hasActedOneMore && subject.hp > 0 && !this.isBattleFinished) {
+        subject._hasActedOneMore = true;
+        events.push({ type: 'one_more', battler: subject, msg: "One More!" });
+        this.grantOneMore(subject);
+    }
+
     this._checkBattleEnd(events);
     return events;
+  }
+
+  grantOneMore(battler) {
+      let index = this.enemies.indexOf(battler);
+      let isEnemy = true;
+      if (index === -1) {
+          index = this.party.slots.indexOf(battler);
+          isEnemy = false;
+      }
+
+      if (index === -1) return; // Should not happen
+
+      const ctx = { battler, index, isEnemy };
+      const action = this.getAIAction(ctx);
+
+      // Insert at front of queue
+      this.turnQueue.unshift({ ...ctx, action, totalSpeed: 999 });
   }
 
   /**

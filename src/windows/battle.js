@@ -65,6 +65,14 @@ export class Window_Battle extends Window_Base {
                     label: 'Item',
                     onClick: () => { if (this.handlers.onItem) this.handlers.onItem(); }
                 }
+            },
+            {
+                type: 'button',
+                props: {
+                    className: 'win-btn',
+                    label: 'Talk',
+                    onClick: () => { if (this.handlers.onTalk) this.handlers.onTalk(); }
+                }
             }
         ]
     };
@@ -75,6 +83,7 @@ export class Window_Battle extends Window_Base {
 
     this.btnFormation = actionRow.children[0];
     this.btnItem = actionRow.children[1];
+    this.btnTalk = actionRow.children[2];
 
     // Auto Toggle
     // The helper createToggleSwitch returns a label containing a checkbox.

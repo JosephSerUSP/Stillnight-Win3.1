@@ -66,11 +66,13 @@ export function getPrimaryElements(elements) {
  */
 export function elementToAscii(element) {
   switch (element) {
-    case "Red": return "(R)";
-    case "Green": return "(G)";
-    case "Blue": return "(B)";
-    case "White": return "(W)";
-    case "Black": return "(K)";
+    case "Fire": return "(Fi)";
+    case "Ice": return "(Ic)";
+    case "Elec": return "(El)";
+    case "Force": return "(Fo)";
+    case "Light": return "(Lt)";
+    case "Dark": return "(Dk)";
+    case "Phys": return "(Ph)";
     default: return "";
   }
 }
@@ -82,16 +84,13 @@ export function elementToAscii(element) {
  */
 export function elementToIconId(element) {
   switch (element) {
-    case "Red": return 1;
-    case "Green": return 2;
-    case "Blue": return 3;
-    case "White": return 4;
-    case "Black": return 5;
-    case "l_Red": return 11;
-    case "l_Green": return 12;
-    case "l_Blue": return 13;
-    case "l_White": return 14;
-    case "l_Black": return 15;
+    case "Fire": return 1;
+    case "Force": return 2; // Green
+    case "Ice": return 3; // Blue
+    case "Light": return 4; // White
+    case "Dark": return 5; // Black
+    case "Elec": return 6; // Yellow? Or reuse.
+    case "Phys": return 0;
     default: return 0;
   }
 }

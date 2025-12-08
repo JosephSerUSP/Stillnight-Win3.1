@@ -1,64 +1,64 @@
 {
   "battle": {
-    "your_party_collapses": "Your party collapses in the dark.",
-    "enemies_emerge": "Enemies emerge from the dark!",
+    "your_party_collapses": "The Conception claims you...",
+    "enemies_emerge": "Demons block your path!",
     "victory": "Victory!",
-    "flee": "Flee",
+    "flee": "Escape",
     "resolve_round": "Resolve Round"
   },
   "formation": {
-    "title": "Formation – Stillnight",
+    "title": "Formation",
     "label": "Drag and drop to rearrange. Active party is the first 4 members.",
-    "reserve_label": "Reserve",
+    "reserve_label": "Stock",
     "ok": "OK",
     "cancel": "Cancel"
   },
   "inventory": {
-    "title": "Inventory – Stillnight",
+    "title": "Inventory",
     "empty": "Your bag is empty.",
     "use": "Use",
     "discard": "Discard"
   },
   "log": {
-    "new_run": "[Run] New run started.",
-    "floor_intro": "[Floor] ",
-    "navigate_card": "[Navigate] You flip to card ",
-    "step_echo": "[Step] Your footsteps echo softly.",
-    "wall_blocks": "A wall blocks the way.",
+    "new_run": "[System] Reincarnation started.",
+    "floor_intro": "[Location] ",
+    "navigate_card": "[Move] You advance to ",
+    "step_echo": "[Step] Silence...",
+    "wall_blocks": "A barrier blocks the way.",
     "party_falls": "[Battle] Your party falls.",
-    "run_ended": "The run has ended. Start a new run.",
-    "no_deeper_floors": "No deeper floors. Run over (for now).",
-    "all_tiles_revealed": "All tiles revealed."
+    "run_ended": "The cycle ends.",
+    "no_deeper_floors": "The abyss ends here.",
+    "all_tiles_revealed": "Area mapped."
   },
   "status": {
-    "exploring_floor": "Exploring floor ",
-    "ready": "Ready.",
+    "exploring_floor": "Exploring ",
+    "ready": "Awaiting command.",
     "log_cleared": "Log cleared.",
-    "only_adjacent_tiles": "You can only move to adjacent tiles.",
-    "enemy_encountered": "Enemy encountered!",
-    "descending": "Descending.",
+    "only_adjacent_tiles": "Move only to adjacent tiles.",
+    "enemy_encountered": "Demons!",
+    "descending": "Descending...",
     "victory": "Victory."
   },
   "shop": {
-    "title": "Shop – Stillnight",
-    "vendor_message": "A crooked vendor raises one eyebrow.",
-    "not_enough_gold": "You don't have enough gold.",
-    "purchased": "Purchased "
+    "title": "Cathedral of Shadows (Shop)",
+    "vendor_message": "Welcome to the Cathedral of Shadows... wait, wrong game. Buy something?",
+    "not_enough_gold": "Macca insufficient.",
+    "purchased": "Acquired "
   },
   "recruit": {
-    "title": "Recruit – Stillnight",
-    "no_one_here": "[Recruit] No one is here.",
-    "decline_offer": "[Recruit] You decline {0}'s offer.",
-    "recruited": "{0} recruited!",
-    "party_full": "Party is full. Select a member to replace:",
-    "decide_not_to_replace": "[Recruit] You decide not to replace anyone.",
-    "replace_member": "[Recruit] You replace {0} with {1}."
+    "title": "Negotiation",
+    "no_one_here": "[Negotation] No one is here.",
+    "decline_offer": "[Negotiation] You decline {0}'s offer.",
+    "recruited": "{0} joined your party!",
+    "party_full": "Stock is full. Release a demon to make room:",
+    "decide_not_to_replace": "[Negotiation] You decide not to replace anyone.",
+    "replace_member": "[Negotiation] You release {0} and recruit {1}."
   },
   "shrine": {
-    "silent": "[Shrine] This shrine is silent.",
-    "hp_change": "[Shrine] Your party's HP changes by {0}.",
-    "max_hp_change": "[Shrine] Your party's max HP changes by {0}.",
-    "xp_gain": "[Shrine] Your party gains {0} XP.",
-    "gold_gain": "[Shrine] You gain {0} gold."
+    "silent": "[Terminal] This terminal is inactive.",
+    "hp_change": "[Terminal] HP changed by {0}.",
+    "max_hp_change": "[Terminal] Max HP changed by {0}.",
+    "xp_gain": "[Terminal] {0} XP downloaded.",
+    "gold_gain": "[Terminal] {0} Macca found."
   }
 }

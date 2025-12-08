@@ -144,6 +144,7 @@ export class Game_Action {
         // Element Multiplier
         // Attack uses battler.elements
         const mult = this._elementMultiplier(battler.elements, target.elements, dataManager);
+        const isWeakness = mult > 1.0;
 
         let dmg = probabilisticRound(base * mult);
         dmg += battler.getPassiveValue("DEAL_DAMAGE_MOD");
@@ -171,6 +172,7 @@ export class Game_Action {
             hpBefore: hpBefore,
             hpAfter: target.hp,
             isCritical: isCritical,
+            isWeakness: isWeakness,
             msg: msg,
         });
     }
@@ -191,8 +193,10 @@ export class Game_Action {
 
         // Element Multiplier (Target weakness/resistance)
         let elementMult = 1.0;
+        let isWeakness = false;
         if (skill.element) {
             elementMult = this._elementMultiplier([skill.element], target.elements, dataManager);
+            if (elementMult > 1.0) isWeakness = true;
         }
 
         const skillName = `${elementToAscii(skill.element)}${skill.name}`;
@@ -225,6 +229,7 @@ export class Game_Action {
                     value: result.value,
                     hpBefore: target.hp + result.value,
                     hpAfter: target.hp,
+                    isWeakness: isWeakness,
                     msg: `  ${target.name} takes ${result.value} damage.`
                  });
             } else if (result.type === 'heal') {
@@ -316,30 +321,25 @@ export class Game_Action {
 
     _elementMultiplier(attackerElements, defenderElements, dataManager) {
         let multiplier = 1;
-        let advantageFound = false;
-        let disadvantageFound = false;
 
-        for (const attackerEl of attackerElements) {
-          if (advantageFound || disadvantageFound) break;
-          for (const defenderEl of defenderElements) {
-            const row = dataManager.elements[attackerEl];
+        // Iterate over Defender Elements to check defensive properties
+        for (const defenderEl of defenderElements) {
+            const row = dataManager.elements[defenderEl];
             if (row) {
-              if (row.strong && row.strong.includes(defenderEl)) {
-                advantageFound = true;
-                break;
-              }
-              if (row.weak && row.weak.includes(defenderEl)) {
-                disadvantageFound = true;
-                break;
-              }
-            }
-          }
-        }
+                // Check for Weakness (Incoming)
+                for (const attackerEl of attackerElements) {
+                     if (row.weak && row.weak.includes(attackerEl)) {
+                         return 1.5; // Found Weakness
+                     }
+                }
 
-        if (advantageFound) {
-          multiplier = 1.5;
-        } else if (disadvantageFound) {
-          multiplier = 0.75;
+                // Check for Resistance (Incoming)
+                for (const attackerEl of attackerElements) {
+                     if (row.strong && row.strong.includes(attackerEl)) {
+                         return 0.5; // Found Resistance
+                     }
+                }
+            }
         }
 
         return multiplier;

@@ -1,161 +1,227 @@
-/**
- * @file data/skills.js
- * @description Defines the skills available in the game.
- * Skills are used by battlers in combat to deal damage, heal, or apply status effects.
- */
-
-/**
- * @typedef {Object} SkillEffect
- * @property {string} type - The type of effect (e.g., 'hp_damage', 'hp_heal', 'add_status').
- * @property {string} [formula] - The formula for calculating the effect value (e.g., '5 + 1.2 * a.level').
- * @property {string} [status] - The status ID to apply (if type is 'add_status').
- * @property {number} [chance] - The chance to apply the effect (0-1).
- * @property {number} [duration] - The duration of the effect in turns.
- */
-
-/**
- * @typedef {Object} Skill
- * @property {string} id - The unique ID of the skill.
- * @property {string} name - The display name of the skill.
- * @property {string} target - The target scope (e.g., 'enemy-any', 'ally-any', 'self').
- * @property {string} element - The elemental affinity of the skill.
- * @property {string} description - The flavor text description.
- * @property {SkillEffect[]} effects - The list of effects produced by the skill.
- */
-
-/**
- * @type {Object.<string, Skill>}
- */
 export const skills = {
-    // Pixie
-    windBlade: {
+    // Fire
+    agi: {
+        id: 'agi',
+        name: 'Agi',
+        target: 'enemy-any',
+        element: 'Fire',
+        description: "Deals light Fire damage.",
+        effects: [{ type: 'hp_damage', formula: '8 + 1.5 * a.mat' }]
+    },
+    maragi: {
+        id: 'maragi',
+        name: 'Maragi',
+        target: 'enemy-all',
+        element: 'Fire',
+        description: "Deals light Fire damage to all foes.",
+        effects: [{ type: 'hp_damage', formula: '6 + 1.2 * a.mat' }]
+    },
+    agilao: {
+        id: 'agilao',
+        name: 'Agilao',
+        target: 'enemy-any',
+        element: 'Fire',
+        description: "Deals medium Fire damage.",
+        effects: [{ type: 'hp_damage', formula: '20 + 2.0 * a.mat' }]
+    },
+    hellFire: {
+        id: 'hellFire',
+        name: 'Hellfire',
+        target: 'enemy-all',
+        element: 'Fire',
+        description: "Deals heavy Fire damage to all foes.",
+        effects: [{ type: 'hp_damage', formula: '40 + 3.0 * a.mat' }]
+    },
+
+    // Ice
+    bufu: {
+        id: 'bufu',
+        name: 'Bufu',
+        target: 'enemy-any',
+        element: 'Ice',
+        description: "Deals light Ice damage.",
+        effects: [{ type: 'hp_damage', formula: '8 + 1.5 * a.mat' }]
+    },
+    bufula: {
+        id: 'bufula',
+        name: 'Bufula',
+        target: 'enemy-any',
+        element: 'Ice',
+        description: "Deals medium Ice damage.",
+        effects: [{ type: 'hp_damage', formula: '20 + 2.0 * a.mat' }]
+    },
+    iceBreath: {
+        id: 'iceBreath',
+        name: 'Ice Breath',
+        target: 'enemy-random', // Assuming engine supports or random selection logic
+        element: 'Ice',
+        description: "Deals light Ice damage to random foes.",
+        effects: [{ type: 'hp_damage', formula: '8 + 1.5 * a.mat' }]
+    },
+
+    // Elec
+    zio: {
+        id: 'zio',
+        name: 'Zio',
+        target: 'enemy-any',
+        element: 'Elec',
+        description: "Deals light Elec damage.",
+        effects: [{ type: 'hp_damage', formula: '8 + 1.5 * a.mat' }]
+    },
+    mazan: { // Wait, Mazan is Force. Mazio is Elec.
+        id: 'mazio',
+        name: 'Mazio',
+        target: 'enemy-all',
+        element: 'Elec',
+        description: "Deals light Elec damage to all foes.",
+        effects: [{ type: 'hp_damage', formula: '6 + 1.2 * a.mat' }]
+    },
+
+    // Force (Wind)
+    zan: {
+        id: 'zan',
+        name: 'Zan',
+        target: 'enemy-any',
+        element: 'Force',
+        description: "Deals light Force damage.",
+        effects: [{ type: 'hp_damage', formula: '8 + 1.5 * a.mat' }]
+    },
+    mazan: {
+        id: 'mazan',
+        name: 'Mazan',
+        target: 'enemy-all',
+        element: 'Force',
+        description: "Deals light Force damage to all foes.",
+        effects: [{ type: 'hp_damage', formula: '6 + 1.2 * a.mat' }]
+    },
+    windBlade: { // Legacy support
         id: 'windBlade',
         name: 'Wind Blade',
         target: 'enemy-any',
-        element: 'Green',
+        element: 'Force',
         description: "Strikes a foe with a blade of wind.",
-        effects: [
-            { type: 'hp_damage', formula: '6 + 1.2 * a.level' }
-        ]
+        effects: [{ type: 'hp_damage', formula: '6 + 1.2 * a.level' }]
     },
-    soothingMote: {
-        id: 'soothingMote',
-        name: 'Soothing Mote',
+
+    // Light
+    hama: {
+        id: 'hama',
+        name: 'Hama',
+        target: 'enemy-any',
+        element: 'Light',
+        description: "Deals light Light damage.",
+        effects: [{ type: 'hp_damage', formula: '10 + 1.5 * a.mat' }]
+    },
+
+    // Dark
+    mudo: {
+        id: 'mudo',
+        name: 'Mudo',
+        target: 'enemy-any',
+        element: 'Dark',
+        description: "Deals light Dark damage.",
+        effects: [{ type: 'hp_damage', formula: '10 + 1.5 * a.mat' }]
+    },
+    mudoon: {
+        id: 'mudoon',
+        name: 'Mudoon',
+        target: 'enemy-any',
+        element: 'Dark',
+        description: "Deals heavy Dark damage.",
+        effects: [{ type: 'hp_damage', formula: '30 + 2.5 * a.mat' }]
+    },
+    evilTouch: {
+        id: 'evilTouch',
+        name: 'Evil Touch',
+        target: 'enemy-any',
+        element: 'Dark',
+        description: "Inflicts Fear (Not implemented, dmg for now).",
+        effects: [{ type: 'hp_damage', formula: '5 + 1.0 * a.mat' }]
+    },
+
+    // Phys
+    lunge: {
+        id: 'lunge',
+        name: 'Lunge',
+        target: 'enemy-any',
+        element: 'Phys',
+        description: "Light physical damage.",
+        effects: [{ type: 'hp_damage', formula: '10 + 1.2 * a.atk' }]
+    },
+    heatWave: {
+        id: 'heatWave',
+        name: 'Heat Wave',
+        target: 'enemy-all',
+        element: 'Phys',
+        description: "Medium physical damage to all.",
+        effects: [{ type: 'hp_damage', formula: '15 + 1.2 * a.atk' }]
+    },
+    sonicPunch: {
+        id: 'sonicPunch',
+        name: 'Sonic Punch',
+        target: 'enemy-any',
+        element: 'Phys',
+        description: "Medium physical damage.",
+        effects: [{ type: 'hp_damage', formula: '18 + 1.5 * a.atk' }]
+    },
+    gigantomachia: {
+        id: 'gigantomachia',
+        name: 'Gigantomachia',
+        target: 'enemy-all',
+        element: 'Phys',
+        description: "Heavy physical damage to all.",
+        effects: [{ type: 'hp_damage', formula: '40 + 2.0 * a.atk' }]
+    },
+
+    // Healing / Support
+    dia: {
+        id: 'dia',
+        name: 'Dia',
         target: 'ally-any',
-        element: 'White',
-        description: "Heals a small amount of HP for an ally.",
-        effects: [
-            { type: 'hp_heal', formula: '5 + 1.5 * a.level' }
-        ]
+        element: 'Light',
+        description: "Heals an ally.",
+        effects: [{ type: 'hp_heal', formula: '20 + 1.5 * a.mat' }]
     },
-
-    // Skeleton
-    boneRush: {
-        id: 'boneRush',
-        name: 'Bone Rush',
+    media: {
+        id: 'media',
+        name: 'Media',
+        target: 'ally-all',
+        element: 'Light',
+        description: "Heals all allies.",
+        effects: [{ type: 'hp_heal', formula: '15 + 1.2 * a.mat' }]
+    },
+    marinKarin: {
+        id: 'marinKarin',
+        name: 'Marin Karin',
         target: 'enemy-any',
-        element: 'Black',
-        description: "A reckless charge.",
-        effects: [
-            { type: 'hp_damage', formula: '7 + 1.2 * a.level' }
-        ]
+        element: 'Force',
+        description: "Charms a foe (Damage for now).",
+        effects: [{ type: 'hp_damage', formula: '5 + 1.0 * a.mat' }]
     },
-
-    // Angel
-    holySmite: {
-        id: 'holySmite',
-        name: 'Holy Smite',
+    pulinpa: {
+        id: 'pulinpa',
+        name: 'Pulinpa',
         target: 'enemy-any',
-        element: 'White',
-        description: "Smite evil with holy light.",
-        effects: [
-            { type: 'hp_damage', formula: '6 + 1.4 * a.level' }
-        ]
+        element: 'Force',
+        description: "Confuses a foe (Damage for now).",
+        effects: [{ type: 'hp_damage', formula: '5 + 1.0 * a.mat' }]
     },
-    divineFavor: {
-        id: 'divineFavor',
-        name: 'Divine Favor',
-        target: 'ally-any',
-        element: 'White',
-        description: "Grants regeneration to an ally.",
-        effects: [
-            { type: 'add_status', status: 'regen', chance: 1.0, duration: 3 }
-        ]
-    },
-
-    // Demon
-    shadowClaw: {
-        id: 'shadowClaw',
-        name: 'Shadow Claw',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "Tears at the enemy from the shadows.",
-        effects: [
-            { type: 'hp_damage', formula: '8 + 1.3 * a.level' }
-        ]
-    },
-    infernalPact: {
-        id: 'infernalPact',
-        name: 'Infernal Pact',
+    powerCharge: {
+        id: 'powerCharge',
+        name: 'Power Charge',
         target: 'self',
-        element: 'Red',
-        description: "Sacrifice safety for power. (Grants Berserk)",
-        effects: [
-            { type: 'add_status', status: 'berserk', chance: 1.0, duration: 3 }
-        ]
+        element: 'Phys',
+        description: "Next phys attack deals more damage.",
+        effects: [{ type: 'add_status', status: 'charged', chance: 1.0, duration: 1 }]
     },
 
+    // Legacy
     wait: {
         id: 'wait',
         name: 'Wait',
         target: 'self',
-        element: 'White',
+        element: 'Phys',
         description: "Do nothing.",
         effects: []
-    },
-
-    flameRebirth: {
-        id: 'flameRebirth',
-        name: 'Flame Rebirth',
-        target: 'self',
-        element: 'Red',
-        description: "Rise from the ashes.",
-        effects: []
-    },
-
-    // Nurse
-    needleShot: {
-        id: 'needleShot',
-        name: 'Needle Shot',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "A precise strike that injects toxins.",
-        effects: [
-            { type: 'hp_damage', formula: '5 + 1.2 * a.level' },
-            { type: 'add_status', status: 'poison', chance: 0.4, duration: 3 }
-        ]
-    },
-    fieldSurgery: {
-        id: 'fieldSurgery',
-        name: 'Field Surgery',
-        target: 'ally-any',
-        element: 'Black',
-        description: "Emergency medical attention. It might hurt.",
-        effects: [
-            { type: 'hp_heal', formula: '10 + 2.0 * a.level' }
-        ]
-    },
-
-    // Incubus
-    drainKiss: {
-        id: 'drainKiss',
-        name: 'Drain Kiss',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "Steals vitality and puts the target to sleep.",
-        effects: [
-            { type: 'hp_drain', formula: '4 + 0.6 * a.level' },
-            { type: 'add_status', status: 'sleep', chance: 0.5, duration: 3 }
-        ]
     }
 };

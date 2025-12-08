@@ -1,8 +1,9 @@
 {
-  "Light": { "strong": ["Dark"], "weak": ["Bone"] },
-  "Dark":  { "strong": ["Light"], "weak": ["Light"] },
-  "Bone":  { "strong": ["Light"], "weak": ["Earth"] },
-  "Wind":  { "strong": ["Water"], "weak": ["Earth"] },
-  "Earth": { "strong": ["Wind"], "weak": ["Water"] },
-  "Water": { "strong": ["Earth"], "weak": ["Wind"] }
+  "Phys":  { "strong": [], "weak": [] },
+  "Fire":  { "strong": ["Fire"], "weak": ["Ice"] },
+  "Ice":   { "strong": ["Ice"], "weak": ["Fire"] },
+  "Elec":  { "strong": ["Elec"], "weak": ["Force"] },
+  "Force": { "strong": ["Force"], "weak": ["Elec"] },
+  "Light": { "strong": ["Light"], "weak": ["Dark"] },
+  "Dark":  { "strong": ["Dark"], "weak": ["Light"] }
 }
