@@ -52,13 +52,12 @@ export class Game_Event {
               // Collision check with walls
               if (map.floors[map.floorIndex].tiles[ny][nx] !== '#') {
                    // Check collision with player
-                   if (nx === map.playerX && ny === map.playerY) {
-                       return { type: 'collision', event: this };
-                   }
+                   const isPlayer = (nx === map.playerX && ny === map.playerY);
 
                    // Check collision with other events
                    const otherEvent = map.floors[map.floorIndex].events.find(e => e !== this && e.x === nx && e.y === ny);
-                   if (!otherEvent) {
+
+                   if (!otherEvent && !isPlayer) {
                        this.x = nx;
                        this.y = ny;
                    }
