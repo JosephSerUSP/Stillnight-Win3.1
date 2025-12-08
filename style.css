@@ -1047,3 +1047,8 @@ input:checked + .toggle-slider:before {
     border-right-color: var(--bezel-light);
     border-bottom-color: var(--bezel-light);
 }
+
+.tile-wall {
+    background-color: var(--bezel-dark);
+    color: transparent;
+}
