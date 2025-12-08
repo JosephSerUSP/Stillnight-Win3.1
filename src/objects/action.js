@@ -277,7 +277,9 @@ export class Game_Action {
         events.push({ type: 'use_item', battler: subject, itemName: item.name, msg: `${subjectName} uses ${item.name} on ${target.name}.` });
 
         if (item.effects) {
-            for (const [key, value] of Object.entries(item.effects)) {
+            item.effects.forEach(effect => {
+                const key = effect.type;
+                const value = effect.formula || effect.value;
                 // Determine context/boost if needed
                 const context = {};
                 // Pass item as source
@@ -308,7 +310,7 @@ export class Game_Action {
 
                     events.push(result);
                 }
-            }
+            });
         }
     }
 
