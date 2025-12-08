@@ -216,11 +216,6 @@ export class Scene_Map extends Scene_Base {
            this.setStatus("You move.");
            this.applyMovePassives();
            SoundManager.play('UI_SELECT');
-
-           // Check entity updates
-           const entityResults = this.explorationEngine.updateEntities();
-           entityResults.forEach(r => this.handleExplorationResult(r));
-           if (entityResults.length > 0) this.updateGrid();
       }
 
       if (result.type === 'EXPLORED_ALL') {
@@ -390,7 +385,8 @@ export class Scene_Map extends Scene_Base {
           if (symbol === " ") {
             switch (ch) {
               case "#":
-                symbol = "█";
+                symbol = " ";
+                cell.cssClass = (cell.cssClass ? cell.cssClass + " " : "") + "tile-wall";
                 // Check for SEE_WALLS trait to highlight breakable walls
                 if (event && event.actions && event.actions.some(a => a.type === 'BREAKABLE_WALL')) {
                      const seeWalls = this.party.members.some(m => m.getPassiveValue('SEE_WALLS') > 0);
