@@ -31,6 +31,7 @@ export class Scene_Map extends Scene_Base {
     this.interpreter = new Game_Interpreter(this);
     this.battleManager = new BattleManager(this.party, this.dataManager);
     this.runActive = true;
+    this.inputLocked = false;
     this.draggedIndex = null;
     this.currentInteractionEvent = null;
 
@@ -164,6 +165,7 @@ export class Scene_Map extends Scene_Base {
    * @param {KeyboardEvent} e - The keyboard event.
    */
   onKeyDown(e) {
+    if (this.inputLocked) return;
     this.inputController.onKeyDown(e);
   }
 
@@ -221,6 +223,7 @@ export class Scene_Map extends Scene_Base {
       if (result.type === 'EXPLORED_ALL') {
            this.logMessage("Map fully explored! The entire floor is revealed.");
            SoundManager.play('ITEM_GET');
+           this.animateMapReveal();
       }
 
       if (result.type === 'EVENT' || result.type === 'REVEALED') {
@@ -516,17 +519,64 @@ export class Scene_Map extends Scene_Base {
    */
   revealAllFloors() {
     if (this.sceneManager.currentScene() !== this) return;
-    this.map.floors.forEach((f) => {
+    this.map.floors.forEach((f, index) => {
+      if (index === this.map.floorIndex) return; // Skip current floor, animate it instead
+      f.fullyRevealed = true;
       for (let y = 0; y < this.map.MAX_H; y++) {
         for (let x = 0; x < this.map.MAX_W; x++) {
           f.visited[y][x] = true;
         }
       }
     });
-    this.updateGrid();
+    this.animateMapReveal();
     this.setStatus("All tiles revealed.");
     this.logMessage("[Debug] You peek behind the fog.");
     SoundManager.play('ITEM_GET');
+  }
+
+  /**
+   * Animates the map reveal with a radiating effect from the player.
+   * @method animateMapReveal
+   */
+  async animateMapReveal() {
+      if (this.inputLocked) return;
+      this.inputLocked = true;
+      const floor = this.map.floors[this.map.floorIndex];
+      floor.fullyRevealed = true;
+
+      const cx = this.map.playerX;
+      const cy = this.map.playerY;
+      const maxDist = Math.ceil(Math.sqrt(this.map.MAX_W**2 + this.map.MAX_H**2));
+
+      for (let r = 0; r <= maxDist; r++) {
+          if (this.sceneManager.currentScene() !== this) {
+              this.inputLocked = false;
+              return;
+          }
+
+          let changed = false;
+          for (let y = 0; y < this.map.MAX_H; y++) {
+              for (let x = 0; x < this.map.MAX_W; x++) {
+                  if (floor.visited[y][x]) continue;
+
+                  const dist = Math.floor(Math.sqrt((x - cx)**2 + (y - cy)**2));
+                  if (dist <= r) {
+                      floor.visited[y][x] = true;
+                      changed = true;
+                  }
+              }
+          }
+
+          if (changed) {
+              this.updateGrid();
+              await this.delay(50);
+          }
+      }
+
+      // Ensure everything is revealed at the end
+      this.map.revealCurrentFloor(true);
+      this.updateGrid();
+      this.inputLocked = false;
   }
 
   /**
@@ -736,8 +786,9 @@ export class Scene_Map extends Scene_Base {
       if (action === 'use') {
           if (item.type === 'equipment') return;
 
-          if (item.effects && item.effects.recruit_egg) {
-              const recruitId = item.effects.recruit_egg;
+          const recruitEffect = item.effects && item.effects.find(e => e.type === 'recruit_egg');
+          if (recruitEffect) {
+              const recruitId = recruitEffect.value;
               this.windowManager.close(this.hudManager.inventoryWindow);
               this.interpreter.openRecruitEvent({
                   forcedId: recruitId,

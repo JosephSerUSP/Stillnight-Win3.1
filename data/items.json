@@ -6,9 +6,12 @@
     "cost": 10,
     "description": "Heals one member to full HP.",
     "icon": 52,
-    "effects": {
-      "hp": 999
-    }
+    "effects": [
+      {
+        "type": "hp",
+        "value": 999
+      }
+    ]
   },
   {
     "id": "sigil_ink",
@@ -17,9 +20,12 @@
     "cost": 20,
     "description": "+2 max HP to one member.",
     "icon": 55,
-    "effects": {
-      "maxHp": 2
-    }
+    "effects": [
+      {
+        "type": "maxHp",
+        "value": 2
+      }
+    ]
   },
   {
     "id": "whispered_lessons",
@@ -28,9 +34,12 @@
     "cost": 64,
     "description": "+6 XP to one member.",
     "icon": 64,
-    "effects": {
-      "xp": 6
-    }
+    "effects": [
+      {
+        "type": "xp",
+        "value": 6
+      }
+    ]
   },
   {
     "id": "silver_blade",
@@ -41,8 +50,15 @@
     "icon": 180,
     "description": "Sharpened steel blade.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 },
-      { "code": "CRI", "value": 0.1 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 1
+      },
+      {
+        "code": "CRI",
+        "value": 0.1
+      }
     ]
   },
   {
@@ -54,7 +70,11 @@
     "icon": 172,
     "description": "Sturdy bone harness.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 3 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "maxHp",
+        "value": 3
+      }
     ]
   },
   {
@@ -66,8 +86,16 @@
     "icon": 174,
     "description": "A charm of rushing air.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 },
-      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 1 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 1
+      },
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "maxHp",
+        "value": 1
+      }
     ]
   },
   {
@@ -79,7 +107,11 @@
     "icon": 174,
     "description": "Glowing amulet.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 2 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "maxHp",
+        "value": 2
+      }
     ]
   },
   {
@@ -91,7 +123,10 @@
     "icon": 174,
     "description": "Humming chime.",
     "traits": [
-      { "code": "INITIATIVE", "value": 0.05 }
+      {
+        "code": "INITIATIVE",
+        "value": 0.05
+      }
     ]
   },
   {
@@ -103,7 +138,10 @@
     "icon": 6,
     "description": "Reflective glass. Prevents sneak attacks if in back row.",
     "traits": [
-      { "code": "REAR_GUARD", "value": 1 }
+      {
+        "code": "REAR_GUARD",
+        "value": 1
+      }
     ]
   },
   {
@@ -113,9 +151,12 @@
     "cost": 500,
     "icon": 184,
     "description": "A mysterious egg that pulses with life. Use to hatch.",
-    "effects": {
-      "recruit_egg": "egg"
-    }
+    "effects": [
+      {
+        "type": "recruit_egg",
+        "value": "egg"
+      }
+    ]
   },
   {
     "id": "exp_boost",
@@ -126,10 +167,13 @@
     "icon": 184,
     "description": "Beautiful golden egg, sought after by many.",
     "traits": [
-      { "code": "XP_RATE", "value": 1.5 }
+      {
+        "code": "XP_RATE",
+        "value": 1.5
+      }
     ]
   },
-    {
+  {
     "id": "hp_boost1",
     "name": "Vitality Seal 1",
     "type": "equipment",
@@ -138,7 +182,11 @@
     "icon": 174,
     "description": "+10% Max HP",
     "traits": [
-      { "code": "PARAM_RATE", "dataId": "maxHp", "value": 1.1 }
+      {
+        "code": "PARAM_RATE",
+        "dataId": "maxHp",
+        "value": 1.1
+      }
     ]
   },
   {
@@ -150,7 +198,11 @@
     "icon": 174,
     "description": "+20% Max HP",
     "traits": [
-      { "code": "PARAM_RATE", "dataId": "maxHp", "value": 1.2 }
+      {
+        "code": "PARAM_RATE",
+        "dataId": "maxHp",
+        "value": 1.2
+      }
     ]
   },
   {
@@ -162,7 +214,11 @@
     "icon": 174,
     "description": "+30% Max HP",
     "traits": [
-      { "code": "PARAM_RATE", "dataId": "maxHp", "value": 1.3 }
+      {
+        "code": "PARAM_RATE",
+        "dataId": "maxHp",
+        "value": 1.3
+      }
     ]
   },
   {
@@ -216,9 +272,19 @@
     "icon": 74,
     "description": "Legendary sword wielded by angels of time immemorial.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
-      { "code": "ELEMENT_CHANGE", "dataId": "White" },
-      { "code": "CRI", "value": 0.15 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 3
+      },
+      {
+        "code": "ELEMENT_CHANGE",
+        "dataId": "White"
+      },
+      {
+        "code": "CRI",
+        "value": 0.15
+      }
     ]
   },
   {
@@ -230,9 +296,19 @@
     "icon": 75,
     "description": "Cursed sceptre. Once wielded by a fallen queen, or so they say.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
-      { "code": "ELEMENT_CHANGE", "dataId": "Black" },
-      { "code": "CRI", "value": 0.1 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 3
+      },
+      {
+        "code": "ELEMENT_CHANGE",
+        "dataId": "Black"
+      },
+      {
+        "code": "CRI",
+        "value": 0.1
+      }
     ]
   },
   {
@@ -256,8 +332,14 @@
     "icon": 83,
     "description": "Ornate and delicate, its blue sheen is comforting.",
     "traits": [
-      { "code": "HRG", "value": 0.05 },
-      { "code": "ELEMENT_CHANGE", "dataId": "Blue" }
+      {
+        "code": "HRG",
+        "value": 0.05
+      },
+      {
+        "code": "ELEMENT_CHANGE",
+        "dataId": "Blue"
+      }
     ]
   },
   {
@@ -269,8 +351,15 @@
     "icon": 82,
     "description": "Wondrous boots that grant the wearer unimaginable swiftness.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "asp", "value": 2 },
-      { "code": "ELEMENT_CHANGE", "dataId": "Green" }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "asp",
+        "value": 2
+      },
+      {
+        "code": "ELEMENT_CHANGE",
+        "dataId": "Green"
+      }
     ]
   }
 ]

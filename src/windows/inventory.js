@@ -104,9 +104,12 @@ export class Window_Inventory extends Window_Selectable {
         let effectsText = "";
         const effects = [];
         if (item.effects) {
-             if (item.effects.hp) effects.push(`Restores ${item.effects.hp} HP`);
-             if (item.effects.maxHp) effects.push(`Max HP +${item.effects.maxHp}`);
-             if (item.effects.xp) effects.push(`Grants ${item.effects.xp} XP`);
+             item.effects.forEach(e => {
+                 const val = e.formula || e.value;
+                 if (e.type === 'hp') effects.push(`Restores ${val} HP`);
+                 if (e.type === 'maxHp') effects.push(`Max HP +${val}`);
+                 if (e.type === 'xp') effects.push(`Grants ${val} XP`);
+             });
         }
         if (item.traits) {
              item.traits.forEach(t => {

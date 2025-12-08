@@ -191,10 +191,12 @@ export class Game_Party {
       const outcomes = [];
 
       if (item.effects) {
-          for (const [key, value] of Object.entries(item.effects)) {
+          item.effects.forEach(effect => {
+              const key = effect.type;
+              const value = effect.formula || effect.value;
               const result = EffectProcessor.apply(key, value, item, targetMember);
               if (result) outcomes.push(result);
-          }
+          });
       }
 
       this.inventory.splice(index, 1);
