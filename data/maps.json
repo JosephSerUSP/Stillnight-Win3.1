@@ -1,143 +1,85 @@
 [
   {
-    "title": "Town of Stillnight",
-    "intro": "A quiet settlement on the edge of the void.",
+    "title": "Rabanastre",
+    "intro": "The Royal City of Rabanastre. You dream of something more.",
     "depth": 0,
     "music": "town1",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "count": 1 },
       { "id": "shop", "count": 1 },
-      { "id": "npc", "count": 2 }
+      { "id": "npc", "count": 3 }
     ],
     "treasures": [],
     "encounters": [],
     "recruits": []
   },
   {
-    "title": "Floor 1: Entry Hall",
-    "intro": "You cross the threshold into the dark.",
+    "title": "Dalmasca Estersand - Outpost",
+    "intro": "The desert sands stretch endlessly. Monsters roam near the city walls.",
     "depth": 1,
     "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
+      { "id": "recovery", "chance": 1.0 },
       { "id": "enemy", "min": 2, "max": 3 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "treasure", "count": 1 },
-      {
-          "id": "enemy",
-          "count": 1,
-          "behavior": "chase",
-          "symbol": "!",
-          "cssClass": "text-danger",
-          "encounters": [
-              { "id": "imp", "weight": 10 }
-          ]
-      }
+      { "id": "recruit", "count": 1 },
+      { "id": "treasure", "count": 1 }
     ],
-    "treasures": ["potion", "antidote"],
+    "treasures": ["potion", "dagger"],
     "encounters": [
-      { "id": "pixie", "weight": 5 },
-      { "id": "skeleton", "weight": 5 },
-      { "id": "imp", "weight": 3 }
+      { "id": "wolf", "weight": 10 }
     ],
-    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat","candle"]
+    "recruits": ["balthier", "fran"]
   },
   {
-    "title": "Floor 2: Chasm Crossing",
-    "intro": "Wind howls across a broken bridge.",
+    "title": "Dalmasca Estersand - Dunes",
+    "intro": "Deeper in the desert, the heat is stifling.",
     "depth": 2,
     "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 3, "max": 4 },
+      { "id": "enemy", "min": 4, "max": 6 },
       { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.6 },
-      { "id": "trap", "min": 1, "max": 2 },
       { "id": "treasure", "chance": 0.5 }
     ],
-    "treasures": ["hi_potion", "iron_sword"],
+    "treasures": ["hi_potion", "bronze_armor"],
     "encounters": [
-      { "id": "skeleton", "weight": 8 },
-      { "id": "imp", "weight": 5 },
-      { "id": "wisp", "weight": 4 },
-      { "id": "ooze", "weight": 3 }
+      { "id": "wolf", "weight": 6 },
+      { "id": "cactoid", "weight": 4 }
     ],
-    "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
+    "recruits": []
   },
   {
-    "title": "Floor 3: Rusted Choir",
-    "intro": "Broken bells sway above a dry pit.",
+    "title": "Giza Plains - Dry Season",
+    "intro": "The plains are cracked and dry. Dangerous birds watch from above.",
     "depth": 3,
     "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
+      { "id": "recovery", "chance": 0.5 },
+      { "id": "enemy", "min": 5, "max": 7 },
+      { "id": "shop", "chance": 0.5 },
+      { "id": "treasure", "count": 1 }
     ],
+    "treasures": ["phoenix_down", "broadsword"],
     "encounters": [
-      { "id": "golem", "weight": 6 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 3 }
+      { "id": "cockatrice", "weight": 5 },
+      { "id": "wolf", "weight": 3 },
+      { "id": "cactoid", "weight": 2 }
     ],
-    "recruits": ["golem", "demon", "angel", "larva","flauros"]
+    "recruits": []
   },
   {
-    "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
+    "title": "Garamsythe Waterway",
+    "intro": "The sewers beneath the palace. A fiery presence lurks.",
     "depth": 4,
     "music": "dungeon1",
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 7 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 }
-    ],
-    "encounters": [
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 4 },
-      { "id": "ghoul", "weight": 4 }
-    ],
-    "recruits": ["demon", "angel", "golem","flauros"]
-  },
-  {
-    "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
-    "depth": 5,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 8 },
-      { "id": "shrine", "chance": 0.4 },
-      { "id": "recruit", "chance": 0.4 }
-    ],
-    "encounters": [
-      { "id": "crimsonLord", "weight": 2 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
-    ],
-    "recruits": ["demon", "angel"]
-  },
-  {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
-    "depth": 6,
-    "music": "dungeon1",
-    "events": [
       { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
+      { "id": "enemy", "count": 1, "behavior": "chase", "symbol": "B", "cssClass": "text-danger" }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
+      { "id": "firemane", "weight": 10 }
     ],
     "recruits": []
   }

@@ -1,6 +1,8 @@
 import { randInt } from "../core/utils.js";
 import { SoundManager } from "./sound.js";
 import { Game_Action } from "../objects/objects.js";
+import { ConfigManager } from "./config.js";
+import { gambitTargets } from "../../data/gambits.js";
 
 /**
  * @class BattleManager
@@ -176,6 +178,24 @@ export class BattleManager {
   getAIAction(battlerContext) {
       const { battler, index, isEnemy } = battlerContext;
 
+      // Context for targeting
+      const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
+      const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
+
+      // Gambits Logic
+      if (isEnemy || ConfigManager.autoBattle) {
+          const gambitAction = this.processGambits(battler, myTeam, opposingTeam);
+          if (gambitAction) {
+              // Apply row bonus if player
+              if (!isEnemy) {
+                  const row = this._partyRow(index);
+                  gambitAction.setRowBonus(row === "Front" ? 1 : -1);
+              }
+              return gambitAction;
+          }
+      }
+
+      // Default AI / Fallback if no gambit matched
       // Create Action
       const action = new Game_Action(battler);
 
@@ -184,10 +204,6 @@ export class BattleManager {
           const row = this._partyRow(index);
           action.setRowBonus(row === "Front" ? 1 : -1);
       }
-
-      // Context for targeting
-      const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
-      const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
 
       // 1. Decide Action Type (Skill or Attack)
       // Simple logic: 60% chance to use skill if available
@@ -271,6 +287,66 @@ export class BattleManager {
    * @private
    * @param {Array} events - The event list to append to.
    */
+  processGambits(battler, allies, enemies) {
+      if (!battler.gambits) return null;
+
+      for (const gambit of battler.gambits) {
+          if (!gambit.active) continue;
+
+          const targetDef = gambitTargets.find(t => t.id === gambit.targetId);
+          if (!targetDef) continue;
+
+          let candidates = [];
+          // Determine candidate pool
+          if (targetDef.type === 'enemy') {
+              candidates = enemies.filter(e => e.hp > 0);
+          } else if (targetDef.type === 'ally') {
+              // Special case for 'dead' check
+              if (targetDef.condition === 'status' && targetDef.value === 'dead') {
+                   candidates = allies.filter(a => a.hp <= 0);
+              } else {
+                   candidates = allies.filter(a => a.hp > 0);
+              }
+          } else if (targetDef.type === 'self') {
+              candidates = [battler];
+          }
+
+          if (candidates.length === 0) continue;
+
+          let validTargets = [];
+
+          if (targetDef.condition === 'any' || targetDef.condition === 'always') {
+              validTargets = candidates;
+          } else if (targetDef.condition === 'hp_below') {
+              validTargets = candidates.filter(c => (c.hp / c.maxHp) < targetDef.value);
+          } else if (targetDef.condition === 'nearest') {
+              validTargets = candidates;
+          } else if (targetDef.condition === 'lowest_hp') {
+               validTargets = candidates.sort((a,b) => (a.hp/a.maxHp) - (b.hp/b.maxHp));
+          } else if (targetDef.condition === 'status') {
+               validTargets = candidates.filter(c => {
+                   if (targetDef.value === 'dead') return c.hp <= 0;
+                   return c.isStateAffected(targetDef.value);
+               });
+          }
+
+          if (validTargets.length > 0) {
+              const target = validTargets[0];
+              const skillId = gambit.skillId;
+              const action = new Game_Action(battler);
+
+              if (skillId === 'attack') {
+                  action.setAttack();
+              } else {
+                  action.setSkill(skillId, this.dataManager);
+              }
+              action.target = target;
+              return action;
+          }
+      }
+      return null;
+  }
+
   _checkBattleEnd(events) {
     const anyEnemyAlive = this.enemies.some((e) => e.hp > 0);
     const anyPartyAlive = this.party.activeMembers.some((p) => p.hp > 0);

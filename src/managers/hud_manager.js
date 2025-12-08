@@ -12,6 +12,8 @@ import {
   Window_Options,
   Window_AudioPlayer,
   Window_Help,
+  Window_LicenseBoard,
+  Window_GambitSetup,
   WindowLayer
 } from "../windows/index.js";
 
@@ -71,11 +73,19 @@ export class HUDManager {
         this.helpWindow = new Window_Help();
         this.windowLayer.addChild(this.helpWindow);
 
+        this.licenseWindow = new Window_LicenseBoard();
+        this.windowLayer.addChild(this.licenseWindow);
+
+        this.gambitWindow = new Window_GambitSetup();
+        this.windowLayer.addChild(this.gambitWindow);
+
         this.setupDefaultCloseHandlers();
     }
 
     setupDefaultCloseHandlers() {
         const close = (w) => this.windowManager.close(w);
+        this.licenseWindow.onUserClose = () => close(this.licenseWindow);
+        this.gambitWindow.onUserClose = () => close(this.gambitWindow);
         this.evolutionWindow.onUserClose = () => close(this.evolutionWindow);
         this.confirmWindow.onUserClose = () => close(this.confirmWindow);
         this.confirmEffectWindow.onUserClose = () => close(this.confirmEffectWindow);

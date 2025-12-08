@@ -3,6 +3,8 @@ import { EffectManager } from "../managers/effects.js";
 import { ProgressionSystem } from "../managers/progression.js";
 import { passives as passivesData } from "../../data/passives.js";
 import { states as statesData } from "../../data/states.js";
+import { licenses as licensesData } from "../../data/licenses.js";
+import { skills as skillsData } from "../../data/skills.js";
 import { Game_Base } from "./game_base.js";
 
 /**
@@ -57,6 +59,13 @@ export class Game_Battler extends Game_Base {
     this.evolutions = actorData.evolutions || [];
     this.gold = actorData.gold || 0;
     this.isEnemy = isEnemy;
+    this.lp = 0;
+    this.licenses = new Set();
+    // Default gambits: Attack Nearest Enemy
+    this.gambits = [
+        { active: true, targetId: 'enemy_nearest', skillId: 'attack' },
+        { active: false, targetId: 'self', skillId: 'wait' } // Placeholder
+    ];
 
     /**
      * Active states on the battler.
@@ -199,6 +208,59 @@ export class Game_Battler extends Game_Base {
     if (traitSum !== 0) return traitSum;
 
     return 0;
+  }
+
+  /**
+   * Awards License Points to the battler.
+   * @param {number} amount
+   */
+  gainLp(amount) {
+      this.lp += amount;
+  }
+
+  /**
+   * Unlocks a license if affordable and requirements met.
+   * @param {string} licenseId
+   * @returns {boolean} True if successful.
+   */
+  unlockLicense(licenseId) {
+      const license = licensesData[licenseId];
+      if (!license) return false;
+      if (this.licenses.has(licenseId)) return false;
+      if (this.lp < license.cost) return false;
+
+      // Check prerequisites
+      if (license.prerequisites) {
+          for (const req of license.prerequisites) {
+              if (!this.licenses.has(req)) return false;
+          }
+      }
+
+      this.lp -= license.cost;
+      this.licenses.add(licenseId);
+
+      // Apply Effect
+      if (license.effect) {
+          if (license.effect.type === 'learn_skill') {
+              if (!this.skills.includes(license.effect.value)) {
+                  this.skills.push(license.effect.value);
+              }
+          } else if (license.effect.type === 'stat') {
+              if (license.effect.stat === 'maxHp') {
+                   this.actorData.traits = this.actorData.traits || [];
+                   this.actorData.traits.push({ code: 'PARAM_PLUS', dataId: 'maxHp', value: license.effect.value });
+                   // Heal the gained amount to avoid empty bar illusion
+                   this.hp += license.effect.value;
+              } else if (license.effect.stat === 'atk') {
+                   this.actorData.traits = this.actorData.traits || [];
+                   this.actorData.traits.push({ code: 'PARAM_PLUS', dataId: 'atk', value: license.effect.value });
+              }
+          } else if (license.effect.type === 'gambit_slot') {
+               this.gambits.push({ active: false, targetId: 'self', skillId: 'wait' });
+          }
+      }
+
+      return true;
   }
 
   /**

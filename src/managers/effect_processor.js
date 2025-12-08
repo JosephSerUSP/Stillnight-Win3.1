@@ -94,6 +94,40 @@ export class EffectProcessor {
                 };
             }
 
+            case 'remove_status': {
+                 const statusId = (typeof effectValue === 'object') ? effectValue.status : effectValue;
+                 if (target.isStateAffected(statusId)) {
+                     target.removeState(statusId);
+                     return { type: 'status_remove', status: statusId, target };
+                 }
+                 return null;
+            }
+
+            case 'revive': {
+                if (target.hp <= 0) {
+                     // Revival logic
+                     let percent = 0.5;
+                     if (typeof effectValue === 'number') percent = effectValue;
+                     if (typeof effectValue === 'object' && effectValue.value) percent = effectValue.value;
+
+                     const healAmount = Math.floor(target.maxHp * percent) || 1;
+                     target.hp = healAmount;
+                     // Remove 'dead' state if it exists, though engine mostly uses HP check
+                     target.removeState('dead');
+                     return { type: 'revive', value: healAmount, target };
+                }
+                return null;
+            }
+
+            case 'steal': {
+                 const chance = (typeof effectValue === 'object' ? effectValue.chance : effectValue) || 0.5;
+                 if (Math.random() < chance) {
+                     return { type: 'steal_success', target, source };
+                 } else {
+                     return { type: 'steal_fail', target, source };
+                 }
+            }
+
             default:
                 console.warn(`Unknown effect key: ${effectKey}`);
                 return null;

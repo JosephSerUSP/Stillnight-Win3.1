@@ -193,12 +193,16 @@ export class Window_PartyPanel extends Window_Base {
             props: { gap: '2px' },
             children: [
                 { type: 'button', props: { id: 'btn-formation', className: 'win-btn', label: 'Formation...', style: { fontSize: '10px', padding: '0 6px' } } },
-                { type: 'button', props: { id: 'btn-inventory', className: 'win-btn', label: 'Inventory...', testId: 'btn-inventory', style: { fontSize: '10px', padding: '0 6px' } } }
+                { type: 'button', props: { id: 'btn-inventory', className: 'win-btn', label: 'Inventory...', testId: 'btn-inventory', style: { fontSize: '10px', padding: '0 6px' } } },
+                { type: 'button', props: { id: 'btn-licenses', className: 'win-btn', label: 'Licenses...', style: { fontSize: '10px', padding: '0 6px' } } },
+                { type: 'button', props: { id: 'btn-gambits', className: 'win-btn', label: 'Gambits...', style: { fontSize: '10px', padding: '0 6px' } } }
             ]
         });
 
         this.btnFormation = this.header.querySelector("#btn-formation");
         this.btnInventory = this.header.querySelector("#btn-inventory");
+        this.btnLicenses = this.header.querySelector("#btn-licenses");
+        this.btnGambits = this.header.querySelector("#btn-gambits");
 
         this.partyGridEl = UI.build(this.content, {
             type: 'panel',
@@ -401,6 +405,8 @@ export class Window_Desktop extends Window_Base {
     get btnRevealAll() { return this.stackNav.btnRevealAll; }
     get btnFormation() { return this.partyPanel.btnFormation; }
     get btnInventory() { return this.partyPanel.btnInventory; }
+    get btnLicenses() { return this.partyPanel.btnLicenses; }
+    get btnGambits() { return this.partyPanel.btnGambits; }
     get btnClearLog() { return this.logPanel.btnClear; }
 
     updateCardHeader(floor, index, total) {

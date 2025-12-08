@@ -157,6 +157,8 @@ export class Scene_Map extends Scene_Base {
     });
     this.hud.btnFormation.addEventListener("click", this.openFormation.bind(this));
     this.hud.btnInventory.addEventListener("click", this.openInventory.bind(this));
+    this.hud.btnLicenses.addEventListener("click", this.openLicenseBoard.bind(this));
+    this.hud.btnGambits.addEventListener("click", this.openGambitSetup.bind(this));
   }
 
   /**
@@ -658,6 +660,29 @@ export class Scene_Map extends Scene_Base {
    */
   closeFormation() {
     this.windowManager.close(this.hudManager.formationWindow);
+  }
+
+  openLicenseBoard() {
+      if (this.sceneManager.currentScene() !== this) return;
+      this.hudManager.partySelectWindow.setup(this.party, "Select member for License Board:", (member) => {
+          this.windowManager.close(this.hudManager.partySelectWindow);
+          this.hudManager.licenseWindow.setup(member, () => {
+              this.updateParty();
+              SoundManager.play('UI_SUCCESS');
+          });
+          this.windowManager.push(this.hudManager.licenseWindow);
+      }, this.getContext());
+      this.windowManager.push(this.hudManager.partySelectWindow);
+  }
+
+  openGambitSetup() {
+      if (this.sceneManager.currentScene() !== this) return;
+      this.hudManager.partySelectWindow.setup(this.party, "Select member for Gambits:", (member) => {
+          this.windowManager.close(this.hudManager.partySelectWindow);
+          this.hudManager.gambitWindow.setup(member, this.dataManager);
+          this.windowManager.push(this.hudManager.gambitWindow);
+      }, this.getContext());
+      this.windowManager.push(this.hudManager.partySelectWindow);
   }
 
   /**

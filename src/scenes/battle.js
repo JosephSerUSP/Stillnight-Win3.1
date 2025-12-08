@@ -445,16 +445,24 @@ export class Scene_Battle extends Scene_Base {
 
       const living = this.party.activeMembers.filter((p) => p.hp > 0);
       const share = living.length > 0 ? Math.max(1, totalXp / living.length) : 0;
-      living.forEach((m) => this.sceneManager.previous().gainXp(m, share));
+      const lpGain = this.battleManager.enemies.length; // 1 LP per enemy
+
+      living.forEach((m) => {
+          this.sceneManager.previous().gainXp(m, share);
+          if (m.gainLp) m.gainLp(lpGain);
+      });
 
       const reserveShare = Math.max(1, totalXp / 20);
       this.party.reserveMembers.forEach((m) => {
-          if (m.hp > 0) this.sceneManager.previous().gainXp(m, reserveShare, true);
+          if (m.hp > 0) {
+              this.sceneManager.previous().gainXp(m, reserveShare, true);
+              if (m.gainLp) m.gainLp(lpGain);
+          }
       });
 
       this.party.gold += totalGold;
       this.sceneManager.previous().logMessage(
-        `[Battle] Victory! Gained ${totalGold}G and ${totalXp} XP.`
+        `[Battle] Victory! Gained ${totalGold}G, ${totalXp} XP, and ${lpGain} LP.`
       );
 
       if (droppedItems.length > 0) {

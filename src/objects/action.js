@@ -255,6 +255,32 @@ export class Game_Action {
                      hpAfterSource: result.hpAfterSource,
                      msg: `  ${battler.name} drains ${result.value} HP from ${target.name}.`
                  });
+            } else if (result.type === 'status_remove') {
+                 events.push({ type: 'status_remove', target: target, status: result.status, msg: `  ${target.name}'s ${result.status} was removed.` });
+            } else if (result.type === 'revive') {
+                 SoundManager.play('HEAL');
+                 events.push({ type: 'revive', target: target, value: result.value, msg: `  ${target.name} is revived!`, animation: 'healing_sparkle' });
+            } else if (result.type === 'steal_success') {
+                 const enemy = result.target;
+                 let stolen = false;
+                 if (enemy.actorData && enemy.actorData.drops && enemy.actorData.drops.length > 0) {
+                      const drop = enemy.actorData.drops[0];
+                      const item = dataManager.items.find(i => i.id === drop.itemId);
+                      if (item) {
+                           const scene = window.sceneManager.currentScene();
+                           if (scene && scene.party) {
+                               scene.party.inventory.push(item);
+                               SoundManager.play('ITEM_GET');
+                               events.push({ type: 'msg', msg: `  Stole ${item.name}!` });
+                               stolen = true;
+                           }
+                      }
+                 }
+                 if (!stolen) {
+                     events.push({ type: 'msg', msg: `  Nothing to steal.` });
+                 }
+            } else if (result.type === 'steal_fail') {
+                 events.push({ type: 'msg', msg: `  Couldn't steal anything.` });
             }
         });
     }

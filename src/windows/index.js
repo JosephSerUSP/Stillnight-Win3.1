@@ -7,6 +7,8 @@ import { Window_PartySelect } from "./party_select.js";
 import { Window_EquipItemSelect } from "./equip_select.js";
 import { Window_Help, Window_Options } from "./misc.js";
 import { Window_Desktop } from "./desktop.js";
+import { Window_LicenseBoard } from "./license_board.js";
+import { Window_GambitSetup } from "./gambit_setup.js";
 
 export * from "./utils.js";
 export * from "./base.js";
@@ -25,6 +27,8 @@ export * from "./details.js";
 export * from "./misc.js";
 export * from "./builder.js";
 export * from "./audio_player.js";
+export * from "./license_board.js";
+export * from "./gambit_setup.js";
 
 if (typeof window !== 'undefined' && window.location.search.includes("test=true")) {
     window.Window_Formation = Window_Formation;
