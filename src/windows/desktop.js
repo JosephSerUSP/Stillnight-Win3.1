@@ -280,13 +280,21 @@ export class Window_LogPanel extends Window_Base {
         });
     }
 
-    add(msg) {
-        this.logEl.textContent += msg + "\n";
+    add(msg, priority = 'normal') {
+        const line = UI.build(this.logEl, {
+            type: 'label',
+            props: {
+                tag: 'div',
+                text: msg,
+                className: 'log-message',
+                style: { opacity: priority === 'low' ? '0.5' : '1.0' }
+            }
+        });
         this.logEl.scrollTop = this.logEl.scrollHeight;
     }
 
     clear() {
-        this.logEl.textContent = "";
+        this.logEl.innerHTML = "";
     }
 }
 
@@ -410,8 +418,8 @@ export class Window_Desktop extends Window_Base {
         this.partyPanel.updateParty(party, onInspect, context);
     }
 
-    logMessage(msg) {
-        this.logPanel.add(msg);
+    logMessage(msg, priority = 'normal') {
+        this.logPanel.add(msg, priority);
     }
 
     clearLog() {

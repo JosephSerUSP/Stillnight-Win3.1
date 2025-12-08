@@ -212,7 +212,7 @@ export class Scene_Map extends Scene_Base {
       }
 
       if (result.type === 'MOVED') {
-           this.logMessage("[Step] Your footsteps echo softly.");
+           this.logMessage("[Step] Your footsteps echo softly.", 'low');
            this.setStatus("You move.");
            this.applyMovePassives();
            SoundManager.play('UI_SELECT');
@@ -248,8 +248,8 @@ export class Scene_Map extends Scene_Base {
    * @method logMessage
    * @param {string} msg - The message to log.
    */
-  logMessage(msg) {
-    this.hud.logMessage(msg);
+  logMessage(msg, priority = 'normal') {
+    this.hud.logMessage(msg, priority);
 
     if (this.windowManager.stack.includes(this.hudManager.eventWindow)) {
         this.hudManager.eventWindow.appendLog(msg);
