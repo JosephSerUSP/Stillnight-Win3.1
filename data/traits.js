@@ -291,5 +291,9 @@ export const TRAIT_DEFINITIONS = {
         combine: 'multiply',
         label: () => "XP Rate",
         format: (value) => `x${Math.round(value * 100)}%`
+    },
+    'LEARN_SKILL': {
+        label: (dataId) => "Learn Skill",
+        format: (value, dataId) => `${dataId}`
     }
 };

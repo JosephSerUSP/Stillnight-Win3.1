@@ -1,30 +1,45 @@
 [
   {
-    "title": "Town of Stillnight",
-    "intro": "A quiet settlement on the edge of the void.",
-    "depth": 0,
+    "title": "Sector 1 Station",
+    "intro": "The train screeches to a halt. The mission begins.",
+    "depth": 1,
     "music": "town1",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "count": 1 },
-      { "id": "shop", "count": 1 },
-      { "id": "npc", "count": 2 }
+      { "id": "enemy", "min": 2, "max": 4 },
+      { "id": "npc", "count": 1 }
     ],
-    "treasures": [],
-    "encounters": [],
+    "treasures": ["potion", "phoenix_down"],
+    "encounters": [
+      { "id": "mp", "weight": 10 },
+      { "id": "guard_dog", "weight": 5 }
+    ],
     "recruits": []
   },
   {
-    "title": "Floor 1: Entry Hall",
-    "intro": "You cross the threshold into the dark.",
-    "depth": 1,
+    "title": "Reactor 1 Entrance",
+    "intro": "The lights hum with Mako energy.",
+    "depth": 2,
     "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 2, "max": 3 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "treasure", "count": 1 },
+      { "id": "enemy", "min": 3, "max": 5 },
+      { "id": "treasure", "chance": 0.5 },
+      { "id": "npc", "count": 1 }
+    ],
+    "treasures": ["ether", "restore_materia"],
+    "encounters": [
+      { "id": "mp", "weight": 8 },
+      { "id": "guard_dog", "weight": 8 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Reactor 1 Core",
+    "intro": "The core pulses ominously. The bomb must be planted.",
+    "depth": 3,
+    "music": "dungeon1",
+    "events": [
       {
           "id": "enemy",
           "count": 1,
@@ -32,112 +47,13 @@
           "symbol": "!",
           "cssClass": "text-danger",
           "encounters": [
-              { "id": "imp", "weight": 10 }
+              { "id": "guard_scorpion", "weight": 10 }
           ]
       }
     ],
-    "treasures": ["potion", "antidote"],
+    "treasures": ["lightning_materia"],
     "encounters": [
-      { "id": "pixie", "weight": 5 },
-      { "id": "skeleton", "weight": 5 },
-      { "id": "imp", "weight": 3 }
-    ],
-    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat","candle"]
-  },
-  {
-    "title": "Floor 2: Chasm Crossing",
-    "intro": "Wind howls across a broken bridge.",
-    "depth": 2,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 3, "max": 4 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.6 },
-      { "id": "trap", "min": 1, "max": 2 },
-      { "id": "treasure", "chance": 0.5 }
-    ],
-    "treasures": ["hi_potion", "iron_sword"],
-    "encounters": [
-      { "id": "skeleton", "weight": 8 },
-      { "id": "imp", "weight": 5 },
-      { "id": "wisp", "weight": 4 },
-      { "id": "ooze", "weight": 3 }
-    ],
-    "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
-  },
-  {
-    "title": "Floor 3: Rusted Choir",
-    "intro": "Broken bells sway above a dry pit.",
-    "depth": 3,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
-    ],
-    "encounters": [
-      { "id": "golem", "weight": 6 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 3 }
-    ],
-    "recruits": ["golem", "demon", "angel", "larva","flauros"]
-  },
-  {
-    "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
-    "depth": 4,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 7 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 }
-    ],
-    "encounters": [
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 4 },
-      { "id": "ghoul", "weight": 4 }
-    ],
-    "recruits": ["demon", "angel", "golem","flauros"]
-  },
-  {
-    "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
-    "depth": 5,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 8 },
-      { "id": "shrine", "chance": 0.4 },
-      { "id": "recruit", "chance": 0.4 }
-    ],
-    "encounters": [
-      { "id": "crimsonLord", "weight": 2 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
-    ],
-    "recruits": ["demon", "angel"]
-  },
-  {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
-    "depth": 6,
-    "music": "dungeon1",
-    "events": [
-      { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
-    ],
-    "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
+      { "id": "mp", "weight": 5 }
     ],
     "recruits": []
   }

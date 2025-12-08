@@ -243,26 +243,44 @@ export class BattleManager {
 
     if (subject.hp <= 0) return [];
 
-    // Re-validate target (Smart re-targeting)
-    if (!target || target.hp <= 0) {
-        // If target is dead, try to find a new target
-        const isEnemy = subject.isEnemy;
-        const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
-        const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
+    // Determine targets
+    let targets = [];
+    const scope = (action.item && action.item.target) ? action.item.target : 'enemy-any';
 
-        const targets = action.makeTargets(myTeam, opposingTeam);
-        if (targets.length > 0) {
-            target = targets[randInt(0, targets.length - 1)];
-            action.target = target; // Update action
-        } else {
-            return []; // Fizzle if no valid targets
+    if (scope.includes('all')) {
+         const isEnemy = subject.isEnemy;
+         const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
+         const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
+
+         const targetSide = scope.includes('ally') ? myTeam : opposingTeam;
+         targets = targetSide.filter(b => b.hp > 0);
+    } else {
+        // Re-validate target (Smart re-targeting)
+        if (!target || target.hp <= 0) {
+            // If target is dead, try to find a new target
+            const isEnemy = subject.isEnemy;
+            const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
+            const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
+
+            const potentialTargets = action.makeTargets(myTeam, opposingTeam);
+            if (potentialTargets.length > 0) {
+                target = potentialTargets[randInt(0, potentialTargets.length - 1)];
+                action.target = target; // Update action
+            } else {
+                return []; // Fizzle if no valid targets
+            }
         }
+        targets = [target];
     }
 
-    const events = action.apply(target, this.dataManager);
+    const allEvents = [];
+    targets.forEach(t => {
+        const events = action.apply(t, this.dataManager);
+        allEvents.push(...events);
+    });
 
-    this._checkBattleEnd(events);
-    return events;
+    this._checkBattleEnd(allEvents);
+    return allEvents;
   }
 
   /**

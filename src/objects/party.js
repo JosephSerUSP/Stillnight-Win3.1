@@ -112,6 +112,13 @@ export class Game_Party {
     initialMembers.forEach((m, i) => {
         if (i < this.MAX_MEMBERS) {
             this.slots[i] = m;
+            // Auto-equip base equipment
+            if (m.baseEquipment) {
+                const item = dataManager.items.find(i => i.id === m.baseEquipment);
+                if (item) {
+                    m.equipmentItem = item;
+                }
+            }
         }
     });
   }

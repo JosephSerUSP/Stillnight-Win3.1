@@ -1,8 +1,10 @@
 {
-  "Light": { "strong": ["Dark"], "weak": ["Bone"] },
-  "Dark":  { "strong": ["Light"], "weak": ["Light"] },
-  "Bone":  { "strong": ["Light"], "weak": ["Earth"] },
-  "Wind":  { "strong": ["Water"], "weak": ["Earth"] },
-  "Earth": { "strong": ["Wind"], "weak": ["Water"] },
-  "Water": { "strong": ["Earth"], "weak": ["Wind"] }
+  "Fire": { "strong": ["Ice"], "weak": ["Water"] },
+  "Ice": { "strong": ["Fire"], "weak": ["Lightning"] },
+  "Lightning": { "strong": ["Water", "Machine"], "weak": ["Earth"] },
+  "Earth": { "strong": ["Lightning"], "weak": ["Wind"] },
+  "Wind": { "strong": ["Earth"], "weak": ["Ice"] },
+  "Water": { "strong": ["Fire"], "weak": ["Lightning"] },
+  "Holy": { "strong": ["Shadow"], "weak": ["Shadow"] },
+  "Shadow": { "strong": ["Holy"], "weak": ["Holy"] }
 }

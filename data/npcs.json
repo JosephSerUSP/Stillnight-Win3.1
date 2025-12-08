@@ -1,14 +1,20 @@
 [
   {
-    "id": "old_man",
-    "name": "Old Man",
-    "char": "N",
-    "dialogue": "It's dangerous to go alone! Take care of yourself."
+    "id": "biggs",
+    "name": "Biggs",
+    "char": "B",
+    "dialogue": "Target confirmed. Reactor 1 is just ahead."
   },
   {
-    "id": "merchant_gossip",
-    "name": "Gossip Merchant",
-    "char": "M",
-    "dialogue": "I heard the boss on the bottom floor hates light."
+    "id": "wedge",
+    "name": "Wedge",
+    "char": "W",
+    "dialogue": "I'll keep the escape route clear! Good luck, Cloud!"
+  },
+  {
+    "id": "jessie",
+    "name": "Jessie",
+    "char": "J",
+    "dialogue": "Code entered. The door is open. Watch out for the security systems."
   }
 ]

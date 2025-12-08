@@ -11,7 +11,7 @@ export const startingParty = {
    * @returns {number} The starting gold.
    */
   getGold: () => {
-    return randInt(25, 75);
+    return 100;
   },
 
   /**
@@ -21,25 +21,18 @@ export const startingParty = {
    */
   getInventory: (allItems) => {
     const inventory = [];
-    const consumables = allItems.filter(item => item.type === 'consumable' && item.id !== 'hp_tonic');
-    const equipment = allItems.filter(item => item.type === 'equipment');
 
-    // 1-3 HP Tonics
-    const hpTonic = allItems.find(item => item.id === 'hp_tonic');
-    if (hpTonic) {
-        const amount = randInt(1, 3);
-        for (let i = 0; i < amount; i++) {
-            inventory.push(hpTonic);
+    // 3 Potions
+    const potion = allItems.find(item => item.id === 'potion');
+    if (potion) {
+        for (let i = 0; i < 3; i++) {
+            inventory.push(potion);
         }
     }
 
-    // 2 random consumables
-    const randomConsumables = shuffleArray(consumables).slice(0, 2);
-    inventory.push(...randomConsumables);
-
-    // 2 random pieces of equipment
-    const randomEquipment = shuffleArray(equipment).slice(0, 2);
-    inventory.push(...randomEquipment);
+    // 1 Phoenix Down
+    const pd = allItems.find(item => item.id === 'phoenix_down');
+    if (pd) inventory.push(pd);
 
     return inventory;
   },
@@ -50,20 +43,13 @@ export const startingParty = {
    * @returns {Object[]} The starting party members configuration.
    */
   getMembers: (allActors) => {
-    const availableCreatures = allActors.filter(creature => creature.initialParty);
+    const cloud = allActors.find(a => a.id === 'cloud');
+    const barret = allActors.find(a => a.id === 'barret');
 
-    if (Math.random() < 0.25) {
-      // 2 creatures, one leveled up
-      const [creature1, creature2] = shuffleArray(availableCreatures).slice(0, 2);
-      return [
-        { id: creature1.id, level: creature1.level },
-        { id: creature2.id, level: creature2.level + 3 }
-      ];
-    } else {
-      // 3 creatures at base level
-      return shuffleArray(availableCreatures)
-        .slice(0, 3)
-        .map(data => ({ id: data.id, level: data.level }));
-    }
+    const party = [];
+    if (cloud) party.push({ id: 'cloud', level: cloud.level });
+    if (barret) party.push({ id: 'barret', level: barret.level });
+
+    return party;
   }
 };

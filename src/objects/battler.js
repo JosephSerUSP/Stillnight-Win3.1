@@ -47,7 +47,7 @@ export class Game_Battler extends Game_Base {
         return pId;
     });
 
-    this.skills = actorData.skills ? actorData.skills.slice() : [];
+    this._baseSkills = actorData.skills ? actorData.skills.slice() : [];
     this.spriteKey = actorData.spriteKey;
     this.flavor = actorData.flavor;
     this.xp = 0;
@@ -72,6 +72,15 @@ export class Game_Battler extends Game_Base {
 
   getEvolutionStatus(inventory, floorDepth, gold) {
       return ProgressionSystem.getEvolutionStatus(this, inventory, floorDepth, gold);
+  }
+
+  get skills() {
+      const skills = [...this._baseSkills];
+      const traitSkills = this.traits.filter(t => t.code === 'LEARN_SKILL').map(t => t.dataId);
+      traitSkills.forEach(s => {
+          if (!skills.includes(s)) skills.push(s);
+      });
+      return skills;
   }
 
   /**
