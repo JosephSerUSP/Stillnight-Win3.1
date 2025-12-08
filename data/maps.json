@@ -15,8 +15,8 @@
     "recruits": []
   },
   {
-    "title": "Floor 1: Entry Hall",
-    "intro": "You cross the threshold into the dark.",
+    "title": "Floor 1: Rusted Entry",
+    "intro": "The air smells of oil and decay.",
     "depth": 1,
     "music": "dungeon1",
     "events": [
@@ -25,28 +25,18 @@
       { "id": "enemy", "min": 2, "max": 3 },
       { "id": "recruit", "chance": 0.5 },
       { "id": "treasure", "count": 1 },
-      {
-          "id": "enemy",
-          "count": 1,
-          "behavior": "chase",
-          "symbol": "!",
-          "cssClass": "text-danger",
-          "encounters": [
-              { "id": "imp", "weight": 10 }
-          ]
-      }
+      { "id": "terminal_rusted", "chance": 1.0 }
     ],
-    "treasures": ["potion", "antidote"],
+    "treasures": ["hp_tonic", "scrap_metal"],
     "encounters": [
-      { "id": "pixie", "weight": 5 },
-      { "id": "skeleton", "weight": 5 },
+      { "id": "scavenger", "weight": 5 },
       { "id": "imp", "weight": 3 }
     ],
-    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat","candle"]
+    "recruits": ["scavenger", "imp", "bat"]
   },
   {
-    "title": "Floor 2: Chasm Crossing",
-    "intro": "Wind howls across a broken bridge.",
+    "title": "Floor 2: Gearworks",
+    "intro": "Grinding gears echo in the distance.",
     "depth": 2,
     "music": "dungeon1",
     "events": [
@@ -54,91 +44,331 @@
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 3, "max": 4 },
       { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.6 },
-      { "id": "trap", "min": 1, "max": 2 },
-      { "id": "treasure", "chance": 0.5 }
+      { "id": "treasure", "chance": 0.5 },
+      { "id": "terminal_rusted", "chance": 0.5 }
     ],
-    "treasures": ["hi_potion", "iron_sword"],
+    "treasures": ["scrap_metal", "wire", "bone_plate"],
     "encounters": [
-      { "id": "skeleton", "weight": 8 },
-      { "id": "imp", "weight": 5 },
-      { "id": "wisp", "weight": 4 },
-      { "id": "ooze", "weight": 3 }
+      { "id": "scavenger", "weight": 6 },
+      { "id": "sentry", "weight": 3 }
     ],
-    "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
+    "recruits": ["scavenger", "sentry", "skeleton"]
   },
   {
-    "title": "Floor 3: Rusted Choir",
-    "intro": "Broken bells sway above a dry pit.",
+    "title": "Floor 3: Pipe Maze",
+    "intro": "Steam hisses from broken pipes.",
     "depth": 3,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 3, "max": 5 },
+      { "id": "trap", "min": 1, "max": 2 },
+      { "id": "recruit", "chance": 0.5 }
+    ],
+    "treasures": ["wire", "scrap_metal"],
+    "encounters": [
+      { "id": "sentry", "weight": 5 },
+      { "id": "scavenger", "weight": 5 }
+    ],
+    "recruits": ["sentry", "golem"]
+  },
+  {
+    "title": "Floor 4: Assembly Line",
+    "intro": "Defunct arms hang from the ceiling.",
+    "depth": 4,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.2 },
+      { "id": "enemy", "min": 4, "max": 6 },
+      { "id": "shop", "chance": 0.5 },
+      { "id": "terminal_rusted", "chance": 0.5 }
+    ],
+    "treasures": ["iron_sword", "hp_tonic"],
+    "encounters": [
+      { "id": "sentry", "weight": 8 },
+      { "id": "flauros", "weight": 2 }
+    ],
+    "recruits": ["sentry", "flauros"]
+  },
+  {
+    "title": "Floor 5: The Smelter",
+    "intro": "Heat radiates from the core. The Guardian awakes.",
+    "depth": 5,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "count": 1 },
+      { "id": "enemy", "count": 1, "behavior": "chase", "symbol": "!", "cssClass": "text-danger", "encounters": [{ "id": "steelGuardian", "weight": 10 }] }
+    ],
+    "treasures": [],
+    "encounters": [],
+    "recruits": []
+  },
+  {
+    "title": "Floor 6: Verdant Threshold",
+    "intro": "Roots crack through the metal floor.",
+    "depth": 6,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 3, "max": 4 },
+      { "id": "recruit", "chance": 0.5 },
+      { "id": "terminal_verdant", "chance": 1.0 }
+    ],
+    "treasures": ["spore_dust", "antidote"],
+    "encounters": [
+      { "id": "sporekin", "weight": 5 },
+      { "id": "ooze", "weight": 5 }
+    ],
+    "recruits": ["sporekin", "ooze", "pixie"]
+  },
+  {
+    "title": "Floor 7: Fungal Gardens",
+    "intro": "Bioluminescent mushrooms light the path.",
+    "depth": 7,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 4, "max": 5 },
+      { "id": "trap", "min": 2, "max": 3 },
+      { "id": "treasure", "count": 1 }
+    ],
+    "treasures": ["poison_sac", "spore_dust"],
+    "encounters": [
+      { "id": "sporekin", "weight": 5 },
+      { "id": "manEater", "weight": 3 }
+    ],
+    "recruits": ["sporekin", "manEater"]
+  },
+  {
+    "title": "Floor 8: Choking Vines",
+    "intro": "Thick vines restrict your movement.",
+    "depth": 8,
     "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 4, "max": 6 },
       { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
+      { "id": "terminal_verdant", "chance": 0.5 }
     ],
+    "treasures": ["wind_dancer", "hi_potion"],
     "encounters": [
-      { "id": "golem", "weight": 6 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 3 }
+      { "id": "manEater", "weight": 6 },
+      { "id": "sporekin", "weight": 4 }
     ],
-    "recruits": ["golem", "demon", "angel", "larva","flauros"]
+    "recruits": ["manEater", "highPixie"]
   },
   {
-    "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
-    "depth": 4,
+    "title": "Floor 9: Spore Cloud",
+    "intro": "The air is thick with yellow dust.",
+    "depth": 9,
     "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.2 },
       { "id": "enemy", "min": 5, "max": 7 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 }
+      { "id": "shop", "chance": 0.5 }
     ],
+    "treasures": ["poison_sac"],
     "encounters": [
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 4 },
-      { "id": "ghoul", "weight": 4 }
+      { "id": "manEater", "weight": 5 },
+      { "id": "larva", "weight": 3 },
+      { "id": "sporekin", "weight": 2 }
     ],
-    "recruits": ["demon", "angel", "golem","flauros"]
+    "recruits": ["larva", "manEater"]
   },
   {
-    "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
-    "depth": 5,
+    "title": "Floor 10: Heart of Rot",
+    "intro": "A pulsating mass blocks the way.",
+    "depth": 10,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "count": 1 },
+      { "id": "enemy", "count": 1, "behavior": "chase", "symbol": "!", "cssClass": "text-danger", "encounters": [{ "id": "rotKing", "weight": 10 }] }
+    ],
+    "treasures": [],
+    "encounters": [],
+    "recruits": []
+  },
+  {
+    "title": "Floor 11: Crystalline Edge",
+    "intro": "The walls turn to transparent crystal.",
+    "depth": 11,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 3, "max": 4 },
+      { "id": "recruit", "chance": 0.5 },
+      { "id": "terminal_crystal", "chance": 1.0 }
+    ],
+    "treasures": ["crystal_shard", "light_amulet"],
+    "encounters": [
+      { "id": "prism", "weight": 5 },
+      { "id": "wisp", "weight": 5 }
+    ],
+    "recruits": ["prism", "wisp", "angel"]
+  },
+  {
+    "title": "Floor 12: Mirror Halls",
+    "intro": "Your reflection moves independently here.",
+    "depth": 12,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 4, "max": 5 },
+      { "id": "shrine", "chance": 0.5 },
+      { "id": "treasure", "chance": 0.5 }
+    ],
+    "treasures": ["crystal_shard", "void_essence"],
+    "encounters": [
+      { "id": "prism", "weight": 5 },
+      { "id": "voidWalker", "weight": 3 }
+    ],
+    "recruits": ["prism", "voidWalker"]
+  },
+  {
+    "title": "Floor 13: Void Rift",
+    "intro": "Stars shine through cracks in reality.",
+    "depth": 13,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 5, "max": 6 },
+      { "id": "trap", "min": 2, "max": 3 },
+      { "id": "terminal_crystal", "chance": 0.5 }
+    ],
+    "treasures": ["void_essence", "mercury_crest"],
+    "encounters": [
+      { "id": "voidWalker", "weight": 6 },
+      { "id": "demon", "weight": 4 }
+    ],
+    "recruits": ["voidWalker", "demon"]
+  },
+  {
+    "title": "Floor 14: Ethereal Plane",
+    "intro": "Gravity feels light. Spirits congregate.",
+    "depth": 14,
     "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 8 },
-      { "id": "shrine", "chance": 0.4 },
-      { "id": "recruit", "chance": 0.4 }
+      { "id": "enemy", "min": 5, "max": 7 },
+      { "id": "shop", "chance": 0.5 }
     ],
+    "treasures": ["sage_gem", "hp_tonic"],
     "encounters": [
-      { "id": "crimsonLord", "weight": 2 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
+      { "id": "voidWalker", "weight": 5 },
+      { "id": "prism", "weight": 5 }
     ],
-    "recruits": ["demon", "angel"]
+    "recruits": ["voidWalker", "prism"]
   },
   {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
-    "depth": 6,
+    "title": "Floor 15: Crystal Throne",
+    "intro": "The Sage meditates in the center.",
+    "depth": 15,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "count": 1 },
+      { "id": "enemy", "count": 1, "behavior": "chase", "symbol": "!", "cssClass": "text-danger", "encounters": [{ "id": "crystalSage", "weight": 10 }] }
+    ],
+    "treasures": [],
+    "encounters": [],
+    "recruits": []
+  },
+  {
+    "title": "Floor 16: Golden Steps",
+    "intro": "The ascent to the peak begins.",
+    "depth": 16,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 4, "max": 6 },
+      { "id": "terminal_summit", "chance": 1.0 }
+    ],
+    "treasures": ["hp_boost2", "holy_sword_gram"],
+    "encounters": [
+      { "id": "archangel", "weight": 5 },
+      { "id": "incubus", "weight": 5 }
+    ],
+    "recruits": ["archangel", "incubus"]
+  },
+  {
+    "title": "Floor 17: Choir of Silence",
+    "intro": "No sound exists here but your heartbeat.",
+    "depth": 17,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 5, "max": 7 },
+      { "id": "shrine", "chance": 0.5 }
+    ],
+    "treasures": ["divine_spark"],
+    "encounters": [
+      { "id": "archangel", "weight": 4 },
+      { "id": "crimsonLord", "weight": 2 },
+      { "id": "voidWalker", "weight": 4 }
+    ],
+    "recruits": ["archangel", "crimsonLord"]
+  },
+  {
+    "title": "Floor 18: Gates of Judgment",
+    "intro": "Two massive gates stand ajar.",
+    "depth": 18,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.2 },
+      { "id": "enemy", "min": 6, "max": 8 },
+      { "id": "terminal_summit", "chance": 0.5 }
+    ],
+    "treasures": ["hp_boost3"],
+    "encounters": [
+      { "id": "crimsonLord", "weight": 4 },
+      { "id": "archangel", "weight": 4 },
+      { "id": "steelGuardian", "weight": 2 }
+    ],
+    "recruits": ["archangel"]
+  },
+  {
+    "title": "Floor 19: The Pinnacle",
+    "intro": "The world below is but a speck.",
+    "depth": 19,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.2 },
+      { "id": "enemy", "min": 6, "max": 9 },
+      { "id": "shop", "chance": 0.5 }
+    ],
+    "treasures": ["divine_spark"],
+    "encounters": [
+      { "id": "godOfSpire", "weight": 1 },
+      { "id": "archangel", "weight": 9 }
+    ],
+    "recruits": ["archangel"]
+  },
+  {
+    "title": "Floor 20: Ascension",
+    "intro": "The God of the Spire awaits your challenge.",
+    "depth": 20,
     "music": "dungeon1",
     "events": [
       { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
+      { "id": "enemy", "count": 1, "behavior": "chase", "symbol": "Ω", "cssClass": "text-danger", "encounters": [{ "id": "godOfSpire", "weight": 10 }] }
     ],
-    "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
-    ],
+    "encounters": [],
     "recruits": []
   }
 ]

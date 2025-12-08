@@ -72,6 +72,23 @@ export class Game_Interpreter {
             case 'BREAKABLE_WALL':
                 this.triggerBreakableWall(action, event);
                 break;
+            case 'JOURNAL_ADD':
+                this.addJournalEntry(action);
+                break;
+        }
+    }
+
+    addJournalEntry(action) {
+        const entry = {
+            id: action.id,
+            title: action.title,
+            text: action.text
+        };
+        if (this.party.addJournalEntry(entry)) {
+            this.scene.logMessage(`[Journal] New entry: ${action.title}`);
+            SoundManager.play('ITEM_GET');
+        } else {
+            this.scene.logMessage(`[Journal] Info already recorded: ${action.title}`);
         }
     }
 

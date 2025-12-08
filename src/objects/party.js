@@ -33,6 +33,25 @@ export class Game_Party {
      * @type {Array}
      */
     this.inventory = [];
+
+    /**
+     * The party's journal entries.
+     * @type {Array}
+     */
+    this.journal = [];
+  }
+
+  /**
+   * Adds a journal entry.
+   * @param {Object} entry - { id, title, text }
+   * @returns {boolean} True if new entry added.
+   */
+  addJournalEntry(entry) {
+      if (!this.journal.find(e => e.id === entry.id)) {
+          this.journal.push(entry);
+          return true;
+      }
+      return false;
   }
 
   /**
@@ -194,7 +213,7 @@ export class Game_Party {
           item.effects.forEach(effect => {
               const key = effect.type;
               const value = effect.formula || effect.value;
-              const result = EffectProcessor.apply(key, value, item, targetMember);
+              const result = EffectProcessor.apply(key, value, item, targetMember, { party: this });
               if (result) outcomes.push(result);
           });
       }

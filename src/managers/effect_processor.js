@@ -44,6 +44,15 @@ export class EffectProcessor {
                 return { type: 'xp', value: value, result, target };
             }
 
+            case 'gold': {
+                const value = this._evaluate(effectValue, target, source);
+                if (context && context.party) {
+                    context.party.gold += value;
+                    return { type: 'gold', value: value, target };
+                }
+                return null;
+            }
+
             case 'recruit_egg':
                  return { type: 'recruit_egg', value: effectValue, target };
 
@@ -126,6 +135,9 @@ export class EffectProcessor {
 
             case 'xp':
                 return `XP: +${value}`;
+
+            case 'gold':
+                return `Gold: +${value}`;
 
             case 'recruit_egg':
                 return "Hatches an egg";

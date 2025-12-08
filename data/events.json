@@ -74,6 +74,70 @@
     "actions": [{ "type": "TREASURE" }]
   },
   {
+    "id": "terminal_rusted",
+    "type": "terminal",
+    "symbol": "i",
+    "cssClass": "tile-terminal",
+    "trigger": "touch",
+    "actions": [
+       {
+         "type": "JOURNAL_ADD",
+         "id": "lore_rusted",
+         "title": "Log: Rusted Depths",
+         "text": "Day 4: The machines have stopped responding to commands. They are building something."
+       },
+       { "type": "MESSAGE", "text": "You download the log." }
+    ]
+  },
+  {
+    "id": "terminal_verdant",
+    "type": "terminal",
+    "symbol": "i",
+    "cssClass": "tile-terminal",
+    "trigger": "touch",
+    "actions": [
+       {
+         "type": "JOURNAL_ADD",
+         "id": "lore_verdant",
+         "title": "Log: Verdant Overgrowth",
+         "text": "The spores are everywhere. We can't breathe without masks. The plants... they whisper."
+       },
+       { "type": "MESSAGE", "text": "You read the torn diary." }
+    ]
+  },
+  {
+    "id": "terminal_crystal",
+    "type": "terminal",
+    "symbol": "i",
+    "cssClass": "tile-terminal",
+    "trigger": "touch",
+    "actions": [
+       {
+         "type": "JOURNAL_ADD",
+         "id": "lore_crystal",
+         "title": "Log: Crystal Void",
+         "text": "Reality is thin here. I saw my own death in the reflection of a shard. It was beautiful."
+       },
+       { "type": "MESSAGE", "text": "You touch the vibrating crystal." }
+    ]
+  },
+  {
+    "id": "terminal_summit",
+    "type": "terminal",
+    "symbol": "i",
+    "cssClass": "tile-terminal",
+    "trigger": "touch",
+    "actions": [
+       {
+         "type": "JOURNAL_ADD",
+         "id": "lore_summit",
+         "title": "Log: The Summit",
+         "text": "He waits. The one who ascended. We were fools to think we could control him."
+       },
+       { "type": "MESSAGE", "text": "You read the inscription on the golden gate." }
+    ]
+  },
+  {
     "id": "shrine_shade",
     "type": "shrine_scenario",
     "title": "Whispering Shade",

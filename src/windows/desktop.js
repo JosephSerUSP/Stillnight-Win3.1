@@ -27,6 +27,7 @@ export class Window_StackNav extends Window_Base {
                             children: [
                                 { type: 'button', props: { id: 'btn-new-run', className: 'win-btn', label: 'New Run' } },
                                 { type: 'button', props: { id: 'btn-reveal-all', className: 'win-btn', label: 'Reveal' } },
+                                { type: 'button', props: { id: 'btn-journal', className: 'win-btn', label: 'J', style: { width: '24px', minWidth: '24px', padding: '0' } } },
                                 { type: 'button', props: { id: 'btn-help', className: 'win-btn', label: '?', style: { width: '24px', minWidth: '24px', padding: '0' } } }
                             ]
                         },
@@ -83,6 +84,7 @@ export class Window_StackNav extends Window_Base {
 
         this.btnNewRun = root.querySelector("#btn-new-run");
         this.btnRevealAll = root.querySelector("#btn-reveal-all");
+        this.btnJournal = root.querySelector("#btn-journal");
         this.btnSettings = root.querySelector("#btn-settings");
         this.btnHelp = root.querySelector("#btn-help");
         this.cardIndexLabelEl = root.querySelector("#card-index-label");
@@ -399,6 +401,7 @@ export class Window_Desktop extends Window_Base {
     get btnHelp() { return this.stackNav.btnHelp; }
     get btnNewRun() { return this.stackNav.btnNewRun; }
     get btnRevealAll() { return this.stackNav.btnRevealAll; }
+    get btnJournal() { return this.stackNav.btnJournal; }
     get btnFormation() { return this.partyPanel.btnFormation; }
     get btnInventory() { return this.partyPanel.btnInventory; }
     get btnClearLog() { return this.logPanel.btnClear; }

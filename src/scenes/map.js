@@ -157,6 +157,7 @@ export class Scene_Map extends Scene_Base {
     });
     this.hud.btnFormation.addEventListener("click", this.openFormation.bind(this));
     this.hud.btnInventory.addEventListener("click", this.openInventory.bind(this));
+    this.hud.btnJournal.addEventListener("click", this.openJournal.bind(this));
   }
 
   /**
@@ -680,6 +681,12 @@ export class Scene_Map extends Scene_Base {
    */
   closeInventory() {
     this.windowManager.close(this.hudManager.inventoryWindow);
+  }
+
+  openJournal() {
+    if (this.sceneManager.currentScene() !== this) return;
+    this.windowManager.push(this.hudManager.journalWindow);
+    this.hudManager.journalWindow.setup(this.party);
   }
 
   openHelp() {

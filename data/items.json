@@ -361,5 +361,138 @@
         "dataId": "Green"
       }
     ]
+  },
+  {
+    "id": "scrap_metal",
+    "name": "Scrap Metal",
+    "type": "consumable",
+    "cost": 5,
+    "icon": 180,
+    "description": "Rusted junk. Might be worth something.",
+    "effects": [{ "type": "gold", "value": 5 }]
+  },
+  {
+    "id": "wire",
+    "name": "Copper Wire",
+    "type": "consumable",
+    "cost": 10,
+    "icon": 180,
+    "description": "Conductive wire.",
+    "effects": [{ "type": "gold", "value": 10 }]
+  },
+  {
+    "id": "poison_sac",
+    "name": "Poison Sac",
+    "type": "consumable",
+    "cost": 15,
+    "icon": 180,
+    "description": "Venomous gland.",
+    "effects": [{ "type": "gold", "value": 15 }]
+  },
+  {
+    "id": "spore_dust",
+    "name": "Spore Dust",
+    "type": "consumable",
+    "cost": 15,
+    "icon": 180,
+    "description": "Choking dust.",
+    "effects": [{ "type": "gold", "value": 15 }]
+  },
+  {
+    "id": "crystal_shard",
+    "name": "Crystal Shard",
+    "type": "consumable",
+    "cost": 25,
+    "icon": 180,
+    "description": "Glimmering shard.",
+    "effects": [{ "type": "gold", "value": 25 }]
+  },
+  {
+    "id": "void_essence",
+    "name": "Void Essence",
+    "type": "consumable",
+    "cost": 50,
+    "icon": 180,
+    "description": "Unstable matter.",
+    "effects": [{ "type": "gold", "value": 50 }]
+  },
+  {
+    "id": "steel_core",
+    "name": "Steel Core",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 500,
+    "icon": 172,
+    "description": "Heart of a guardian. +5 Def.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "def", "value": 5 }
+    ]
+  },
+  {
+    "id": "heart_of_rot",
+    "name": "Heart of Rot",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 800,
+    "icon": 172,
+    "description": "Pulsing with decay. +20 HP.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 20 }
+    ]
+  },
+  {
+    "id": "sage_gem",
+    "name": "Sage Gem",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 1200,
+    "icon": 172,
+    "description": "Infinite wisdom. +5 Mag, +5 M.Def.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "mat", "value": 5 },
+      { "code": "PARAM_PLUS", "dataId": "mdf", "value": 5 }
+    ]
+  },
+  {
+    "id": "divine_spark",
+    "name": "Divine Spark",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 5000,
+    "icon": 172,
+    "description": "A shard of godhood. All stats +5.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 5 },
+      { "code": "PARAM_PLUS", "dataId": "def", "value": 5 },
+      { "code": "PARAM_PLUS", "dataId": "mat", "value": 5 },
+      { "code": "PARAM_PLUS", "dataId": "mdf", "value": 5 }
+    ]
+  },
+  {
+    "id": "key_rusted",
+    "name": "Rusted Key",
+    "type": "consumable",
+    "cost": 0,
+    "icon": 184,
+    "description": "Opens the gate to the Bio-Labs.",
+    "effects": []
+  },
+  {
+    "id": "key_verdant",
+    "name": "Verdant Key",
+    "type": "consumable",
+    "cost": 0,
+    "icon": 184,
+    "description": "Opens the gate to the Crystal Void.",
+    "effects": []
+  },
+  {
+    "id": "key_crystal",
+    "name": "Crystal Key",
+    "type": "consumable",
+    "cost": 0,
+    "icon": 184,
+    "description": "Opens the gate to the Summit.",
+    "effects": []
   }
 ]
