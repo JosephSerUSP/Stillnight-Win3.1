@@ -258,13 +258,16 @@ export class Game_Map {
 
   /**
    * Reveals the entire current floor.
+   * @param {boolean} [updateVisited=true] - Whether to mark all tiles visited immediately.
    */
-  revealCurrentFloor() {
+  revealCurrentFloor(updateVisited = true) {
       const floor = this.floors[this.floorIndex];
       floor.fullyRevealed = true;
-      for (let y = 0; y < this.MAX_H; y++) {
-          for (let x = 0; x < this.MAX_W; x++) {
-              floor.visited[y][x] = true;
+      if (updateVisited) {
+          for (let y = 0; y < this.MAX_H; y++) {
+              for (let x = 0; x < this.MAX_W; x++) {
+                  floor.visited[y][x] = true;
+              }
           }
       }
   }
