@@ -1,8 +1,7 @@
 {
-  "Light": { "strong": ["Dark"], "weak": ["Bone"] },
-  "Dark":  { "strong": ["Light"], "weak": ["Light"] },
-  "Bone":  { "strong": ["Light"], "weak": ["Earth"] },
-  "Wind":  { "strong": ["Water"], "weak": ["Earth"] },
-  "Earth": { "strong": ["Wind"], "weak": ["Water"] },
-  "Water": { "strong": ["Earth"], "weak": ["Wind"] }
+  "White": { "strong": ["Black"], "weak": ["Red"] },
+  "Black": { "strong": ["White"], "weak": ["Green"] },
+  "Red":   { "strong": ["Green", "White"], "weak": ["Blue"] },
+  "Green": { "strong": ["Blue", "Black"], "weak": ["Red"] },
+  "Blue":  { "strong": ["Red"], "weak": ["Green"] }
 }

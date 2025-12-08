@@ -23,7 +23,7 @@ test.describe('Battle System', () => {
             const dataManager = window.dataManager;
             const party = new Game_Party();
             // Mock party members
-            const heroData = dataManager.actors.find(a => a.id === "hero");
+            const heroData = dataManager.actors[0]; // Use first available actor
             const hero = new Game_Battler({...heroData, level: 1});
             party.addMember(hero);
 

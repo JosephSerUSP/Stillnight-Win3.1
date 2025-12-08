@@ -74,82 +74,95 @@
     "actions": [{ "type": "TREASURE" }]
   },
   {
-    "id": "shrine_shade",
+    "id": "drink_me",
     "type": "shrine_scenario",
-    "title": "Whispering Shade",
-    "description": "A whisper from beyond promises knowledge... at a price.",
+    "title": "A Curious Bottle",
+    "description": "A small bottle with a paper label tied around the neck with the words 'DRINK ME' beautifully printed on it.",
     "choices": [
       {
-        "label": "Offer HP (lose 3 HP each, gain XP)",
+        "label": "Drink it (Heal Party, Small Size)",
         "effect": { "type": "multi", "effects": [
-          { "type": "hp", "value": -3, "target": "all" },
-          { "type": "xp", "value": 4, "target": "all" }
+          { "type": "hp", "value": 999, "target": "all" },
+          { "type": "message", "value": "You shrink down! You feel light and evasive." },
+          { "type": "xp", "value": 10, "target": "all" }
         ]}
       },
       {
-        "label": "Decline",
-        "effect": { "type": "message", "value": "[Shrine] You ignore the whispers." }
+        "label": "Leave it be",
+        "effect": { "type": "message", "value": "Better not risk it." }
       }
     ]
   },
   {
-    "id": "shrine_idol",
+    "id": "eat_me",
     "type": "shrine_scenario",
-    "title": "Gleaming Idol",
-    "description": "A gleaming idol stands before you, radiating warmth. Touching it could imbue power or curse you.",
+    "title": "A Tiny Cake",
+    "description": "A small cake on which the words 'EAT ME' are marked in currants.",
     "choices": [
       {
-        "label": "Touch the idol",
-        "effect": { "type": "random", "outcomes": [
-          { "chance": 0.5, "effect": { "type": "maxHp", "value": 2, "target": "all" } },
-          { "chance": 0.5, "effect": { "type": "hp", "value": -2, "target": "all" } }
+        "label": "Eat it (Max HP Buff, Grow Large)",
+        "effect": { "type": "multi", "effects": [
+           { "type": "maxHp", "value": 5, "target": "all" },
+           { "type": "message", "value": "You grow swiftly! You feel powerful." }
         ]}
       },
       {
-        "label": "Walk away",
-        "effect": { "type": "message", "value": "[Shrine] You leave the idol untouched." }
+        "label": "Leave it",
+        "effect": { "type": "message", "value": "You're not hungry." }
       }
     ]
   },
   {
-    "id": "shrine_spirit",
+    "id": "cheshire_grin",
     "type": "shrine_scenario",
-    "title": "Bargaining Spirit",
-    "description": "A translucent merchant appears, offering to trade gold for knowledge.",
+    "title": "A Floating Grin",
+    "description": "A grin without a cat floats in the air. 'We're all mad here,' it says.",
     "choices": [
       {
-        "label": "Pay 5G for knowledge",
-        "effect": { "type": "gold", "value": -5, "onSuccess": { "type": "xp", "value": 6, "target": "all" } }
+        "label": "Ask for directions (Gain XP)",
+        "effect": { "type": "xp", "value": 20, "target": "all" }
       },
       {
-        "label": "Attempt to bargain",
-        "effect": { "type": "random", "outcomes": [
-          { "chance": 0.5, "effect": { "type": "xp", "value": 4, "target": "all" } },
-          { "chance": 0.5, "effect": { "type": "gold", "value": -2 } }
-        ]}
-      },
-      {
-        "label": "Leave",
-        "effect": { "type": "message", "value": "[Shrine] You refuse the deal." }
+        "label": "Ask about the Queen (Warning)",
+        "effect": { "type": "message", "value": "'Off with her head!' the cat laughs and fades away." }
       }
     ]
   },
   {
-    "id": "shrine_haste",
+    "id": "tea_party_table",
     "type": "shrine_scenario",
-    "title": "Trial of Haste",
-    "description": "A spectral stopwatch hovers in the air, its ticking echoing in your mind. It offers a challenge: a trial of speed for a reward.",
+    "title": "The Mad Tea Party",
+    "description": "A long table set under a tree. There's no wine, only tea.",
     "choices": [
       {
-        "label": "Accept the trial (high risk, high reward)",
-        "effect": { "type": "random", "outcomes": [
-          { "chance": 0.4, "effect": { "type": "xp", "value": 15, "target": "all" } },
-          { "chance": 0.6, "effect": { "type": "hp", "value": -5, "target": "all" } }
+        "label": "Join the party (Heal Party)",
+        "effect": { "type": "multi", "effects": [
+          { "type": "hp", "value": 999, "target": "all" },
+          { "type": "message", "value": "A very merry unbirthday to you!" }
         ]}
       },
       {
-        "label": "Take a small reward instead",
-        "effect": { "type": "gold", "value": 10 }
+        "label": "Solve a riddle (Gain Gold)",
+        "effect": { "type": "random", "outcomes": [
+          { "chance": 0.5, "effect": { "type": "gold", "value": 50 } },
+          { "chance": 0.5, "effect": { "type": "message", "value": "You got it wrong! The Hatter throws a teapot at you.", "damage": 5 } }
+        ]}
+      }
+    ]
+  },
+  {
+    "id": "painting_roses",
+    "type": "shrine_scenario",
+    "title": "White Roses",
+    "description": "Three gardeners are busily painting white roses red.",
+    "choices": [
+      {
+        "label": "Help them paint (Gain XP)",
+        "effect": { "type": "xp", "value": 15, "target": "all" }
+      },
+      {
+        "label": "Snitch to the Queen (Gain Gold, Lose Karma?)",
+        "effect": { "type": "gold", "value": 100 }
       }
     ]
   }

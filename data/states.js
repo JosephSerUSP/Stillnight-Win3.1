@@ -26,8 +26,8 @@ export const states = {
     dead: {
         id: 'dead',
         name: 'Dead',
-        icon: 11, // Skull-like icon if available, or placeholder
-        restriction: 4, // Cannot act
+        icon: 11,
+        restriction: 4,
         priority: 100,
         traits: []
     },
@@ -46,7 +46,7 @@ export const states = {
         icon: 1,
         duration: 5,
         traits: [
-            { code: 'HRG', value: 0.1 } // Heals 10% max HP per turn
+            { code: 'HRG', value: 0.1 }
         ]
     },
     berserk: {
@@ -55,7 +55,43 @@ export const states = {
         icon: 1,
         duration: 3,
         traits: [
-            { code: 'PARAM_PLUS', dataId: 'atk', value: 3 }
+            { code: 'PARAM_RATE', dataId: 'atk', value: 1.5 }
+        ]
+    },
+    poison: {
+        id: 'poison',
+        name: 'Poison',
+        icon: 2,
+        duration: 4,
+        traits: [
+            { code: 'HRG', value: -0.1 }
+        ]
+    },
+    haste: {
+        id: 'haste',
+        name: 'Haste',
+        icon: 3,
+        duration: 3,
+        traits: [
+            { code: 'INITIATIVE', value: 0.5 },
+            { code: 'ACTION_PLUS', value: 1 }
+        ]
+    },
+    confuse: {
+        id: 'confuse',
+        name: 'Confuse',
+        icon: 4,
+        restriction: 1,
+        duration: 3,
+        traits: []
+    },
+    evasion: {
+        id: 'evasion',
+        name: 'Evasion',
+        icon: 5,
+        duration: 3,
+        traits: [
+            { code: 'EVA', value: 0.5 }
         ]
     }
 };

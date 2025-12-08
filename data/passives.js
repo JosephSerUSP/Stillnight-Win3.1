@@ -105,7 +105,7 @@ export const passives = {
         traits: [{ code: 'SEE_WALLS', value: 1 }]
     },
 
-    // New
+    // New / Updated
     undeadFortitude: {
         id: 'undeadFortitude',
         name: 'Undead Fortitude',
@@ -134,7 +134,7 @@ export const passives = {
         id: 'etherealBody',
         name: 'Ethereal',
         description: 'Hard to touch.',
-        effect: 'Chance to avoid physical damage (Not Implemented Yet, using HP buff).',
+        effect: 'Chance to avoid physical damage (HP +10% placeholder).',
         icon: 1,
         traits: [{ code: 'PARAM_RATE', dataId: 'maxHp', value: 1.1 }]
     },
@@ -177,5 +177,39 @@ export const passives = {
         effect: 'Negates enemy first strikes.',
         icon: 1,
         traits: [{ code: 'REAR_GUARD', value: 1 }]
+    },
+
+    // Alice in Wonderland specific
+    evasion_up: {
+        id: 'evasion_up',
+        name: 'Elusive',
+        description: 'Hard to hit.',
+        effect: 'Evasion +20%.',
+        icon: 1,
+        traits: [{ code: 'EVA', value: 0.2 }]
+    },
+    tyrant_aura: {
+        id: 'tyrant_aura',
+        name: 'Tyrant\'s Aura',
+        description: 'Oppressive presence.',
+        effect: 'Attack +20%.',
+        icon: 1,
+        traits: [{ code: 'PARAM_RATE', dataId: 'atk', value: 1.2 }]
+    },
+    fearsome: {
+        id: 'fearsome',
+        name: 'Fearsome',
+        description: 'Terrifying to behold.',
+        effect: 'Crit Rate +20%.',
+        icon: 1,
+        traits: [{ code: 'CRI', value: 0.2 }]
+    },
+    regeneration: {
+        id: 'regeneration',
+        name: 'Rapid Regen',
+        description: 'Healing factor.',
+        effect: 'Regenerates 5% HP per turn.',
+        icon: 1,
+        traits: [{ code: 'HRG', value: 0.05 }]
     }
 };

@@ -1,161 +1,261 @@
-/**
- * @file data/skills.js
- * @description Defines the skills available in the game.
- * Skills are used by battlers in combat to deal damage, heal, or apply status effects.
- */
-
-/**
- * @typedef {Object} SkillEffect
- * @property {string} type - The type of effect (e.g., 'hp_damage', 'hp_heal', 'add_status').
- * @property {string} [formula] - The formula for calculating the effect value (e.g., '5 + 1.2 * a.level').
- * @property {string} [status] - The status ID to apply (if type is 'add_status').
- * @property {number} [chance] - The chance to apply the effect (0-1).
- * @property {number} [duration] - The duration of the effect in turns.
- */
-
-/**
- * @typedef {Object} Skill
- * @property {string} id - The unique ID of the skill.
- * @property {string} name - The display name of the skill.
- * @property {string} target - The target scope (e.g., 'enemy-any', 'ally-any', 'self').
- * @property {string} element - The elemental affinity of the skill.
- * @property {string} description - The flavor text description.
- * @property {SkillEffect[]} effects - The list of effects produced by the skill.
- */
-
-/**
- * @type {Object.<string, Skill>}
- */
 export const skills = {
-    // Pixie
-    windBlade: {
-        id: 'windBlade',
-        name: 'Wind Blade',
+    // Alice
+    vorpal_strike: {
+        id: 'vorpal_strike',
+        name: 'Vorpal Strike',
+        target: 'enemy-any',
+        element: 'White',
+        description: "One, two! One, two! And through and through!",
+        effects: [
+            { type: 'hp_damage', formula: '10 + 2.0 * a.atk' }
+        ]
+    },
+    curiosity: {
+        id: 'curiosity',
+        name: 'Curious Touch',
+        target: 'enemy-any',
+        element: 'White',
+        description: "Curiosity killed the cat.",
+        effects: [
+            { type: 'hp_damage', formula: '5 + 1.0 * a.mat' }
+        ]
+    },
+
+    // White Rabbit
+    pocket_watch_haste: {
+        id: 'pocket_watch_haste',
+        name: 'Late!',
+        target: 'ally-any',
+        element: 'White',
+        description: "Grants Haste to an ally.",
+        effects: [
+            { type: 'add_status', status: 'haste', chance: 1.0, duration: 3 }
+        ]
+    },
+
+    // Cheshire Cat
+    vanish: {
+        id: 'vanish',
+        name: 'Vanish',
+        target: 'self',
+        element: 'Blue',
+        description: "Fade away.",
+        effects: [
+            { type: 'add_status', status: 'evasion', chance: 1.0, duration: 3 } // Needs 'evasion' state if not exists, fallback to nothing
+        ]
+    },
+    confuse_grin: {
+        id: 'confuse_grin',
+        name: 'Confusing Grin',
+        target: 'enemy-any',
+        element: 'Blue',
+        description: "We're all mad here.",
+        effects: [
+             { type: 'add_status', status: 'confuse', chance: 0.8, duration: 3 }
+        ]
+    },
+
+    // Mad Hatter
+    tea_splash: {
+        id: 'tea_splash',
+        name: 'Hot Tea',
         target: 'enemy-any',
         element: 'Green',
-        description: "Strikes a foe with a blade of wind.",
+        description: "Scalding hot tea!",
         effects: [
-            { type: 'hp_damage', formula: '6 + 1.2 * a.level' }
+            { type: 'hp_damage', formula: '8 + 1.2 * a.mat' }
         ]
     },
-    soothingMote: {
-        id: 'soothingMote',
-        name: 'Soothing Mote',
-        target: 'ally-any',
-        element: 'White',
-        description: "Heals a small amount of HP for an ally.",
+    riddle: {
+        id: 'riddle',
+        name: 'Riddle',
+        target: 'enemy-any',
+        element: 'Green',
+        description: "Stuns the enemy with a confusing riddle.",
         effects: [
-            { type: 'hp_heal', formula: '5 + 1.5 * a.level' }
+            { type: 'add_status', status: 'sleep', chance: 0.6, duration: 2 }
         ]
     },
 
-    // Skeleton
-    boneRush: {
-        id: 'boneRush',
-        name: 'Bone Rush',
+    // March Hare
+    teacup_smash: {
+        id: 'teacup_smash',
+        name: 'Teacup Smash',
         target: 'enemy-any',
-        element: 'Black',
-        description: "A reckless charge.",
-        effects: [
-            { type: 'hp_damage', formula: '7 + 1.2 * a.level' }
-        ]
-    },
-
-    // Angel
-    holySmite: {
-        id: 'holySmite',
-        name: 'Holy Smite',
-        target: 'enemy-any',
-        element: 'White',
-        description: "Smite evil with holy light.",
-        effects: [
-            { type: 'hp_damage', formula: '6 + 1.4 * a.level' }
-        ]
-    },
-    divineFavor: {
-        id: 'divineFavor',
-        name: 'Divine Favor',
-        target: 'ally-any',
-        element: 'White',
-        description: "Grants regeneration to an ally.",
-        effects: [
-            { type: 'add_status', status: 'regen', chance: 1.0, duration: 3 }
-        ]
-    },
-
-    // Demon
-    shadowClaw: {
-        id: 'shadowClaw',
-        name: 'Shadow Claw',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "Tears at the enemy from the shadows.",
-        effects: [
-            { type: 'hp_damage', formula: '8 + 1.3 * a.level' }
-        ]
-    },
-    infernalPact: {
-        id: 'infernalPact',
-        name: 'Infernal Pact',
-        target: 'self',
         element: 'Red',
-        description: "Sacrifice safety for power. (Grants Berserk)",
+        description: "Smashes crockery on the foe.",
         effects: [
-            { type: 'add_status', status: 'berserk', chance: 1.0, duration: 3 }
+            { type: 'hp_damage', formula: '12 + 1.5 * a.atk' }
         ]
     },
 
-    wait: {
-        id: 'wait',
-        name: 'Wait',
-        target: 'self',
-        element: 'White',
-        description: "Do nothing.",
-        effects: []
-    },
-
-    flameRebirth: {
-        id: 'flameRebirth',
-        name: 'Flame Rebirth',
-        target: 'self',
-        element: 'Red',
-        description: "Rise from the ashes.",
-        effects: []
-    },
-
-    // Nurse
-    needleShot: {
-        id: 'needleShot',
-        name: 'Needle Shot',
+    // Dormouse
+    sleep_powder: {
+        id: 'sleep_powder',
+        name: 'Sleepy Dust',
         target: 'enemy-any',
-        element: 'Black',
-        description: "A precise strike that injects toxins.",
+        element: 'Blue',
+        description: "Puts the target to sleep.",
         effects: [
-            { type: 'hp_damage', formula: '5 + 1.2 * a.level' },
-            { type: 'add_status', status: 'poison', chance: 0.4, duration: 3 }
+            { type: 'add_status', status: 'sleep', chance: 0.8, duration: 3 }
         ]
     },
-    fieldSurgery: {
-        id: 'fieldSurgery',
-        name: 'Field Surgery',
+
+    // Caterpillar
+    smoke_ring: {
+        id: 'smoke_ring',
+        name: 'Smoke Ring',
+        target: 'enemy-any',
+        element: 'Green',
+        description: "A ring of smoke that confuses.",
+        effects: [
+            { type: 'hp_damage', formula: '5 + 1.0 * a.mat' },
+            { type: 'add_status', status: 'confuse', chance: 0.5, duration: 3 }
+        ]
+    },
+    metamorphosis: {
+        id: 'metamorphosis',
+        name: 'Metamorphosis',
+        target: 'self',
+        element: 'Green',
+        description: "Fully heals self.",
+        effects: [
+            { type: 'hp_heal', formula: '999' }
+        ]
+    },
+
+    // Bread and Butterfly
+    buttered_wing: {
+        id: 'buttered_wing',
+        name: 'Buttered Wing',
+        target: 'enemy-any',
+        element: 'Green',
+        description: "Slippery attack.",
+        effects: [
+            { type: 'hp_damage', formula: '10 + 1.2 * a.atk' }
+        ]
+    },
+
+    // Mouse
+    bite: {
+        id: 'bite',
+        name: 'Bite',
+        target: 'enemy-any',
+        element: 'Green',
+        description: "A small nip.",
+        effects: [
+            { type: 'hp_damage', formula: '4 + 1.0 * a.atk' }
+        ]
+    },
+
+    // Dodo
+    caucus_race: {
+        id: 'caucus_race',
+        name: 'Caucus Race',
         target: 'ally-any',
-        element: 'Black',
-        description: "Emergency medical attention. It might hurt.",
+        element: 'Blue',
+        description: "Everyone run in circles!",
         effects: [
-            { type: 'hp_heal', formula: '10 + 2.0 * a.level' }
+            { type: 'add_status', status: 'haste', chance: 1.0, duration: 3 }
         ]
     },
 
-    // Incubus
-    drainKiss: {
-        id: 'drainKiss',
-        name: 'Drain Kiss',
+    // Cards
+    spear_thrust: {
+        id: 'spear_thrust',
+        name: 'Spear Thrust',
         target: 'enemy-any',
         element: 'Black',
-        description: "Steals vitality and puts the target to sleep.",
+        description: "A standard guard attack.",
         effects: [
-            { type: 'hp_drain', formula: '4 + 0.6 * a.level' },
-            { type: 'add_status', status: 'sleep', chance: 0.5, duration: 3 }
+            { type: 'hp_damage', formula: '8 + 1.0 * a.atk' }
+        ]
+    },
+    club_smash: {
+        id: 'club_smash',
+        name: 'Club Smash',
+        target: 'enemy-any',
+        element: 'Green',
+        description: "Heavy blow.",
+        effects: [
+            { type: 'hp_damage', formula: '10 + 1.2 * a.atk' }
+        ]
+    },
+    glitter_cut: {
+        id: 'glitter_cut',
+        name: 'Glitter Cut',
+        target: 'enemy-any',
+        element: 'White',
+        description: "Sharp and shiny.",
+        effects: [
+            { type: 'hp_damage', formula: '9 + 1.1 * a.atk' }
+        ]
+    },
+
+    // Queen
+    off_with_head: {
+        id: 'off_with_head',
+        name: 'Off With Their Head!',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "A lethal command.",
+        effects: [
+            { type: 'hp_damage', formula: '20 + 2.0 * a.atk' }
+        ]
+    },
+    croquet_smash: {
+        id: 'croquet_smash',
+        name: 'Croquet Smash',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "Hit with a flamingo.",
+        effects: [
+            { type: 'hp_damage', formula: '15 + 1.5 * a.atk' }
+        ]
+    },
+
+    // Jabberwocky
+    flame_breath: {
+        id: 'flame_breath',
+        name: 'Flame Breath',
+        target: 'enemy-all', // Assuming enemy-all is supported? Or separate actions.
+        element: 'Red',
+        description: "Eyes of flame!",
+        effects: [
+            { type: 'hp_damage', formula: '15 + 1.5 * a.mat' }
+        ]
+    },
+    burble_smash: {
+        id: 'burble_smash',
+        name: 'Burble',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "Burbled as it came.",
+        effects: [
+            { type: 'hp_damage', formula: '12 + 1.2 * a.atk' },
+            { type: 'add_status', status: 'poison', chance: 0.5, duration: 3 }
+        ]
+    },
+
+    // Misc
+    claw_rake: {
+        id: 'claw_rake',
+        name: 'Claw Rake',
+        target: 'enemy-any',
+        element: 'White',
+        description: "Sharp claws.",
+        effects: [
+            { type: 'hp_damage', formula: '10 + 1.2 * a.atk' }
+        ]
+    },
+    axe_chop: {
+        id: 'axe_chop',
+        name: 'Axe Chop',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "Chop!",
+        effects: [
+            { type: 'hp_damage', formula: '14 + 1.4 * a.atk' }
         ]
     }
 };

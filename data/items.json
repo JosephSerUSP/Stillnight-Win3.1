@@ -1,365 +1,131 @@
 [
   {
     "id": "hp_tonic",
-    "name": "HP Tonic",
+    "name": "Tea",
     "type": "consumable",
     "cost": 10,
-    "description": "Heals one member to full HP.",
+    "description": "A nice cup of tea. Heals one member to full HP.",
     "icon": 52,
     "effects": [
-      {
-        "type": "hp",
-        "value": 999
-      }
+      { "type": "hp", "value": 999 }
     ]
   },
   {
-    "id": "sigil_ink",
-    "name": "Sigil Ink",
+    "id": "drink_me_potion",
+    "name": "Drink Me Potion",
     "type": "consumable",
-    "cost": 20,
-    "description": "+2 max HP to one member.",
+    "cost": 50,
+    "description": "A curious cherry-tart tasting liquid. Restores MP and HP.",
+    "icon": 53,
+    "effects": [
+      { "type": "hp", "value": 50 },
+      { "type": "mp", "value": 20 }
+    ]
+  },
+  {
+    "id": "eat_me_cake",
+    "name": "Eat Me Cake",
+    "type": "consumable",
+    "cost": 60,
+    "description": "A small cake. Increases Max HP temporarily (or permanently).",
+    "icon": 54,
+    "effects": [
+      { "type": "maxHp", "value": 5 }
+    ]
+  },
+  {
+    "id": "curious_mushroom",
+    "name": "Mushroom Piece",
+    "type": "consumable",
+    "cost": 30,
+    "description": "One side makes you taller, the other shorter. Random effect.",
     "icon": 55,
     "effects": [
-      {
-        "type": "maxHp",
-        "value": 2
-      }
+      { "type": "random_buff", "value": 1 }
     ]
   },
   {
-    "id": "whispered_lessons",
-    "name": "Whispered Lessons",
-    "type": "consumable",
-    "cost": 64,
-    "description": "+6 XP to one member.",
-    "icon": 64,
-    "effects": [
-      {
-        "type": "xp",
-        "value": 6
-      }
-    ]
-  },
-  {
-    "id": "silver_blade",
-    "name": "Silver Blade",
+    "id": "pocket_watch",
+    "name": "Pocket Watch",
     "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 25,
-    "icon": 180,
-    "description": "Sharpened steel blade.",
+    "equipType": "Accessory",
+    "cost": 500,
+    "icon": 174,
+    "description": "I'm late! I'm late! Grants Initiative.",
     "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 1
-      },
-      {
-        "code": "CRI",
-        "value": 0.1
-      }
+      { "code": "INITIATIVE", "value": 0.20 }
     ]
   },
   {
-    "id": "bone_plate",
-    "name": "Bone Plate",
+    "id": "mad_hat",
+    "name": "Mad Hat",
     "type": "equipment",
     "equipType": "Armor",
-    "cost": 25,
+    "cost": 300,
     "icon": 172,
-    "description": "Sturdy bone harness.",
+    "description": "10/6. Increases Magic.",
     "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "maxHp",
-        "value": 3
-      }
+      { "code": "PARAM_PLUS", "dataId": "mat", "value": 5 }
     ]
   },
   {
-    "id": "wind_charm",
-    "name": "Wind Charm",
+    "id": "vorpal_sword",
+    "name": "Vorpal Sword",
     "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 35,
-    "icon": 174,
-    "description": "A charm of rushing air.",
+    "equipType": "Weapon",
+    "cost": 1000,
+    "icon": 180,
+    "description": "Snicker-snack! High Crit rate.",
     "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 1
-      },
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "maxHp",
-        "value": 1
-      }
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 10 },
+      { "code": "CRI", "value": 0.50 }
     ]
   },
   {
-    "id": "light_amulet",
-    "name": "Light Amulet",
+    "id": "flamingo_mallet",
+    "name": "Flamingo Mallet",
     "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 30,
-    "icon": 174,
-    "description": "Glowing amulet.",
+    "equipType": "Weapon",
+    "cost": 400,
+    "icon": 180,
+    "description": "A flamingo used as a croquet mallet. It squirms.",
     "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "maxHp",
-        "value": 2
-      }
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 6 }
     ]
   },
   {
-    "id": "alert_charm",
-    "name": "Alert Charm",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 150,
-    "icon": 174,
-    "description": "Humming chime.",
-    "traits": [
-      {
-        "code": "INITIATIVE",
-        "value": 0.05
-      }
-    ]
-  },
-  {
-    "id": "rear_mirror",
-    "name": "Rear Mirror",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 200,
-    "icon": 6,
-    "description": "Reflective glass. Prevents sneak attacks if in back row.",
-    "traits": [
-      {
-        "code": "REAR_GUARD",
-        "value": 1
-      }
-    ]
-  },
-  {
-    "id": "mystic_egg",
-    "name": "Mystic Egg",
+    "id": "hedgehog_ball",
+    "name": "Hedgehog Ball",
     "type": "consumable",
-    "cost": 500,
-    "icon": 184,
-    "description": "A mysterious egg that pulses with life. Use to hatch.",
+    "cost": 100,
+    "description": "Throw a hedgehog at the enemy.",
+    "icon": 64,
     "effects": [
-      {
-        "type": "recruit_egg",
-        "value": "egg"
-      }
+      { "type": "damage", "value": 20 }
     ]
   },
   {
-    "id": "exp_boost",
-    "name": "Golden Egg",
+    "id": "broken_teacup",
+    "name": "Broken Teacup",
     "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 9999,
-    "icon": 184,
-    "description": "Beautiful golden egg, sought after by many.",
+    "equipType": "Weapon",
+    "cost": 50,
+    "icon": 180,
+    "description": "Sharp shards of porcelain.",
     "traits": [
-      {
-        "code": "XP_RATE",
-        "value": 1.5
-      }
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 }
     ]
   },
   {
-    "id": "hp_boost1",
-    "name": "Vitality Seal 1",
+    "id": "vorpal_shard",
+    "name": "Vorpal Shard",
     "type": "equipment",
     "equipType": "Accessory",
-    "cost": 125,
+    "cost": 250,
     "icon": 174,
-    "description": "+10% Max HP",
+    "description": "A fragment of the Vorpal Blade.",
     "traits": [
-      {
-        "code": "PARAM_RATE",
-        "dataId": "maxHp",
-        "value": 1.1
-      }
-    ]
-  },
-  {
-    "id": "hp_boost2",
-    "name": "Vitality Seal 2",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 400,
-    "icon": 174,
-    "description": "+20% Max HP",
-    "traits": [
-      {
-        "code": "PARAM_RATE",
-        "dataId": "maxHp",
-        "value": 1.2
-      }
-    ]
-  },
-  {
-    "id": "hp_boost3",
-    "name": "Vitality Seal 3",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 2800,
-    "icon": 174,
-    "description": "+30% Max HP",
-    "traits": [
-      {
-        "code": "PARAM_RATE",
-        "dataId": "maxHp",
-        "value": 1.3
-      }
-    ]
-  },
-  {
-    "id": "radiant_blade_flavio",
-    "name": "Radiant Blade Flavio",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1995,
-    "icon": 71,
-    "description": "Lucent blade carrying the blessings of the sun.",
-    "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
-      { "code": "ELEMENT_CHANGE", "dataId": "Red" },
-      { "code": "CRI", "value": 0.20 }
-    ]
-  },
-  {
-    "id": "wind_dancer",
-    "name": "Wind Dancer",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1520,
-    "icon": 72,
-    "description": "Leaf-shaped daggers that strike with the speed of wind.",
-    "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
-      { "code": "ELEMENT_CHANGE", "dataId": "Green" },
-      { "code": "CRI", "value": 0.15 }
-    ]
-  },
-  {
-    "id": "water_scepter",
-    "name": "Water Scepter",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1520,
-    "icon": 73,
-    "description": "Leaf-shaped daggers that strike with the speed of wind.",
-    "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
-      { "code": "ELEMENT_CHANGE", "dataId": "Blue" },
-      { "code": "CRI", "value": 0.15 }
-    ]
-  },
-  {
-    "id": "holy_sword_gram",
-    "name": "Holy Sword Gram",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1520,
-    "icon": 74,
-    "description": "Legendary sword wielded by angels of time immemorial.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "White"
-      },
-      {
-        "code": "CRI",
-        "value": 0.15
-      }
-    ]
-  },
-  {
-    "id": "dark_scepter_lucille",
-    "name": "Dark Scepter Lucille",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1666,
-    "icon": 75,
-    "description": "Cursed sceptre. Once wielded by a fallen queen, or so they say.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Black"
-      },
-      {
-        "code": "CRI",
-        "value": 0.1
-      }
-    ]
-  },
-  {
-    "id": "mars_emblem",
-    "name": "Mars Emblem",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 400,
-    "icon": 81,
-    "description": "Its magicked properties imbue the wearer with elemental energy.",
-    "traits": [
-      { "code": "ELEMENT_CHANGE", "dataId": "Red" }
-    ]
-  },
-  {
-    "id": "mercury_crest",
-    "name": "Mercury Crest",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 1260,
-    "icon": 83,
-    "description": "Ornate and delicate, its blue sheen is comforting.",
-    "traits": [
-      {
-        "code": "HRG",
-        "value": 0.05
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Blue"
-      }
-    ]
-  },
-  {
-    "id": "hermes_boots",
-    "name": "Hermes' Boots",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 2100,
-    "icon": 82,
-    "description": "Wondrous boots that grant the wearer unimaginable swiftness.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "asp",
-        "value": 2
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Green"
-      }
+      { "code": "CRI", "value": 0.10 }
     ]
   }
 ]

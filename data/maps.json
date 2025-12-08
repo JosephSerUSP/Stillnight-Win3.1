@@ -1,143 +1,97 @@
 [
   {
-    "title": "Town of Stillnight",
-    "intro": "A quiet settlement on the edge of the void.",
+    "title": "The Rabbit Hole",
+    "intro": "Alice falls slowly down the deep well. Cupboards and book-shelves line the walls.",
     "depth": 0,
     "music": "town1",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "count": 1 },
-      { "id": "shop", "count": 1 },
-      { "id": "npc", "count": 2 }
+      { "id": "drink_me", "count": 1 },
+      { "id": "eat_me", "count": 1 },
+      { "id": "enemy", "min": 1, "max": 2 }
     ],
-    "treasures": [],
-    "encounters": [],
-    "recruits": []
+    "treasures": ["pocket_watch"],
+    "encounters": [
+      { "id": "mouse", "weight": 10 },
+      { "id": "dodo", "weight": 5 }
+    ],
+    "recruits": ["mouse", "dodo"]
   },
   {
-    "title": "Floor 1: Entry Hall",
-    "intro": "You cross the threshold into the dark.",
+    "title": "Wonderland Forest",
+    "intro": "A mushroom forest where nothing is quite as it seems. Smoke rises from a hookah.",
     "depth": 1,
     "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
+      { "id": "cheshire_grin", "chance": 0.5 },
       { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 2, "max": 3 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "treasure", "count": 1 },
-      {
-          "id": "enemy",
-          "count": 1,
-          "behavior": "chase",
-          "symbol": "!",
-          "cssClass": "text-danger",
-          "encounters": [
-              { "id": "imp", "weight": 10 }
-          ]
-      }
+      { "id": "enemy", "min": 3, "max": 5 },
+      { "id": "recruit", "chance": 0.4 },
+      { "id": "treasure", "count": 1 }
     ],
-    "treasures": ["potion", "antidote"],
+    "treasures": ["vorpal_shard", "curious_mushroom"],
     "encounters": [
-      { "id": "pixie", "weight": 5 },
-      { "id": "skeleton", "weight": 5 },
-      { "id": "imp", "weight": 3 }
+      { "id": "card_spade", "weight": 5 },
+      { "id": "card_club", "weight": 5 },
+      { "id": "bread_and_butterfly", "weight": 3 }
     ],
-    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat","candle"]
+    "recruits": ["white_rabbit", "cheshire_cat", "caterpillar", "bread_and_butterfly"]
   },
   {
-    "title": "Floor 2: Chasm Crossing",
-    "intro": "Wind howls across a broken bridge.",
+    "title": "The Mad Tea Party",
+    "intro": "It's always six o'clock here. The table is large, but the three are crowded at one corner.",
     "depth": 2,
     "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 3, "max": 4 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.6 },
-      { "id": "trap", "min": 1, "max": 2 },
-      { "id": "treasure", "chance": 0.5 }
+      { "id": "tea_party_table", "count": 1 },
+      { "id": "shop", "count": 1 },
+      { "id": "enemy", "min": 4, "max": 6 },
+      { "id": "recruit", "chance": 0.5 }
     ],
-    "treasures": ["hi_potion", "iron_sword"],
+    "treasures": ["mad_hat", "broken_teacup"],
     "encounters": [
-      { "id": "skeleton", "weight": 8 },
-      { "id": "imp", "weight": 5 },
-      { "id": "wisp", "weight": 4 },
-      { "id": "ooze", "weight": 3 }
+      { "id": "march_hare_enemy", "weight": 4 },
+      { "id": "card_heart", "weight": 6 },
+      { "id": "dormouse_enemy", "weight": 4 }
     ],
-    "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
+    "recruits": ["mad_hatter", "march_hare", "dormouse"]
   },
   {
-    "title": "Floor 3: Rusted Choir",
-    "intro": "Broken bells sway above a dry pit.",
+    "title": "The Queen's Garden",
+    "intro": "Rows of rose trees. The white roses are being painted red. The Queen is shouting.",
     "depth": 3,
     "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
+      { "id": "painting_roses", "count": 1 },
+      { "id": "enemy", "min": 6, "max": 8 },
+      { "id": "trap", "min": 2, "max": 4 },
+      { "id": "treasure", "chance": 0.6 }
     ],
+    "treasures": ["flamingo_mallet", "hedgehog_ball"],
     "encounters": [
-      { "id": "golem", "weight": 6 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 3 }
+      { "id": "card_spade", "weight": 5 },
+      { "id": "card_heart", "weight": 5 },
+      { "id": "card_diamond", "weight": 5 },
+      { "id": "card_club", "weight": 5 },
+      { "id": "executioner", "weight": 2 }
     ],
-    "recruits": ["golem", "demon", "angel", "larva","flauros"]
+    "recruits": ["card_heart", "card_spade", "griffin"]
   },
   {
-    "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
+    "title": "The Royal Court",
+    "intro": "The trial begins. Who stole the tarts? The Queen demands a verdict.",
     "depth": 4,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 7 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 }
-    ],
-    "encounters": [
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 4 },
-      { "id": "ghoul", "weight": 4 }
-    ],
-    "recruits": ["demon", "angel", "golem","flauros"]
-  },
-  {
-    "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
-    "depth": 5,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 8 },
-      { "id": "shrine", "chance": 0.4 },
-      { "id": "recruit", "chance": 0.4 }
-    ],
-    "encounters": [
-      { "id": "crimsonLord", "weight": 2 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
-    ],
-    "recruits": ["demon", "angel"]
-  },
-  {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
-    "depth": 6,
     "music": "dungeon1",
     "events": [
       { "id": "recovery", "count": 1 },
       { "id": "enemy", "min": 1, "max": 1 }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
+      { "id": "red_queen", "weight": 5 },
+      { "id": "jabberwocky", "weight": 5 }
     ],
     "recruits": []
   }
