@@ -214,6 +214,13 @@ export class Scene_Map extends Scene_Base {
       if (result.type === 'MOVED') {
            this.logMessage("[Step] Your footsteps echo softly.");
            this.setStatus("You move.");
+           this.applyMovePassives();
+           SoundManager.play('UI_SELECT');
+
+           // Check entity updates
+           const entityResults = this.explorationEngine.updateEntities();
+           entityResults.forEach(r => this.handleExplorationResult(r));
+           if (entityResults.length > 0) this.updateGrid();
       }
 
       if (result.type === 'EXPLORED_ALL') {

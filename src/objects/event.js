@@ -1,3 +1,5 @@
+import { findPath } from "../core/utils.js";
+
 /**
  * @class Game_Event
  * @description Represents an interactive entity on the map.
@@ -38,29 +40,78 @@ export class Game_Event {
           const dy = map.playerY - this.y;
           const dist = Math.abs(dx) + Math.abs(dy);
 
-          // Simple Manhattan chase
-          if (dist > 0 && dist < 8) { // Aggro range
-              let nx = this.x;
-              let ny = this.y;
+          // Aggro range check (e.g., 8 tiles)
+          if (dist > 0 && dist < 12) {
+              const start = { x: this.x, y: this.y };
+              const end = { x: map.playerX, y: map.playerY };
+              const floor = map.floors[map.floorIndex];
 
-              if (Math.abs(dx) > Math.abs(dy)) {
-                  nx += Math.sign(dx);
-              } else {
-                  ny += Math.sign(dy);
-              }
+              const isWalkable = (x, y) => {
+                  // Walls are blocked
+                  if (floor.tiles[y][x] === '#') return false;
 
-              // Collision check with walls
-              if (map.floors[map.floorIndex].tiles[ny][nx] !== '#') {
-                   // Check collision with player
-                   const isPlayer = (nx === map.playerX && ny === map.playerY);
+                  // Check events
+                  // User Requirement: "pass through non-obstacle events, such as recovery, shrine, other enemies"
+                  // We treat 'enemy', 'shrine', 'recovery' as passable for pathfinding purposes.
+                  const event = floor.events.find(e => e.x === x && e.y === y && e !== this);
+                  if (event) {
+                      // Obstacles: maybe chests or NPCs?
+                      // For now, let's assume 'enemy', 'shrine', 'recovery' are passable.
+                      // If undefined type, treat as obstacle?
+                      // Let's invert: what IS an obstacle?
+                      // Walls (handled above).
+                      // Maybe specific event types?
+                      // The prompt implies most things are passable except walls.
+                      const passableTypes = ['enemy', 'shrine', 'recovery', 'trap'];
+                      if (passableTypes.includes(event.type) || event.id === 'enemy') return true;
 
-                   // Check collision with other events
-                   const otherEvent = map.floors[map.floorIndex].events.find(e => e !== this && e.x === nx && e.y === ny);
+                      // Unknown types might be obstacles (e.g. NPC blocking a door)
+                      return false;
+                  }
 
-                   if (!otherEvent && !isPlayer) {
-                       this.x = nx;
-                       this.y = ny;
-                   }
+                  return true;
+              };
+
+              const path = findPath(map.MAX_W, map.MAX_H, isWalkable, start, end);
+
+              // path[0] is start, path[1] is next step
+              if (path.length > 1) {
+                  const nextStep = path[1];
+
+                  // Check if we can legally occupy nextStep
+                  // Even if it was "walkable" for pathfinding (pass through),
+                  // we might not want to END our turn on top of another event unless stacking is allowed.
+                  // The user said "pass through", which implies transient overlap.
+                  // But since movement is discrete (step by step), transient overlap = stacking.
+                  // We will allow stacking if the target tile event is "passable".
+
+                  // Re-check specific collision for the destination
+                  const isPlayer = (nextStep.x === map.playerX && nextStep.y === map.playerY);
+                  if (isPlayer) {
+                      // Don't move onto player, stop adjacent
+                      // This fulfills "finish movement next to the player"
+                      return null;
+                  }
+
+                  // If we are here, we are not stepping on player.
+                  // Check if we are stepping on another event.
+                  const targetEvent = floor.events.find(e => e.x === nextStep.x && e.y === nextStep.y && e !== this);
+
+                  if (!targetEvent) {
+                      // Free tile
+                      this.x = nextStep.x;
+                      this.y = nextStep.y;
+                  } else {
+                      // Occupied tile.
+                      // Can we stack?
+                      const passableTypes = ['enemy', 'shrine', 'recovery', 'trap'];
+                      if (passableTypes.includes(targetEvent.type) || targetEvent.id === 'enemy') {
+                          // Allow stacking
+                          this.x = nextStep.x;
+                          this.y = nextStep.y;
+                      }
+                      // Else blocked by obstacle event (NPC?), wait.
+                  }
               }
           }
       }

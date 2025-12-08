@@ -1,5 +1,7 @@
 import { TRAIT_DEFINITIONS } from "../../data/traits.js";
 
+export { findPath } from "./pathfinding.js";
+
 /**
  * Generates a random integer within a given range (inclusive).
  * @param {number} min - The minimum value.
