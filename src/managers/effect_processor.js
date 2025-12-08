@@ -47,6 +47,9 @@ export class EffectProcessor {
             case 'recruit_egg':
                  return { type: 'recruit_egg', value: effectValue, target };
 
+            case 'summon':
+                 return { type: 'summon', actorId: effectValue, target };
+
             case 'hp_damage': {
                 let base = this._evaluate(effectValue, target, source);
                 if (context.boost) base *= context.boost;

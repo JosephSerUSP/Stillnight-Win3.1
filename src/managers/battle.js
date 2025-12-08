@@ -1,6 +1,6 @@
 import { randInt } from "../core/utils.js";
 import { SoundManager } from "./sound.js";
-import { Game_Action } from "../objects/objects.js";
+import { Game_Action, Game_Battler } from "../objects/objects.js";
 
 /**
  * @class BattleManager
@@ -260,6 +260,33 @@ export class BattleManager {
     }
 
     const events = action.apply(target, this.dataManager);
+
+    // Process structural side effects (e.g. Summoning)
+    events.forEach(event => {
+        if (event.type === 'summon' && event.actorId) {
+             const actorData = this.dataManager.actors.find(a => a.id === event.actorId);
+             if (actorData) {
+                 // Determine level based on Summoner's level (source)
+                 // If source is not available, default to 1.
+                 let level = 1;
+                 if (event.source && event.source.level) {
+                     level = event.source.level;
+                 }
+                 const newMember = Game_Battler.create(actorData, level);
+                 if (this.party.addMember(newMember)) {
+                     event.msg = `${event.source ? event.source.name : 'Unknown'} summons ${newMember.name}!`;
+
+                     // Add to combatants/queue immediately if not present?
+                     // The turn queue is usually fixed at start of round, but we can append to it?
+                     // Or just wait for next round?
+                     // For immediate action, we'd need to insert into turnQueue.
+                     // But typically summons act next round. Let's leave turnQueue alone for now.
+                 } else {
+                     event.msg = `The party is too full to summon ${actorData.name}!`;
+                 }
+             }
+        }
+    });
 
     this._checkBattleEnd(events);
     return events;

@@ -255,6 +255,14 @@ export class Game_Action {
                      hpAfterSource: result.hpAfterSource,
                      msg: `  ${battler.name} drains ${result.value} HP from ${target.name}.`
                  });
+            } else if (result.type === 'summon') {
+                 events.push({
+                    type: 'summon',
+                    battler: battler,
+                    source: battler,
+                    actorId: result.actorId,
+                    msg: `  ${battler.name} summons a minion!`
+                 });
             }
         });
     }
