@@ -157,5 +157,37 @@ export const skills = {
             { type: 'hp_drain', formula: '4 + 0.6 * a.level' },
             { type: 'add_status', status: 'sleep', chance: 0.5, duration: 3 }
         ]
+    },
+
+    // Fracture Skills
+    warpStrike: {
+        id: 'warpStrike',
+        name: 'Warp Strike',
+        target: 'enemy-any',
+        element: 'Void',
+        description: "Strikes from another dimension.",
+        effects: [
+            { type: 'hp_damage', formula: '10 + 1.5 * a.atk' }
+        ]
+    },
+    fractureBeam: {
+        id: 'fractureBeam',
+        name: 'Fracture Beam',
+        target: 'enemy-any',
+        element: 'Void',
+        description: "A beam of pure instability.",
+        effects: [
+            { type: 'hp_damage', formula: '15 + 2.0 * a.mat' }
+        ]
+    },
+    aetherShield: {
+        id: 'aetherShield',
+        name: 'Aether Shield',
+        target: 'ally-any',
+        element: 'Aether',
+        description: "Protects with temporal energy.",
+        effects: [
+             { type: 'add_status', status: 'protect', chance: 1.0, duration: 3 }
+        ]
     }
 };

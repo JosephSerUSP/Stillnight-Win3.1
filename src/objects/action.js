@@ -281,7 +281,7 @@ export class Game_Action {
                 const key = effect.type;
                 const value = effect.formula || effect.value;
                 // Determine context/boost if needed
-                const context = {};
+                const context = { party: subject };
                 // Pass item as source
                 const result = EffectProcessor.apply(key, value, item, target, context);
 

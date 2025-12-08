@@ -44,6 +44,15 @@ export class EffectProcessor {
                 return { type: 'xp', value: value, result, target };
             }
 
+            case 'instability': {
+                if (context.party && typeof context.party.gainInstability === 'function') {
+                    const value = this._evaluate(effectValue, target, source);
+                    context.party.gainInstability(value);
+                    return { type: 'instability', value: value, target };
+                }
+                return null;
+            }
+
             case 'recruit_egg':
                  return { type: 'recruit_egg', value: effectValue, target };
 
@@ -126,6 +135,9 @@ export class EffectProcessor {
 
             case 'xp':
                 return `XP: +${value}`;
+
+            case 'instability':
+                return `Instability: ${value > 0 ? '+' : ''}${value}%`;
 
             case 'recruit_egg':
                 return "Hatches an egg";

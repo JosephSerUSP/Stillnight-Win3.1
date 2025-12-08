@@ -361,5 +361,64 @@
         "dataId": "Green"
       }
     ]
+  },
+  {
+    "id": "stabilizer",
+    "name": "Stabilizer",
+    "type": "consumable",
+    "cost": 50,
+    "description": "Reduces instability by 10%.",
+    "icon": 176,
+    "effects": [
+      {
+        "type": "instability",
+        "value": -10
+      }
+    ]
+  },
+  {
+    "id": "void_shard",
+    "name": "Void Shard",
+    "type": "consumable",
+    "cost": 100,
+    "description": "A shard of crystallized void energy.",
+    "icon": 177,
+    "effects": []
+  },
+  {
+    "id": "warp_blade",
+    "name": "Warp Blade",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 2500,
+    "icon": 178,
+    "description": "A blade that flickers in and out of existence.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 5
+      },
+      {
+        "code": "ELEMENT_CHANGE",
+        "dataId": "Void"
+      }
+    ]
+  },
+  {
+    "id": "chronos_gear",
+    "name": "Chronos Gear",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 3000,
+    "icon": 179,
+    "description": "Clockwork mechanism that manipulates time.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "asp",
+        "value": 3
+      }
+    ]
   }
 ]

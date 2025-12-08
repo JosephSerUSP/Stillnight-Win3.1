@@ -72,6 +72,47 @@ export class Game_Interpreter {
             case 'BREAKABLE_WALL':
                 this.triggerBreakableWall(action, event);
                 break;
+            case 'TRAVEL':
+                this.travel(action);
+                break;
+            case 'SCRIPT':
+                this.executeScript(action);
+                break;
+        }
+    }
+
+    travel(action) {
+        if (action.floorIndex !== undefined) {
+             if (action.floorIndex >= this.map.floors.length) {
+                 console.warn("Invalid travel index: " + action.floorIndex);
+                 return;
+             }
+             this.map.floorIndex = action.floorIndex;
+             // Update max reached if needed, though warping might skip floors so we might not want to unlock intermediates?
+             // Logic in descendStairs unlocks maxReached.
+             if (this.map.floorIndex > this.map.maxReachedFloorIndex) {
+                 this.map.maxReachedFloorIndex = this.map.floorIndex;
+             }
+
+             const f = this.map.floors[this.map.floorIndex];
+             f.discovered = true;
+             this.map.playerX = f.startX;
+             this.map.playerY = f.startY;
+             this.map.revealAroundPlayer();
+
+             this.scene.logMessage(`[Travel] You warp to: ${f.title}`);
+             SoundManager.play('STAIRS');
+             this.scene.updateAll();
+             this.scene.checkMusic();
+        }
+    }
+
+    executeScript(action) {
+        try {
+            const func = new Function(action.code);
+            func.call(this);
+        } catch(e) {
+            console.error("Script error:", e);
         }
     }
 

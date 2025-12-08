@@ -3,6 +3,7 @@ import { Game_Battler, Game_Action } from "../objects/objects.js";
 import { randInt, pickWeighted, probabilisticRound } from "../core/utils.js";
 import { SoundManager, ConfigManager } from "../managers/index.js";
 import { Window_Battle, Window_Victory } from "../windows/index.js";
+import { Window_Instability } from "../windows/instability.js";
 
 /**
  * @class Scene_Battle
@@ -52,6 +53,10 @@ export class Scene_Battle extends Scene_Base {
     this.equipItemSelectWindow = sharedWindows.equipItemSelect;
     this.victoryWindow = new Window_Victory();
     this.windowLayer.addChild(this.victoryWindow);
+
+    this.instabilityWindow = new Window_Instability(10, 80);
+    this.instabilityWindow.refresh(this.party.instability, this.party.maxInstability);
+    this.windowLayer.addChild(this.instabilityWindow);
 
     this.formationWindow.onUserClose = () => this.windowManager.close(this.formationWindow);
     this.inventoryWindow.onUserClose = () => this.windowManager.close(this.inventoryWindow);
@@ -348,6 +353,13 @@ export class Scene_Battle extends Scene_Base {
 
     this.battleManager.startRound(isFirstStrike);
 
+    this.party.gainInstability(1);
+    this.instabilityWindow.refresh(this.party.instability, this.party.maxInstability);
+
+    if (this.party.instability > 75 && Math.random() < 0.2) {
+        await this.triggerFractureEvent();
+    }
+
     const delay = (ms) => new Promise((res) => setTimeout(res, ms));
     SoundManager.play('UI_SELECT');
 
@@ -627,6 +639,21 @@ export class Scene_Battle extends Scene_Base {
         }
       }
     });
+  }
+
+  async triggerFractureEvent() {
+      this.battleWindow.appendLog("[Fracture] Reality tears apart!", { priority: 'high' });
+      SoundManager.play('UI_ERROR');
+
+      const target = this.party.activeMembers[randInt(0, this.party.activeMembers.length - 1)];
+      if (target && target.hp > 0) {
+          const dmg = Math.max(1, Math.floor(target.maxHp * 0.1));
+          const oldHp = target.hp;
+          target.hp = Math.max(0, target.hp - dmg);
+          this.battleWindow.appendLog(`${target.name} takes ${dmg} void damage!`);
+          await this.battleWindow.animateBattleHpGauge(target, oldHp, target.hp, this.battleManager.enemies, this.party.slots.slice(0,4));
+      }
+      await new Promise(res => setTimeout(res, 500));
   }
 
   /**

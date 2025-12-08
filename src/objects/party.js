@@ -33,6 +33,21 @@ export class Game_Party {
      * @type {Array}
      */
     this.inventory = [];
+
+    /**
+     * The current instability level (0-100).
+     * @type {number}
+     */
+    this.instability = 0;
+    this.maxInstability = 100;
+  }
+
+  /**
+   * Increases or decreases instability.
+   * @param {number} amount
+   */
+  gainInstability(amount) {
+      this.instability = Math.max(0, Math.min(this.maxInstability, this.instability + amount));
   }
 
   /**

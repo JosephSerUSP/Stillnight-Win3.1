@@ -152,5 +152,58 @@
         "effect": { "type": "gold", "value": 10 }
       }
     ]
+  },
+  {
+    "id": "rift",
+    "type": "rift",
+    "symbol": "@",
+    "cssClass": "tile-rift",
+    "trigger": "touch",
+    "actions": [{ "type": "TRAVEL", "floorIndex": 7 }]
+  },
+  {
+    "id": "rift_return",
+    "type": "rift",
+    "symbol": "@",
+    "cssClass": "tile-rift",
+    "trigger": "touch",
+    "actions": [{ "type": "TRAVEL", "floorIndex": 0 }]
+  },
+  {
+    "id": "rift_void",
+    "type": "rift",
+    "symbol": "Ω",
+    "cssClass": "tile-rift-void",
+    "trigger": "touch",
+    "actions": [{ "type": "TRAVEL", "floorIndex": 8 }]
+  },
+  {
+    "id": "stabilizer_machine",
+    "type": "machine",
+    "symbol": "M",
+    "cssClass": "tile-machine",
+    "trigger": "touch",
+    "actions": [
+       {
+           "type": "MESSAGE",
+           "text": "The machine hums. It stabilizes the area."
+       },
+       {
+           "type": "SCRIPT",
+           "code": "this.scene.party.instability = 0; this.scene.instabilityWindow.refresh(0, 100);"
+       },
+       {
+           "type": "MESSAGE",
+           "text": "Instability cleared."
+       }
+    ]
+  },
+  {
+    "id": "rift_hub",
+    "type": "rift",
+    "symbol": "@",
+    "cssClass": "tile-rift",
+    "trigger": "touch",
+    "actions": [{ "type": "TRAVEL", "floorIndex": 7 }]
   }
 ]

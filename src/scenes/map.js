@@ -7,6 +7,7 @@ import { BattleManager, SoundManager, ConfigManager, ThemeManager } from "../man
 import { InputController } from "../managers/input_controller.js";
 import { HUDManager } from "../managers/hud_manager.js";
 import { Window_Desktop } from "../windows/index.js";
+import { Window_Instability } from "../windows/instability.js";
 import { ProgressionSystem } from "../managers/progression.js";
 import { ExplorationEngine } from "../managers/exploration.js";
 
@@ -43,6 +44,9 @@ export class Scene_Map extends Scene_Base {
     this.addEventListeners();
 
     this.hudManager = new HUDManager(windowManager, gameContainer);
+    this.instabilityWindow = new Window_Instability(10, 80);
+    gameContainer.appendChild(this.instabilityWindow.element);
+
     this.inputController = new InputController(this);
     this.explorationEngine = new ExplorationEngine(this.map, this.party);
 
@@ -214,6 +218,7 @@ export class Scene_Map extends Scene_Base {
       }
 
       if (result.type === 'MOVED') {
+           this.party.gainInstability(0.5);
            this.logMessage("[Step] Your footsteps echo softly.", 'low');
            this.setStatus("You move.");
            this.applyMovePassives();
@@ -325,6 +330,7 @@ export class Scene_Map extends Scene_Base {
         items: this.party.inventory.length,
         runActive: this.runActive
     });
+    this.instabilityWindow.refresh(this.party.instability, this.party.maxInstability);
     this.hud.setMode("Exploration");
   }
 
