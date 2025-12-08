@@ -11,7 +11,7 @@ export const startingParty = {
    * @returns {number} The starting gold.
    */
   getGold: () => {
-    return randInt(25, 75);
+    return 100;
   },
 
   /**
@@ -21,25 +21,17 @@ export const startingParty = {
    */
   getInventory: (allItems) => {
     const inventory = [];
-    const consumables = allItems.filter(item => item.type === 'consumable' && item.id !== 'hp_tonic');
-    const equipment = allItems.filter(item => item.type === 'equipment');
+    const getItem = (id) => allItems.find(i => i.id === id);
 
-    // 1-3 HP Tonics
-    const hpTonic = allItems.find(item => item.id === 'hp_tonic');
-    if (hpTonic) {
-        const amount = randInt(1, 3);
-        for (let i = 0; i < amount; i++) {
-            inventory.push(hpTonic);
-        }
+    const potion = getItem('healing_potion');
+    if (potion) {
+        for(let i=0; i<3; i++) inventory.push(potion);
     }
 
-    // 2 random consumables
-    const randomConsumables = shuffleArray(consumables).slice(0, 2);
-    inventory.push(...randomConsumables);
-
-    // 2 random pieces of equipment
-    const randomEquipment = shuffleArray(equipment).slice(0, 2);
-    inventory.push(...randomEquipment);
+    const scroll = getItem('town_portal_scroll');
+    if (scroll) {
+        inventory.push(scroll);
+    }
 
     return inventory;
   },
@@ -50,20 +42,10 @@ export const startingParty = {
    * @returns {Object[]} The starting party members configuration.
    */
   getMembers: (allActors) => {
-    const availableCreatures = allActors.filter(creature => creature.initialParty);
-
-    if (Math.random() < 0.25) {
-      // 2 creatures, one leveled up
-      const [creature1, creature2] = shuffleArray(availableCreatures).slice(0, 2);
-      return [
-        { id: creature1.id, level: creature1.level },
-        { id: creature2.id, level: creature2.level + 3 }
-      ];
-    } else {
-      // 3 creatures at base level
-      return shuffleArray(availableCreatures)
-        .slice(0, 3)
-        .map(data => ({ id: data.id, level: data.level }));
-    }
+    const heroes = ['hero_warrior', 'hero_rogue', 'hero_sorcerer'];
+    return heroes.map(id => {
+        const actor = allActors.find(a => a.id === id);
+        return { id: actor.id, level: actor.level };
+    });
   }
 };

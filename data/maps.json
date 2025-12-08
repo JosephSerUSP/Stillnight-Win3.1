@@ -1,143 +1,137 @@
 [
   {
-    "title": "Town of Stillnight",
-    "intro": "A quiet settlement on the edge of the void.",
+    "title": "Tristram",
+    "intro": "The darkened village stands in the shadow of the old cathedral.",
     "depth": 0,
     "music": "town1",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "count": 1 },
       { "id": "shop", "count": 1 },
-      { "id": "npc", "count": 2 }
+      { "id": "npc", "count": 1 }
     ],
     "treasures": [],
     "encounters": [],
-    "recruits": []
+    "recruits": ["deckard"]
   },
   {
-    "title": "Floor 1: Entry Hall",
-    "intro": "You cross the threshold into the dark.",
+    "title": "Cathedral Level 1",
+    "intro": "The air is stale and smells of rot.",
     "depth": 1,
     "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 2, "max": 3 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "treasure", "count": 1 },
+      { "id": "treasure", "count": 1 }
+    ],
+    "treasures": ["healing_potion", "buckler", "short_sword", "short_bow", "staff"],
+    "encounters": [
+      { "id": "fallen_one", "weight": 10 },
+      { "id": "skeleton_warrior", "weight": 5 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Cathedral Level 2",
+    "intro": "Shadows stretch longer here.",
+    "depth": 2,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "enemy", "min": 3, "max": 4 },
+      { "id": "shrine", "chance": 0.5 },
+      { "id": "trap", "min": 1, "max": 2 },
+      { "id": "treasure", "chance": 0.5 }
+    ],
+    "treasures": ["healing_potion", "leather_armor"],
+    "encounters": [
+      { "id": "fallen_one", "weight": 8 },
+      { "id": "skeleton_warrior", "weight": 8 },
+      { "id": "scavenger", "weight": 4 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Cathedral Level 3 (The Butcher's Block)",
+    "intro": "The smell of fresh blood is overwhelming.",
+    "depth": 3,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "enemy", "min": 3, "max": 4 },
       {
           "id": "enemy",
           "count": 1,
           "behavior": "chase",
           "symbol": "!",
           "cssClass": "text-danger",
-          "encounters": [
-              { "id": "imp", "weight": 10 }
-          ]
-      }
-    ],
-    "treasures": ["potion", "antidote"],
-    "encounters": [
-      { "id": "pixie", "weight": 5 },
-      { "id": "skeleton", "weight": 5 },
-      { "id": "imp", "weight": 3 }
-    ],
-    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat","candle"]
-  },
-  {
-    "title": "Floor 2: Chasm Crossing",
-    "intro": "Wind howls across a broken bridge.",
-    "depth": 2,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 3, "max": 4 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.6 },
-      { "id": "trap", "min": 1, "max": 2 },
-      { "id": "treasure", "chance": 0.5 }
-    ],
-    "treasures": ["hi_potion", "iron_sword"],
-    "encounters": [
-      { "id": "skeleton", "weight": 8 },
-      { "id": "imp", "weight": 5 },
-      { "id": "wisp", "weight": 4 },
-      { "id": "ooze", "weight": 3 }
-    ],
-    "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
-  },
-  {
-    "title": "Floor 3: Rusted Choir",
-    "intro": "Broken bells sway above a dry pit.",
-    "depth": 3,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
+          "encounters": [{ "id": "butcher", "weight": 10 }]
+      },
+      { "id": "recovery", "chance": 0.5 }
     ],
     "encounters": [
-      { "id": "golem", "weight": 6 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 3 }
+      { "id": "skeleton_warrior", "weight": 5 },
+      { "id": "goatman", "weight": 3 }
     ],
-    "recruits": ["golem", "demon", "angel", "larva","flauros"]
+    "recruits": []
   },
   {
-    "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
+    "title": "Catacombs Level 1",
+    "intro": "Ancient crypts beneath the church.",
     "depth": 4,
     "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 7 },
+      { "id": "enemy", "min": 4, "max": 6 },
       { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 }
+      { "id": "shop", "chance": 0.2 },
+      { "id": "treasure", "count": 1 }
     ],
+    "treasures": ["full_healing_potion", "claymore", "chain_mail", "long_bow", "war_staff"],
     "encounters": [
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 4 },
-      { "id": "ghoul", "weight": 4 }
+      { "id": "hidden_one", "weight": 6 },
+      { "id": "scavenger", "weight": 6 },
+      { "id": "goatman", "weight": 4 }
     ],
-    "recruits": ["demon", "angel", "golem","flauros"]
+    "recruits": []
   },
   {
-    "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
+    "title": "Catacombs Level 2",
+    "intro": "The darkness is absolute.",
     "depth": 5,
     "music": "dungeon1",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 8 },
+      { "id": "enemy", "min": 5, "max": 7 },
       { "id": "shrine", "chance": 0.4 },
-      { "id": "recruit", "chance": 0.4 }
+      { "id": "trap", "min": 2, "max": 3 }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 2 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
+      { "id": "hidden_one", "weight": 5 },
+      { "id": "goatman", "weight": 5 },
+      { "id": "skeleton_warrior", "weight": 5 }
     ],
-    "recruits": ["demon", "angel"]
+    "recruits": []
   },
   {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
+    "title": "King Leoric's Tomb",
+    "intro": "The skeleton king rests here.",
     "depth": 6,
     "music": "dungeon1",
     "events": [
       { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
+      {
+          "id": "enemy",
+          "count": 1,
+          "behavior": "chase",
+          "symbol": "!",
+          "cssClass": "text-danger",
+          "encounters": [{ "id": "skeleton_king", "weight": 10 }]
+      }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
+      { "id": "skeleton_warrior", "weight": 10 }
     ],
     "recruits": []
   }
