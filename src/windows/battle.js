@@ -105,11 +105,28 @@ export class Window_Battle extends Window_Base {
       this.animator.shake(this.element);
   }
 
-  appendLog(msg) {
+  appendLog(msg, options = {}) {
     const div = document.createElement("div");
     div.textContent = msg;
+    if (options.priority === 'low') {
+        div.style.opacity = '0.5';
+    }
     this.logEl.appendChild(div);
     this.logEl.scrollTop = this.logEl.scrollHeight;
+  }
+
+  appendToLastLog(msg, options = {}) {
+      if (this.logEl.lastElementChild) {
+          const span = document.createElement("span");
+          span.textContent = " " + msg; // Add space separator
+          if (options.priority === 'low') {
+              span.style.opacity = '0.5';
+          }
+          this.logEl.lastElementChild.appendChild(span);
+          this.logEl.scrollTop = this.logEl.scrollHeight;
+      } else {
+          this.appendLog(msg, options);
+      }
   }
 
   logEnemyEmergence(enemies, terms) {
