@@ -5,6 +5,7 @@ import { Window_Inventory } from "./inventory.js";
 import { Window_ConfirmEffect } from "./confirm.js";
 import { Window_PartySelect } from "./party_select.js";
 import { Window_EquipItemSelect } from "./equip_select.js";
+import { Window_Command } from "./command.js";
 import { Window_Help, Window_Options } from "./misc.js";
 import { Window_Desktop } from "./desktop.js";
 
@@ -21,6 +22,7 @@ export * from "./event.js";
 export * from "./confirm.js";
 export * from "./party_select.js";
 export * from "./equip_select.js";
+export * from "./command.js";
 export * from "./details.js";
 export * from "./misc.js";
 export * from "./builder.js";
@@ -35,6 +37,7 @@ if (typeof window !== 'undefined' && window.location.search.includes("test=true"
     window.Window_ConfirmEffect = Window_ConfirmEffect;
     window.Window_PartySelect = Window_PartySelect;
     window.Window_EquipItemSelect = Window_EquipItemSelect;
+    window.Window_Command = Window_Command;
     window.Window_Battle = Window_Battle;
     window.Window_Options = Window_Options;
 }
