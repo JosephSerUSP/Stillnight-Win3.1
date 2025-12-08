@@ -291,5 +291,13 @@ export const TRAIT_DEFINITIONS = {
         combine: 'multiply',
         label: () => "XP Rate",
         format: (value) => `x${Math.round(value * 100)}%`
+    },
+    'SKILL_ADD': {
+        label: (dataId) => "Skill",
+        format: (value, dataId) => `Grants ${dataId}`
+    },
+    'SPRITE_OVERRIDE': {
+        label: () => "Appearance",
+        format: (value, dataId) => `Changes appearance to ${dataId}`
     }
 };

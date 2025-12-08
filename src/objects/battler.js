@@ -47,8 +47,8 @@ export class Game_Battler extends Game_Base {
         return pId;
     });
 
-    this.skills = actorData.skills ? actorData.skills.slice() : [];
-    this.spriteKey = actorData.spriteKey;
+    this._baseSkills = actorData.skills ? actorData.skills.slice() : [];
+    this._baseSpriteKey = actorData.spriteKey;
     this.flavor = actorData.flavor;
     this.xp = 0;
     this.baseEquipment = actorData.equipment || null;
@@ -68,6 +68,21 @@ export class Game_Battler extends Game_Base {
       this._baseMaxHp += (depth - 1) * 4;
       this.hp = this.maxHp;
     }
+  }
+
+  get skills() {
+      const added = this.traits.filter(t => t.code === 'SKILL_ADD').map(t => t.dataId);
+      return [...new Set([...this._baseSkills, ...added])];
+  }
+
+  get spriteKey() {
+      const override = this.traits.find(t => t.code === 'SPRITE_OVERRIDE');
+      if (override) return override.dataId;
+      return this._baseSpriteKey;
+  }
+
+  set spriteKey(value) {
+      this._baseSpriteKey = value;
   }
 
   getEvolutionStatus(inventory, floorDepth, gold) {

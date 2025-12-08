@@ -1,161 +1,32 @@
 /**
  * @file data/skills.js
- * @description Defines the skills available in the game.
- * Skills are used by battlers in combat to deal damage, heal, or apply status effects.
  */
 
-/**
- * @typedef {Object} SkillEffect
- * @property {string} type - The type of effect (e.g., 'hp_damage', 'hp_heal', 'add_status').
- * @property {string} [formula] - The formula for calculating the effect value (e.g., '5 + 1.2 * a.level').
- * @property {string} [status] - The status ID to apply (if type is 'add_status').
- * @property {number} [chance] - The chance to apply the effect (0-1).
- * @property {number} [duration] - The duration of the effect in turns.
- */
-
-/**
- * @typedef {Object} Skill
- * @property {string} id - The unique ID of the skill.
- * @property {string} name - The display name of the skill.
- * @property {string} target - The target scope (e.g., 'enemy-any', 'ally-any', 'self').
- * @property {string} element - The elemental affinity of the skill.
- * @property {string} description - The flavor text description.
- * @property {SkillEffect[]} effects - The list of effects produced by the skill.
- */
-
-/**
- * @type {Object.<string, Skill>}
- */
 export const skills = {
-    // Pixie
-    windBlade: {
-        id: 'windBlade',
-        name: 'Wind Blade',
-        target: 'enemy-any',
-        element: 'Green',
-        description: "Strikes a foe with a blade of wind.",
-        effects: [
-            { type: 'hp_damage', formula: '6 + 1.2 * a.level' }
-        ]
-    },
-    soothingMote: {
-        id: 'soothingMote',
-        name: 'Soothing Mote',
-        target: 'ally-any',
-        element: 'White',
-        description: "Heals a small amount of HP for an ally.",
-        effects: [
-            { type: 'hp_heal', formula: '5 + 1.5 * a.level' }
-        ]
-    },
+    fight: { id: 'fight', name: 'Attack', target: 'enemy-any', element: 'Neutral', description: "Basic attack.", effects: [{ type: 'hp_damage', formula: 'a.atk' }] },
+    guard: { id: 'guard', name: 'Guard', target: 'self', element: 'Neutral', description: "Defend against attacks.", effects: [{ type: 'add_status', status: 'guard', duration: 1 }] },
 
-    // Skeleton
-    boneRush: {
-        id: 'boneRush',
-        name: 'Bone Rush',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "A reckless charge.",
-        effects: [
-            { type: 'hp_damage', formula: '7 + 1.2 * a.level' }
-        ]
-    },
+    // Knight
+    cover: { id: 'cover', name: 'Cover', target: 'ally-any', description: "Protect an ally.", effects: [{ type: 'add_status', status: 'cover', duration: 1 }] },
 
-    // Angel
-    holySmite: {
-        id: 'holySmite',
-        name: 'Holy Smite',
-        target: 'enemy-any',
-        element: 'White',
-        description: "Smite evil with holy light.",
-        effects: [
-            { type: 'hp_damage', formula: '6 + 1.4 * a.level' }
-        ]
-    },
-    divineFavor: {
-        id: 'divineFavor',
-        name: 'Divine Favor',
-        target: 'ally-any',
-        element: 'White',
-        description: "Grants regeneration to an ally.",
-        effects: [
-            { type: 'add_status', status: 'regen', chance: 1.0, duration: 3 }
-        ]
-    },
+    // White Mage
+    cure: { id: 'cure', name: 'Cure', target: 'ally-any', element: 'White', description: "Restore HP.", effects: [{ type: 'hp_heal', formula: '10 + a.level * 2' }] },
+    holy: { id: 'holy', name: 'Holy', target: 'enemy-any', element: 'White', description: "Holy damage.", effects: [{ type: 'hp_damage', formula: '20 + a.level * 3' }] },
 
-    // Demon
-    shadowClaw: {
-        id: 'shadowClaw',
-        name: 'Shadow Claw',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "Tears at the enemy from the shadows.",
-        effects: [
-            { type: 'hp_damage', formula: '8 + 1.3 * a.level' }
-        ]
-    },
-    infernalPact: {
-        id: 'infernalPact',
-        name: 'Infernal Pact',
-        target: 'self',
-        element: 'Red',
-        description: "Sacrifice safety for power. (Grants Berserk)",
-        effects: [
-            { type: 'add_status', status: 'berserk', chance: 1.0, duration: 3 }
-        ]
-    },
+    // Black Mage
+    fire: { id: 'fire', name: 'Fire', target: 'enemy-any', element: 'Red', description: "Fire damage.", effects: [{ type: 'hp_damage', formula: '10 + a.level * 2' }] },
+    thunder: { id: 'thunder', name: 'Thunder', target: 'enemy-any', element: 'Red', description: "Lightning damage.", effects: [{ type: 'hp_damage', formula: '10 + a.level * 2' }] },
 
-    wait: {
-        id: 'wait',
-        name: 'Wait',
-        target: 'self',
-        element: 'White',
-        description: "Do nothing.",
-        effects: []
-    },
+    // Monk
+    kick: { id: 'kick', name: 'Kick', target: 'enemy-all', description: "Kick all enemies.", effects: [{ type: 'hp_damage', formula: 'a.atk * 0.8' }] },
+    chakra: { id: 'chakra', name: 'Chakra', target: 'self', description: "Heal self.", effects: [{ type: 'hp_heal', formula: '20' }] },
 
-    flameRebirth: {
-        id: 'flameRebirth',
-        name: 'Flame Rebirth',
-        target: 'self',
-        element: 'Red',
-        description: "Rise from the ashes.",
-        effects: []
-    },
-
-    // Nurse
-    needleShot: {
-        id: 'needleShot',
-        name: 'Needle Shot',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "A precise strike that injects toxins.",
-        effects: [
-            { type: 'hp_damage', formula: '5 + 1.2 * a.level' },
-            { type: 'add_status', status: 'poison', chance: 0.4, duration: 3 }
-        ]
-    },
-    fieldSurgery: {
-        id: 'fieldSurgery',
-        name: 'Field Surgery',
-        target: 'ally-any',
-        element: 'Black',
-        description: "Emergency medical attention. It might hurt.",
-        effects: [
-            { type: 'hp_heal', formula: '10 + 2.0 * a.level' }
-        ]
-    },
-
-    // Incubus
-    drainKiss: {
-        id: 'drainKiss',
-        name: 'Drain Kiss',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "Steals vitality and puts the target to sleep.",
-        effects: [
-            { type: 'hp_drain', formula: '4 + 0.6 * a.level' },
-            { type: 'add_status', status: 'sleep', chance: 0.5, duration: 3 }
-        ]
-    }
+    // Enemy
+    goblinPunch: { id: 'goblinPunch', name: 'Goblin Punch', target: 'enemy-any', effects: [{ type: 'hp_damage', formula: 'a.atk * 1.5' }] },
+    bite: { id: 'bite', name: 'Bite', target: 'enemy-any', effects: [{ type: 'hp_damage', formula: 'a.atk' }] },
+    needleShot: { id: 'needleShot', name: 'Needle Shot', target: 'enemy-any', effects: [{ type: 'hp_damage', formula: 'a.atk' }] },
+    tailScrew: { id: 'tailScrew', name: 'Tail Screw', target: 'enemy-any', effects: [{ type: 'hp_damage', formula: 'a.atk' }, { type: 'add_status', status: 'paralyze' }] },
+    tentacle: { id: 'tentacle', name: 'Tentacle', target: 'enemy-any', effects: [{ type: 'hp_damage', formula: 'a.atk' }] },
+    breathWing: { id: 'breathWing', name: 'Breath Wing', target: 'enemy-all', effects: [{ type: 'hp_damage', formula: 'a.maxHp * 0.25' }] },
+    claw: { id: 'claw', name: 'Claw', target: 'enemy-any', effects: [{ type: 'hp_damage', formula: 'a.atk' }] }
 };

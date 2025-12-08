@@ -1,365 +1,85 @@
 [
+  { "id": "potion", "name": "Potion", "type": "consumable", "cost": 50, "description": "Heals 50 HP.", "icon": 52, "effects": [{ "type": "hp", "value": 50 }] },
+  { "id": "phoenix_down", "name": "Phoenix Down", "type": "consumable", "cost": 100, "description": "Revives a fallen ally.", "icon": 54, "effects": [{ "type": "revive", "value": 0.2 }] },
+
   {
-    "id": "hp_tonic",
-    "name": "HP Tonic",
-    "type": "consumable",
-    "cost": 10,
-    "description": "Heals one member to full HP.",
-    "icon": 52,
-    "effects": [
-      {
-        "type": "hp",
-        "value": 999
-      }
+    "id": "job_knight",
+    "name": "Knight Crystal",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 0,
+    "icon": 133,
+    "description": "Essence of the Knight.",
+    "traits": [
+      { "code": "SPRITE_OVERRIDE", "dataId": "Golem" },
+      { "code": "SKILL_ADD", "dataId": "guard" },
+      { "code": "SKILL_ADD", "dataId": "cover" },
+      { "code": "PARAM_RATE", "dataId": "maxHp", "value": 1.5 }
     ]
   },
   {
-    "id": "sigil_ink",
-    "name": "Sigil Ink",
-    "type": "consumable",
-    "cost": 20,
-    "description": "+2 max HP to one member.",
-    "icon": 55,
-    "effects": [
-      {
-        "type": "maxHp",
-        "value": 2
-      }
+    "id": "job_white",
+    "name": "White Mage Crystal",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 0,
+    "icon": 133,
+    "description": "Essence of the White Mage.",
+    "traits": [
+      { "code": "SPRITE_OVERRIDE", "dataId": "angel" },
+      { "code": "SKILL_ADD", "dataId": "cure" },
+      { "code": "SKILL_ADD", "dataId": "holy" },
+      { "code": "PARAM_RATE", "dataId": "maxHp", "value": 0.8 }
     ]
   },
   {
-    "id": "whispered_lessons",
-    "name": "Whispered Lessons",
-    "type": "consumable",
-    "cost": 64,
-    "description": "+6 XP to one member.",
-    "icon": 64,
-    "effects": [
-      {
-        "type": "xp",
-        "value": 6
-      }
+    "id": "job_black",
+    "name": "Black Mage Crystal",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 0,
+    "icon": 133,
+    "description": "Essence of the Black Mage.",
+    "traits": [
+      { "code": "SPRITE_OVERRIDE", "dataId": "imp" },
+      { "code": "SKILL_ADD", "dataId": "fire" },
+      { "code": "SKILL_ADD", "dataId": "thunder" },
+      { "code": "PARAM_RATE", "dataId": "maxHp", "value": 0.8 }
+    ]
+  },
+    {
+    "id": "job_monk",
+    "name": "Monk Crystal",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 0,
+    "icon": 133,
+    "description": "Essence of the Monk.",
+    "traits": [
+      { "code": "SPRITE_OVERRIDE", "dataId": "ghoul" },
+      { "code": "SKILL_ADD", "dataId": "kick" },
+      { "code": "SKILL_ADD", "dataId": "chakra" },
+      { "code": "PARAM_RATE", "dataId": "atk", "value": 1.3 }
     ]
   },
   {
-    "id": "silver_blade",
-    "name": "Silver Blade",
+    "id": "broadsword",
+    "name": "Broadsword",
     "type": "equipment",
     "equipType": "Weapon",
-    "cost": 25,
-    "icon": 180,
-    "description": "Sharpened steel blade.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 1
-      },
-      {
-        "code": "CRI",
-        "value": 0.1
-      }
-    ]
-  },
-  {
-    "id": "bone_plate",
-    "name": "Bone Plate",
-    "type": "equipment",
-    "equipType": "Armor",
-    "cost": 25,
-    "icon": 172,
-    "description": "Sturdy bone harness.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "maxHp",
-        "value": 3
-      }
-    ]
-  },
-  {
-    "id": "wind_charm",
-    "name": "Wind Charm",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 35,
-    "icon": 174,
-    "description": "A charm of rushing air.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 1
-      },
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "maxHp",
-        "value": 1
-      }
-    ]
-  },
-  {
-    "id": "light_amulet",
-    "name": "Light Amulet",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 30,
-    "icon": 174,
-    "description": "Glowing amulet.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "maxHp",
-        "value": 2
-      }
-    ]
-  },
-  {
-    "id": "alert_charm",
-    "name": "Alert Charm",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 150,
-    "icon": 174,
-    "description": "Humming chime.",
-    "traits": [
-      {
-        "code": "INITIATIVE",
-        "value": 0.05
-      }
-    ]
-  },
-  {
-    "id": "rear_mirror",
-    "name": "Rear Mirror",
-    "type": "equipment",
-    "equipType": "Accessory",
     "cost": 200,
-    "icon": 6,
-    "description": "Reflective glass. Prevents sneak attacks if in back row.",
-    "traits": [
-      {
-        "code": "REAR_GUARD",
-        "value": 1
-      }
-    ]
+    "icon": 97,
+    "description": "Standard issue sword.",
+    "traits": [{ "code": "PARAM_PLUS", "dataId": "atk", "value": 10 }]
   },
   {
-    "id": "mystic_egg",
-    "name": "Mystic Egg",
-    "type": "consumable",
-    "cost": 500,
-    "icon": 184,
-    "description": "A mysterious egg that pulses with life. Use to hatch.",
-    "effects": [
-      {
-        "type": "recruit_egg",
-        "value": "egg"
-      }
-    ]
-  },
-  {
-    "id": "exp_boost",
-    "name": "Golden Egg",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 9999,
-    "icon": 184,
-    "description": "Beautiful golden egg, sought after by many.",
-    "traits": [
-      {
-        "code": "XP_RATE",
-        "value": 1.5
-      }
-    ]
-  },
-  {
-    "id": "hp_boost1",
-    "name": "Vitality Seal 1",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 125,
-    "icon": 174,
-    "description": "+10% Max HP",
-    "traits": [
-      {
-        "code": "PARAM_RATE",
-        "dataId": "maxHp",
-        "value": 1.1
-      }
-    ]
-  },
-  {
-    "id": "hp_boost2",
-    "name": "Vitality Seal 2",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 400,
-    "icon": 174,
-    "description": "+20% Max HP",
-    "traits": [
-      {
-        "code": "PARAM_RATE",
-        "dataId": "maxHp",
-        "value": 1.2
-      }
-    ]
-  },
-  {
-    "id": "hp_boost3",
-    "name": "Vitality Seal 3",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 2800,
-    "icon": 174,
-    "description": "+30% Max HP",
-    "traits": [
-      {
-        "code": "PARAM_RATE",
-        "dataId": "maxHp",
-        "value": 1.3
-      }
-    ]
-  },
-  {
-    "id": "radiant_blade_flavio",
-    "name": "Radiant Blade Flavio",
+    "id": "rod",
+    "name": "Rod",
     "type": "equipment",
     "equipType": "Weapon",
-    "cost": 1995,
-    "icon": 71,
-    "description": "Lucent blade carrying the blessings of the sun.",
-    "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
-      { "code": "ELEMENT_CHANGE", "dataId": "Red" },
-      { "code": "CRI", "value": 0.20 }
-    ]
-  },
-  {
-    "id": "wind_dancer",
-    "name": "Wind Dancer",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1520,
-    "icon": 72,
-    "description": "Leaf-shaped daggers that strike with the speed of wind.",
-    "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
-      { "code": "ELEMENT_CHANGE", "dataId": "Green" },
-      { "code": "CRI", "value": 0.15 }
-    ]
-  },
-  {
-    "id": "water_scepter",
-    "name": "Water Scepter",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1520,
-    "icon": 73,
-    "description": "Leaf-shaped daggers that strike with the speed of wind.",
-    "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
-      { "code": "ELEMENT_CHANGE", "dataId": "Blue" },
-      { "code": "CRI", "value": 0.15 }
-    ]
-  },
-  {
-    "id": "holy_sword_gram",
-    "name": "Holy Sword Gram",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1520,
-    "icon": 74,
-    "description": "Legendary sword wielded by angels of time immemorial.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "White"
-      },
-      {
-        "code": "CRI",
-        "value": 0.15
-      }
-    ]
-  },
-  {
-    "id": "dark_scepter_lucille",
-    "name": "Dark Scepter Lucille",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1666,
-    "icon": 75,
-    "description": "Cursed sceptre. Once wielded by a fallen queen, or so they say.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Black"
-      },
-      {
-        "code": "CRI",
-        "value": 0.1
-      }
-    ]
-  },
-  {
-    "id": "mars_emblem",
-    "name": "Mars Emblem",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 400,
-    "icon": 81,
-    "description": "Its magicked properties imbue the wearer with elemental energy.",
-    "traits": [
-      { "code": "ELEMENT_CHANGE", "dataId": "Red" }
-    ]
-  },
-  {
-    "id": "mercury_crest",
-    "name": "Mercury Crest",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 1260,
-    "icon": 83,
-    "description": "Ornate and delicate, its blue sheen is comforting.",
-    "traits": [
-      {
-        "code": "HRG",
-        "value": 0.05
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Blue"
-      }
-    ]
-  },
-  {
-    "id": "hermes_boots",
-    "name": "Hermes' Boots",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 2100,
-    "icon": 82,
-    "description": "Wondrous boots that grant the wearer unimaginable swiftness.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "asp",
-        "value": 2
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Green"
-      }
-    ]
+    "cost": 150,
+    "icon": 98,
+    "description": "Magical rod.",
+    "traits": [{ "code": "PARAM_PLUS", "dataId": "atk", "value": 2 }]
   }
 ]

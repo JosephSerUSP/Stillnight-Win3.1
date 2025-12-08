@@ -9,7 +9,7 @@ import { ProgressionSystem } from "../managers/progression.js";
  */
 export class Window_Battle extends Window_Base {
   constructor() {
-    super('center', 'center', 528, 360, { title: "Battle – Stillnight" });
+    super('center', 'center', 528, 480, { title: "Battle – Stillnight" });
 
     // 1. Content: Terminal with Viewport and Log
     const contentStructure = {
@@ -154,7 +154,7 @@ export class Window_Battle extends Window_Base {
     const renderBattler = (b, idx, isEnemy) => {
         if (!b || b.hidden) return;
 
-        const top = isEnemy ? 30 + Math.floor(idx / 2) * 32 : 128 + Math.floor(idx / 2) * 32;
+        const top = isEnemy ? 20 + Math.floor(idx / 2) * 80 : 200 + Math.floor(idx / 2) * 80;
         const left = 20 + (idx % 2) * 220;
 
         const battlerId = isEnemy ? `battler-enemy-${idx}` : `battler-party-${idx}`;
@@ -170,10 +170,31 @@ export class Window_Battle extends Window_Base {
                     left: `${left}px`,
                     whiteSpace: 'pre',
                     display: 'flex',
-                    flexDirection: 'column'
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    boxShadow: 'none'
                 }
             },
             children: [
+               {
+                   type: 'panel',
+                   props: {
+                       className: 'battler-sprite',
+                       style: {
+                           backgroundImage: `url('assets/portraits/${b.spriteKey || "pixie"}.png')`,
+                           width: '48px',
+                           height: '48px',
+                           backgroundSize: 'cover',
+                           backgroundPosition: '50% 25%',
+                           marginBottom: '2px',
+                           border: '1px solid var(--bezel-shadow)',
+                           boxShadow: '1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset',
+                           imageRendering: 'pixelated'
+                       }
+                   }
+               },
                {
                    type: 'label',
                    props: { className: 'battler-name' },
@@ -185,7 +206,7 @@ export class Window_Battle extends Window_Base {
             ]
         });
 
-        const nameEl = container.children[0];
+        const nameEl = container.children[1];
         nameEl.innerHTML = "";
 
         let evoStatus = 'NONE';
