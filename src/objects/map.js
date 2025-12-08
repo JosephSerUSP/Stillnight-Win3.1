@@ -53,51 +53,87 @@ export class Game_Map {
       Array.from({ length: this.MAX_W }, () => false)
     );
 
-    const innerW = randInt(7, 11);
-    const innerH = randInt(7, 11);
-    const offsetX = Math.floor((this.MAX_W - innerW) / 2);
-    const offsetY = Math.floor((this.MAX_H - innerH) / 2);
+    let floorCells = [];
+    let startX = 0;
+    let startY = 0;
 
-    let x = offsetX + Math.floor(innerW / 2);
-    let y = offsetY + Math.floor(innerH / 2);
+    if (meta.layout) {
+        // Custom Layout
+        for (let y = 0; y < this.MAX_H; y++) {
+            for (let x = 0; x < this.MAX_W; x++) {
+                const char = (meta.layout[y] && meta.layout[y][x]) || '#';
+                if (char === '.' || char === 'S') {
+                    tiles[y][x] = '.';
+                    floorCells.push([x, y]);
+                } else {
+                    tiles[y][x] = '#';
+                }
 
-    tiles[y][x] = ".";
-    const floorCells = [[x, y]];
-
-    const steps = innerW * innerH * 3;
-    const dirs = [
-      [1, 0],
-      [-1, 0],
-      [0, 1],
-      [0, -1],
-    ];
-
-    for (let i = 0; i < steps; i++) {
-      const [dx, dy] = dirs[randInt(0, dirs.length - 1)];
-      const nx = x + dx;
-      const ny = y + dy;
-      if (
-        nx >= offsetX &&
-        nx < offsetX + innerW &&
-        ny >= offsetY &&
-        ny < offsetY + innerH
-      ) {
-        x = nx;
-        y = ny;
-        if (tiles[y][x] === "#") {
-          tiles[y][x] = ".";
-          floorCells.push([x, y]);
+                if (char === 'S') {
+                    startX = x;
+                    startY = y;
+                }
+            }
         }
-      }
-    }
-
-    if (floorCells.length < 10) {
-      for (let iy = offsetY + 1; iy < offsetY + innerH - 1; iy++) {
-        for (let ix = offsetX + 1; ix < offsetX + innerW - 1; ix++) {
-          tiles[iy][ix] = ".";
-          floorCells.push([ix, iy]);
+        // If no S found, pick random floor cell
+        if (startX === 0 && startY === 0 && floorCells.length > 0) {
+            const p = floorCells[0];
+            startX = p[0];
+            startY = p[1];
         }
-      }
+
+    } else {
+        // Procedural Generation
+        const innerW = randInt(7, 11);
+        const innerH = randInt(7, 11);
+        const offsetX = Math.floor((this.MAX_W - innerW) / 2);
+        const offsetY = Math.floor((this.MAX_H - innerH) / 2);
+
+        let x = offsetX + Math.floor(innerW / 2);
+        let y = offsetY + Math.floor(innerH / 2);
+
+        tiles[y][x] = ".";
+        floorCells.push([x, y]);
+
+        const steps = innerW * innerH * 3;
+        const dirs = [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+        ];
+
+        for (let i = 0; i < steps; i++) {
+        const [dx, dy] = dirs[randInt(0, dirs.length - 1)];
+        const nx = x + dx;
+        const ny = y + dy;
+        if (
+            nx >= offsetX &&
+            nx < offsetX + innerW &&
+            ny >= offsetY &&
+            ny < offsetY + innerH
+        ) {
+            x = nx;
+            y = ny;
+            if (tiles[y][x] === "#") {
+            tiles[y][x] = ".";
+            floorCells.push([x, y]);
+            }
+        }
+        }
+
+        if (floorCells.length < 10) {
+        for (let iy = offsetY + 1; iy < offsetY + innerH - 1; iy++) {
+            for (let ix = offsetX + 1; ix < offsetX + innerW - 1; ix++) {
+            tiles[iy][ix] = ".";
+            floorCells.push([ix, iy]);
+            }
+        }
+        }
+
+        const startPos = floorCells[floorCells.length - 1];
+        startX = startPos[0];
+        startY = startPos[1];
     }
 
     const pickCell = (exclude = []) => {
@@ -107,12 +143,25 @@ export class Game_Map {
       return candidates[randInt(0, candidates.length - 1)];
     };
 
-    const startPos = floorCells[floorCells.length - 1];
-    const [startX, startY] = startPos;
-    const used = [startPos];
+    const used = [[startX, startY]];
 
     if (meta.events) {
       meta.events.forEach((config) => {
+        if (config.x !== undefined && config.y !== undefined) {
+             tiles[config.y][config.x] = '.';
+             let eventData = { ...config };
+             if (config.id) {
+                 const def = eventDefs.find(e => e.id === config.id);
+                 if (def) {
+                     eventData = { ...def, ...config };
+                 }
+             }
+
+             events.push(new Game_Event(config.x, config.y, eventData));
+             used.push([config.x, config.y]);
+             return;
+        }
+
         const def = eventDefs.find((e) => e.id === config.id);
         if (!def) return;
 

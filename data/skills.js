@@ -157,5 +157,56 @@ export const skills = {
             { type: 'hp_drain', formula: '4 + 0.6 * a.level' },
             { type: 'add_status', status: 'sleep', chance: 0.5, duration: 3 }
         ]
+    },
+    // New SaGa Skills
+    doubleCut: {
+        id: 'doubleCut',
+        name: 'Double Cut',
+        target: 'enemy-any',
+        element: 'White',
+        description: "A swift double strike.",
+        effects: [
+            { type: 'hp_damage', formula: '12 + 1.5 * a.level' }
+        ]
+    },
+    crossCut: {
+        id: 'crossCut',
+        name: 'Cross Cut',
+        target: 'enemy-any',
+        element: 'White',
+        description: "X marks the spot. High critical chance.",
+        effects: [
+            { type: 'hp_damage', formula: '15 + 1.8 * a.level' }
+        ]
+    },
+    dragonTail: {
+        id: 'dragonTail',
+        name: 'Dragon Tail',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "A whipping strike that evokes a dragon.",
+        effects: [
+            { type: 'hp_damage', formula: '25 + 2.5 * a.level' }
+        ]
+    },
+    kick: {
+        id: 'kick',
+        name: 'Kick',
+        target: 'enemy-any',
+        element: 'Green',
+        description: "A powerful kick.",
+        effects: [
+            { type: 'hp_damage', formula: '10 + 1.2 * a.level' }
+        ]
+    },
+    suplex: {
+        id: 'suplex',
+        name: 'Suplex',
+        target: 'enemy-any',
+        element: 'Green',
+        description: "Slam the enemy into the ground.",
+        effects: [
+            { type: 'hp_damage', formula: '20 + 2.0 * a.level' }
+        ]
     }
 };

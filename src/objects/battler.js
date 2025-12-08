@@ -58,6 +58,9 @@ export class Game_Battler extends Game_Base {
     this.gold = actorData.gold || 0;
     this.isEnemy = isEnemy;
 
+    this.maxLp = 3;
+    this.lp = this.maxLp;
+
     /**
      * Active states on the battler.
      * @type {Array<{id: string, turns: number}>}

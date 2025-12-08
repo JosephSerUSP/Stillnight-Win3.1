@@ -67,6 +67,7 @@ test.describe('Sacrifice and Permadeath', () => {
         const bm = window.sceneManager.currentScene().battleManager;
         // Kill first party member
         bm.party.members[0].hp = 0;
+        bm.party.members[0].lp = 0; // Ensure permadeath
         // Kill enemy
         bm.enemies[0].hp = 0;
         // Force victory pending state logic (BattleManager checks end in executeAction/startTurn usually)

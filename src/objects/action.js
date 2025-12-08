@@ -157,11 +157,21 @@ export class Game_Action {
         const hpBefore = target.hp;
         target.hp = Math.max(0, target.hp - dmg);
 
+        let lpLoss = 0;
+        if (target.hp === 0 && (target.lp !== undefined)) {
+             target.lp = Math.max(0, target.lp - 1);
+             lpLoss = 1;
+        }
+
         SoundManager.play('DAMAGE');
 
-        const msg = isCritical
+        let msg = isCritical
             ? `CRITICAL! ${battler.name} deals ${dmg} damage to ${target.name}!`
             : `${battler.name} attacks ${target.name} for ${dmg}.`;
+
+        if (lpLoss > 0) {
+            msg += ` (LP ${target.lp})`;
+        }
 
         events.push({
             type: "damage",
@@ -172,6 +182,7 @@ export class Game_Action {
             hpAfter: target.hp,
             isCritical: isCritical,
             msg: msg,
+            lpLoss
         });
     }
 
@@ -218,6 +229,12 @@ export class Game_Action {
 
              if (result.type === 'damage') {
                  SoundManager.play('DAMAGE');
+
+                 let msg = `  ${target.name} takes ${result.value} damage.`;
+                 if (result.lpLoss) {
+                     msg += ` (LP ${target.lp})`;
+                 }
+
                  events.push({
                     type: 'damage',
                     battler: battler,
@@ -225,7 +242,8 @@ export class Game_Action {
                     value: result.value,
                     hpBefore: target.hp + result.value,
                     hpAfter: target.hp,
-                    msg: `  ${target.name} takes ${result.value} damage.`
+                    msg: msg,
+                    lpLoss: result.lpLoss
                  });
             } else if (result.type === 'heal') {
                  SoundManager.play('HEAL');
@@ -243,6 +261,12 @@ export class Game_Action {
                  events.push({ type: 'status', target: target, status: result.status, msg: `  ${target.name} is afflicted with ${result.status}.` });
             } else if (result.type === 'hp_drain') {
                  SoundManager.play('DAMAGE');
+
+                 let msg = `  ${battler.name} drains ${result.value} HP from ${target.name}.`;
+                 if (result.lpLoss) {
+                     msg += ` (LP ${target.lp})`;
+                 }
+
                  events.push({
                      type: 'hp_drain',
                      battler: battler,
@@ -253,7 +277,8 @@ export class Game_Action {
                      hpAfterTarget: result.hpAfterTarget,
                      hpBeforeSource: result.hpBeforeSource,
                      hpAfterSource: result.hpAfterSource,
-                     msg: `  ${battler.name} drains ${result.value} HP from ${target.name}.`
+                     msg: msg,
+                     lpLoss: result.lpLoss
                  });
             }
         });

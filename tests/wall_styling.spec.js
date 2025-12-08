@@ -3,6 +3,8 @@ const { test, expect } = require('@playwright/test');
 test('Wall tiles should have tile-wall class and empty symbol', async ({ page }) => {
   await page.goto('/?test=true');
   await page.waitForFunction(() => window.sceneManager && window.sceneManager.currentScene());
+  await page.click('#btn-new-run');
+  await page.waitForTimeout(100);
 
   // Set up a map with a wall
   await page.evaluate(() => {

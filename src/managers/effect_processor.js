@@ -55,7 +55,14 @@ export class EffectProcessor {
 
                 const oldHp = target.hp;
                 target.hp = Math.max(0, target.hp - val);
-                return { type: 'damage', value: oldHp - target.hp, target };
+
+                let lpLoss = 0;
+                if (target.hp === 0 && (target.lp !== undefined)) {
+                     target.lp = Math.max(0, target.lp - 1);
+                     lpLoss = 1;
+                }
+
+                return { type: 'damage', value: oldHp - target.hp, target, lpLoss };
             }
 
             case 'add_status': {
@@ -79,6 +86,12 @@ export class EffectProcessor {
                 target.hp = Math.max(0, target.hp - val);
                 const damageDealt = hpBeforeTarget - target.hp;
 
+                let lpLoss = 0;
+                if (target.hp === 0 && (target.lp !== undefined)) {
+                     target.lp = Math.max(0, target.lp - 1);
+                     lpLoss = 1;
+                }
+
                 const hpBeforeSource = source.hp;
                 source.hp = Math.min(source.maxHp, source.hp + damageDealt);
 
@@ -90,7 +103,8 @@ export class EffectProcessor {
                     hpBeforeTarget,
                     hpAfterTarget: target.hp,
                     hpBeforeSource,
-                    hpAfterSource: source.hp
+                    hpAfterSource: source.hp,
+                    lpLoss
                 };
             }
 

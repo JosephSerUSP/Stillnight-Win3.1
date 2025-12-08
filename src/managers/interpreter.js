@@ -72,7 +72,33 @@ export class Game_Interpreter {
             case 'BREAKABLE_WALL':
                 this.triggerBreakableWall(action, event);
                 break;
+            case 'TRAVEL':
+                this.travelToMap(action);
+                break;
         }
+    }
+
+    travelToMap(action) {
+        const floorIndex = action.floorIndex;
+        if (floorIndex === undefined) return;
+
+        // Unlock if needed (linear progression assumption)
+        if (this.map.maxReachedFloorIndex < floorIndex) {
+             this.map.maxReachedFloorIndex = floorIndex;
+        }
+
+        this.map.floorIndex = floorIndex;
+        const f = this.map.floors[this.map.floorIndex];
+        f.discovered = true;
+        this.map.playerX = f.startX;
+        this.map.playerY = f.startY;
+        this.map.revealAroundPlayer();
+
+        this.scene.logMessage(`[Travel] You arrive at ${f.title}.`);
+        this.scene.setStatus("Exploring " + f.title);
+        SoundManager.play('STAIRS');
+        this.scene.updateAll();
+        this.scene.checkMusic();
     }
 
     triggerBreakableWall(action, event) {
@@ -113,7 +139,10 @@ export class Game_Interpreter {
      * Fully heals the party.
      */
     healParty() {
-        this.party.members.forEach((m) => (m.hp = m.maxHp));
+        this.party.members.forEach((m) => {
+            m.hp = m.maxHp;
+            if (m.maxLp) m.lp = m.maxLp;
+        });
         this.scene.logMessage("[Recover] A soft glow restores your party.");
         this.party.members.forEach((member) => {
             const xpBonus = member.getPassiveValue("RECOVERY_XP_BONUS");

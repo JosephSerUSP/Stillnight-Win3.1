@@ -180,7 +180,7 @@ export class Window_Battle extends Window_Base {
                },
                {
                    type: 'label',
-                   props: { className: 'battler-hp', text: this.createHpGauge(b.hp, b.maxHp) }
+                   props: { className: 'battler-hp', text: this.createHpGauge(b.hp, b.maxHp, b.lp) }
                }
             ]
         });
@@ -201,14 +201,20 @@ export class Window_Battle extends Window_Base {
     partySlots.forEach((p, idx) => renderBattler(p, idx, false));
   }
 
-  createHpGauge(hp, maxHp) {
+  createHpGauge(hp, maxHp, lp) {
     const totalLength = 15;
     let filledCount = Math.round((hp / maxHp) * totalLength);
     if (hp > 0 && filledCount === 0) filledCount = 1;
     if (filledCount < 0) filledCount = 0;
     const emptyCount = totalLength - filledCount;
-    if (emptyCount < 0) return `[${"#".repeat(totalLength)}]`;
-    return `[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
+    let bar = "";
+    if (emptyCount < 0) bar = `[${"#".repeat(totalLength)}]`;
+    else bar = `[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
+
+    if (lp !== undefined) {
+        return `${bar} LP:${lp}`;
+    }
+    return bar;
   }
 
   getBattlerId(index, isEnemy) {
@@ -260,7 +266,7 @@ export class Window_Battle extends Window_Base {
         if (ctx) {
              const hpEl = this.getHpElement(ctx.index, ctx.isEnemy);
              if (hpEl) {
-                 hpEl.textContent = this.createHpGauge(currentHp, battler.maxHp);
+                 hpEl.textContent = this.createHpGauge(currentHp, battler.maxHp, battler.lp);
                  // Name text update removed as we use structured label now
              }
         }

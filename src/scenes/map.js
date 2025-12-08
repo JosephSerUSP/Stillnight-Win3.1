@@ -276,7 +276,7 @@ export class Scene_Map extends Scene_Base {
     let deadFound = false;
     const members = [...this.party.members];
     for (const member of members) {
-        if (member.hp <= 0) {
+        if (member.lp <= 0) {
             deadFound = true;
             const permadeathTraits = member.traits.filter(t => t.code === 'ON_PERMADEATH');
 
@@ -285,6 +285,7 @@ export class Scene_Map extends Scene_Base {
 
                  const heal = Math.floor(member.maxHp * 0.2) || 1;
                  member.hp = heal;
+                 member.lp = member.maxLp;
 
                  const oldLevel = member.level;
                  const levelsLost = 2;

@@ -1,6 +1,7 @@
 import { randInt } from "../core/utils.js";
 import { SoundManager } from "./sound.js";
 import { Game_Action } from "../objects/objects.js";
+import { SparkSystem } from "./spark_system.js";
 
 /**
  * @class BattleManager
@@ -239,6 +240,25 @@ export class BattleManager {
     if (!action) return [];
 
     const { subject } = action;
+    let preEvents = [];
+
+    // Spark Check
+    const sparkSkillId = SparkSystem.checkSpark(subject, action, this.dataManager);
+    if (sparkSkillId) {
+        if (!subject.skills.includes(sparkSkillId)) {
+            subject.skills.push(sparkSkillId);
+            const skill = this.dataManager.skills[sparkSkillId];
+            if (skill) {
+                action.setSkill(sparkSkillId, this.dataManager);
+                preEvents.push({
+                    type: 'message',
+                    msg: `💡 ${subject.name} sparks ${skill.name}!`
+                });
+                SoundManager.play('ITEM_GET');
+            }
+        }
+    }
+
     let { target } = action;
 
     if (subject.hp <= 0) return [];
@@ -261,8 +281,9 @@ export class BattleManager {
 
     const events = action.apply(target, this.dataManager);
 
-    this._checkBattleEnd(events);
-    return events;
+    const allEvents = [...preEvents, ...events];
+    this._checkBattleEnd(allEvents);
+    return allEvents;
   }
 
   /**
