@@ -27,7 +27,7 @@
     "type": "consumable",
     "cost": 64,
     "description": "+6 XP to one member.",
-    "icon": 6,
+    "icon": 64,
     "effects": {
       "xp": 6
     }
@@ -38,7 +38,7 @@
     "type": "equipment",
     "equipType": "Weapon",
     "cost": 25,
-    "icon": 190,
+    "icon": 180,
     "description": "Sharpened steel blade.",
     "traits": [
       { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 },
@@ -111,7 +111,7 @@
     "name": "Mystic Egg",
     "type": "consumable",
     "cost": 500,
-    "icon": 6,
+    "icon": 184,
     "description": "A mysterious egg that pulses with life. Use to hatch.",
     "effects": {
       "recruit_egg": "egg"
@@ -123,7 +123,7 @@
     "type": "equipment",
     "equipType": "Accessory",
     "cost": 9999,
-    "icon": 174,
+    "icon": 184,
     "description": "Beautiful golden egg, sought after by many.",
     "traits": [
       { "code": "XP_RATE", "value": 1.5 }
@@ -135,7 +135,7 @@
     "type": "equipment",
     "equipType": "Accessory",
     "cost": 125,
-    "icon": 184,
+    "icon": 174,
     "description": "+10% Max HP",
     "traits": [
       { "code": "PARAM_RATE", "dataId": "maxHp", "value": 1.1 }
@@ -147,7 +147,7 @@
     "type": "equipment",
     "equipType": "Accessory",
     "cost": 400,
-    "icon": 184,
+    "icon": 174,
     "description": "+20% Max HP",
     "traits": [
       { "code": "PARAM_RATE", "dataId": "maxHp", "value": 1.2 }
@@ -159,7 +159,7 @@
     "type": "equipment",
     "equipType": "Accessory",
     "cost": 2800,
-    "icon": 184,
+    "icon": 174,
     "description": "+30% Max HP",
     "traits": [
       { "code": "PARAM_RATE", "dataId": "maxHp", "value": 1.3 }
