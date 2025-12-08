@@ -1,7 +1,7 @@
 import { Scene_Base } from "./base.js";
 import { Scene_Battle } from "./battle.js";
 import { Scene_Shop } from "./shop.js";
-import { Game_Map, Game_Party, Game_Battler, Game_Action } from "../objects/objects.js";
+import { Game_Map, Game_Party, Game_Battler, Game_Action, Game_Event } from "../objects/objects.js";
 import { Game_Interpreter } from "../managers/interpreter.js";
 import { BattleManager, SoundManager, ConfigManager, ThemeManager } from "../managers/index.js";
 import { InputController } from "../managers/input_controller.js";
@@ -25,6 +25,8 @@ export class Scene_Map extends Scene_Base {
    */
   constructor(dataManager, sceneManager, windowManager) {
     super(dataManager, windowManager);
+    this.paMode = false;
+    this.paEvents = [];
     this.sceneManager = sceneManager;
     this.map = new Game_Map();
     this.party = new Game_Party();
@@ -512,6 +514,76 @@ export class Scene_Map extends Scene_Base {
       }
   }
 
+
+  /**
+   * Starts or Ends a Private Action.
+   * @method startPrivateAction
+   */
+  startPrivateAction() {
+      if (this.paMode) {
+          this.endPrivateAction();
+          return;
+      }
+
+      this.paMode = true;
+      this.setStatus("Private Action Started");
+      this.logMessage("The party splits up to explore.");
+      SoundManager.play('UI_SELECT');
+
+      const floor = this.map.floors[this.map.floorIndex];
+
+      // Spawn events for each party member (except leader)
+      const others = this.party.members.slice(1);
+
+      others.forEach(member => {
+          let attempts = 0;
+          let x, y;
+          do {
+              x = this.map.playerX + Math.floor(Math.random() * 11) - 5;
+              y = this.map.playerY + Math.floor(Math.random() * 11) - 5;
+              attempts++;
+          } while ((x < 0 || x >= this.map.MAX_W || y < 0 || y >= this.map.MAX_H || floor.tiles[y][x] === '#' || (x === this.map.playerX && y === this.map.playerY)) && attempts < 20);
+
+          if (attempts >= 20) return;
+
+          const paId = `pa_${member.id}`;
+          if (!this.dataManager.npcs.find(n => n.id === paId)) {
+              this.dataManager.npcs.push({
+                  id: paId,
+                  name: member.name,
+                  dialogue: member.flavor || "I'm just looking around."
+              });
+          }
+
+          const eventData = {
+              id: paId,
+              type: 'npc',
+              symbol: member.name[0],
+              cssClass: 'tile-npc',
+              actions: [{ type: 'NPC_DIALOGUE', id: paId }],
+              isPaEvent: true
+          };
+
+          const event = new Game_Event(x, y, eventData);
+          floor.events.push(event);
+          this.paEvents.push(event);
+      });
+
+      this.updateGrid();
+  }
+
+  endPrivateAction() {
+      this.paMode = false;
+      this.setStatus("Private Action Ended");
+      this.logMessage("The party regroups.");
+      SoundManager.play('UI_CANCEL');
+
+      const floor = this.map.floors[this.map.floorIndex];
+      floor.events = floor.events.filter(e => !e.isPaEvent);
+      this.paEvents = [];
+
+      this.updateGrid();
+  }
 
   /**
    * Debug command to reveal the entire map.

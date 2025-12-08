@@ -21,21 +21,21 @@ test('Verify Evolution System', async ({ page }) => {
     // Clear party slots
     scene.party.slots.fill(null);
 
-    // Add Pixie
-    const pixieData = window.dataManager.actors.find(a => a.id === 'pixie');
-    const pixie = new window.Game_Battler(pixieData);
-    scene.party.addMember(pixie);
+    // Add Fayt
+    const faytData = window.dataManager.actors.find(a => a.id === 'fayt');
+    const fayt = new window.Game_Battler(faytData);
+    scene.party.addMember(fayt);
 
-    // Level up to 7
-    pixie.level = 7;
-    pixie._baseMaxHp = 20;
-    pixie.hp = 20;
+    // Level up to 11 (Strictly greater than 10)
+    fayt.level = 11;
+    fayt._baseMaxHp = 20;
+    fayt.hp = 20;
 
     // Update UI
     scene.updateParty();
   });
 
-  // 4. Click on the first party member (Pixie) to inspect
+  // 4. Click on the first party member (Fayt) to inspect
   await page.click('[data-testid="party-slot-0"]');
 
   // 5. Verify Inspect Window is open and "Evolution" button is visible
@@ -57,10 +57,10 @@ test('Verify Evolution System', async ({ page }) => {
   const evolutionWindow = page.locator('#evolution-window');
   await expect(evolutionWindow).toBeVisible();
 
-  // Verify content: Left pane Pixie, Right pane High Pixie
-  // Note: Pixie name might have element icons. High Pixie too.
-  await expect(evolutionWindow.locator('.evolution-pane').first()).toContainText('Pixie');
-  await expect(evolutionWindow.locator('.evolution-pane').last()).toContainText('High Pixie');
+  // Verify content: Left pane Fayt, Right pane Fayt (Awakened)
+  // Note: Fayt name might have element icons. Fayt (Awakened) too.
+  await expect(evolutionWindow.locator('.evolution-pane').first()).toContainText('Fayt');
+  await expect(evolutionWindow.locator('.evolution-pane').last()).toContainText('Fayt (Awakened)');
 
   // 8. Click Confirm
   await evolutionWindow.locator('button:has-text("Confirm Evolution")').click();
@@ -68,7 +68,7 @@ test('Verify Evolution System', async ({ page }) => {
   // 9. Verify Confirmation Popup
   const confirmWindow = page.locator('#confirm-window');
   await expect(confirmWindow).toBeVisible();
-  await expect(confirmWindow).toContainText('Evolve Pixie into High Pixie?');
+  await expect(confirmWindow).toContainText('Evolve Fayt into Fayt (Awakened)?');
 
   // 10. Click OK
   await confirmWindow.locator('button:has-text("OK")').click();
@@ -82,5 +82,5 @@ test('Verify Evolution System', async ({ page }) => {
 
   // Check party slot 0 name
   const slot0 = page.locator('[data-testid="party-slot-0"]');
-  await expect(slot0).toContainText('High Pixie');
+  await expect(slot0).toContainText('Fayt (Awakened)');
 });

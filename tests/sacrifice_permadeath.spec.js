@@ -43,8 +43,8 @@ test.describe('Sacrifice and Permadeath', () => {
     // 1. Force a battle
     await page.evaluate(() => {
         const scene = window.sceneManager.currentScene();
-        // Spawning an enemy to start battle (using 'bat' instead of 'rat')
-        const enemy = new window.Game_Battler(window.dataManager.actors.find(a => a.id === 'bat'), 1, true);
+        // Spawning an enemy to start battle (using 'noble' instead of 'bat')
+        const enemy = new window.Game_Battler(window.dataManager.actors.find(a => a.id === 'noble'), 1, true);
         scene.battleManager.setup([enemy], 0, 0);
         const battleScene = new window.Scene_Battle(
             window.dataManager,

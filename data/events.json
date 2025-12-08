@@ -74,6 +74,14 @@
     "actions": [{ "type": "TREASURE" }]
   },
   {
+    "id": "pa_trigger",
+    "type": "pa_trigger",
+    "symbol": "PA",
+    "cssClass": "tile-shrine",
+    "trigger": "touch",
+    "actions": [{ "type": "START_PA" }]
+  },
+  {
     "id": "shrine_shade",
     "type": "shrine_scenario",
     "title": "Whispering Shade",

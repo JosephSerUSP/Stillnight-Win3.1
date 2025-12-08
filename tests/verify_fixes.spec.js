@@ -14,7 +14,7 @@ test('Verify Battle Layout and Evolution Preview', async ({ page }) => {
     await page.evaluate(async () => {
         const battleManager = new window.BattleManager(window.sceneManager.currentScene().party, window.dataManager);
         const enemies = [
-            new window.Game_Battler(window.dataManager.actors.find(a => a.id === 'bat'), 1, true)
+            new window.Game_Battler(window.dataManager.actors.find(a => a.id === 'noble'), 1, true)
         ];
 
         window.sceneManager.currentScene().startBattle(0, 0);
@@ -50,20 +50,20 @@ test('Verify Battle Layout and Evolution Preview', async ({ page }) => {
     // --- EVOLUTION PREVIEW VERIFICATION ---
     await page.evaluate(async () => {
         const party = window.sceneManager.currentScene().party;
-        let pixie = party.members.find(m => m.actorData.id === 'pixie');
-        if (!pixie) {
-            const data = window.dataManager.actors.find(a => a.id === 'pixie');
-            pixie = window.Game_Battler.create(data, 1);
-            party.addMember(pixie);
+        let fayt = party.members.find(m => m.actorData.id === 'fayt');
+        if (!fayt) {
+            const data = window.dataManager.actors.find(a => a.id === 'fayt');
+            fayt = window.Game_Battler.create(data, 1);
+            party.addMember(fayt);
         }
 
         // Grow to level 20
-        if (pixie.level < 20) {
-             window.ProgressionSystem.growToLevel(pixie, 20);
+        if (fayt.level < 20) {
+             window.ProgressionSystem.growToLevel(fayt, 20);
         }
 
-        const evolutionData = { evolvesTo: 'highPixie' };
-        window.sceneManager.currentScene().openEvolution(pixie, evolutionData);
+        const evolutionData = { evolvesTo: 'fayt_awakened' };
+        window.sceneManager.currentScene().openEvolution(fayt, evolutionData);
     });
 
     const evoWindow = page.locator('#evolution-window');

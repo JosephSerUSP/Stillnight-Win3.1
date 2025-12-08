@@ -72,6 +72,9 @@ export class Game_Interpreter {
             case 'BREAKABLE_WALL':
                 this.triggerBreakableWall(action, event);
                 break;
+            case 'START_PA':
+                this.scene.startPrivateAction();
+                break;
         }
     }
 
