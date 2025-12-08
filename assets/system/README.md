@@ -43,7 +43,7 @@
 - **IDs 8X**  
 
 ## System
-- **ID 101: Evolution (Locked), ID 102: Evolution (Available), ID 103: Passive Skill.**
+- **ID 101: Evolution (Locked), ID 102: Evolution (Available), ID 103: Passive Skill (status), ID 104: Passive Skill (reactive), ID 105: Passive Skill (Map).**
 
 ### Status Effects
 - **ID 111: -, ID 112: KO, ID 113: Poison, ID 114: Blind, ID 115: silence, ID 116: Berserk, ID 117: Confuse, ID 118: Sleep, ID 119: Paralysis**
