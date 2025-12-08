@@ -169,7 +169,14 @@ export class Game_Interpreter {
         const choices = ev.choices.map(ch => ({
             label: ch.label,
             onClick: async () => {
+                // Disable all buttons to prevent spamming
+                const footer = this.scene.hudManager.eventWindow.footer;
+                const buttons = footer.querySelectorAll('button');
+                buttons.forEach(b => b.disabled = true);
+
                 this.scene.hudManager.eventWindow.appendLog(`> ${ch.label}`);
+                this.clearEventTile(); // Consume the shrine immediately
+
                 await this.applyEventEffect(ch.effect);
                 this.scene.hudManager.eventWindow.updateChoices([{
                     label: "Exit Shrine",
@@ -257,11 +264,20 @@ export class Game_Interpreter {
                 onClick: () => this.resolveTrap(action)
             }]
         });
+
+        // Ensure closing the window triggers the trap
+        this.scene.hudManager.eventWindow.onUserClose = () => {
+            this.resolveTrap(action);
+        };
+
         this.windowManager.push(this.scene.hudManager.eventWindow);
         SoundManager.play('DAMAGE');
     }
 
     async resolveTrap(action) {
+        // Restore default close behavior to prevent loops
+        delete this.scene.hudManager.eventWindow.onUserClose;
+
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         try {
             const dmg = action.damage || 5;
