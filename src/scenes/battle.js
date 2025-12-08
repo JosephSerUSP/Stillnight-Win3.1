@@ -486,14 +486,45 @@ export class Scene_Battle extends Scene_Base {
    */
   async animateEvents(events) {
       const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+      let appendNextResult = false;
 
-      for (const event of events) {
+      for (let i = 0; i < events.length; i++) {
+            const event = events[i];
+
             if (event.battler && event.battler.name) {
                 await this.battleWindow.animateBattlerName(event.battler, this.battleManager.enemies, this.party.slots.slice(0,4));
             }
 
+            if (event.type === 'use_skill' || event.type === 'use_item') {
+                // Look ahead to see if there is exactly one dependent result (starts with spaces)
+                let resultCount = 0;
+                for (let j = i + 1; j < events.length; j++) {
+                    const nextEvent = events[j];
+                    if (nextEvent.type === 'use_skill' || nextEvent.type === 'use_item') break;
+                    if (nextEvent.msg && nextEvent.msg.startsWith('  ')) {
+                        resultCount++;
+                    }
+                }
+                appendNextResult = (resultCount === 1);
+            }
+
             if (event.msg) {
-                this.battleWindow.appendLog(event.msg);
+                const isDependentResult = event.msg.startsWith('  ');
+                const priority = isDependentResult ? 'low' : undefined;
+                const trimmedMsg = event.msg.trim();
+
+                if (isDependentResult && appendNextResult) {
+                     this.battleWindow.appendToLastLog(trimmedMsg, { priority });
+                     appendNextResult = false; // Only append the first one
+                } else {
+                     // If it's a dependent result but not appended (e.g. multi-target), use priority 'low'
+                     // Also trim leading spaces for cleaner log if not appending?
+                     // Existing code had leading spaces. If we print on new line, leading spaces provide indentation.
+                     // The user asked for "low priority".
+                     // If we keep leading spaces, it looks indented.
+                     // Let's keep spaces if we don't append.
+                     this.battleWindow.appendLog(isDependentResult && priority === 'low' ? trimmedMsg : event.msg, { priority });
+                }
             }
 
             let targetOldHp = event.target ? event.target.hp : 0;
