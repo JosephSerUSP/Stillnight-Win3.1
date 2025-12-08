@@ -42,7 +42,7 @@
       { "id": "skeleton", "weight": 5 },
       { "id": "imp", "weight": 3 }
     ],
-    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat"]
+    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat","candle"]
   },
   {
     "title": "Floor 2: Chasm Crossing",
@@ -66,7 +66,7 @@
       { "id": "wisp", "weight": 4 },
       { "id": "ooze", "weight": 3 }
     ],
-    "recruits": ["skeleton", "imp", "ooze", "golem"]
+    "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
   },
   {
     "title": "Floor 3: Rusted Choir",
@@ -85,7 +85,7 @@
       { "id": "demon", "weight": 4 },
       { "id": "angel", "weight": 3 }
     ],
-    "recruits": ["golem", "demon", "angel", "larva"]
+    "recruits": ["golem", "demon", "angel", "larva","flauros"]
   },
   {
     "title": "Floor 4: Cryptic Vault",
@@ -105,7 +105,7 @@
       { "id": "highPixie", "weight": 4 },
       { "id": "ghoul", "weight": 4 }
     ],
-    "recruits": ["demon", "angel", "golem"]
+    "recruits": ["demon", "angel", "golem","flauros"]
   },
   {
     "title": "Floor 5: Blood Chapel",
