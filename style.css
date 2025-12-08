@@ -1,52 +1,52 @@
 /* ===== Global Windows 3.1 look ================================== */
 :root {
     /* Desktop */
-    --desktop-bg: #008080;
+    --desktop-bg: #200040;
 
     /* Window Frame */
-    --window-bg: #c0c0c0;
-    --window-text: #000000;
-    --window-border: #000000;
+    --window-bg: #ffe4e1; /* Misty Rose */
+    --window-text: #4b0082; /* Indigo */
+    --window-border: #4b0082;
 
     /* Title Bar */
-    --window-header-bg-start: #000080;
-    --window-header-bg-end: #0000a8;
+    --window-header-bg-start: #ff69b4; /* Hot Pink */
+    --window-header-bg-end: #c71585; /* Medium Violet Red */
     --window-header-text: #ffffff;
 
     /* Buttons */
-    --button-bg: #c0c0c0;
+    --button-bg: #ffb6c1; /* Light Pink */
 
     /* Terminal */
-    --terminal-bg: #000000;
-    --terminal-text: #00ff00;
+    --terminal-bg: #1a0033; /* Dark Purple */
+    --terminal-text: #ff69b4; /* Hot Pink Text */
 
     /* Tiles */
-    --tile-bg: #c0c0c0;
-    --tile-fog-bg: #808080;
-    --tile-fog-text: #c0c0c0;
-    --tile-player-bg: #e8e8ff;
+    --tile-bg: #ffe4e1;
+    --tile-fog-bg: #4b0082;
+    --tile-fog-text: #800080;
+    --tile-player-bg: #ff1493; /* Deep Pink */
 
     /* Functional Text Colors */
-    --text-danger: #800000;
-    --text-highlight: #000080;
+    --text-danger: #ff0000;
+    --text-highlight: #0000ff;
     --text-success: #008000;
-    --text-mystic: #400040;
-    --text-warning: #804000;
-    --text-special: #600060;
-    --text-info: #2040D0;
+    --text-mystic: #800080;
+    --text-warning: #ff4500;
+    --text-special: #ff00ff;
+    --text-info: #1e90ff;
     --text-functional: #478174;
 
     /* Selection */
-    --selection-bg: #000080;
+    --selection-bg: #ff69b4;
     --selection-text: #ffffff;
 
     /* New Semantic Variables */
-    --content-bg: #ffffff;
-    --gauge-hp: #00a000;
-    --gauge-bg: #808080;
+    --content-bg: #fff0f5; /* Lavender Blush */
+    --gauge-hp: #ff69b4;
+    --gauge-bg: #4b0082;
     --bezel-light: #ffffff;
-    --bezel-shadow: #808080;
-    --bezel-dark: #404040;
+    --bezel-shadow: #ff69b4;
+    --bezel-dark: #800080;
     --tooltip-bg: #ffffe1;
     --tooltip-text: #000000;
 }

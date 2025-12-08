@@ -9,6 +9,7 @@ import { HUDManager } from "../managers/hud_manager.js";
 import { Window_Desktop } from "../windows/index.js";
 import { ProgressionSystem } from "../managers/progression.js";
 import { ExplorationEngine } from "../managers/exploration.js";
+import { storyEvents } from "../../data/story.js";
 
 /**
  * @class Scene_Map
@@ -128,6 +129,33 @@ export class Scene_Map extends Scene_Base {
     SoundManager.play('UI_SELECT');
     this.updateAll();
     this.checkMusic();
+
+    // Trigger initial story
+    this.triggerStoryEvent(0);
+  }
+
+  triggerStoryEvent(floorIndex) {
+      const floor = this.map.floors[floorIndex];
+      if (!floor || floor.storySeen) return;
+
+      const story = storyEvents[floorIndex];
+      if (story) {
+          const eventData = {
+              ...story,
+              choices: story.choices.map(c => ({
+                  label: c.label,
+                  onClick: () => {
+                      this.interpreter.closeEvent();
+                      floor.storySeen = true;
+                  }
+              }))
+          };
+          // Slight delay to allow UI to settle
+          setTimeout(() => {
+             this.hudManager.eventWindow.show(eventData);
+             this.windowManager.push(this.hudManager.eventWindow);
+          }, 500);
+      }
   }
 
   resumeMusic() {
@@ -447,6 +475,7 @@ export class Scene_Map extends Scene_Base {
             SoundManager.play('STAIRS');
             this.updateAll();
             this.checkMusic();
+            this.triggerStoryEvent(idx);
         }
     );
   }

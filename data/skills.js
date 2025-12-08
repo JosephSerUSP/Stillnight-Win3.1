@@ -1,110 +1,230 @@
 /**
  * @file data/skills.js
  * @description Defines the skills available in the game.
- * Skills are used by battlers in combat to deal damage, heal, or apply status effects.
  */
 
-/**
- * @typedef {Object} SkillEffect
- * @property {string} type - The type of effect (e.g., 'hp_damage', 'hp_heal', 'add_status').
- * @property {string} [formula] - The formula for calculating the effect value (e.g., '5 + 1.2 * a.level').
- * @property {string} [status] - The status ID to apply (if type is 'add_status').
- * @property {number} [chance] - The chance to apply the effect (0-1).
- * @property {number} [duration] - The duration of the effect in turns.
- */
-
-/**
- * @typedef {Object} Skill
- * @property {string} id - The unique ID of the skill.
- * @property {string} name - The display name of the skill.
- * @property {string} target - The target scope (e.g., 'enemy-any', 'ally-any', 'self').
- * @property {string} element - The elemental affinity of the skill.
- * @property {string} description - The flavor text description.
- * @property {SkillEffect[]} effects - The list of effects produced by the skill.
- */
-
-/**
- * @type {Object.<string, Skill>}
- */
 export const skills = {
-    // Pixie
-    windBlade: {
-        id: 'windBlade',
-        name: 'Wind Blade',
+    // Sailor Moon
+    moonTiara: {
+        id: 'moonTiara',
+        name: 'Moon Tiara Action',
         target: 'enemy-any',
-        element: 'Green',
-        description: "Strikes a foe with a blade of wind.",
+        element: 'White',
+        description: "Throws a glowing tiara at the enemy.",
         effects: [
-            { type: 'hp_damage', formula: '6 + 1.2 * a.level' }
+            { type: 'hp_damage', formula: '10 + 1.5 * a.level' },
+            { type: 'add_status', status: 'stun', chance: 0.3, duration: 1 }
         ]
     },
-    soothingMote: {
-        id: 'soothingMote',
-        name: 'Soothing Mote',
+    moonHealing: {
+        id: 'moonHealing',
+        name: 'Moon Healing',
         target: 'ally-any',
         element: 'White',
-        description: "Heals a small amount of HP for an ally.",
+        description: "Restores HP and purifies status.",
         effects: [
-            { type: 'hp_heal', formula: '5 + 1.5 * a.level' }
+            { type: 'hp_heal', formula: '15 + 2.0 * a.level' },
+            { type: 'remove_status', status: 'poison' },
+            { type: 'remove_status', status: 'sleep' }
         ]
     },
-
-    // Skeleton
-    boneRush: {
-        id: 'boneRush',
-        name: 'Bone Rush',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "A reckless charge.",
-        effects: [
-            { type: 'hp_damage', formula: '7 + 1.2 * a.level' }
-        ]
-    },
-
-    // Angel
-    holySmite: {
-        id: 'holySmite',
-        name: 'Holy Smite',
-        target: 'enemy-any',
+    silverCrystal: {
+        id: 'silverCrystal',
+        name: 'Silver Crystal Power',
+        target: 'enemy-all',
         element: 'White',
-        description: "Smite evil with holy light.",
+        description: "Unleashes the legendary power of the Silver Crystal.",
         effects: [
-            { type: 'hp_damage', formula: '6 + 1.4 * a.level' }
-        ]
-    },
-    divineFavor: {
-        id: 'divineFavor',
-        name: 'Divine Favor',
-        target: 'ally-any',
-        element: 'White',
-        description: "Grants regeneration to an ally.",
-        effects: [
-            { type: 'add_status', status: 'regen', chance: 1.0, duration: 3 }
+            { type: 'hp_damage', formula: '50 + 3.0 * a.level' }
         ]
     },
 
-    // Demon
-    shadowClaw: {
-        id: 'shadowClaw',
-        name: 'Shadow Claw',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "Tears at the enemy from the shadows.",
+    // Sailor Mercury
+    bubbleSpray: {
+        id: 'bubbleSpray',
+        name: 'Bubble Spray',
+        target: 'enemy-all',
+        element: 'Blue',
+        description: "Creates a fog that confuses enemies.",
         effects: [
-            { type: 'hp_damage', formula: '8 + 1.3 * a.level' }
+            { type: 'hp_damage', formula: '5 + 1.0 * a.level' },
+            { type: 'add_status', status: 'blind', chance: 0.8, duration: 3 }
         ]
     },
-    infernalPact: {
-        id: 'infernalPact',
-        name: 'Infernal Pact',
-        target: 'self',
+    analysis: {
+        id: 'analysis',
+        name: 'Analysis',
+        target: 'enemy-any',
+        element: 'Blue',
+        description: "Identifies the enemy weakness (lowers Def).",
+        effects: [
+            { type: 'add_status', status: 'analyzed', chance: 1.0, duration: 5 }
+        ]
+    },
+
+    // Sailor Mars
+    fireSoul: {
+        id: 'fireSoul',
+        name: 'Fire Soul',
+        target: 'enemy-any',
         element: 'Red',
-        description: "Sacrifice safety for power. (Grants Berserk)",
+        description: "Shoots a fireball at the enemy.",
         effects: [
-            { type: 'add_status', status: 'berserk', chance: 1.0, duration: 3 }
+            { type: 'hp_damage', formula: '15 + 1.8 * a.level' },
+            { type: 'add_status', status: 'burn', chance: 0.4, duration: 3 }
+        ]
+    },
+    akuryoTaisan: {
+        id: 'akuryoTaisan',
+        name: 'Akuryo Taisan',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "Exorcises evil spirits. High damage to dark types.",
+        effects: [
+            { type: 'hp_damage', formula: '20 + 2.0 * a.level' }
         ]
     },
 
+    // Sailor Jupiter
+    supremeThunder: {
+        id: 'supremeThunder',
+        name: 'Supreme Thunder',
+        target: 'enemy-all',
+        element: 'Green',
+        description: "Calls down lightning upon all enemies.",
+        effects: [
+            { type: 'hp_damage', formula: '12 + 1.6 * a.level' },
+            { type: 'add_status', status: 'shock', chance: 0.3, duration: 2 }
+        ]
+    },
+    flowerHurricane: {
+        id: 'flowerHurricane',
+        name: 'Flower Hurricane',
+        target: 'enemy-all',
+        element: 'Green',
+        description: "A storm of petals that blinds enemies.",
+        effects: [
+            { type: 'hp_damage', formula: '8 + 1.2 * a.level' },
+            { type: 'add_status', status: 'blind', chance: 0.5, duration: 3 }
+        ]
+    },
+
+    // Sailor Venus
+    crescentBeam: {
+        id: 'crescentBeam',
+        name: 'Crescent Beam',
+        target: 'enemy-any',
+        element: 'White',
+        description: "Fires a beam of light.",
+        effects: [
+            { type: 'hp_damage', formula: '14 + 1.7 * a.level' }
+        ]
+    },
+    rollingHeart: {
+        id: 'rollingHeart',
+        name: 'Rolling Heart',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "A charm attack that may confuse the enemy.",
+        effects: [
+            { type: 'hp_damage', formula: '10 + 1.2 * a.level' },
+            { type: 'add_status', status: 'charm', chance: 0.4, duration: 2 }
+        ]
+    },
+
+    // Enemy Skills
+    energyDrain: {
+        id: 'energyDrain',
+        name: 'Energy Drain',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "Drains HP from the target.",
+        effects: [
+            { type: 'hp_drain', formula: '5 + 0.8 * a.level' }
+        ]
+    },
+    clawSlash: {
+        id: 'clawSlash',
+        name: 'Claw Slash',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "Rips with sharp claws.",
+        effects: [
+            { type: 'hp_damage', formula: '8 + 1.0 * a.level' }
+        ]
+    },
+    freezingTouch: {
+        id: 'freezingTouch',
+        name: 'Freezing Touch',
+        target: 'enemy-any',
+        element: 'Blue',
+        description: "Chills the target to the bone.",
+        effects: [
+            { type: 'hp_damage', formula: '10 + 1.2 * a.level' },
+            { type: 'add_status', status: 'frozen', chance: 0.3, duration: 2 }
+        ]
+    },
+    illusion: {
+        id: 'illusion',
+        name: 'Illusion',
+        target: 'ally-all',
+        element: 'Blue',
+        description: "Creates illusions to evade attacks.",
+        effects: [
+            { type: 'add_status', status: 'evade', chance: 1.0, duration: 3 }
+        ]
+    },
+    starPrediction: {
+        id: 'starPrediction',
+        name: 'Star Prediction',
+        target: 'self',
+        element: 'Black',
+        description: "Predicts the next move, increasing critical rate.",
+        effects: [
+            { type: 'add_status', status: 'focus', chance: 1.0, duration: 3 }
+        ]
+    },
+    flowerPetal: {
+        id: 'flowerPetal',
+        name: 'Petal Storm',
+        target: 'enemy-all',
+        element: 'Red',
+        description: "A storm of sharp petals.",
+        effects: [
+            { type: 'hp_damage', formula: '12 + 1.4 * a.level' }
+        ]
+    },
+    boomerang: {
+        id: 'boomerang',
+        name: 'Boomerang',
+        target: 'enemy-any',
+        element: 'White',
+        description: "Throws a bladed boomerang.",
+        effects: [
+            { type: 'hp_damage', formula: '20 + 1.5 * a.level' }
+        ]
+    },
+    darkEnergy: {
+        id: 'darkEnergy',
+        name: 'Dark Energy',
+        target: 'enemy-all',
+        element: 'Black',
+        description: "Blasts the party with dark energy.",
+        effects: [
+            { type: 'hp_damage', formula: '25 + 2.0 * a.level' }
+        ]
+    },
+    metaliaSummon: {
+        id: 'metaliaSummon',
+        name: 'Summon Metalia',
+        target: 'self',
+        element: 'Black',
+        description: "Calls upon the power of Queen Metalia.",
+        effects: [
+            { type: 'hp_heal', formula: '100' },
+            { type: 'add_status', status: 'berserk', chance: 1.0, duration: 5 }
+        ]
+    },
     wait: {
         id: 'wait',
         name: 'Wait',
@@ -112,50 +232,5 @@ export const skills = {
         element: 'White',
         description: "Do nothing.",
         effects: []
-    },
-
-    flameRebirth: {
-        id: 'flameRebirth',
-        name: 'Flame Rebirth',
-        target: 'self',
-        element: 'Red',
-        description: "Rise from the ashes.",
-        effects: []
-    },
-
-    // Nurse
-    needleShot: {
-        id: 'needleShot',
-        name: 'Needle Shot',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "A precise strike that injects toxins.",
-        effects: [
-            { type: 'hp_damage', formula: '5 + 1.2 * a.level' },
-            { type: 'add_status', status: 'poison', chance: 0.4, duration: 3 }
-        ]
-    },
-    fieldSurgery: {
-        id: 'fieldSurgery',
-        name: 'Field Surgery',
-        target: 'ally-any',
-        element: 'Black',
-        description: "Emergency medical attention. It might hurt.",
-        effects: [
-            { type: 'hp_heal', formula: '10 + 2.0 * a.level' }
-        ]
-    },
-
-    // Incubus
-    drainKiss: {
-        id: 'drainKiss',
-        name: 'Drain Kiss',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "Steals vitality and puts the target to sleep.",
-        effects: [
-            { type: 'hp_drain', formula: '4 + 0.6 * a.level' },
-            { type: 'add_status', status: 'sleep', chance: 0.5, duration: 3 }
-        ]
     }
 };
