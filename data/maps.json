@@ -1,144 +1,103 @@
 [
   {
-    "title": "Town of Stillnight",
-    "intro": "A quiet settlement on the edge of the void.",
-    "depth": 0,
-    "music": "town1",
+    "title": "Narshe Snowfields",
+    "intro": "The Magitek Armor trudges through the snow...",
+    "depth": 1,
+    "music": "dungeon1",
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "count": 1 },
-      { "id": "shop", "count": 1 },
-      { "id": "npc", "count": 2 }
+      {
+          "id": "enemy",
+          "count": 3,
+          "behavior": "patrol",
+          "encounters": [
+              { "id": "soldier", "weight": 10 }
+          ]
+      },
+      { "id": "stairs", "count": 1 }
     ],
-    "treasures": [],
+    "treasures": ["potion"],
+    "encounters": [
+      { "id": "soldier", "weight": 10 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Narshe Mines",
+    "intro": "The frozen mines of Narshe conceal the Esper.",
+    "depth": 2,
+    "music": "dungeon1",
+    "events": [
+        { "id": "stairs", "count": 1 },
+        { "id": "recovery", "count": 1 },
+        { "id": "enemy", "min": 3, "max": 5 }
+    ],
+    "treasures": ["ether", "phoenix_down"],
+    "encounters": [
+        { "id": "imp", "weight": 5 },
+        { "id": "rat", "weight": 5 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Frozen Esper",
+    "intro": "The ancient being lies dormant in ice.",
+    "depth": 3,
+    "music": "dungeon1",
+    "events": [
+        {
+            "id": "enemy",
+            "count": 1,
+            "behavior": "boss",
+            "encounters": [{ "id": "whelk", "weight": 10 }]
+        }
+    ],
     "encounters": [],
     "recruits": []
   },
   {
-    "title": "Floor 1: Entry Hall",
-    "intro": "You cross the threshold into the dark.",
-    "depth": 1,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 2, "max": 3 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "treasure", "count": 1 },
-      {
-          "id": "enemy",
-          "count": 1,
-          "behavior": "chase",
-          "symbol": "!",
-          "cssClass": "text-danger",
-          "encounters": [
-              { "id": "imp", "weight": 10 }
-          ]
-      }
-    ],
-    "treasures": ["potion", "antidote"],
-    "encounters": [
-      { "id": "pixie", "weight": 5 },
-      { "id": "skeleton", "weight": 5 },
-      { "id": "imp", "weight": 3 }
-    ],
-    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat","candle"]
-  },
-  {
-    "title": "Floor 2: Chasm Crossing",
-    "intro": "Wind howls across a broken bridge.",
-    "depth": 2,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 3, "max": 4 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.6 },
-      { "id": "trap", "min": 1, "max": 2 },
-      { "id": "treasure", "chance": 0.5 }
-    ],
-    "treasures": ["hi_potion", "iron_sword"],
-    "encounters": [
-      { "id": "skeleton", "weight": 8 },
-      { "id": "imp", "weight": 5 },
-      { "id": "wisp", "weight": 4 },
-      { "id": "ooze", "weight": 3 }
-    ],
-    "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
-  },
-  {
-    "title": "Floor 3: Rusted Choir",
-    "intro": "Broken bells sway above a dry pit.",
-    "depth": 3,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
-    ],
-    "encounters": [
-      { "id": "golem", "weight": 6 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 3 }
-    ],
-    "recruits": ["golem", "demon", "angel", "larva","flauros"]
-  },
-  {
-    "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
+    "title": "Figaro Desert",
+    "intro": "Terra wakes up in a desert castle...",
     "depth": 4,
-    "music": "dungeon1",
+    "music": "town1",
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 7 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 }
+        { "id": "shop", "count": 1 },
+        { "id": "npc", "count": 3 },
+        { "id": "stairs", "count": 1 }
     ],
-    "encounters": [
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 4 },
-      { "id": "ghoul", "weight": 4 }
-    ],
-    "recruits": ["demon", "angel", "golem","flauros"]
+    "encounters": [],
+    "recruits": ["edgar", "locke"]
   },
   {
-    "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
-    "depth": 5,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 8 },
-      { "id": "shrine", "chance": 0.4 },
-      { "id": "recruit", "chance": 0.4 }
-    ],
-    "encounters": [
-      { "id": "crimsonLord", "weight": 2 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
-    ],
-    "recruits": ["demon", "angel"]
+      "title": "Mt. Kolts",
+      "intro": "The path to the Returner's Hideout.",
+      "depth": 5,
+      "music": "dungeon1",
+      "events": [
+          { "id": "enemy", "min": 5, "max": 8 },
+          { "id": "recovery", "chance": 0.5 },
+          { "id": "stairs", "count": 1 }
+      ],
+      "treasures": ["mythril_knife", "relic_sniper_sight"],
+      "encounters": [
+          { "id": "demon", "weight": 5 },
+          { "id": "bat", "weight": 5 }
+      ],
+      "recruits": ["sabin"]
   },
   {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
-    "depth": 6,
-    "music": "dungeon1",
-    "events": [
-      { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
-    ],
-    "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
-    ],
-    "recruits": []
+      "title": "Mt. Kolts Summit",
+      "intro": "Vargas blocks the way.",
+      "depth": 6,
+      "music": "battle1",
+      "events": [
+          {
+              "id": "enemy",
+              "count": 1,
+              "behavior": "boss",
+              "encounters": [{ "id": "vargas", "weight": 10 }]
+          }
+      ],
+      "encounters": [],
+      "recruits": []
   }
 ]

@@ -47,7 +47,7 @@ export class Game_Battler extends Game_Base {
         return pId;
     });
 
-    this.skills = actorData.skills ? actorData.skills.slice() : [];
+    this._baseSkills = actorData.skills ? actorData.skills.slice() : [];
     this.spriteKey = actorData.spriteKey;
     this.flavor = actorData.flavor;
     this.xp = 0;
@@ -72,6 +72,19 @@ export class Game_Battler extends Game_Base {
 
   getEvolutionStatus(inventory, floorDepth, gold) {
       return ProgressionSystem.getEvolutionStatus(this, inventory, floorDepth, gold);
+  }
+
+  /**
+   * Gets the list of available skills, including those from traits.
+   * @type {string[]}
+   */
+  get skills() {
+      const traitSkills = this.traits
+          .filter(t => t.code === 'SKILL_ADD')
+          .map(t => t.dataId);
+
+      // Merge base skills and trait skills, removing duplicates
+      return [...new Set([...this._baseSkills, ...traitSkills])];
   }
 
   /**

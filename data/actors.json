@@ -1,541 +1,183 @@
 [
   {
-    "id": "pixie",
-    "name": "Pixie",
-    "level": 1,
-    "role": "Healer",
-    "maxHp": 9,
+    "id": "terra",
+    "name": "Terra",
+    "level": 3,
+    "role": "Mage Knight",
+    "maxHp": 40,
     "spriteKey": "pixie",
-    "passives": [
-      "postBattleHeal",
-      "sense"
-    ],
-    "elements": [
-      "Green",
-      "Green"
-    ],
-    "skills": [
-      "windBlade",
-      "soothingMote"
-    ],
-    "flavor": "A wandering mote-courier who got lost between shrines and never looked back.",
-    "expGrowth": 2,
-    "gold": 15,
-    "drops": [
-      {
-        "itemId": "hp_tonic",
-        "chance": 0.3
-      }
-    ],
-    "evolutions": [
-      {
-        "level": 6,
-        "evolvesTo": "highPixie"
-      }
-    ],
-    "initialParty": true,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "highPixie",
-    "name": "High Pixie",
-    "level": 6,
-    "role": "Healer",
-    "maxHp": 15,
-    "spriteKey": "highPixie",
-    "passives": [
-      "postBattleHeal"
-    ],
-    "elements": [
-      "Green",
-      "Green",
-      "White"
-    ],
-    "skills": [
-      "windBlade",
-      "soothingMote",
-      "holySmite"
-    ],
-    "flavor": "A pixie that has attained a higher state of being.",
-    "expGrowth": 3,
-    "gold": 30,
-    "evolutions": [],
-    "initialParty": false,
-    "isRecruitable": false,
-    "isEvolved": true
-  },
-  {
-    "id": "skeleton",
-    "name": "Skeleton",
-    "level": 1,
-    "role": "Attacker",
-    "maxHp": 11,
-    "spriteKey": "skeleton",
-    "passives": [
-      "undeadFortitude"
-    ],
-    "elements": [
-      "Black"
-    ],
-    "skills": [
-      "boneRush"
-    ],
-    "flavor": "A reanimated corpse that just wants to go back to sleep.",
-    "expGrowth": 4,
-    "gold": 18,
-    "drops": [
-      {
-        "itemId": "bone_plate",
-        "chance": 0.1
-      }
-    ],
-    "evolutions": [],
-    "initialParty": true,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "angel",
-    "name": "Angel",
-    "level": 1,
-    "role": "Support",
-    "maxHp": 12,
-    "spriteKey": "angel",
-    "passives": [
-      "holyAura"
-    ],
-    "elements": [
-      "White",
-      "White",
-      "Blue"
-    ],
-    "skills": [
-      "holySmite",
-      "divineFavor"
-    ],
-    "flavor": "A celestial being tasked with guiding the lost. Its patience is legendary.",
-    "expGrowth": 5,
-    "gold": 20,
-    "evolutions": [
-      {
-        "level": 6,
-        "evolvesTo": "archangel"
-      }
-    ],
-    "initialParty": false,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "archangel",
-    "name": "Archangel",
-    "level": 6,
-    "role": "Support",
-    "maxHp": 16,
-    "spriteKey": "archangel",
-    "passives": [
-      "holyAura"
-    ],
-    "elements": [
-      "White",
-      "White",
-      "Blue"
-    ],
-    "skills": [
-      "holySmite",
-      "divineFavor",
-      "soothingMote"
-    ],
-    "flavor": "A celestial being tasked with guiding the lost. Its patience is legendary.",
-    "expGrowth": 5,
-    "gold": 20,
-    "evolutions": [],
-    "initialParty": false,
-    "isRecruitable": false,
-    "isEvolved": true
-  },
-  {
-    "id": "demon",
-    "name": "Demon",
-    "level": 2,
-    "role": "Attacker",
-    "maxHp": 12,
-    "spriteKey": "demon",
-    "passives": [
-      "chaosPact"
-    ],
-    "elements": [
-      "Red",
-      "Black"
-    ],
-    "skills": [
-      "shadowClaw",
-      "infernalPact"
-    ],
-    "flavor": "A pact-bound fiend that revels in chaos and destruction.",
-    "expGrowth": 5,
-    "gold": 25,
-    "drops": [
-      {
-        "itemId": "silver_blade",
-        "chance": 0.1
-      }
-    ],
-    "evolutions": [
-      {
-        "level": 6,
-        "evolvesTo": "incubus"
-      }
-    ],
-    "initialParty": false,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "incubus",
-    "name": "Incubus",
-    "level": 6,
-    "role": "Attacker",
-    "maxHp": 22,
-    "spriteKey": "incubus",
-    "passives": [
-      "chaosPact",
-      "etherealBody"
-    ],
-    "elements": [
-      "Black",
-      "Black",
-      "Blue"
-    ],
-    "skills": [
-      "shadowClaw",
-      "infernalPact",
-      "drainKiss"
-    ],
-    "flavor": "A demon that invades dreams to steal vitality.",
-    "expGrowth": 6,
-    "gold": 60,
-    "evolutions": [],
-    "initialParty": false,
-    "isRecruitable": false,
-    "isEvolved": true
-  },
-  {
-    "id": "nurse",
-    "name": "Nurse",
-    "level": 1,
-    "role": "Healer",
-    "maxHp": 14,
-    "spriteKey": "nurse",
-    "passives": [
-      "symbiosis"
-    ],
-    "elements": [
-      "Black",
-      "Black"
-    ],
-    "skills": [
-      "needleShot",
-      "fieldSurgery"
-    ],
-    "flavor": "She's here to help. Please don't resist.",
-    "expGrowth": 4,
-    "gold": 20,
-    "evolutions": [],
-    "initialParty": false,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "imp",
-    "name": "Imp",
-    "level": 1,
-    "role": "Attacker",
-    "maxHp": 8,
-    "spriteKey": "imp",
-    "passives": [
-      "mischief"
-    ],
-    "elements": [
-      "Red",
-      "Red",
-      "Red"
-    ],
-    "skills": [
-      "shadowClaw"
-    ],
-    "flavor": "A mischievous lesser demon that enjoys playing pranks.",
-    "expGrowth": 3,
-    "gold": 12,
-    "drops": [
-      {
-        "itemId": "whispered_lessons",
-        "chance": 0.2
-      }
-    ],
-    "evolutions": [],
-    "initialParty": true,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "golem",
-    "name": "Golem",
-    "level": 2,
-    "role": "Tank",
-    "maxHp": 15,
-    "spriteKey": "golem",
-    "passives": [
-      "rearGuard",
-      "goldDigger"
-    ],
-    "elements": [],
-    "skills": [
-      "boneRush"
-    ],
-    "flavor": "An animated statue, slow but incredibly durable.",
-    "expGrowth": 8,
-    "gold": 40,
-    "evolutions": [],
-    "initialParty": false,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "ghoul",
-    "name": "Ghoul",
-    "level": 2,
-    "role": "Tank",
-    "maxHp": 15,
-    "spriteKey": "ghoul",
-    "passives": [
-      "goldDigger"
-    ],
-    "elements": [
-      "Black",
-      "Black",
-      "Black"
-    ],
-    "skills": [
-      "boneRush"
-    ],
-    "flavor": "An animated statue, slow but incredibly durable.",
-    "expGrowth": 8,
-    "gold": 40,
-    "evolutions": [],
-    "initialParty": false,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "ooze",
-    "name": "Ooze",
-    "level": 1,
-    "role": "Debuffer",
-    "maxHp": 18,
-    "spriteKey": "ooze",
-    "passives": [
-      "rearGuard"
-    ],
-    "elements": [
-      "Green"
-    ],
-    "skills": [
-      "windBlade"
-    ],
-    "expGrowth": 5,
-    "gold": 10,
-    "evolutions": [],
-    "initialParty": true,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "bat",
-    "name": "Bat",
-    "level": 1,
-    "role": "Attacker",
-    "maxHp": 10,
-    "spriteKey": "bat",
-    "passives": [
-      "nightVision",
-      "initiative"
-    ],
-    "elements": [
-      "Black"
-    ],
-    "skills": [
-      "boneRush"
-    ],
-    "expGrowth": 3,
-    "gold": 8,
-    "evolutions": [],
-    "initialParty": true,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "wisp",
-    "name": "Wisp",
-    "level": 1,
-    "role": "Caster",
-    "maxHp": 12,
-    "spriteKey": "wisp",
-    "passives": [
-      "etherealBody"
-    ],
-    "elements": [
-      "Blue",
-      "Blue"
-    ],
-    "skills": [
-      "soothingMote"
-    ],
-    "expGrowth": 4,
-    "gold": 14,
-    "evolutions": [],
-    "initialParty": true,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "egg",
-    "name": "Egg",
-    "level": 1,
-    "role": "None",
-    "maxHp": 5,
-    "spriteKey": "egg",
-    "elements": [],
-    "skills": [
-      "wait"
-    ],
-    "expGrowth": 1,
-    "gold": 1,
-    "evolutions": [
-      {
-        "level": 10,
-        "evolvesTo": "phoenix"
-      }
-    ],
-    "initialParty": false,
-    "isRecruitable": false,
-    "isEvolved": false
-  },
-  {
-    "id": "phoenix",
-    "name": "Phoenix",
-    "level": 10,
-    "role": "Reviver",
-    "spriteKey": "phoenix",
-    "maxHp": 25,
-    "passives": [
-      "rebirth"
-    ],
-    "elements": [
-      "Red",
-      "White"
-    ],
-    "skills": [
-      "flameRebirth",
-      "divineFavor"
-    ],
-    "expGrowth": 10,
-    "gold": 100,
-    "evolutions": [],
-    "initialParty": false,
-    "isRecruitable": false,
-    "isEvolved": true
-  },
-  {
-    "id": "larva",
-    "name": "Larva",
-    "level": 1,
-    "role": "Parasite",
-    "maxHp": 12,
-    "spriteKey": "larva",
-    "passives": [
-      "parasite"
-    ],
-    "elements": [
-      "Red"
-    ],
-    "skills": [],
-    "flavor": "It's eating your rations. And your tank.",
-    "expGrowth": 2,
-    "gold": 5,
-    "evolutions": [
-      {
-        "level": 6,
-        "evolvesTo": "crimsonLord"
-      }
-    ],
-    "initialParty": false,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "crimsonLord",
-    "name": "Crimson Lord",
-    "level": 6,
-    "role": "Vampire",
-    "maxHp": 55,
-    "spriteKey": "vampire",
     "passives": [],
-    "elements": [
-      "Red",
-      "Black"
-    ],
-    "skills": [
-      "shadowClaw",
-      "infernalPact"
-    ],
-    "flavor": "He has drunk his fill, and now commands the blood.",
-    "expGrowth": 6,
-    "gold": 80,
+    "elements": ["Red", "White"],
+    "skills": ["fire", "cure"],
+    "flavor": "A mysterious young woman with the gift of magic.",
+    "expGrowth": 4,
+    "gold": 0,
+    "evolutions": [],
+    "initialParty": true,
+    "isRecruitable": true,
+    "isEvolved": false
+  },
+  {
+    "id": "locke",
+    "name": "Locke",
+    "level": 3,
+    "role": "Thief",
+    "maxHp": 45,
+    "spriteKey": "skeleton",
+    "passives": ["initiative", "goldDigger"],
+    "elements": ["Green"],
+    "skills": ["steal"],
+    "flavor": "A treasure hunter, not a thief!",
+    "expGrowth": 4,
+    "gold": 0,
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false
+  },
+  {
+    "id": "edgar",
+    "name": "Edgar",
+    "level": 3,
+    "role": "Machinist",
+    "maxHp": 50,
+    "spriteKey": "golem",
+    "passives": ["rearGuard"],
+    "elements": ["Blue"],
+    "skills": ["autocrossbow"],
+    "flavor": "The young king of Figaro.",
+    "expGrowth": 4,
+    "gold": 0,
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false
+  },
+  {
+    "id": "sabin",
+    "name": "Sabin",
+    "level": 3,
+    "role": "Monk",
+    "maxHp": 60,
+    "spriteKey": "demon",
+    "passives": ["counter"],
+    "elements": ["Red"],
+    "skills": ["pummel"],
+    "flavor": "Edgar's twin brother, who chose freedom.",
+    "expGrowth": 4,
+    "gold": 0,
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false
+  },
+  {
+    "id": "biggs",
+    "name": "Biggs",
+    "level": 2,
+    "role": "Soldier",
+    "maxHp": 150,
+    "spriteKey": "imp",
+    "passives": [],
+    "elements": ["Black"],
+    "skills": ["fire_beam", "missile"],
+    "flavor": "Imperial soldier in Magitek Armor.",
+    "expGrowth": 2,
+    "gold": 0,
+    "evolutions": [],
+    "initialParty": true,
+    "isRecruitable": false,
+    "isEvolved": false
+  },
+  {
+    "id": "wedge",
+    "name": "Wedge",
+    "level": 2,
+    "role": "Soldier",
+    "maxHp": 150,
+    "spriteKey": "imp",
+    "passives": [],
+    "elements": ["Black"],
+    "skills": ["ice_beam", "missile"],
+    "flavor": "Imperial soldier in Magitek Armor.",
+    "expGrowth": 2,
+    "gold": 0,
+    "evolutions": [],
+    "initialParty": true,
+    "isRecruitable": false,
+    "isEvolved": false
+  },
+  {
+    "id": "soldier",
+    "name": "Guardian",
+    "level": 1,
+    "role": "Soldier",
+    "maxHp": 30,
+    "spriteKey": "skeleton",
+    "passives": [],
+    "elements": ["Black"],
+    "skills": ["slash"],
+    "flavor": "A Narshe guard.",
+    "expGrowth": 2,
+    "gold": 10,
+    "drops": [{ "itemId": "potion", "chance": 0.2 }],
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": false,
+    "isEvolved": false
+  },
+  {
+    "id": "whelk",
+    "name": "Whelk",
+    "level": 5,
+    "role": "Boss",
+    "maxHp": 500,
+    "spriteKey": "golem",
+    "passives": ["shell_defense"],
+    "elements": ["Blue"],
+    "skills": ["slime", "mega_volt"],
+    "flavor": "A giant snail monster.",
+    "expGrowth": 100,
+    "gold": 200,
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": false,
     "isEvolved": true
   },
-  [
-    { 
-        "id": "flauros", 
-        "name": "Flauros", 
-        "level": 3, 
-        "role": "Attacker", 
-        "maxHp": 19, 
-        "spriteKey": "flauros", 
-        "passives": ["initiative", "chaosPact"], 
-        "elements": ["Red", "Red", "Black"], 
-        "skills": ["shadowClaw", "infernalPact"], 
-        "flavor": "A savage leopard demon. It smells of brimstone and burnt hair.", 
-        "expGrowth": 6, 
-        "gold": 35, 
-        "drops": [{ "itemId": "obsidian_shard", "chance": 0.15 }], 
-        "evolutions": [], 
-        "initialParty": false, 
-        "isRecruitable": true, 
-        "isEvolved": false 
-    },
-    { 
-        "id": "candle", 
-        "name": "Candle", 
-        "level": 1, 
-        "role": "Support", 
-        "maxHp": 7, 
-        "spriteKey": "candle", 
-        "passives": ["nightVision"], 
-        "elements": ["Red", "White"], 
-        "skills": ["soothingMote", "divineFavor"], 
-        "flavor": "A simple wax candle given life. Ideally, keep it away from the library.", 
-        "expGrowth": 2, 
-        "gold": 8, 
-        "drops": [{ "itemId": "melted_wax", "chance": 0.4 }], 
-        "evolutions": [{ "level": 8, "evolvesTo": "lantern" }], 
-        "initialParty": false, 
-        "isRecruitable": true, 
-        "isEvolved": false 
-    }
-]
+  {
+      "id": "vargas",
+      "name": "Vargas",
+      "level": 6,
+      "role": "Boss",
+      "maxHp": 800,
+      "spriteKey": "flauros",
+      "passives": ["counter"],
+      "elements": ["Red"],
+      "skills": ["gale_cut"],
+      "flavor": "Duncan's son.",
+      "expGrowth": 150,
+      "gold": 300,
+      "evolutions": [],
+      "initialParty": false,
+      "isRecruitable": false,
+      "isEvolved": true
+  },
+  {
+      "id": "magitek",
+      "name": "Magitek Armor",
+      "level": 3,
+      "role": "Machine",
+      "maxHp": 100,
+      "spriteKey": "golem",
+      "passives": [],
+      "elements": ["Black"],
+      "skills": ["fire_beam"],
+      "flavor": "Imperial warmachine.",
+      "expGrowth": 10,
+      "gold": 50,
+      "evolutions": [],
+      "initialParty": false,
+      "isRecruitable": false,
+      "isEvolved": false
+  }
 ]
