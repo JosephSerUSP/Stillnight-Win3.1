@@ -1,69 +1,35 @@
 import { randInt, shuffleArray } from "../src/core/utils.js";
 
-/**
- * @file data/party.js
- * @description Defines logic for generating the starting party configuration.
- */
-
 export const startingParty = {
-  /**
-   * Generates a random amount of starting gold.
-   * @returns {number} The starting gold.
-   */
-  getGold: () => {
-    return randInt(25, 75);
-  },
-
-  /**
-   * Generates a random starting inventory.
-   * @param {Object[]} allItems - All available items from items.json.
-   * @returns {Object[]} The starting inventory.
-   */
+  getGold: () => 500,
   getInventory: (allItems) => {
     const inventory = [];
-    const consumables = allItems.filter(item => item.type === 'consumable' && item.id !== 'hp_tonic');
-    const equipment = allItems.filter(item => item.type === 'equipment');
+    const potion = allItems.find(i => i.id === 'potion');
+    const pd = allItems.find(i => i.id === 'phoenix_down');
+    const quezacotl = allItems.find(i => i.id === 'gf_quezacotl');
+    const shiva = allItems.find(i => i.id === 'gf_shiva');
 
-    // 1-3 HP Tonics
-    const hpTonic = allItems.find(item => item.id === 'hp_tonic');
-    if (hpTonic) {
-        const amount = randInt(1, 3);
-        for (let i = 0; i < amount; i++) {
-            inventory.push(hpTonic);
-        }
-    }
-
-    // 2 random consumables
-    const randomConsumables = shuffleArray(consumables).slice(0, 2);
-    inventory.push(...randomConsumables);
-
-    // 2 random pieces of equipment
-    const randomEquipment = shuffleArray(equipment).slice(0, 2);
-    inventory.push(...randomEquipment);
+    if (potion) for(let i=0; i<5; i++) inventory.push(potion);
+    if (pd) for(let i=0; i<2; i++) inventory.push(pd);
+    if (quezacotl) inventory.push(quezacotl);
+    if (shiva) inventory.push(shiva);
 
     return inventory;
   },
-
-  /**
-   * Generates the starting party members.
-   * @param {Object[]} allActors - All available actors from actors.json.
-   * @returns {Object[]} The starting party members configuration.
-   */
   getMembers: (allActors) => {
-    const availableCreatures = allActors.filter(creature => creature.initialParty);
+    // We want Squall and Quistis specifically
+    const squall = allActors.find(a => a.id === 'squall');
+    const quistis = allActors.find(a => a.id === 'quistis');
 
-    if (Math.random() < 0.25) {
-      // 2 creatures, one leveled up
-      const [creature1, creature2] = shuffleArray(availableCreatures).slice(0, 2);
-      return [
-        { id: creature1.id, level: creature1.level },
-        { id: creature2.id, level: creature2.level + 3 }
-      ];
-    } else {
-      // 3 creatures at base level
-      return shuffleArray(availableCreatures)
-        .slice(0, 3)
-        .map(data => ({ id: data.id, level: data.level }));
+    const members = [];
+    if (squall) members.push({ id: squall.id, level: squall.level });
+    if (quistis) members.push({ id: quistis.id, level: quistis.level });
+
+    // Fallback if not found (e.g. during testing if actors aren't loaded properly)
+    if (members.length === 0 && allActors.length > 0) {
+        members.push({ id: allActors[0].id, level: 1 });
     }
+
+    return members;
   }
 };

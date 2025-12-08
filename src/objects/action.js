@@ -96,18 +96,19 @@ export class Game_Action {
      * Applies the action to the target.
      * @param {import("./battler.js").Game_Battler} target - The target.
      * @param {import("../managers/data.js").DataManager} dataManager - Data manager for lookups.
+     * @param {import("./party.js").Game_Party} [party] - The party (for inventory access).
      * @returns {Array} Events resulting from the action.
      */
-    apply(target, dataManager) {
+    apply(target, dataManager, party) {
         if (!target || target.hp <= 0) return [];
 
         const events = [];
         if (this._isAttack) {
             this._applyAttack(target, dataManager, events);
         } else if (this._skillId) {
-            this._applySkill(target, dataManager, events);
+            this._applySkill(target, dataManager, events, party);
         } else if (this._itemId) {
-            this._applyItem(target, dataManager, events);
+            this._applyItem(target, dataManager, events, party);
         }
 
         return events;
@@ -139,6 +140,13 @@ export class Game_Action {
         const critChance = battler.getPassiveValue("CRI");
         if (critChance > 0 && Math.random() < critChance) {
             isCritical = true;
+        }
+
+        // Gunblade Trigger Passive (Always Critical)
+        if (battler.passives && battler.passives.some(p => p.id === 'gunblade_trigger' || p === 'gunblade_trigger')) {
+             if (Math.random() < 0.5) { // 50% chance to trigger
+                 isCritical = true;
+             }
         }
 
         // Element Multiplier
@@ -175,7 +183,7 @@ export class Game_Action {
         });
     }
 
-    _applySkill(target, dataManager, events) {
+    _applySkill(target, dataManager, events, party) {
         const battler = this.subject;
         const skill = this._item;
 
@@ -199,6 +207,16 @@ export class Game_Action {
         events.push({ type: 'use_skill', battler: battler, skillName, msg: `${battler.name} uses ${skillName}!` });
 
         skill.effects.forEach((effect) => {
+            if (effect.type === 'draw_magic') {
+                 if (party) this._applyDrawMagic(target, dataManager, events, party);
+                 else events.push({ type: 'message', msg: `  Draw failed (no inventory).` });
+                 return;
+            }
+            if (effect.type === 'scan_enemy') {
+                this._applyScan(target, events);
+                return;
+            }
+
             const context = { boost };
             // Apply element multiplier to damage effects
             if (effect.type === 'hp_damage' || effect.type === 'hp_drain') {
@@ -259,7 +277,7 @@ export class Game_Action {
         });
     }
 
-    _applyItem(target, dataManager, events) {
+    _applyItem(target, dataManager, events, party) {
         const subject = this.subject;
         const item = this._item;
 
@@ -278,6 +296,15 @@ export class Game_Action {
 
         if (item.effects) {
             item.effects.forEach(effect => {
+                 if (effect.type === 'cast_spell') {
+                     const skillId = effect.skillId;
+                     const subAction = new Game_Action(subject);
+                     subAction.setSkill(skillId, dataManager);
+                     const subEvents = subAction.apply(target, dataManager, party);
+                     events.push(...subEvents);
+                     return;
+                 }
+
                 const key = effect.type;
                 const value = effect.formula || effect.value;
                 // Determine context/boost if needed
@@ -312,6 +339,48 @@ export class Game_Action {
                 }
             });
         }
+    }
+
+    _applyDrawMagic(target, dataManager, events, party) {
+        let drawn = false;
+
+        if (target.skills && target.skills.length > 0) {
+             const skillId = target.skills[randInt(0, target.skills.length - 1)];
+             // We map skillId to scrollId.
+             // We assume scrollId is skillId + "_scroll" if it exists.
+             // Or "fire" -> "fire_scroll"
+
+             let scrollId = skillId + "_scroll";
+             let item = dataManager.items.find(i => i.id === scrollId);
+
+             if (item) {
+                 party.inventory.push(item);
+                 events.push({
+                     type: 'message',
+                     msg: `  ${this.subject.name} drew ${item.name} from ${target.name}!`
+                 });
+                 drawn = true;
+                 SoundManager.play('ITEM_GET');
+             }
+        }
+
+        if (!drawn) {
+             events.push({
+                 type: 'message',
+                 msg: `  ${this.subject.name} failed to draw anything.`
+             });
+        }
+    }
+
+    _applyScan(target, events) {
+         const hp = target.hp;
+         const maxHp = target.maxHp;
+         const weak = target.elements.length > 0 ? target.elements.join(", ") : "None";
+
+         events.push({
+             type: 'message',
+             msg: `  Scan: ${target.name} HP: ${hp}/${maxHp} Elements: ${weak}`
+         });
     }
 
     _elementMultiplier(attackerElements, defenderElements, dataManager) {

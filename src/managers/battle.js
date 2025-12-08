@@ -259,7 +259,7 @@ export class BattleManager {
         }
     }
 
-    const events = action.apply(target, this.dataManager);
+    const events = action.apply(target, this.dataManager, this.party);
 
     this._checkBattleEnd(events);
     return events;

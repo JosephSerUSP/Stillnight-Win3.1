@@ -173,6 +173,27 @@ export class Game_Battler extends Game_Base {
       return Math.floor((base + plus) * rate);
   }
 
+  get def() { return this._getParam('def'); }
+  get mat() { return this._getParam('mat'); }
+  get mdf() { return this._getParam('mdf'); }
+  get agi() { return this._getParam('agi'); }
+  get luk() { return this._getParam('luk'); }
+
+  _getParam(paramId) {
+      let base = 0;
+      if (this.isEnemy) {
+           base = this.level;
+      } else {
+           base = 3 + Math.floor(this.level / 2);
+      }
+
+      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === paramId)
+                               .reduce((sum, t) => sum + t.value, 0);
+      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === paramId)
+                               .reduce((acc, t) => acc * t.value, 1.0);
+      return Math.floor((base + plus) * rate);
+  }
+
   /**
    * Gets the effective Speed.
    * @type {number}
