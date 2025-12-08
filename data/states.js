@@ -25,7 +25,7 @@
 export const states = {
     dead: {
         id: 'dead',
-        name: 'Dead',
+        name: 'KO',
         icon: 11, // Skull-like icon if available, or placeholder
         restriction: 4, // Cannot act
         priority: 100,
@@ -39,6 +39,24 @@ export const states = {
         duration: 3,
         removeAtDamage: true,
         traits: []
+    },
+    poison: {
+        id: 'poison',
+        name: 'Poison',
+        icon: 3,
+        duration: 5,
+        traits: [
+            { code: 'HRG', value: -0.1 }
+        ]
+    },
+    slow: {
+        id: 'slow',
+        name: 'Slow',
+        icon: 4,
+        duration: 3,
+        traits: [
+             { code: 'PARAM_RATE', dataId: 'asp', value: 0.5 }
+        ]
     },
     regen: {
         id: 'regen',

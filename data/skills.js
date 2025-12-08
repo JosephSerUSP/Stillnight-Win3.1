@@ -4,158 +4,94 @@
  * Skills are used by battlers in combat to deal damage, heal, or apply status effects.
  */
 
-/**
- * @typedef {Object} SkillEffect
- * @property {string} type - The type of effect (e.g., 'hp_damage', 'hp_heal', 'add_status').
- * @property {string} [formula] - The formula for calculating the effect value (e.g., '5 + 1.2 * a.level').
- * @property {string} [status] - The status ID to apply (if type is 'add_status').
- * @property {number} [chance] - The chance to apply the effect (0-1).
- * @property {number} [duration] - The duration of the effect in turns.
- */
-
-/**
- * @typedef {Object} Skill
- * @property {string} id - The unique ID of the skill.
- * @property {string} name - The display name of the skill.
- * @property {string} target - The target scope (e.g., 'enemy-any', 'ally-any', 'self').
- * @property {string} element - The elemental affinity of the skill.
- * @property {string} description - The flavor text description.
- * @property {SkillEffect[]} effects - The list of effects produced by the skill.
- */
-
-/**
- * @type {Object.<string, Skill>}
- */
 export const skills = {
-    // Pixie
-    windBlade: {
-        id: 'windBlade',
-        name: 'Wind Blade',
+    // Magitek Skills
+    fire_beam: {
+        id: 'fire_beam',
+        name: 'Fire Beam',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "Fires a beam of intense heat.",
+        effects: [{ type: 'hp_damage', formula: '15 + 1.2 * a.mat' }]
+    },
+    ice_beam: {
+        id: 'ice_beam',
+        name: 'Ice Beam',
+        target: 'enemy-any',
+        element: 'Blue',
+        description: "Fires a beam of absolute zero.",
+        effects: [{ type: 'hp_damage', formula: '15 + 1.2 * a.mat' }]
+    },
+    bolt_beam: {
+        id: 'bolt_beam',
+        name: 'Bolt Beam',
+        target: 'enemy-any',
+        element: 'Green', // Closest to Yellow/Thunder
+        description: "Fires a beam of lightning.",
+        effects: [{ type: 'hp_damage', formula: '15 + 1.2 * a.mat' }]
+    },
+    bio_blast: {
+        id: 'bio_blast',
+        name: 'Bio Blast',
+        target: 'enemy-all',
+        element: 'Black',
+        description: "Unleashes a cloud of poison gas.",
+        effects: [
+            { type: 'hp_damage', formula: '10 + 1.0 * a.mat' },
+            { type: 'add_status', status: 'poison', chance: 1.0, duration: 3 }
+        ]
+    },
+    magitek_missile: {
+        id: 'magitek_missile',
+        name: 'Magitek Missile',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "Launches a powerful missile.",
+        effects: [{ type: 'hp_damage', formula: '25 + 1.5 * a.atk' }]
+    },
+    heal_force: {
+        id: 'heal_force',
+        name: 'Heal Force',
+        target: 'ally-any',
+        element: 'White',
+        description: "Repairs the Magitek Armor.",
+        effects: [{ type: 'hp_heal', formula: '50 + 2.0 * a.mat' }]
+    },
+
+    // Enemy Skills
+    attack: {
+        id: 'attack',
+        name: 'Attack',
+        target: 'enemy-any',
+        element: 'Physical', // Should check if 'Physical' is a valid element or just empty
+        description: "A basic physical attack.",
+        effects: [{ type: 'hp_damage', formula: 'a.atk * 1.0' }]
+    },
+    fangs: {
+        id: 'fangs',
+        name: 'Fangs',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "Bites the target.",
+        effects: [{ type: 'hp_damage', formula: '5 + 1.0 * a.atk' }]
+    },
+    slime: {
+        id: 'slime',
+        name: 'Slime',
         target: 'enemy-any',
         element: 'Green',
-        description: "Strikes a foe with a blade of wind.",
+        description: "Covers the target in sticky slime.",
         effects: [
-            { type: 'hp_damage', formula: '6 + 1.2 * a.level' }
+             { type: 'hp_damage', formula: '8 + 1.0 * a.mat' },
+             { type: 'add_status', status: 'slow', chance: 0.5, duration: 3 }
         ]
     },
-    soothingMote: {
-        id: 'soothingMote',
-        name: 'Soothing Mote',
-        target: 'ally-any',
-        element: 'White',
-        description: "Heals a small amount of HP for an ally.",
-        effects: [
-            { type: 'hp_heal', formula: '5 + 1.5 * a.level' }
-        ]
-    },
-
-    // Skeleton
-    boneRush: {
-        id: 'boneRush',
-        name: 'Bone Rush',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "A reckless charge.",
-        effects: [
-            { type: 'hp_damage', formula: '7 + 1.2 * a.level' }
-        ]
-    },
-
-    // Angel
-    holySmite: {
-        id: 'holySmite',
-        name: 'Holy Smite',
-        target: 'enemy-any',
-        element: 'White',
-        description: "Smite evil with holy light.",
-        effects: [
-            { type: 'hp_damage', formula: '6 + 1.4 * a.level' }
-        ]
-    },
-    divineFavor: {
-        id: 'divineFavor',
-        name: 'Divine Favor',
-        target: 'ally-any',
-        element: 'White',
-        description: "Grants regeneration to an ally.",
-        effects: [
-            { type: 'add_status', status: 'regen', chance: 1.0, duration: 3 }
-        ]
-    },
-
-    // Demon
-    shadowClaw: {
-        id: 'shadowClaw',
-        name: 'Shadow Claw',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "Tears at the enemy from the shadows.",
-        effects: [
-            { type: 'hp_damage', formula: '8 + 1.3 * a.level' }
-        ]
-    },
-    infernalPact: {
-        id: 'infernalPact',
-        name: 'Infernal Pact',
-        target: 'self',
-        element: 'Red',
-        description: "Sacrifice safety for power. (Grants Berserk)",
-        effects: [
-            { type: 'add_status', status: 'berserk', chance: 1.0, duration: 3 }
-        ]
-    },
-
-    wait: {
-        id: 'wait',
-        name: 'Wait',
-        target: 'self',
-        element: 'White',
-        description: "Do nothing.",
-        effects: []
-    },
-
-    flameRebirth: {
-        id: 'flameRebirth',
-        name: 'Flame Rebirth',
-        target: 'self',
-        element: 'Red',
-        description: "Rise from the ashes.",
-        effects: []
-    },
-
-    // Nurse
-    needleShot: {
-        id: 'needleShot',
-        name: 'Needle Shot',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "A precise strike that injects toxins.",
-        effects: [
-            { type: 'hp_damage', formula: '5 + 1.2 * a.level' },
-            { type: 'add_status', status: 'poison', chance: 0.4, duration: 3 }
-        ]
-    },
-    fieldSurgery: {
-        id: 'fieldSurgery',
-        name: 'Field Surgery',
-        target: 'ally-any',
-        element: 'Black',
-        description: "Emergency medical attention. It might hurt.",
-        effects: [
-            { type: 'hp_heal', formula: '10 + 2.0 * a.level' }
-        ]
-    },
-
-    // Incubus
-    drainKiss: {
-        id: 'drainKiss',
-        name: 'Drain Kiss',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "Steals vitality and puts the target to sleep.",
-        effects: [
-            { type: 'hp_drain', formula: '4 + 0.6 * a.level' },
-            { type: 'add_status', status: 'sleep', chance: 0.5, duration: 3 }
-        ]
+    mega_volt: {
+        id: 'mega_volt',
+        name: 'Mega Volt',
+        target: 'enemy-all',
+        element: 'Green',
+        description: "Discharges a massive electric shock.",
+        effects: [{ type: 'hp_damage', formula: '30 + 1.5 * a.mat' }]
     }
 };

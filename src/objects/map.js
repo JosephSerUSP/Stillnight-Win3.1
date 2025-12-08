@@ -52,52 +52,84 @@ export class Game_Map {
     const visited = Array.from({ length: this.MAX_H }, () =>
       Array.from({ length: this.MAX_W }, () => false)
     );
+    let floorCells = [];
+    let startX, startY;
 
-    const innerW = randInt(7, 11);
-    const innerH = randInt(7, 11);
-    const offsetX = Math.floor((this.MAX_W - innerW) / 2);
-    const offsetY = Math.floor((this.MAX_H - innerH) / 2);
+    if (meta.layout) {
+      // Custom Layout
+      meta.layout.forEach((row, r) => {
+        row.split('').forEach((char, c) => {
+          if (r < this.MAX_H && c < this.MAX_W) {
+            if (char === '.' || char === 'S') {
+              tiles[r][c] = '.';
+              floorCells.push([c, r]);
+            }
+            if (char === 'S') {
+              startX = c;
+              startY = r;
+            }
+          }
+        });
+      });
+      if (startX === undefined) {
+         if (floorCells.length > 0) {
+             [startX, startY] = floorCells[0];
+         } else {
+             startX = 1; startY = 1; tiles[1][1] = '.'; floorCells.push([1, 1]);
+         }
+      }
+    } else {
+      // Procedural Generation
+      const innerW = randInt(7, 11);
+      const innerH = randInt(7, 11);
+      const offsetX = Math.floor((this.MAX_W - innerW) / 2);
+      const offsetY = Math.floor((this.MAX_H - innerH) / 2);
 
-    let x = offsetX + Math.floor(innerW / 2);
-    let y = offsetY + Math.floor(innerH / 2);
+      let x = offsetX + Math.floor(innerW / 2);
+      let y = offsetY + Math.floor(innerH / 2);
 
-    tiles[y][x] = ".";
-    const floorCells = [[x, y]];
+      tiles[y][x] = ".";
+      floorCells.push([x, y]);
 
-    const steps = innerW * innerH * 3;
-    const dirs = [
-      [1, 0],
-      [-1, 0],
-      [0, 1],
-      [0, -1],
-    ];
+      const steps = innerW * innerH * 3;
+      const dirs = [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ];
 
-    for (let i = 0; i < steps; i++) {
-      const [dx, dy] = dirs[randInt(0, dirs.length - 1)];
-      const nx = x + dx;
-      const ny = y + dy;
-      if (
-        nx >= offsetX &&
-        nx < offsetX + innerW &&
-        ny >= offsetY &&
-        ny < offsetY + innerH
-      ) {
-        x = nx;
-        y = ny;
-        if (tiles[y][x] === "#") {
-          tiles[y][x] = ".";
-          floorCells.push([x, y]);
+      for (let i = 0; i < steps; i++) {
+        const [dx, dy] = dirs[randInt(0, dirs.length - 1)];
+        const nx = x + dx;
+        const ny = y + dy;
+        if (
+          nx >= offsetX &&
+          nx < offsetX + innerW &&
+          ny >= offsetY &&
+          ny < offsetY + innerH
+        ) {
+          x = nx;
+          y = ny;
+          if (tiles[y][x] === "#") {
+            tiles[y][x] = ".";
+            floorCells.push([x, y]);
+          }
         }
       }
-    }
 
-    if (floorCells.length < 10) {
-      for (let iy = offsetY + 1; iy < offsetY + innerH - 1; iy++) {
-        for (let ix = offsetX + 1; ix < offsetX + innerW - 1; ix++) {
-          tiles[iy][ix] = ".";
-          floorCells.push([ix, iy]);
+      if (floorCells.length < 10) {
+        for (let iy = offsetY + 1; iy < offsetY + innerH - 1; iy++) {
+          for (let ix = offsetX + 1; ix < offsetX + innerW - 1; ix++) {
+            tiles[iy][ix] = ".";
+            floorCells.push([ix, iy]);
+          }
         }
       }
+
+      const startPos = floorCells[floorCells.length - 1];
+      startX = startPos[0];
+      startY = startPos[1];
     }
 
     const pickCell = (exclude = []) => {
@@ -107,9 +139,7 @@ export class Game_Map {
       return candidates[randInt(0, candidates.length - 1)];
     };
 
-    const startPos = floorCells[floorCells.length - 1];
-    const [startX, startY] = startPos;
-    const used = [startPos];
+    const used = [[startX, startY]];
 
     if (meta.events) {
       meta.events.forEach((config) => {
@@ -124,7 +154,13 @@ export class Game_Map {
           count = 1;
 
         for (let i = 0; i < count; i++) {
-          const pos = pickCell(used);
+          let pos;
+          if (config.x !== undefined && config.y !== undefined) {
+              pos = [config.x, config.y];
+          } else {
+              pos = pickCell(used);
+          }
+
           if (pos) {
             const eventData = { ...def };
 

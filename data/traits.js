@@ -26,20 +26,20 @@ export const TRAIT_DEFINITIONS = {
         trigger: 'turnStart',
         execute: (value, battler, context) => {
             const amount = Math.floor(battler.maxHp * value);
-            if (amount <= 0) return null;
+            if (amount === 0) return null;
 
             const hpBefore = battler.hp;
-            battler.hp = Math.min(battler.maxHp, battler.hp + amount);
+            battler.hp = Math.min(battler.maxHp, Math.max(0, battler.hp + amount));
 
             return {
-                type: 'heal',
+                type: amount > 0 ? 'heal' : 'damage',
                 battler: battler,
                 target: battler,
-                value: amount,
+                value: Math.abs(amount),
                 hpBefore: hpBefore,
                 hpAfter: battler.hp,
-                msg: `${battler.name} regenerates ${amount} HP.`,
-                animation: 'healing_sparkle'
+                msg: amount > 0 ? `${battler.name} regenerates ${amount} HP.` : `${battler.name} takes ${Math.abs(amount)} poison damage.`,
+                animation: amount > 0 ? 'healing_sparkle' : 'flash'
             };
         }
     },

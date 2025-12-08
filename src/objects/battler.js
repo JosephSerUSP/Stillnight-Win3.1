@@ -174,6 +174,63 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
+   * Gets the effective Magic Attack power.
+   * @type {number}
+   */
+  get mat() {
+      let base = 0;
+      if (this.isEnemy) {
+           base = this.level;
+      } else {
+           base = 3 + Math.floor(this.level / 2);
+      }
+
+      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'mat')
+                               .reduce((sum, t) => sum + t.value, 0);
+      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'mat')
+                               .reduce((acc, t) => acc * t.value, 1.0);
+      return Math.floor((base + plus) * rate);
+  }
+
+  /**
+   * Gets the effective Defense.
+   * @type {number}
+   */
+  get def() {
+      let base = 0;
+      if (this.isEnemy) {
+           base = this.level;
+      } else {
+           base = 3 + Math.floor(this.level / 2);
+      }
+
+      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'def')
+                               .reduce((sum, t) => sum + t.value, 0);
+      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'def')
+                               .reduce((acc, t) => acc * t.value, 1.0);
+      return Math.floor((base + plus) * rate);
+  }
+
+  /**
+   * Gets the effective Magic Defense.
+   * @type {number}
+   */
+  get mdf() {
+      let base = 0;
+      if (this.isEnemy) {
+           base = this.level;
+      } else {
+           base = 3 + Math.floor(this.level / 2);
+      }
+
+      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'mdf')
+                               .reduce((sum, t) => sum + t.value, 0);
+      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'mdf')
+                               .reduce((acc, t) => acc * t.value, 1.0);
+      return Math.floor((base + plus) * rate);
+  }
+
+  /**
    * Gets the effective Speed.
    * @type {number}
    */
