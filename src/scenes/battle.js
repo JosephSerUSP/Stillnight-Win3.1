@@ -1,6 +1,6 @@
 import { Scene_Base } from "./base.js";
 import { Game_Battler, Game_Action } from "../objects/objects.js";
-import { randInt, pickWeighted, probabilisticRound } from "../core/utils.js";
+import { randInt, pickWeighted, probabilisticRound, cloneItem } from "../core/utils.js";
 import { SoundManager, ConfigManager } from "../managers/index.js";
 import { Window_Battle, Window_Victory } from "../windows/index.js";
 
@@ -458,7 +458,7 @@ export class Scene_Battle extends Scene_Base {
       );
 
       if (droppedItems.length > 0) {
-          droppedItems.forEach(item => this.party.inventory.push(item));
+          droppedItems.forEach(item => this.party.inventory.push(cloneItem(item)));
           const names = droppedItems.map(i => i.name).join(", ");
           this.sceneManager.previous().logMessage(`[Battle] Found: ${names}`);
           SoundManager.play('ITEM_GET');

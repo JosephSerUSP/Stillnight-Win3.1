@@ -1,6 +1,7 @@
 import { Scene_Base } from "./base.js";
 import { Scene_Battle } from "./battle.js";
 import { Scene_Shop } from "./shop.js";
+import { Scene_TuneUp } from "./tuneup.js";
 import { Game_Map, Game_Party, Game_Battler, Game_Action } from "../objects/objects.js";
 import { Game_Interpreter } from "../managers/interpreter.js";
 import { BattleManager, SoundManager, ConfigManager, ThemeManager } from "../managers/index.js";
@@ -157,6 +158,12 @@ export class Scene_Map extends Scene_Base {
     });
     this.hud.btnFormation.addEventListener("click", this.openFormation.bind(this));
     this.hud.btnInventory.addEventListener("click", this.openInventory.bind(this));
+    this.hud.btnTuneUp.addEventListener("click", this.openTuneUp.bind(this));
+  }
+
+  openTuneUp() {
+      if (this.sceneManager.currentScene() !== this) return;
+      this.sceneManager.push(new Scene_TuneUp(this.dataManager, this.sceneManager, this.windowManager, this.party));
   }
 
   /**

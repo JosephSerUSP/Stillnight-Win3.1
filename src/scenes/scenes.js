@@ -4,3 +4,4 @@ export { Scene_Boot } from "./boot.js";
 export { Scene_Battle } from "./battle.js";
 export { Scene_Shop } from "./shop.js";
 export { Scene_Map } from "./map.js";
+export { Scene_TuneUp } from "./tuneup.js";

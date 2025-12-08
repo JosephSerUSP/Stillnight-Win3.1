@@ -1,5 +1,6 @@
 import { Window_Battle } from "./battle.js";
 import { Window_Shop } from "./shop.js";
+export { Window_TuneUp } from "./tuneup.js";
 import { Window_Formation } from "./formation.js";
 import { Window_Inventory } from "./inventory.js";
 import { Window_ConfirmEffect } from "./confirm.js";

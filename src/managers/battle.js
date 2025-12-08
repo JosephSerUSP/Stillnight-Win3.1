@@ -243,25 +243,43 @@ export class BattleManager {
 
     if (subject.hp <= 0) return [];
 
-    // Re-validate target (Smart re-targeting)
-    if (!target || target.hp <= 0) {
-        // If target is dead, try to find a new target
-        const isEnemy = subject.isEnemy;
-        const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
-        const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
-
-        const targets = action.makeTargets(myTeam, opposingTeam);
-        if (targets.length > 0) {
-            target = targets[randInt(0, targets.length - 1)];
-            action.target = target; // Update action
-        } else {
-            return []; // Fizzle if no valid targets
-        }
+    let repeats = 1;
+    if (action.isAttack) {
+        // ROF trait logic: Value adds extra attacks.
+        // e.g. Value 1 means 1 extra attack (2 total).
+        const rof = subject.traits.filter(t => t.code === 'ROF').reduce((acc, t) => acc + t.value, 0);
+        repeats += rof;
     }
 
-    const events = action.apply(target, this.dataManager);
+    const events = [];
 
-    this._checkBattleEnd(events);
+    for (let i = 0; i < repeats; i++) {
+        // Re-validate target (Smart re-targeting)
+        if (!target || target.hp <= 0) {
+            // If target is dead, try to find a new target
+            const isEnemy = subject.isEnemy;
+            const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
+            const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
+
+            const targets = action.makeTargets(myTeam, opposingTeam);
+            if (targets.length > 0) {
+                target = targets[randInt(0, targets.length - 1)];
+                action.target = target; // Update action
+            } else {
+                break; // No more targets
+            }
+        }
+
+        const shotEvents = action.apply(target, this.dataManager);
+        events.push(...shotEvents);
+
+        if (subject.hp <= 0) break; // Stop if subject dies (e.g. reflection/counter)
+
+        // Check end after each shot to stop if everyone is dead
+        this._checkBattleEnd(events);
+        if (this.isBattleFinished) break;
+    }
+
     return events;
   }
 

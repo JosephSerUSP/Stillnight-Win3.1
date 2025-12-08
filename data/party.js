@@ -1,4 +1,4 @@
-import { randInt, shuffleArray } from "../src/core/utils.js";
+import { randInt, shuffleArray, cloneItem } from "../src/core/utils.js";
 
 /**
  * @file data/party.js
@@ -29,17 +29,17 @@ export const startingParty = {
     if (hpTonic) {
         const amount = randInt(1, 3);
         for (let i = 0; i < amount; i++) {
-            inventory.push(hpTonic);
+            inventory.push(cloneItem(hpTonic));
         }
     }
 
     // 2 random consumables
     const randomConsumables = shuffleArray(consumables).slice(0, 2);
-    inventory.push(...randomConsumables);
+    randomConsumables.forEach(i => inventory.push(cloneItem(i)));
 
     // 2 random pieces of equipment
     const randomEquipment = shuffleArray(equipment).slice(0, 2);
-    inventory.push(...randomEquipment);
+    randomEquipment.forEach(i => inventory.push(cloneItem(i)));
 
     return inventory;
   },

@@ -217,3 +217,20 @@ export function generateEffectDescription(key, value, dataManager) {
         default: return `${key}: ${value}`;
     }
 }
+
+/**
+ * Creates a deep copy of an item object to ensure unique instances.
+ * @param {Object} item - The source item.
+ * @returns {Object} A new item instance.
+ */
+export function cloneItem(item) {
+    if (!item) return null;
+    const newItem = { ...item };
+    if (newItem.traits) {
+        newItem.traits = newItem.traits.map(t => ({ ...t }));
+    }
+    if (newItem.effects) {
+        newItem.effects = newItem.effects.map(e => ({ ...e }));
+    }
+    return newItem;
+}

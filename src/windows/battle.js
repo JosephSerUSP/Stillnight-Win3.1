@@ -181,6 +181,10 @@ export class Window_Battle extends Window_Base {
                {
                    type: 'label',
                    props: { className: 'battler-hp', text: this.createHpGauge(b.hp, b.maxHp) }
+               },
+               {
+                   type: 'label',
+                   props: { className: 'battler-mp', text: this.createMpGauge(b.mp, b.maxMp), style: { fontSize: '10px', color: '#8af' } }
                }
             ]
         });
@@ -207,8 +211,19 @@ export class Window_Battle extends Window_Base {
     if (hp > 0 && filledCount === 0) filledCount = 1;
     if (filledCount < 0) filledCount = 0;
     const emptyCount = totalLength - filledCount;
-    if (emptyCount < 0) return `[${"#".repeat(totalLength)}]`;
-    return `[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
+    if (emptyCount < 0) return `HP[${"#".repeat(totalLength)}]`;
+    return `HP[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
+  }
+
+  createMpGauge(mp, maxMp) {
+    if (!maxMp) return "";
+    const totalLength = 15;
+    let filledCount = Math.round((mp / maxMp) * totalLength);
+    if (mp > 0 && filledCount === 0) filledCount = 1;
+    if (filledCount < 0) filledCount = 0;
+    const emptyCount = totalLength - filledCount;
+    if (emptyCount < 0) return `PE[${"=".repeat(totalLength)}]`;
+    return `PE[${"=".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
   }
 
   getBattlerId(index, isEnemy) {

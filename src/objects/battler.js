@@ -64,9 +64,13 @@ export class Game_Battler extends Game_Base {
      */
     this.states = [];
 
+    this._baseMaxMp = actorData.maxMp || 0;
+    this.mp = this.maxMp;
+
     if (this.isEnemy) {
       this._baseMaxHp += (depth - 1) * 4;
       this.hp = this.maxHp;
+      this.mp = this.maxMp;
     }
   }
 
@@ -150,6 +154,29 @@ export class Game_Battler extends Game_Base {
       // (base + plus) * rate = value  =>  base = (value / rate) - plus
       if (rate === 0) this._baseMaxHp = 0; // Avoid division by zero
       else this._baseMaxHp = Math.ceil((value / rate) - plus);
+  }
+
+  /**
+   * Gets the effective maximum MP.
+   * @type {number}
+   */
+  get maxMp() {
+      const base = this._baseMaxMp;
+      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'maxMp')
+                               .reduce((sum, t) => sum + t.value, 0);
+      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'maxMp')
+                               .reduce((acc, t) => acc * t.value, 1.0);
+      return Math.floor((base + plus) * rate);
+  }
+
+  set maxMp(value) {
+      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'maxMp')
+                               .reduce((sum, t) => sum + t.value, 0);
+      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'maxMp')
+                               .reduce((acc, t) => acc * t.value, 1.0);
+
+      if (rate === 0) this._baseMaxMp = 0;
+      else this._baseMaxMp = Math.ceil((value / rate) - plus);
   }
 
   /**
