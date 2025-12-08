@@ -136,7 +136,7 @@ export class Window_Battle extends Window_Base {
     const renderBattler = (b, idx, isEnemy) => {
         if (!b || b.hidden) return;
 
-        const top = isEnemy ? 30 + Math.floor(idx / 2) * 40 : 140 + Math.floor(idx / 2) * 40;
+        const top = isEnemy ? 30 + Math.floor(idx / 2) * 32 : 128 + Math.floor(idx / 2) * 32;
         const left = 20 + (idx % 2) * 220;
 
         const primaryElements = getPrimaryElements(b.elements);
