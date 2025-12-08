@@ -11,22 +11,45 @@
 - Icons are arranged in a grid layout based on their ID.  
 
 ## 🔢 Icon Groups
-### Element Orbs (Standard)
-- **IDs 1–5**  
-- Represent the elements: **R (Red), G (Green), B (Blue), W (White), K (Black)**  
+### Element - **IDs 1...10, 11...20 [...] 81...90:**  
+- Represents the elements: **R (Red), G (Green), B (Blue), W (White), K (Black), - (None), -R+G(Yellow), R+B (Magenta), B+G (Cyan), - (None)**  
+
+### Element Orbs
+- **IDs 0X**  
 
 ### Element Orbs (Mini)
-- **IDs 11–15**  
-- Same elements (**RGBWK**) but in **mini form**  
+- **IDs 1X**  
 - Designed to be **overlapped diagonally** for composite effects  
 
-### Element Books
-- **IDs 21–26**  
-- (**RGBWK**) elemental books, 26 is the non-elemental book. For teaching abilities.  
+### Element Crystals
+- **IDs 2X**  
 
-### Element Equipment
-- **IDs 41–46**  
-- (**RGBWK**) elemental equipment: 21 = Flame Sword Flavio, 22 = Jolt Dagger Zaster, 23 = Flowing Staff Sephine, 24 = Holy Suit Papulodoulos, 25 = Dark Scythe Lena.  
+### Element Books
+- **IDs 3X**  
+
+### Element Cards
+- **IDs 4X**  
+
+### Element Potions
+- **IDs 5X**  
+
+### Element Vials
+- **IDs 6X**  
+
+### Element Weapons
+- **IDs 7X**  
+
+### Element Armors
+- **IDs 8X**  
+
+## System
+- **ID 101: Evolution (Locked), ID 102: Evolution (Available), ID 103: Passive Skill.**
+
+### Status Effects
+- **ID 111: -, ID 112: KO, ID 113: Poison, ID 114: Blind, ID 115: silence, ID 116: Berserk, ID 117: Confuse, ID 118: Sleep, ID 119: Paralysis**
+
+### Race
+- **ID 121: Fey, ID 122: Divine, ID 123: Demon, ID 124: Construct, ID 125: Beast, ID 126: Undead, ID 127: Special**
 
 ## 📊 Icon Positioning
 - Icons are indexed left-to-right, top-to-bottom.  
