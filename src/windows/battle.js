@@ -2,6 +2,7 @@ import { Window_Base } from "./base.js";
 import { createToggleSwitch } from "./utils.js";
 import { getPrimaryElements, elementToAscii } from "../core/utils.js";
 import { UI } from "./builder.js";
+import { LayoutConfig } from "./layout_config.js";
 
 /**
  * @class Window_Battle
@@ -136,8 +137,9 @@ export class Window_Battle extends Window_Base {
     const renderBattler = (b, idx, isEnemy) => {
         if (!b || b.hidden) return;
 
-        const top = isEnemy ? 30 + Math.floor(idx / 2) * 40 : 140 + Math.floor(idx / 2) * 40;
-        const left = 20 + (idx % 2) * 220;
+        const config = isEnemy ? LayoutConfig.battle.enemy : LayoutConfig.battle.party;
+        const top = config.startY + Math.floor(idx / config.columns) * config.spacingY;
+        const left = config.startX + (idx % config.columns) * config.spacingX;
 
         const primaryElements = getPrimaryElements(b.elements);
         const elementAscii = primaryElements.map(el => elementToAscii(el)).join('');
