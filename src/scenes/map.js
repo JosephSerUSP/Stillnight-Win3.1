@@ -786,8 +786,9 @@ export class Scene_Map extends Scene_Base {
       if (action === 'use') {
           if (item.type === 'equipment') return;
 
-          if (item.effects && item.effects.recruit_egg) {
-              const recruitId = item.effects.recruit_egg;
+          const recruitEffect = item.effects && item.effects.find(e => e.type === 'recruit_egg');
+          if (recruitEffect) {
+              const recruitId = recruitEffect.value;
               this.windowManager.close(this.hudManager.inventoryWindow);
               this.interpreter.openRecruitEvent({
                   forcedId: recruitId,

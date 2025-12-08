@@ -133,12 +133,14 @@ export class Window_ConfirmEffect extends Window_Base {
         const changes = [];
         if (!item.effects) return changes;
 
-        for (const [key, value] of Object.entries(item.effects)) {
+        item.effects.forEach(effect => {
+            const key = effect.type;
+            const value = effect.formula || effect.value;
             const preview = EffectProcessor.getPreview(key, value, member);
             if (preview) {
                 changes.push(preview);
             }
-        }
+        });
 
         return changes;
     }
