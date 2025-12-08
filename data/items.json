@@ -222,6 +222,48 @@
     ]
   },
   {
+    "id": "radiant_blade_flavio",
+    "name": "Radiant Blade Flavio",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 1995,
+    "icon": 71,
+    "description": "Lucent blade carrying the blessings of the sun.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
+      { "code": "ELEMENT_CHANGE", "dataId": "Red" },
+      { "code": "CRI", "value": 0.20 }
+    ]
+  },
+  {
+    "id": "wind_dancer",
+    "name": "Wind Dancer",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 1520,
+    "icon": 72,
+    "description": "Leaf-shaped daggers that strike with the speed of wind.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
+      { "code": "ELEMENT_CHANGE", "dataId": "Green" },
+      { "code": "CRI", "value": 0.15 }
+    ]
+  },
+  {
+    "id": "water_scepter",
+    "name": "Water Scepter",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 1520,
+    "icon": 73,
+    "description": "Leaf-shaped daggers that strike with the speed of wind.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
+      { "code": "ELEMENT_CHANGE", "dataId": "Blue" },
+      { "code": "CRI", "value": 0.15 }
+    ]
+  },
+  {
     "id": "holy_sword_gram",
     "name": "Holy Sword Gram",
     "type": "equipment",
@@ -274,19 +316,11 @@
     "name": "Mars Emblem",
     "type": "equipment",
     "equipType": "Accessory",
-    "cost": 1460,
+    "cost": 400,
     "icon": 81,
     "description": "Its magicked properties imbue the wearer with elemental energy.",
     "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Red"
-      }
+      { "code": "ELEMENT_CHANGE", "dataId": "Red" }
     ]
   },
   {
