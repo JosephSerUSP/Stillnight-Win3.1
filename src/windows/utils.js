@@ -67,6 +67,9 @@ export function createBattlerNameLabel(battler, options = {}) {
 
     const nameSpan = document.createElement("span");
     nameSpan.textContent = battler.name;
+    if (options.nameElementId) {
+        nameSpan.id = options.nameElementId;
+    }
     container.appendChild(nameSpan);
 
     if (options.evolutionStatus && options.evolutionStatus !== 'NONE') {

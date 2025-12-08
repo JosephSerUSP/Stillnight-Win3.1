@@ -329,7 +329,7 @@ export class Scene_Battle extends Scene_Base {
   renderBattleAscii() {
     if (!this.battleManager) return;
     const enemies = this.battleManager.enemies;
-    this.battleWindow.refresh(enemies, this.party.slots.slice(0, 4));
+    this.battleWindow.refresh(enemies, this.party.slots.slice(0, 4), this.party);
   }
 
   /**

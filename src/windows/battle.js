@@ -1,7 +1,8 @@
 import { Window_Base } from "./base.js";
-import { createToggleSwitch } from "./utils.js";
+import { createToggleSwitch, createBattlerNameLabel } from "./utils.js";
 import { getPrimaryElements, elementToAscii } from "../core/utils.js";
 import { UI } from "./builder.js";
+import { ProgressionSystem } from "../managers/progression.js";
 
 /**
  * @class Window_Battle
@@ -139,7 +140,7 @@ export class Window_Battle extends Window_Base {
     });
   }
 
-  refresh(battlers, party) {
+  refresh(battlers, partySlots, partyInstance) {
     this.viewportEl.innerHTML = "";
 
     UI.build(this.viewportEl, {
@@ -155,9 +156,6 @@ export class Window_Battle extends Window_Base {
 
         const top = isEnemy ? 30 + Math.floor(idx / 2) * 32 : 128 + Math.floor(idx / 2) * 32;
         const left = 20 + (idx % 2) * 220;
-
-        const primaryElements = getPrimaryElements(b.elements);
-        const elementAscii = primaryElements.map(el => elementToAscii(el)).join('');
 
         const battlerId = isEnemy ? `battler-enemy-${idx}` : `battler-party-${idx}`;
 
@@ -188,11 +186,19 @@ export class Window_Battle extends Window_Base {
         });
 
         const nameEl = container.children[0];
-        nameEl.innerHTML = `${elementAscii}<span id="${battlerId}">${b.name}</span> (HP ${b.hp}/${b.maxHp})`;
+        nameEl.innerHTML = "";
+
+        let evoStatus = 'NONE';
+        if (!isEnemy && partyInstance) {
+            const status = ProgressionSystem.getEvolutionStatus(b, partyInstance.inventory || [], 1, partyInstance.gold || 0); // floorDepth 1 default if not available
+            evoStatus = status.status;
+        }
+
+        nameEl.appendChild(createBattlerNameLabel(b, { nameElementId: battlerId, evolutionStatus: evoStatus }));
     };
 
     battlers.forEach((e, idx) => renderBattler(e, idx, true));
-    party.forEach((p, idx) => renderBattler(p, idx, false));
+    partySlots.forEach((p, idx) => renderBattler(p, idx, false));
   }
 
   createHpGauge(hp, maxHp) {
@@ -255,16 +261,7 @@ export class Window_Battle extends Window_Base {
              const hpEl = this.getHpElement(ctx.index, ctx.isEnemy);
              if (hpEl) {
                  hpEl.textContent = this.createHpGauge(currentHp, battler.maxHp);
-
-                 const container = hpEl.parentElement;
-                 const nameEl = container.querySelector('.battler-name');
-                 if (nameEl) {
-                      const primaryElements = getPrimaryElements(battler.elements);
-                      const elementAscii = primaryElements.map(el => elementToAscii(el)).join('');
-                      const battlerId = this.getBattlerId(ctx.index, ctx.isEnemy);
-
-                      nameEl.innerHTML = `${elementAscii}<span id="${battlerId}">${battler.name}</span> (HP ${currentHp}/${battler.maxHp})`;
-                 }
+                 // Name text update removed as we use structured label now
              }
         }
 
