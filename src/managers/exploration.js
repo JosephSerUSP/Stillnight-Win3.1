@@ -60,7 +60,7 @@ export class ExplorationEngine {
 
         // Auto-reveal check
         if (this.map.checkFloorExploration()) {
-            this.map.revealCurrentFloor();
+            this.map.revealCurrentFloor(false);
             results.push({ type: 'EXPLORED_ALL' });
         }
 
