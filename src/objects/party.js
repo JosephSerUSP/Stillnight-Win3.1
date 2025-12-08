@@ -210,28 +210,36 @@ export class Game_Party {
    * @returns {Object} { success: boolean, msg: string }
    */
   equipItem(member, item) {
-      if (!item) {
-          if (member.equipmentItem) {
-              this.inventory.push(member.equipmentItem);
-          }
-          member.equipmentItem = null;
-          return { success: true, msg: `${member.name} unequipped item.` };
-      } else if (item.equippedMember) {
+      if (!item) return this.unequipItem(member, 'equipmentItem');
+
+      const isPersona = item.equipType === 'Persona';
+      const slot = isPersona ? 'personaItem' : 'equipmentItem';
+
+      if (item.equippedMember) {
           const otherMember = item.equippedMember;
-          const currentItem = member.equipmentItem;
-          otherMember.equipmentItem = currentItem;
-          member.equipmentItem = item;
+          const currentItem = member[slot];
+          otherMember[slot] = currentItem;
+          member[slot] = item;
           return { success: true, msg: `${member.name} swapped ${item.name} with ${otherMember.name}.` };
       } else {
-          if (member.equipmentItem) {
-              this.inventory.push(member.equipmentItem);
+          if (member[slot]) {
+              this.inventory.push(member[slot]);
           }
-          member.equipmentItem = item;
+          member[slot] = item;
           const invIndex = this.inventory.findIndex((i) => i.id === item.id);
           if (invIndex > -1) {
               this.inventory.splice(invIndex, 1);
           }
           return { success: true, msg: `${member.name} equipped ${item.name}.` };
       }
+  }
+
+  unequipItem(member, slot = 'equipmentItem') {
+      if (member[slot]) {
+          this.inventory.push(member[slot]);
+          member[slot] = null;
+          return { success: true, msg: `${member.name} unequipped ${slot === 'personaItem' ? 'Persona' : 'item'}.` };
+      }
+      return { success: false, msg: "Nothing to unequip." };
   }
 }

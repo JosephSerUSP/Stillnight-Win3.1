@@ -361,5 +361,50 @@
         "dataId": "Green"
       }
     ]
+  },
+  {
+    "id": "persona_seimen_kongou",
+    "name": "Seimen Kongou",
+    "type": "equipment",
+    "equipType": "Persona",
+    "cost": 0,
+    "icon": 81,
+    "description": "Naoya's initial Persona. Emperor Arcana.",
+    "traits": [
+      { "code": "learnAction", "dataId": "agi" },
+      { "code": "learnAction", "dataId": "zio" },
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 2 },
+      { "code": "PARAM_PLUS", "dataId": "mat", "value": 2 }
+    ]
+  },
+  {
+    "id": "persona_amen_ra",
+    "name": "Amen Ra",
+    "type": "equipment",
+    "equipType": "Persona",
+    "cost": 0,
+    "icon": 81,
+    "description": "Naoya's ultimate Persona. Emperor Arcana.",
+    "traits": [
+      { "code": "learnAction", "dataId": "agi" },
+      { "code": "learnAction", "dataId": "megido" },
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 10 },
+      { "code": "PARAM_PLUS", "dataId": "mat", "value": 10 },
+      { "code": "ELEMENT_CHANGE", "dataId": "Red" }
+    ]
+  },
+  {
+      "id": "persona_vesta",
+      "name": "Vesta",
+      "type": "equipment",
+      "equipType": "Persona",
+      "cost": 0,
+      "icon": 83,
+      "description": "Maki's initial Persona. Priestess Arcana.",
+      "traits": [
+          { "code": "learnAction", "dataId": "bufu" },
+          { "code": "learnAction", "dataId": "dia" },
+          { "code": "PARAM_PLUS", "dataId": "mat", "value": 3 }
+      ]
   }
 ]

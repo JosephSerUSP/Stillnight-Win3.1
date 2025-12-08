@@ -191,8 +191,9 @@ export class BattleManager {
 
       // 1. Decide Action Type (Skill or Attack)
       // Simple logic: 60% chance to use skill if available
-      const skillId = (battler.skills && battler.skills.length && Math.random() < 0.6)
-          ? battler.skills[randInt(0, battler.skills.length - 1)]
+      const skills = battler.effectiveSkills;
+      const skillId = (skills && skills.length && Math.random() < 0.6)
+          ? skills[randInt(0, skills.length - 1)]
           : null;
 
       if (skillId) {

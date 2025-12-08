@@ -45,59 +45,74 @@ export class Game_Map {
    * @returns {Object} The generated floor object.
    */
   generateFloor(meta, index, eventDefs, npcData = [], party = null, actors = []) {
-    const tiles = Array.from({ length: this.MAX_H }, () =>
-      Array.from({ length: this.MAX_W }, () => "#")
-    );
+    let tiles, startX, startY, floorCells, used;
     const events = [];
     const visited = Array.from({ length: this.MAX_H }, () =>
-      Array.from({ length: this.MAX_W }, () => false)
+        Array.from({ length: this.MAX_W }, () => false)
     );
 
-    const innerW = randInt(7, 11);
-    const innerH = randInt(7, 11);
-    const offsetX = Math.floor((this.MAX_W - innerW) / 2);
-    const offsetY = Math.floor((this.MAX_H - innerH) / 2);
-
-    let x = offsetX + Math.floor(innerW / 2);
-    let y = offsetY + Math.floor(innerH / 2);
-
-    tiles[y][x] = ".";
-    const floorCells = [[x, y]];
-
-    const steps = innerW * innerH * 3;
-    const dirs = [
-      [1, 0],
-      [-1, 0],
-      [0, 1],
-      [0, -1],
-    ];
-
-    for (let i = 0; i < steps; i++) {
-      const [dx, dy] = dirs[randInt(0, dirs.length - 1)];
-      const nx = x + dx;
-      const ny = y + dy;
-      if (
-        nx >= offsetX &&
-        nx < offsetX + innerW &&
-        ny >= offsetY &&
-        ny < offsetY + innerH
-      ) {
-        x = nx;
-        y = ny;
-        if (tiles[y][x] === "#") {
-          tiles[y][x] = ".";
-          floorCells.push([x, y]);
+    if (meta.customLayout) {
+        tiles = meta.customLayout.map(row => row.split(''));
+        startX = meta.startX || 1;
+        startY = meta.startY || 1;
+        floorCells = [];
+        for(let y=0; y<tiles.length; y++) {
+            for(let x=0; x<tiles[0].length; x++) {
+                if (tiles[y][x] === '.') floorCells.push([x, y]);
+            }
         }
-      }
-    }
+        used = [[startX, startY]];
+        // Pad tiles if custom layout is smaller than MAX dimensions
+        while(tiles.length < this.MAX_H) tiles.push(Array(this.MAX_W).fill('#'));
+        tiles.forEach(row => {
+            while(row.length < this.MAX_W) row.push('#');
+        });
+    } else {
+        tiles = Array.from({ length: this.MAX_H }, () =>
+            Array.from({ length: this.MAX_W }, () => "#")
+        );
 
-    if (floorCells.length < 10) {
-      for (let iy = offsetY + 1; iy < offsetY + innerH - 1; iy++) {
-        for (let ix = offsetX + 1; ix < offsetX + innerW - 1; ix++) {
-          tiles[iy][ix] = ".";
-          floorCells.push([ix, iy]);
+        const innerW = randInt(7, 11);
+        const innerH = randInt(7, 11);
+        const offsetX = Math.floor((this.MAX_W - innerW) / 2);
+        const offsetY = Math.floor((this.MAX_H - innerH) / 2);
+
+        let x = offsetX + Math.floor(innerW / 2);
+        let y = offsetY + Math.floor(innerH / 2);
+
+        tiles[y][x] = ".";
+        floorCells = [[x, y]];
+
+        const steps = innerW * innerH * 3;
+        const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+        for (let i = 0; i < steps; i++) {
+            const [dx, dy] = dirs[randInt(0, dirs.length - 1)];
+            const nx = x + dx;
+            const ny = y + dy;
+            if (nx >= offsetX && nx < offsetX + innerW && ny >= offsetY && ny < offsetY + innerH) {
+                x = nx;
+                y = ny;
+                if (tiles[y][x] === "#") {
+                    tiles[y][x] = ".";
+                    floorCells.push([x, y]);
+                }
+            }
         }
-      }
+
+        if (floorCells.length < 10) {
+            for (let iy = offsetY + 1; iy < offsetY + innerH - 1; iy++) {
+                for (let ix = offsetX + 1; ix < offsetX + innerW - 1; ix++) {
+                    tiles[iy][ix] = ".";
+                    floorCells.push([ix, iy]);
+                }
+            }
+        }
+
+        const startPos = floorCells[floorCells.length - 1];
+        startX = startPos[0];
+        startY = startPos[1];
+        used = [startPos];
     }
 
     const pickCell = (exclude = []) => {
@@ -106,10 +121,6 @@ export class Game_Map {
       if (candidates.length === 0) return null;
       return candidates[randInt(0, candidates.length - 1)];
     };
-
-    const startPos = floorCells[floorCells.length - 1];
-    const [startX, startY] = startPos;
-    const used = [startPos];
 
     if (meta.events) {
       meta.events.forEach((config) => {

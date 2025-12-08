@@ -157,5 +157,77 @@ export const skills = {
             { type: 'hp_drain', formula: '4 + 0.6 * a.level' },
             { type: 'add_status', status: 'sleep', chance: 0.5, duration: 3 }
         ]
+    },
+
+    // Persona Skills
+    agi: {
+        id: 'agi',
+        name: 'Agi',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "Deals light Fire damage to one foe.",
+        effects: [
+            { type: 'hp_damage', formula: '8 + 1.5 * a.level' }
+        ]
+    },
+    bufu: {
+        id: 'bufu',
+        name: 'Bufu',
+        target: 'enemy-any',
+        element: 'Blue',
+        description: "Deals light Ice damage to one foe.",
+        effects: [
+            { type: 'hp_damage', formula: '8 + 1.5 * a.level' }
+        ]
+    },
+    garu: {
+        id: 'garu',
+        name: 'Garu',
+        target: 'enemy-any',
+        element: 'Green',
+        description: "Deals light Wind damage to one foe.",
+        effects: [
+            { type: 'hp_damage', formula: '8 + 1.5 * a.level' }
+        ]
+    },
+    zio: {
+        id: 'zio',
+        name: 'Zio',
+        target: 'enemy-any',
+        element: 'Green',
+        description: "Deals light Electric damage to one foe.",
+        effects: [
+            { type: 'hp_damage', formula: '8 + 1.5 * a.level' }
+        ]
+    },
+    dia: {
+        id: 'dia',
+        name: 'Dia',
+        target: 'ally-any',
+        element: 'White',
+        description: "Restores a small amount of HP to one ally.",
+        effects: [
+            { type: 'hp_heal', formula: '15 + 2.0 * a.level' }
+        ]
+    },
+    media: {
+        id: 'media',
+        name: 'Media',
+        target: 'ally-any', // Should be ally-all
+        element: 'White',
+        description: "Restores a small amount of HP to allies.",
+        effects: [
+            { type: 'hp_heal', formula: '10 + 1.5 * a.level' }
+        ]
+    },
+    megido: {
+        id: 'megido',
+        name: 'Megido',
+        target: 'enemy-any', // Should be enemy-all
+        element: 'Black',
+        description: "Deals Almighty damage to foes.",
+        effects: [
+            { type: 'hp_damage', formula: '20 + 2.0 * a.level' }
+        ]
     }
 };

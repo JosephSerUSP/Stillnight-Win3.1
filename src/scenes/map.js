@@ -817,14 +817,15 @@ export class Scene_Map extends Scene_Base {
   }
 
   checkEquip(target, item) {
-      const oldItem = target.equipmentItem;
+      const slot = (item && item.equipType === 'Persona') ? 'personaItem' : 'equipmentItem';
+      const oldItem = target[slot];
       let swapMsg = null;
       if (item && item.equippedMember && item.equippedMember !== target) {
           swapMsg = `Swapping with ${item.equippedMember.name}.`;
       } else if (!item) {
           swapMsg = "Unequipping.";
       }
-      this.hudManager.confirmEffectWindow.setupEquip(target, item, oldItem, "Held Item", () => {
+      this.hudManager.confirmEffectWindow.setupEquip(target, item, oldItem, slot === 'personaItem' ? "Persona" : "Held Item", () => {
           this.windowManager.close(this.hudManager.confirmEffectWindow);
           this.windowManager.close(this.hudManager.inventoryWindow);
           this.equipItem(target, item);

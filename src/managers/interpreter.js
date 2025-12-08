@@ -72,7 +72,46 @@ export class Game_Interpreter {
             case 'BREAKABLE_WALL':
                 this.triggerBreakableWall(action, event);
                 break;
+            case 'GIVE_ITEM':
+                this.giveItem(action.itemId, action.amount);
+                break;
+            case 'INTERACTION':
+                this.startInteraction(action, event);
+                break;
         }
+    }
+
+    giveItem(itemId, amount = 1) {
+        const item = this.dataManager.items.find(i => i.id === itemId);
+        if (item) {
+            for(let i=0; i<amount; i++) this.party.inventory.push(item);
+            this.scene.logMessage(`Received ${item.name}.`);
+            SoundManager.play('ITEM_GET');
+            this.scene.updateAll();
+        }
+    }
+
+    startInteraction(data, event) {
+        this.scene.hudManager.eventWindow.show({
+            title: data.title || "Event",
+            description: data.text || data.description,
+            image: data.image,
+            style: 'terminal',
+            choices: data.choices ? data.choices.map(c => ({
+                label: c.label,
+                onClick: () => {
+                     if (c.actions) {
+                         c.actions.forEach(a => this.execute(a, event));
+                     }
+                     // If the action chain doesn't continue the interaction, close the window.
+                     if (!c.actions || !c.actions.some(a => a.type === 'INTERACTION')) {
+                         this.closeEvent();
+                     }
+                }
+            })) : [{ label: "Close", onClick: () => this.closeEvent() }]
+        });
+        this.windowManager.push(this.scene.hudManager.eventWindow);
+        SoundManager.play('UI_SELECT');
     }
 
     triggerBreakableWall(action, event) {

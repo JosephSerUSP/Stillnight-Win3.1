@@ -53,6 +53,7 @@ export class Game_Battler extends Game_Base {
     this.xp = 0;
     this.baseEquipment = actorData.equipment || null;
     this.equipmentItem = null;
+    this.personaItem = null;
     this.expGrowth = actorData.expGrowth || 5;
     this.evolutions = actorData.evolutions || [];
     this.gold = actorData.gold || 0;
@@ -88,6 +89,11 @@ export class Game_Battler extends Game_Base {
       // Equipment traits
       if (this.equipmentItem && this.equipmentItem.traits) {
           traits.push(...this.equipmentItem.traits);
+      }
+
+      // Persona traits
+      if (this.personaItem && this.personaItem.traits) {
+          traits.push(...this.personaItem.traits);
       }
 
       // Passive traits
@@ -183,6 +189,19 @@ export class Game_Battler extends Game_Base {
       const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'asp')
                                .reduce((acc, t) => acc * t.value, 1.0);
       return Math.floor(plus * rate);
+  }
+
+  /**
+   * Gets the list of skills available to the battler, including those granted by traits.
+   * @type {string[]}
+   */
+  get effectiveSkills() {
+      const traitSkills = this.traits
+          .filter(t => t.code === 'learnAction')
+          .map(t => t.dataId);
+
+      const skillSet = new Set([...this.skills, ...traitSkills]);
+      return Array.from(skillSet);
   }
 
   /**

@@ -140,5 +140,61 @@
       { "id": "demon", "weight": 5 }
     ],
     "recruits": []
+  },
+  {
+    "title": "Mikage High School",
+    "intro": "The familiar halls feel... different.",
+    "depth": 1,
+    "music": "dungeon1",
+    "customLayout": [
+      "###################",
+      "#.................#",
+      "#.###.###.###.###.#",
+      "#.#...#...#...#...#",
+      "#.###.###.###.###.#",
+      "#.................#",
+      "###################"
+    ],
+    "startX": 1,
+    "startY": 5,
+    "events": [
+      {
+        "id": "recruit",
+        "count": 1,
+        "x": 9,
+        "y": 5,
+        "name": "Philemon",
+        "symbol": "P",
+        "actions": [
+          {
+            "type": "INTERACTION",
+            "title": "Philemon",
+            "text": "Greetings, lost soul.\nDo you seek the power to change your destiny?",
+            "choices": [
+              { "label": "Yes", "actions": [
+                  { "type": "GIVE_ITEM", "itemId": "persona_seimen_kongou" },
+                  { "type": "INTERACTION", "title": "Philemon", "text": "Then take this mask.\nAwaken, Seimen Kongou!", "choices": [{ "label": "Farewell", "actions": [] }] }
+              ]},
+              { "label": "No", "actions": [
+                  { "type": "INTERACTION", "title": "Philemon", "text": "Then perish in ignorance." }
+              ]}
+          ]}
+        ]
+      },
+      {
+          "id": "enemy",
+          "count": 2,
+          "behavior": "chase",
+          "encounters": [
+              { "id": "imp", "weight": 10 }
+          ]
+      }
+    ],
+    "encounters": [
+        { "id": "imp", "weight": 10 },
+        { "id": "pixie", "weight": 10 }
+    ],
+    "treasures": [],
+    "recruits": []
   }
 ]
