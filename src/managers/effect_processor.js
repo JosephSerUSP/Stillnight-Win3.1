@@ -31,6 +31,15 @@ export class EffectProcessor {
                 return { type: 'heal', value: target.hp - oldHp, target };
             }
 
+            case 'mp_heal': {
+                let base = this._evaluate(effectValue, target, source);
+                let value = probabilisticRound(base);
+                if (value < 1) value = 1;
+
+                target.mp = Math.min(target.maxMp, target.mp + value);
+                return { type: 'heal', value, msg: `${target.name} recovers ${value} MP.` };
+            }
+
             case 'maxHp': {
                 const value = this._evaluate(effectValue, target, source);
                 target.maxHp += value;
@@ -39,13 +48,52 @@ export class EffectProcessor {
             }
 
             case 'xp': {
-                const value = this._evaluate(effectValue, target, source);
-                const result = ProgressionSystem.gainXp(target, value);
-                return { type: 'xp', value: value, result, target };
+                // Legacy support, or we can repurpose for stat boosting items
+                return { type: 'log', msg: 'XP not used in this mode.' };
             }
 
             case 'recruit_egg':
                  return { type: 'recruit_egg', value: effectValue, target };
+
+            case 'teach_skill': {
+                // source is usually the item. target is the actor.
+                const skillId = (typeof effectValue === 'object') ? effectValue.skillId : effectValue;
+                if (!target.skills.includes(skillId)) {
+                    target.skills.push(skillId);
+                    // Initialize skill level
+                    if (!target.magicSkills[skillId]) target.magicSkills[skillId] = 1;
+                    return { type: 'teach_skill', value: skillId, target };
+                }
+                return { type: 'log', msg: `${target.name} already knows ${skillId}.` };
+            }
+
+            case 'revive': {
+                if (target.hp > 0) return { type: 'log', msg: 'It had no effect.' };
+                let percent = (typeof effectValue === 'object') ? effectValue.value : effectValue;
+                if (percent > 1) percent = 1; // if passed as whole number > 1, assume simple heal or handle differently. Usually revive is percent.
+                // If effectValue is 1, it might mean 100% or 1 HP? Let's assume percent if float <= 1, else fixed HP.
+                // But the items.json has value: 1 for phoenix down.
+
+                let healAmount = 0;
+                if (percent <= 1) {
+                    healAmount = Math.floor(target.maxHp * percent);
+                } else {
+                    healAmount = percent;
+                }
+                if (healAmount < 1) healAmount = 1;
+
+                target.hp = healAmount;
+                return { type: 'heal', value: healAmount, msg: `${target.name} is revived!` };
+            }
+
+            case 'remove_status': {
+                const statusId = (typeof effectValue === 'object') ? effectValue.status : effectValue;
+                if (target.isStateAffected(statusId)) {
+                    target.removeState(statusId);
+                    return { type: 'log', msg: `${target.name} is cured of ${statusId}.` };
+                }
+                return { type: 'log', msg: 'It had no effect.' };
+            }
 
             case 'hp_damage': {
                 let base = this._evaluate(effectValue, target, source);
@@ -123,12 +171,6 @@ export class EffectProcessor {
             case 'maxHp':
                 const newMax = target.maxHp + value;
                 return `Max HP: ${target.maxHp} -> ${newMax}`;
-
-            case 'xp':
-                return `XP: +${value}`;
-
-            case 'recruit_egg':
-                return "Hatches an egg";
 
             case 'hp_damage':
                 return `Damage: ${value}`;

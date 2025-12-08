@@ -1,144 +1,101 @@
-[
-  {
-    "title": "Town of Stillnight",
-    "intro": "A quiet settlement on the edge of the void.",
-    "depth": 0,
-    "music": "town1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "count": 1 },
-      { "id": "shop", "count": 1 },
-      { "id": "npc", "count": 2 }
+{
+  "altea": {
+    "width": 20,
+    "height": 15,
+    "tiles": [
+      "WWWWWWWWWWWWWWWWWWWW",
+      "W..................W",
+      "W...H...I...S......W",
+      "W..................W",
+      "W...R...M..........W",
+      "W..................W",
+      "W.......P..........W",
+      "W..................W",
+      "W..................W",
+      "W..................W",
+      "W..................W",
+      "W..................W",
+      "W..................W",
+      "W........E.........W",
+      "WWWWWWWWWWWWWWWWWWWW"
     ],
-    "treasures": [],
-    "encounters": [],
-    "recruits": []
+    "events": [
+      { "id": "hilda", "x": 4, "y": 2, "type": "npc", "sprite": "hilda" },
+      { "id": "mingwu", "x": 8, "y": 4, "type": "npc", "sprite": "mingwu" },
+      { "id": "exit_town", "x": 9, "y": 13, "type": "warp", "targetMap": "world_map", "targetX": 10, "targetY": 10 }
+    ],
+    "legend": {
+      "W": { "type": "wall", "sprite": "wall_stone" },
+      ".": { "type": "floor", "sprite": "floor_wood" },
+      "H": { "type": "floor", "sprite": "floor_wood", "eventId": "hilda_house" },
+      "I": { "type": "floor", "sprite": "floor_wood", "eventId": "inn" },
+      "S": { "type": "floor", "sprite": "floor_wood", "eventId": "shop" },
+      "R": { "type": "floor", "sprite": "floor_wood", "eventId": "rebel_base" },
+      "E": { "type": "floor", "sprite": "floor_cobble" }
+    }
   },
-  {
-    "title": "Floor 1: Entry Hall",
-    "intro": "You cross the threshold into the dark.",
-    "depth": 1,
-    "music": "dungeon1",
+  "world_map": {
+    "width": 30,
+    "height": 30,
+    "tiles": [
+      "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+      "WggggggggggggggggggggggggggggW",
+      "WggggggggggggggggggggggggggggW",
+      "WggggggAAlgggggggggggggggggggW",
+      "WggggggAAggggggggggggggggggggW",
+      "WggggggggggggggggggggggggggggW",
+      "WggggggggggggggggggggggggggggW",
+      "WggggggggggggggggggggggggggggW",
+      "WggggggggggggggggggggggggggggW",
+      "WggggggggggggggggggggggggggggW",
+      "WggggggggggggFFFFggggggggggggW",
+      "WggggggggggggFFFFggggggggggggW",
+      "WggggggggggggggggggggggggggggW",
+      "WggggggggggggggggggggggggggggW",
+      "WggggggggggggggggggggggggggggW",
+      "WggggggggggggggggggggggggggggW",
+      "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+    ],
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 2, "max": 3 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "treasure", "count": 1 },
-      {
-          "id": "enemy",
-          "count": 1,
-          "behavior": "chase",
-          "symbol": "!",
-          "cssClass": "text-danger",
-          "encounters": [
-              { "id": "imp", "weight": 10 }
-          ]
-      }
+       { "id": "enter_altea", "x": 7, "y": 3, "type": "warp", "targetMap": "altea", "targetX": 9, "targetY": 12 },
+       { "id": "enter_fin", "x": 15, "y": 10, "type": "warp", "targetMap": "fin", "targetX": 10, "targetY": 15 }
     ],
-    "treasures": ["potion", "antidote"],
-    "encounters": [
-      { "id": "pixie", "weight": 5 },
-      { "id": "skeleton", "weight": 5 },
-      { "id": "imp", "weight": 3 }
-    ],
-    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat","candle"]
+    "legend": {
+       "W": { "type": "wall", "sprite": "water" },
+       "g": { "type": "floor", "sprite": "grass" },
+       "A": { "type": "floor", "sprite": "town_altea" },
+       "F": { "type": "floor", "sprite": "town_fin" }
+    },
+    "encounterRate": 0.05,
+    "encounters": ["goblin", "hornet"]
   },
-  {
-    "title": "Floor 2: Chasm Crossing",
-    "intro": "Wind howls across a broken bridge.",
-    "depth": 2,
-    "music": "dungeon1",
+  "fin": {
+    "width": 20,
+    "height": 20,
+    "tiles": [
+       "WWWWWWWWWWWWWWWWWWWW",
+       "W..................W",
+       "W...P..............W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W..................W",
+       "W.........E........W",
+       "WWWWWWWWWWWWWWWWWWWW"
+    ],
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 3, "max": 4 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.6 },
-      { "id": "trap", "min": 1, "max": 2 },
-      { "id": "treasure", "chance": 0.5 }
+       { "id": "pub", "x": 4, "y": 2, "type": "npc", "sprite": "pub_sign" },
+       { "id": "exit_fin", "x": 10, "y": 10, "type": "warp", "targetMap": "world_map", "targetX": 15, "targetY": 11 }
     ],
-    "treasures": ["hi_potion", "iron_sword"],
-    "encounters": [
-      { "id": "skeleton", "weight": 8 },
-      { "id": "imp", "weight": 5 },
-      { "id": "wisp", "weight": 4 },
-      { "id": "ooze", "weight": 3 }
-    ],
-    "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
-  },
-  {
-    "title": "Floor 3: Rusted Choir",
-    "intro": "Broken bells sway above a dry pit.",
-    "depth": 3,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
-    ],
-    "encounters": [
-      { "id": "golem", "weight": 6 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 3 }
-    ],
-    "recruits": ["golem", "demon", "angel", "larva","flauros"]
-  },
-  {
-    "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
-    "depth": 4,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 7 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 }
-    ],
-    "encounters": [
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 4 },
-      { "id": "ghoul", "weight": 4 }
-    ],
-    "recruits": ["demon", "angel", "golem","flauros"]
-  },
-  {
-    "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
-    "depth": 5,
-    "music": "dungeon1",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 8 },
-      { "id": "shrine", "chance": 0.4 },
-      { "id": "recruit", "chance": 0.4 }
-    ],
-    "encounters": [
-      { "id": "crimsonLord", "weight": 2 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
-    ],
-    "recruits": ["demon", "angel"]
-  },
-  {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
-    "depth": 6,
-    "music": "dungeon1",
-    "events": [
-      { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
-    ],
-    "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
-    ],
-    "recruits": []
+    "legend": {
+        "W": { "type": "wall", "sprite": "wall_brick" },
+        ".": { "type": "floor", "sprite": "floor_cobble" },
+        "E": { "type": "floor", "sprite": "floor_cobble" }
+    },
+    "encounterRate": 0.1,
+    "encounters": ["black_knight"]
   }
-]
+}

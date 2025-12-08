@@ -17,6 +17,8 @@ export class Game_Action {
         this._skillId = null;
         this._itemId = null;
         this._rowBonus = 0; // -1 for Back, +1 for Front (Player only)
+        this.target = null;
+        this.mpCost = 0; // Store MP cost for usage tracking
     }
 
     setAttack() {
@@ -24,12 +26,14 @@ export class Game_Action {
         this._item = null;
         this._skillId = null;
         this._itemId = null;
+        this.mpCost = 0;
     }
 
     setSkill(skillId, dataManager) {
         this._isAttack = false;
         this._skillId = skillId;
         this._item = dataManager.skills[skillId];
+        this.mpCost = this._item ? (this._item.mpCost || 0) : 0;
     }
 
     setItem(itemId, dataManager) {
@@ -40,6 +44,7 @@ export class Game_Action {
         } else {
             this._item = dataManager.items[itemId];
         }
+        this.mpCost = 0;
     }
 
     setRowBonus(bonus) {
@@ -52,6 +57,10 @@ export class Game_Action {
 
     get isAttack() {
         return this._isAttack;
+    }
+
+    get isSkill() {
+        return !!this._skillId;
     }
 
     get skillId() {
@@ -100,6 +109,7 @@ export class Game_Action {
      */
     apply(target, dataManager) {
         if (!target || target.hp <= 0) return [];
+        this.target = target;
 
         const events = [];
         if (this._isAttack) {
@@ -180,6 +190,11 @@ export class Game_Action {
         const skill = this._item;
 
         if (!skill) return;
+
+        // Deduct MP
+        if (battler.mp !== undefined && this.mpCost > 0) {
+            battler.mp = Math.max(0, battler.mp - this.mpCost);
+        }
 
         let boost = 1;
 
@@ -302,6 +317,8 @@ export class Game_Action {
                              result.msg = `  ${target.name}'s Max HP increased by ${result.value}.`;
                          } else if (result.type === 'xp') {
                              result.msg = `  ${target.name} gains ${result.value} XP.`;
+                         } else if (result.type === 'teach_skill') {
+                             result.msg = `  ${target.name} learned ${value}!`;
                          }
                     } else if (result.type === 'heal' && !result.animation) {
                         result.animation = 'healing_sparkle';
