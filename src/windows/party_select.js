@@ -1,5 +1,5 @@
 import { Window_Selectable } from "./selectable.js";
-import { createPartySlot, createReserveSlot } from "./utils.js";
+import { createPartySlot, createReserveSlot, createCommanderSlot } from "./utils.js";
 
 /**
  * @class Window_PartySelect
@@ -46,7 +46,6 @@ export class Window_PartySelect extends Window_Selectable {
                 }
             }
 
-            const isReserve = realIndex >= 4;
             const options = {
                 onClick: (member) => {
                     if (this.onSelect) this.onSelect(member);
@@ -55,9 +54,16 @@ export class Window_PartySelect extends Window_Selectable {
             };
 
             let slot;
-            if (isReserve) {
+            if (realIndex === 4) {
+                slot = createCommanderSlot(m, options);
+                // Commander slot is usually wide. In a grid of 2, it might fit in one cell but look squished,
+                // or we can make it span 2 columns if grid layout allows.
+                // But the grid is set to repeat(2, 1fr).
+                // Let's set it to span 2 columns to look nice.
+                slot.style.gridColumn = "span 2";
+            } else if (realIndex > 4) { // Reserve
                 slot = createReserveSlot(m, realIndex, options);
-            } else {
+            } else { // Active Party
                 slot = createPartySlot(m, realIndex, options);
             }
             this.gridEl.appendChild(slot);

@@ -146,79 +146,77 @@ export function createCommanderSlot(summoner, options = {}) {
     const slot = document.createElement("div");
     slot.className = "party-slot commander-slot";
     slot.style.width = "100%";
-    slot.style.height = "60px"; // Shorter height
+    slot.style.height = "64px"; // Slightly taller to fit rows comfortably
     slot.style.display = "flex";
-    slot.style.flexDirection = "column";
+    slot.style.flexDirection = "row"; // Main axis is row
     slot.style.boxSizing = "border-box";
+    slot.style.padding = "4px";
+    slot.style.gap = "6px";
 
     if (options.onClick) {
         slot.style.cursor = "pointer";
         slot.addEventListener("click", (e) => options.onClick(e));
     }
 
-    // Header
-    const header = document.createElement("div");
-    header.className = "party-slot-header";
-    header.style.display = "flex";
-    header.style.justifyContent = "space-between";
-    header.style.alignItems = "center";
-    header.style.marginBottom = "2px";
-
-    // Name Label (Use standardized label with Level)
-    const nameLabel = createBattlerNameLabel(summoner, { evolutionStatus: 'NONE' });
-    header.appendChild(nameLabel);
-
-    // Equipment (Right Justified)
-    const equipEl = document.createElement("div");
-    equipEl.style.fontSize = "10px";
-    equipEl.style.color = "var(--text-muted)";
-    equipEl.textContent = summoner.equipmentItem ? summoner.equipmentItem.name : "-";
-    header.appendChild(equipEl);
-
-    slot.appendChild(header);
-
-    // Body
-    const body = document.createElement("div");
-    body.className = "party-slot-body";
-    body.style.display = "flex";
-    body.style.flexGrow = "1";
-    body.style.alignItems = "center";
-
-    // Portrait
+    // Portrait (Left)
     const portrait = document.createElement("div");
     portrait.className = "party-slot-portrait";
     portrait.style.backgroundImage = `url('assets/portraits/${summoner.spriteKey || "egg"}.png')`;
     portrait.style.width = "48px";
     portrait.style.height = "48px";
     portrait.style.flexShrink = "0";
-    body.appendChild(portrait);
+    slot.appendChild(portrait);
 
-    // Stats (HP + MP)
-    const stats = document.createElement("div");
-    stats.style.flexGrow = "1";
-    stats.style.marginLeft = "4px";
-    stats.style.display = "flex";
-    stats.style.flexDirection = "column";
-    stats.style.justifyContent = "center";
-    stats.style.gap = "2px";
+    // Info Column (Right)
+    const infoCol = document.createElement("div");
+    infoCol.style.flexGrow = "1";
+    infoCol.style.display = "flex";
+    infoCol.style.flexDirection = "column";
+    infoCol.style.justifyContent = "space-between";
+    slot.appendChild(infoCol);
+
+    // Row 1: Name (Left) + Equip (Right)
+    const row1 = document.createElement("div");
+    row1.style.display = "flex";
+    row1.style.justifyContent = "space-between";
+    row1.style.alignItems = "center";
+
+    const nameLabel = createBattlerNameLabel(summoner, { evolutionStatus: 'NONE' });
+    row1.appendChild(nameLabel);
+
+    const equipEl = document.createElement("div");
+    equipEl.style.fontSize = "10px";
+    equipEl.style.color = "var(--text-muted)";
+    equipEl.textContent = summoner.equipmentItem ? summoner.equipmentItem.name : "-";
+    row1.appendChild(equipEl);
+
+    infoCol.appendChild(row1);
+
+    // Row 2: HP and MP Gauges (Side by Side)
+    const row2 = document.createElement("div");
+    row2.style.display = "flex";
+    row2.style.gap = "4px";
+    row2.style.alignItems = "center";
+    row2.style.fontSize = "9px";
 
     const createMiniGauge = (label, current, max, color) => {
-         const row = document.createElement("div");
-         row.style.display = "flex";
-         row.style.alignItems = "center";
-         row.style.width = "100%";
+         const wrapper = document.createElement("div");
+         wrapper.style.display = "flex";
+         wrapper.style.alignItems = "center";
+         wrapper.style.flex = "1";
 
          const text = document.createElement("span");
          text.textContent = `${label} ${current}/${max}`;
-         text.style.fontSize = "9px";
-         text.style.minWidth = "55px";
-         row.appendChild(text);
+         text.style.marginRight = "4px";
+         text.style.whiteSpace = "nowrap";
+         wrapper.appendChild(text);
 
          const gaugeBg = document.createElement("div");
          gaugeBg.style.flexGrow = "1";
          gaugeBg.style.height = "5px";
          gaugeBg.style.backgroundColor = "#333";
          gaugeBg.style.border = "1px solid #555";
+         gaugeBg.style.position = "relative";
 
          const fill = document.createElement("div");
          fill.style.height = "100%";
@@ -227,15 +225,38 @@ export function createCommanderSlot(summoner, options = {}) {
          fill.className = label === 'HP' ? 'hp-fill' : 'mp-fill';
 
          gaugeBg.appendChild(fill);
-         row.appendChild(gaugeBg);
-         return row;
+         wrapper.appendChild(gaugeBg);
+         return wrapper;
     };
 
-    stats.appendChild(createMiniGauge("HP", summoner.hp, summoner.maxHp, "var(--gauge-hp)"));
-    stats.appendChild(createMiniGauge("MP", summoner.mp, summoner.maxMp, "#60a0ff"));
+    row2.appendChild(createMiniGauge("HP", summoner.hp, summoner.maxHp, "var(--gauge-hp)"));
+    row2.appendChild(createMiniGauge("MP", summoner.mp, summoner.maxMp, "#60a0ff"));
 
-    body.appendChild(stats);
-    slot.appendChild(body);
+    infoCol.appendChild(row2);
+
+    // Row 3: XP Gauge (Under both)
+    const row3 = document.createElement("div");
+    row3.style.display = "flex";
+    row3.style.alignItems = "center";
+    row3.style.height = "4px";
+
+    const xpNeeded = ProgressionSystem.xpNeeded(summoner.level, summoner.expGrowth);
+    const xpPercent = Math.min(100, Math.max(0, ((summoner.xp || 0) / xpNeeded) * 100));
+
+    const xpGaugeBg = document.createElement("div");
+    xpGaugeBg.style.width = "100%";
+    xpGaugeBg.style.height = "100%";
+    xpGaugeBg.style.backgroundColor = "#333";
+
+    const xpFill = document.createElement("div");
+    xpFill.style.height = "100%";
+    xpFill.style.backgroundColor = "#ffd700"; // Gold for XP
+    xpFill.style.width = `${xpPercent}%`;
+
+    xpGaugeBg.appendChild(xpFill);
+    row3.appendChild(xpGaugeBg);
+
+    infoCol.appendChild(row3);
 
     return slot;
 }
