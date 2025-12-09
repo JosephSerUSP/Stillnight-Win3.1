@@ -89,7 +89,34 @@ export class Game_Action {
         }
 
         const targetSide = scope.includes('ally') ? allies : opponents;
-        return targetSide.filter(b => b.hp > 0);
+
+        let validTargets = targetSide.filter(b => b.hp > 0);
+
+        // Targeting Rule: Summoner can only be targeted if no other party members are alive (for opponents targeting party)
+        // If 'opponents' is the Party (i.e. this action is by an Enemy), filter out Summoner if others exist.
+        // Usually, `opponents` passed to makeTargets from BattleManager is `party.activeMembers`.
+        // If we want to implement "Summoner targetable only if slots empty", we need to check if Summoner is in `validTargets`.
+
+        // However, BattleManager passes `party.activeMembers`. If Summoner is not in `activeMembers` (slots),
+        // they won't be in `validTargets` here anyway unless added explicitly.
+        // We need to ensure the Summoner IS in the list of potential targets provided by BattleManager,
+        // or we handle it here by peeking at the party structure?
+        // Better: BattleManager should provide the full list of potential targets including Summoner.
+        // And then we filter here.
+
+        // Assuming BattleManager now includes Summoner in the list passed as 'opponents' (or 'allies'),
+        // we filter them out if they are protected.
+
+        const summoner = validTargets.find(b => b.role === 'Summoner'); // Assuming role check or specific property
+        if (summoner) {
+            const protectors = validTargets.filter(b => b !== summoner && b.hp > 0);
+            if (protectors.length > 0) {
+                 // Summoner is protected, remove from valid targets
+                 validTargets = validTargets.filter(b => b !== summoner);
+            }
+        }
+
+        return validTargets;
     }
 
     /**

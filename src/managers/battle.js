@@ -114,6 +114,20 @@ export class BattleManager {
     const plannedQueue = combatants.map(ctx => {
         const action = this.getAIAction(ctx); // Plan the action
 
+        // Drain Summoner MP for every action planned by a party member
+        if (!ctx.isEnemy && action) {
+            const summoner = this.party.summoner;
+            if (summoner) {
+                if (summoner.mp > 0) {
+                    summoner.mp = Math.max(0, summoner.mp - 1);
+                } else {
+                    // Weakened state
+                    const dmg = Math.ceil(ctx.battler.maxHp * 0.05);
+                    ctx.battler.hp = Math.max(0, ctx.battler.hp - dmg);
+                }
+            }
+        }
+
         let totalSpeed = ctx.battler.asp;
         if (action) {
             totalSpeed = action.speed;
@@ -187,7 +201,11 @@ export class BattleManager {
 
       // Context for targeting
       const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
-      const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
+      // Include Summoner in targets if targeting party
+      let opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
+      if (isEnemy && this.party.summoner) {
+          opposingTeam = [...opposingTeam, this.party.summoner];
+      }
 
       // 1. Decide Action Type (Skill or Attack)
       // Simple logic: 60% chance to use skill if available
@@ -248,7 +266,10 @@ export class BattleManager {
         // If target is dead, try to find a new target
         const isEnemy = subject.isEnemy;
         const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
-        const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
+        let opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
+        if (isEnemy && this.party.summoner) {
+            opposingTeam = [...opposingTeam, this.party.summoner];
+        }
 
         const targets = action.makeTargets(myTeam, opposingTeam);
         if (targets.length > 0) {
@@ -274,12 +295,33 @@ export class BattleManager {
   _checkBattleEnd(events) {
     const anyEnemyAlive = this.enemies.some((e) => e.hp > 0);
     const anyPartyAlive = this.party.activeMembers.some((p) => p.hp > 0);
+    const summoner = this.party.summoner;
+    const summonerAlive = summoner ? summoner.hp > 0 : true;
 
-    if (!anyPartyAlive) {
+    if (!summonerAlive) {
       this.isBattleFinished = true;
       this.turnQueue = [];
       SoundManager.play('GAME_OVER');
-      events.push({ type: "end", result: "defeat", msg: this.dataManager.terms.battle.your_party_collapses });
+      events.push({ type: "end", result: "defeat", msg: "The Summoner has fallen..." });
+      return;
+    }
+
+    // Standard party wipe is NO LONGER game over if Summoner is alive,
+    // BUT the Summoner becomes vulnerable.
+    // However, if the user requested "If they die, it's game over", that implies Summoner death is the condition.
+    // "they can only be targeted if there are no creatures in the 4 party slots"
+    // So if all creatures die, the battle continues with just the Summoner (who can't act but can be hit).
+    // Wait, "They don't act in battle; Instead, their actions are the player's actions".
+    // If all creatures are dead, the player can still use items/formation?
+    // If the Summoner is the only one left, and they can't act (attack), they are sitting ducks until they die or win (how?).
+    // They can use items to revive creatures? Yes.
+
+    if (!anyPartyAlive && !summoner) {
+        // Fallback if no summoner exists (shouldn't happen with new logic)
+        this.isBattleFinished = true;
+        this.turnQueue = [];
+        SoundManager.play('GAME_OVER');
+        events.push({ type: "end", result: "defeat", msg: this.dataManager.terms.battle.your_party_collapses });
     } else if (!anyEnemyAlive) {
       this.isBattleFinished = true;
       this.isVictoryPending = true;

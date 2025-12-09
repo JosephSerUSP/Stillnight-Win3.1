@@ -23,6 +23,12 @@ export class Game_Party {
     this.slots = new Array(this.MAX_MEMBERS).fill(null);
 
     /**
+     * The Summoner character.
+     * @type {Game_Battler|null}
+     */
+    this.summoner = null;
+
+    /**
      * The party's gold.
      * @type {number}
      */
@@ -114,6 +120,14 @@ export class Game_Party {
             this.slots[i] = m;
         }
     });
+
+    // Initialize Summoner
+    const summonerData = actors.find(a => a.id === 'summoner');
+    if (summonerData) {
+        this.summoner = Game_Battler.create(summonerData, 1);
+    } else {
+        console.error("Summoner data not found!");
+    }
   }
 
   /**

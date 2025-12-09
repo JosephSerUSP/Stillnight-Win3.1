@@ -180,6 +180,30 @@ export class Scene_Map extends Scene_Base {
     this.handleExplorationResult(result);
   }
 
+  processSummonerDrain() {
+      const summoner = this.party.summoner;
+      if (!summoner) return;
+
+      const activeMinions = this.party.activeMembers.length;
+      if (activeMinions === 0) return;
+
+      if (summoner.mp > 0) {
+          summoner.mp = Math.max(0, summoner.mp - activeMinions);
+          // Optional: Visual feedback for drain? Maybe too spammy.
+      } else {
+          // Weakened state: Minions lose HP
+          this.party.activeMembers.forEach(m => {
+              if (m.hp > 0) {
+                  const dmg = Math.ceil(m.maxHp * 0.05); // 5% HP loss
+                  m.hp = Math.max(0, m.hp - dmg);
+              }
+          });
+          this.logMessage("Summoner MP depleted! Minions are weakening...", 'low');
+          this.checkPermadeath();
+      }
+      this.updateParty();
+  }
+
   handleExplorationResult(result) {
       if (result.type === 'BLOCKED') {
           if (result.reason === 'wall') {
@@ -217,6 +241,7 @@ export class Scene_Map extends Scene_Base {
            this.logMessage("[Step] Your footsteps echo softly.", 'low');
            this.setStatus("You move.");
            this.applyMovePassives();
+           this.processSummonerDrain();
            SoundManager.play('UI_SELECT');
       }
 
