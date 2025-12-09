@@ -1,5 +1,5 @@
 import { Window_Base } from "./base.js";
-import { createToggleSwitch, createBattlerNameLabel, createGauge } from "./utils.js";
+import { createToggleSwitch, createBattlerNameLabel, createGauge, createCommanderSlot } from "./utils.js";
 import { getPrimaryElements, elementToAscii } from "../core/utils.js";
 import { UI } from "./builder.js";
 import { ProgressionSystem } from "../managers/progression.js";
@@ -9,7 +9,8 @@ import { ProgressionSystem } from "../managers/progression.js";
  */
 export class Window_Battle extends Window_Base {
   constructor() {
-    super('center', 'center', 528, 360, { title: "Battle – Stillnight" });
+    // Increased size to 600x480 to fit the summoner and new layout
+    super('center', 'center', 600, 480, { title: "Battle – Stillnight" });
 
     // 1. Content: Terminal with Viewport and Log
     const contentStructure = {
@@ -212,47 +213,36 @@ export class Window_Battle extends Window_Base {
       const containerId = 'battler-summoner';
       let container = this.viewportEl.querySelector('#' + containerId);
 
+      // If container exists, check if we need to rebuild it or just update it.
+      // Since createCommanderSlot returns a full DOM, it's easier to replace content.
+      // But we need the container wrapper for positioning.
+
       if (!container) {
-          container = UI.build(this.viewportEl, {
-              type: 'panel',
-              props: {
-                  id: containerId,
-                  className: 'battler-container',
-                  style: {
-                      position: 'absolute',
-                      top: '192px', // Row 3 (128 + 32 + 32)
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      whiteSpace: 'pre',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      zIndex: 5,
-                      width: '200px'
-                  }
-              },
-              children: [
-                  { type: 'label', props: { className: 'battler-name' } },
-                  { type: 'label', props: { className: 'battler-hp' } }
-              ]
-          });
+          container = document.createElement("div");
+          container.id = containerId;
+          container.className = "battler-container";
+          container.style.position = "absolute";
+          container.style.top = "192px";
+          container.style.left = "50%";
+          container.style.transform = "translateX(-50%)";
+          container.style.width = "200px";
+          container.style.zIndex = "5";
+
+          this.viewportEl.appendChild(container);
       }
 
-      const nameEl = container.children[0];
-      const hpEl = container.children[1];
+      // Clear and rebuild using the standardized component
+      container.innerHTML = "";
 
-      // Name with Level
-      nameEl.innerHTML = "";
-      nameEl.appendChild(createBattlerNameLabel(summoner));
+      // Use createCommanderSlot which now matches the desired layout
+      const slot = createCommanderSlot(summoner, {
+          // No special options needed for battle view currently
+      });
+      // Override some styles to fit the battle context if needed
+      slot.style.border = "none";
+      slot.style.padding = "0";
 
-      // Custom Gauge for Battle (Combined HP/MP text or just HP gauge + MP text?)
-      // Standard battle uses ASCII-like gauge.
-      // But Summoner has MP.
-      // Let's replicate standard look but with MP info.
-      hpEl.innerHTML = "";
-
-      const hpText = this.createHpGauge(summoner.hp, summoner.maxHp);
-      const mpText = ` MP:${summoner.mp}`;
-      hpEl.textContent = hpText + mpText;
+      container.appendChild(slot);
   }
 
   createHpGauge(hp, maxHp) {
@@ -277,9 +267,34 @@ export class Window_Battle extends Window_Base {
   getHpElement(index, isEnemy) {
       const el = this.getBattlerElement(index, isEnemy);
       if (!el) return null;
-      const container = el.closest('.battler-container') || el;
-      if (!container) return null;
-      return container.querySelector('.battler-hp');
+
+      // For standard battlers, they have .battler-hp
+      const hpEl = el.querySelector('.battler-hp');
+      if (hpEl) return hpEl;
+
+      // For Summoner (using createCommanderSlot), HP is inside a gauge structure
+      // We look for .hp-fill's parent text or similar, or just re-render.
+      // createCommanderSlot structure:
+      // InfoCol -> Row2 -> MiniGauge(HP) -> text span "HP cur/max"
+      // It's hard to target the text specifically without classes.
+      // However, animateBattleHpGauge logic for Summoner uses text replacement:
+      // hpEl.textContent = `HP: ${currentHp}/${battler.maxHp}`;
+
+      // Let's see where getHpElement is used.
+      // If it's Summoner, we might need to target the text span next to the gauge.
+      if (index === 'summoner') {
+          // In createCommanderSlot, Row 2 has two children (HP wrapper, MP wrapper).
+          // HP wrapper has text span [0].
+          const slot = el.querySelector('.commander-slot');
+          if (slot) {
+             const infoCol = slot.children[1]; // Portrait [0], Info [1]
+             const row2 = infoCol.children[1]; // Row1 [0], Row2 [1]
+             const hpWrapper = row2.children[0];
+             return hpWrapper.children[0]; // The text span
+          }
+      }
+
+      return null;
   }
 
   _getBattlerContext(battler, enemies, partySlots) {
@@ -316,7 +331,14 @@ export class Window_Battle extends Window_Base {
         if (ctx) {
              if (ctx.isSummoner) {
                  const hpEl = this.getHpElement('summoner', false);
-                 if (hpEl) hpEl.textContent = `HP: ${currentHp}/${battler.maxHp}`;
+                 if (hpEl) hpEl.textContent = `HP ${currentHp}/${battler.maxHp}`;
+
+                 // Also update the bar width
+                 const container = this.getBattlerElement('summoner', false);
+                 if (container) {
+                     const fill = container.querySelector('.hp-fill');
+                     if (fill) fill.style.width = `${Math.max(0, (currentHp / battler.maxHp) * 100)}%`;
+                 }
              } else {
                  const hpEl = this.getHpElement(ctx.index, ctx.isEnemy);
                  if (hpEl) {
@@ -398,10 +420,35 @@ export class Window_Battle extends Window_Base {
       const ctx = this._getBattlerContext(battler, enemies, partySlots);
       const nameEl = ctx ? this.getBattlerElement(ctx.index, ctx.isEnemy) : null;
 
+      // For Summoner, nameEl is inside the component
+      let targetEl = nameEl;
+      if (ctx && ctx.isSummoner && nameEl) {
+           // nameEl is the container #battler-summoner
+           // Need to find the name text element inside createCommanderSlot
+           // Structure: InfoCol [1] -> Row1 [0] -> NameLabel [0] -> span with text (child 1 usually, after level)
+           const slot = nameEl.querySelector('.commander-slot');
+           if (slot) {
+               const infoCol = slot.children[1];
+               const row1 = infoCol.children[0];
+               const nameLabel = row1.children[0];
+               // Name label has: element icons?, level span, name span, evolution icon?
+               // The name span is the one with textContent = battler.name
+               // Let's assume the last span that isn't empty or level?
+               // createBattlerNameLabel logic:
+               // 1. elements (optional)
+               // 2. levelSpan
+               // 3. nameSpan
+               // 4. evoIcon (optional)
+               // We can look for the span that matches originalName
+               const spans = nameLabel.querySelectorAll('span');
+               targetEl = Array.from(spans).find(s => s.textContent === originalName);
+           }
+      }
+
       const animator = () => {
         if (frame >= maxFrames) {
           battler.name = originalName;
-          if (nameEl) nameEl.textContent = originalName;
+          if (targetEl) targetEl.textContent = originalName;
           resolve();
           return;
         }
@@ -416,8 +463,8 @@ export class Window_Battle extends Window_Base {
           }
         }
 
-        if (nameEl) {
-            nameEl.textContent = newName;
+        if (targetEl) {
+            targetEl.textContent = newName;
         } else {
             battler.name = newName;
         }
