@@ -138,6 +138,109 @@ export function drawBattlerStats(battler) {
 }
 
 /**
+ * Creates a Commander (Summoner) slot.
+ * @param {import("../objects/objects.js").Game_Battler} summoner
+ * @param {Object} options
+ */
+export function createCommanderSlot(summoner, options = {}) {
+    const slot = document.createElement("div");
+    slot.className = "party-slot commander-slot";
+    slot.style.width = "100%";
+    slot.style.height = "60px"; // Shorter height
+    slot.style.display = "flex";
+    slot.style.flexDirection = "column";
+    slot.style.boxSizing = "border-box";
+
+    if (options.onClick) {
+        slot.style.cursor = "pointer";
+        slot.addEventListener("click", (e) => options.onClick(e));
+    }
+
+    // Header
+    const header = document.createElement("div");
+    header.className = "party-slot-header";
+    header.style.display = "flex";
+    header.style.justifyContent = "space-between";
+    header.style.alignItems = "center";
+    header.style.marginBottom = "2px";
+
+    // Name Label (Use standardized label with Level)
+    const nameLabel = createBattlerNameLabel(summoner, { evolutionStatus: 'NONE' });
+    header.appendChild(nameLabel);
+
+    // Equipment (Right Justified)
+    const equipEl = document.createElement("div");
+    equipEl.style.fontSize = "10px";
+    equipEl.style.color = "var(--text-muted)";
+    equipEl.textContent = summoner.equipmentItem ? summoner.equipmentItem.name : "-";
+    header.appendChild(equipEl);
+
+    slot.appendChild(header);
+
+    // Body
+    const body = document.createElement("div");
+    body.className = "party-slot-body";
+    body.style.display = "flex";
+    body.style.flexGrow = "1";
+    body.style.alignItems = "center";
+
+    // Portrait
+    const portrait = document.createElement("div");
+    portrait.className = "party-slot-portrait";
+    portrait.style.backgroundImage = `url('assets/portraits/${summoner.spriteKey || "egg"}.png')`;
+    portrait.style.width = "48px";
+    portrait.style.height = "48px";
+    portrait.style.flexShrink = "0";
+    body.appendChild(portrait);
+
+    // Stats (HP + MP)
+    const stats = document.createElement("div");
+    stats.style.flexGrow = "1";
+    stats.style.marginLeft = "4px";
+    stats.style.display = "flex";
+    stats.style.flexDirection = "column";
+    stats.style.justifyContent = "center";
+    stats.style.gap = "2px";
+
+    const createMiniGauge = (label, current, max, color) => {
+         const row = document.createElement("div");
+         row.style.display = "flex";
+         row.style.alignItems = "center";
+         row.style.width = "100%";
+
+         const text = document.createElement("span");
+         text.textContent = `${label} ${current}/${max}`;
+         text.style.fontSize = "9px";
+         text.style.minWidth = "55px";
+         row.appendChild(text);
+
+         const gaugeBg = document.createElement("div");
+         gaugeBg.style.flexGrow = "1";
+         gaugeBg.style.height = "5px";
+         gaugeBg.style.backgroundColor = "#333";
+         gaugeBg.style.border = "1px solid #555";
+
+         const fill = document.createElement("div");
+         fill.style.height = "100%";
+         fill.style.backgroundColor = color;
+         fill.style.width = `${Math.max(0, (current / max) * 100)}%`;
+         fill.className = label === 'HP' ? 'hp-fill' : 'mp-fill';
+
+         gaugeBg.appendChild(fill);
+         row.appendChild(gaugeBg);
+         return row;
+    };
+
+    stats.appendChild(createMiniGauge("HP", summoner.hp, summoner.maxHp, "var(--gauge-hp)"));
+    stats.appendChild(createMiniGauge("MP", summoner.mp, summoner.maxMp, "#60a0ff"));
+
+    body.appendChild(stats);
+    slot.appendChild(body);
+
+    return slot;
+}
+
+/**
  * Creates a standard party member slot.
  */
 export function createPartySlot(battler, index, options = {}) {

@@ -927,9 +927,11 @@ export class Scene_Map extends Scene_Base {
         onEvolve: (evoData) => this.openEvolution(member, evoData)
     });
 
-    // Hide sacrifice button for Summoner
+    // Hide sacrifice button for Summoner, show for others
     if (member.role === 'Summoner') {
         this.hudManager.inspectWindow.btnSacrifice.style.display = "none";
+    } else {
+        this.hudManager.inspectWindow.btnSacrifice.style.display = "block";
     }
 
     this.windowManager.push(this.hudManager.inspectWindow);

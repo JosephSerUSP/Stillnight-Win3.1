@@ -1,5 +1,5 @@
 import { Window_Base } from "./base.js";
-import { createPartySlot } from "./utils.js";
+import { createPartySlot, createCommanderSlot } from "./utils.js";
 import { ProgressionSystem } from "../managers/progression.js";
 import { UI } from "./builder.js";
 
@@ -216,6 +216,7 @@ export class Window_PartyPanel extends Window_Base {
 
     updateParty(party, onInspect, context = null) {
         this.partyGridEl.innerHTML = "";
+        // Render slots 0-3 (Active Party)
         party.slots.slice(0, 4).forEach((member, index) => {
             let evolutionStatus = null;
             if (member && context) {
@@ -249,101 +250,13 @@ export class Window_PartyPanel extends Window_Base {
             this.partyGridEl.appendChild(slot);
         });
 
-        // Render Summoner
+        // Render Summoner (Slot 4)
         this.summonerSlotEl.innerHTML = "";
-        if (party.summoner) {
-             const summoner = party.summoner;
-             const slot = document.createElement("div");
-             slot.className = "party-slot";
-             slot.style.width = "100%";
-             slot.style.height = "60px"; // Shorter than standard 116px
-             slot.style.display = "flex";
-             slot.style.flexDirection = "column";
-             slot.style.boxSizing = "border-box";
-             slot.style.cursor = "pointer";
-             slot.onclick = () => onInspect(summoner, 'summoner');
-
-             // Header
-             const header = document.createElement("div");
-             header.className = "party-slot-header";
-             header.style.display = "flex";
-             header.style.justifyContent = "space-between";
-             header.style.alignItems = "center";
-             header.style.marginBottom = "2px";
-
-             const nameEl = document.createElement("div");
-             nameEl.className = "party-slot-name";
-             nameEl.style.fontWeight = "bold";
-             nameEl.textContent = summoner.name;
-             header.appendChild(nameEl);
-
-             const equipEl = document.createElement("div");
-             equipEl.style.fontSize = "10px";
-             equipEl.style.color = "var(--text-muted)";
-             equipEl.textContent = summoner.equipmentItem ? summoner.equipmentItem.name : "-";
-             header.appendChild(equipEl);
-
-             slot.appendChild(header);
-
-             // Body
-             const body = document.createElement("div");
-             body.className = "party-slot-body";
-             body.style.display = "flex";
-             body.style.flexGrow = "1";
-             body.style.alignItems = "center";
-
-             const portrait = document.createElement("div");
-             portrait.className = "party-slot-portrait";
-             portrait.style.backgroundImage = `url('assets/portraits/${summoner.spriteKey || "egg"}.png')`;
-             portrait.style.width = "48px";
-             portrait.style.height = "48px";
-             portrait.style.flexShrink = "0";
-             body.appendChild(portrait);
-
-             // Stats Container
-             const stats = document.createElement("div");
-             stats.style.flexGrow = "1";
-             stats.style.marginLeft = "4px";
-             stats.style.display = "flex";
-             stats.style.flexDirection = "column";
-             stats.style.justifyContent = "center";
-             stats.style.gap = "2px";
-
-             // Helper for gauge
-             const createMiniGauge = (label, current, max, color) => {
-                 const row = document.createElement("div");
-                 row.style.display = "flex";
-                 row.style.alignItems = "center";
-                 row.style.width = "100%";
-
-                 const text = document.createElement("span");
-                 text.textContent = `${label} ${current}/${max}`;
-                 text.style.fontSize = "9px";
-                 text.style.minWidth = "55px";
-                 row.appendChild(text);
-
-                 const gaugeBg = document.createElement("div");
-                 gaugeBg.style.flexGrow = "1";
-                 gaugeBg.style.height = "5px";
-                 gaugeBg.style.backgroundColor = "#333";
-                 gaugeBg.style.border = "1px solid #555";
-
-                 const fill = document.createElement("div");
-                 fill.style.height = "100%";
-                 fill.style.backgroundColor = color;
-                 fill.style.width = `${Math.max(0, (current / max) * 100)}%`;
-
-                 gaugeBg.appendChild(fill);
-                 row.appendChild(gaugeBg);
-                 return row;
-             };
-
-             stats.appendChild(createMiniGauge("HP", summoner.hp, summoner.maxHp, "var(--gauge-hp)"));
-             stats.appendChild(createMiniGauge("MP", summoner.mp, summoner.maxMp, "#60a0ff"));
-
-             body.appendChild(stats);
-             slot.appendChild(body);
-
+        const summoner = party.slots[4];
+        if (summoner) {
+             const slot = createCommanderSlot(summoner, {
+                 onClick: () => onInspect(summoner, 'summoner')
+             });
              this.summonerSlotEl.appendChild(slot);
         }
     }

@@ -1,5 +1,5 @@
 import { Window_Base } from "./base.js";
-import { createToggleSwitch, createBattlerNameLabel } from "./utils.js";
+import { createToggleSwitch, createBattlerNameLabel, createGauge } from "./utils.js";
 import { getPrimaryElements, elementToAscii } from "../core/utils.js";
 import { UI } from "./builder.js";
 import { ProgressionSystem } from "../managers/progression.js";
@@ -200,9 +200,9 @@ export class Window_Battle extends Window_Base {
     battlers.forEach((e, idx) => renderBattler(e, idx, true));
     partySlots.forEach((p, idx) => renderBattler(p, idx, false));
 
-    // Render Summoner
-    if (partyInstance && partyInstance.summoner) {
-        this.renderSummoner(partyInstance.summoner);
+    // Render Summoner (Slot 4)
+    if (partyInstance && partyInstance.slots[4]) {
+        this.renderSummoner(partyInstance.slots[4]);
     }
   }
 
@@ -220,31 +220,39 @@ export class Window_Battle extends Window_Base {
                   className: 'battler-container',
                   style: {
                       position: 'absolute',
-                      bottom: '5px',
+                      top: '192px', // Row 3 (128 + 32 + 32)
                       left: '50%',
                       transform: 'translateX(-50%)',
                       whiteSpace: 'pre',
                       display: 'flex',
                       flexDirection: 'column',
-                      alignItems: 'center',
-                      zIndex: 10
+                      zIndex: 5,
+                      width: '200px'
                   }
               },
               children: [
-                  { type: 'label', props: { className: 'battler-name', style: { color: '#FFD700' } } }, // Gold color for commander
-                  { type: 'label', props: { className: 'battler-hp' } },
-                  { type: 'label', props: { className: 'battler-mp' } }
+                  { type: 'label', props: { className: 'battler-name' } },
+                  { type: 'label', props: { className: 'battler-hp' } }
               ]
           });
       }
 
       const nameEl = container.children[0];
       const hpEl = container.children[1];
-      const mpEl = container.children[2];
 
-      nameEl.textContent = summoner.name;
-      hpEl.textContent = `HP: ${summoner.hp}/${summoner.maxHp}`;
-      mpEl.textContent = `MP: ${summoner.mp}/${summoner.maxMp}`;
+      // Name with Level
+      nameEl.innerHTML = "";
+      nameEl.appendChild(createBattlerNameLabel(summoner));
+
+      // Custom Gauge for Battle (Combined HP/MP text or just HP gauge + MP text?)
+      // Standard battle uses ASCII-like gauge.
+      // But Summoner has MP.
+      // Let's replicate standard look but with MP info.
+      hpEl.innerHTML = "";
+
+      const hpText = this.createHpGauge(summoner.hp, summoner.maxHp);
+      const mpText = ` MP:${summoner.mp}`;
+      hpEl.textContent = hpText + mpText;
   }
 
   createHpGauge(hp, maxHp) {
