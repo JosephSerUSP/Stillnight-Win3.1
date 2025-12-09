@@ -47,6 +47,14 @@ export class Window_Event extends Window_Base {
     eventBody.style.display = "flex";
     eventBody.style.flexDirection = "column";
 
+    // Add speaker label (hidden by default)
+    this.speakerEl = document.createElement("div");
+    this.speakerEl.className = "event-speaker";
+    this.speakerEl.style.fontWeight = "bold";
+    this.speakerEl.style.marginBottom = "4px";
+    this.speakerEl.style.display = "none";
+    eventBody.appendChild(this.speakerEl);
+
     this.descriptionEl = document.createElement('div');
     this.descriptionEl.className = 'event-description';
     this.descriptionEl.style.marginBottom = "10px";
@@ -64,6 +72,12 @@ export class Window_Event extends Window_Base {
       const imgName = data.image || "default.png";
       this.imageEl.src = `assets/eventArt/${imgName}`;
       this.imageContainer.style.display = "block";
+
+      if (data.speaker) {
+          this.setSpeaker(data.speaker);
+      } else {
+          this.speakerEl.style.display = "none";
+      }
 
       if (data.style === 'terminal') {
           this.descriptionEl.className = "event-description terminal-style";
@@ -114,8 +128,28 @@ export class Window_Event extends Window_Base {
       this.descriptionEl.scrollTop = this.descriptionEl.scrollHeight;
   }
 
+  clearLog() {
+      this.descriptionEl.innerHTML = "";
+  }
+
+  setSpeaker(name) {
+      if (name) {
+          this.speakerEl.textContent = name;
+          this.speakerEl.style.display = "block";
+      } else {
+          this.speakerEl.style.display = "none";
+      }
+  }
+
   updateImage(imageName) {
        this.imageEl.src = `assets/eventArt/${imageName}`;
+  }
+
+  // Placeholder for future side-portrait logic if needed, currently reusing centered image
+  setPortrait(imageName, side = 'center') {
+      this.updateImage(imageName);
+      // In a full implementation, this could move the image container to flex-start or flex-end
+      // or swap CSS classes.
   }
 
   updateChoices(choices) {

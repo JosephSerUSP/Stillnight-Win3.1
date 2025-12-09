@@ -74,6 +74,47 @@
     "actions": [{ "type": "TREASURE" }]
   },
   {
+    "id": "stranger",
+    "type": "npc",
+    "symbol": "!",
+    "cssClass": "tile-npc",
+    "trigger": "touch",
+    "actions": [
+      {
+        "type": "SEQUENCE",
+        "commands": [
+          { "type": "CHECK_FLAG", "key": "MET_STRANGER", "value": true,
+            "then": [
+              { "type": "TEXT", "speaker": "Stranger", "text": "We have already spoken. Go forth." }
+            ],
+            "else": [
+              { "type": "TEXT", "text": "You see a hooded figure standing in the shadows.", "image": "default.png" },
+              { "type": "WAIT", "ms": 500 },
+              { "type": "MOVE_EVENT", "eventId": "this", "dx": 0, "dy": 0 },
+              { "type": "TEXT", "speaker": "Stranger", "text": "Halt. You are not from here, are you?" },
+              { "type": "CHOICE", "choices": [
+                  { "label": "Who are you?", "jumpTo": "INTRO" },
+                  { "label": "Ignore", "jumpTo": "IGNORE" }
+                ]
+              },
+              { "label": "INTRO" },
+              { "type": "TEXT", "speaker": "Stranger", "text": "I am a watcher. Take this, it may help you." },
+              { "type": "GIVE_ITEM", "itemId": "potion" },
+              { "type": "SET_FLAG", "key": "MET_STRANGER", "value": true },
+              { "type": "TEXT", "text": "The stranger hands you a potion and steps back into the shadows." },
+              { "type": "MOVE_EVENT", "eventId": "this", "x": 0, "y": 0 },
+              { "type": "CLOSE_WINDOW" },
+              { "type": "REMOVE_EVENT", "eventId": "this" },
+              { "label": "IGNORE" },
+              { "type": "TEXT", "text": "You decide to walk away." },
+              { "type": "CLOSE_WINDOW" }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "shrine_shade",
     "type": "shrine_scenario",
     "title": "Whispering Shade",
