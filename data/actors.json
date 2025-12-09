@@ -1,5 +1,24 @@
 [
   {
+    "id": "summoner",
+    "name": "Summoner",
+    "level": 1,
+    "role": "Summoner",
+    "maxHp": 50,
+    "maxMp": 100,
+    "spriteKey": "hero",
+    "passives": [],
+    "elements": [],
+    "skills": [],
+    "flavor": "You.",
+    "expGrowth": 0,
+    "gold": 0,
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": false,
+    "isEvolved": false
+  },
+  {
     "id": "pixie",
     "name": "Pixie",
     "level": 1,
