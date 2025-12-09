@@ -35,7 +35,8 @@
     ],
     "initialParty": true,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "temperament": "KIND"
   },
   {
     "id": "highPixie",
@@ -63,7 +64,8 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": false,
-    "isEvolved": true
+    "isEvolved": true,
+    "temperament": "KIND"
   },
   {
     "id": "skeleton",
@@ -93,7 +95,8 @@
     "evolutions": [],
     "initialParty": true,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "temperament": "RUTHLESS"
   },
   {
     "id": "angel",
@@ -125,7 +128,8 @@
     ],
     "initialParty": false,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "temperament": "PROTECTIVE"
   },
   {
     "id": "archangel",
@@ -153,7 +157,8 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": false,
-    "isEvolved": true
+    "isEvolved": true,
+    "temperament": "PROTECTIVE"
   },
   {
     "id": "demon",
@@ -190,7 +195,8 @@
     ],
     "initialParty": false,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "temperament": "VENGEFUL"
   },
   {
     "id": "incubus",
@@ -219,7 +225,8 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": false,
-    "isEvolved": true
+    "isEvolved": true,
+    "temperament": "STRATEGIC"
   },
   {
     "id": "nurse",
@@ -245,7 +252,8 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "temperament": "PROTECTIVE"
   },
   {
     "id": "imp",
@@ -277,7 +285,8 @@
     "evolutions": [],
     "initialParty": true,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "temperament": "LAZY"
   },
   {
     "id": "golem",
@@ -300,7 +309,8 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "temperament": "PROUD"
   },
   {
     "id": "ghoul",
@@ -326,7 +336,8 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "temperament": "LAZY"
   },
   {
     "id": "ooze",
@@ -349,7 +360,8 @@
     "evolutions": [],
     "initialParty": true,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "temperament": "LAZY"
   },
   {
     "id": "bat",
@@ -373,7 +385,8 @@
     "evolutions": [],
     "initialParty": true,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "temperament": "CAUTIOUS"
   },
   {
     "id": "wisp",
@@ -397,7 +410,8 @@
     "evolutions": [],
     "initialParty": true,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "temperament": "FREE"
   },
   {
     "id": "egg",
@@ -420,7 +434,8 @@
     ],
     "initialParty": false,
     "isRecruitable": false,
-    "isEvolved": false
+    "isEvolved": false,
+    "temperament": "LAZY"
   },
   {
     "id": "phoenix",
@@ -445,7 +460,8 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": false,
-    "isEvolved": true
+    "isEvolved": true,
+    "temperament": "PROUD"
   },
   {
     "id": "larva",
@@ -472,7 +488,8 @@
     ],
     "initialParty": false,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "temperament": "RUTHLESS"
   },
   {
     "id": "crimsonLord",
@@ -496,46 +513,80 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": false,
-    "isEvolved": true
+    "isEvolved": true,
+    "temperament": "PROUD"
   },
-  [
-    { 
-        "id": "flauros", 
-        "name": "Flauros", 
-        "level": 3, 
-        "role": "Attacker", 
-        "maxHp": 19, 
-        "spriteKey": "flauros", 
-        "passives": ["initiative", "chaosPact"], 
-        "elements": ["Red", "Red", "Black"], 
-        "skills": ["shadowClaw", "infernalPact"], 
-        "flavor": "A savage leopard demon. It smells of brimstone and burnt hair.", 
-        "expGrowth": 6, 
-        "gold": 35, 
-        "drops": [{ "itemId": "obsidian_shard", "chance": 0.15 }], 
-        "evolutions": [], 
-        "initialParty": false, 
-        "isRecruitable": true, 
-        "isEvolved": false 
-    },
-    { 
-        "id": "candle", 
-        "name": "Candle", 
-        "level": 1, 
-        "role": "Support", 
-        "maxHp": 7, 
-        "spriteKey": "candle", 
-        "passives": ["nightVision"], 
-        "elements": ["Red", "White"], 
-        "skills": ["soothingMote", "divineFavor"], 
-        "flavor": "A simple wax candle given life. Ideally, keep it away from the library.", 
-        "expGrowth": 2, 
-        "gold": 8, 
-        "drops": [{ "itemId": "melted_wax", "chance": 0.4 }], 
-        "evolutions": [{ "level": 8, "evolvesTo": "lantern" }], 
-        "initialParty": false, 
-        "isRecruitable": true, 
-        "isEvolved": false 
-    }
-]
+  {
+    "id": "flauros",
+    "name": "Flauros",
+    "level": 3,
+    "role": "Attacker",
+    "maxHp": 19,
+    "spriteKey": "flauros",
+    "passives": [
+      "initiative",
+      "chaosPact"
+    ],
+    "elements": [
+      "Red",
+      "Red",
+      "Black"
+    ],
+    "skills": [
+      "shadowClaw",
+      "infernalPact"
+    ],
+    "flavor": "A savage leopard demon. It smells of brimstone and burnt hair.",
+    "expGrowth": 6,
+    "gold": 35,
+    "drops": [
+      {
+        "itemId": "obsidian_shard",
+        "chance": 0.15
+      }
+    ],
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false,
+    "temperament": "WILD"
+  },
+  {
+    "id": "candle",
+    "name": "Candle",
+    "level": 1,
+    "role": "Support",
+    "maxHp": 7,
+    "spriteKey": "candle",
+    "passives": [
+      "nightVision"
+    ],
+    "elements": [
+      "Red",
+      "White"
+    ],
+    "skills": [
+      "soothingMote",
+      "divineFavor"
+    ],
+    "flavor": "A simple wax candle given life. Ideally, keep it away from the library.",
+    "expGrowth": 2,
+    "gold": 8,
+    "drops": [
+      {
+        "itemId": "melted_wax",
+        "chance": 0.4
+      }
+    ],
+    "evolutions": [
+      {
+        "level": 8,
+        "evolvesTo": "lantern"
+      }
+    ],
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false,
+    "temperament": "CAUTIOUS"
+  }
 ]

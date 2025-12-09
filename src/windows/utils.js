@@ -2,6 +2,7 @@ import { getPrimaryElements, elementToAscii, getIconStyle, elementToIconId, eval
 import { tooltip } from "../core/tooltip.js";
 import { Component_Icon, Component_ElementIcon, Component_Gauge, Component_InteractiveLabel, Component_Label } from "./components.js";
 import { ProgressionSystem } from "../managers/progression.js";
+import { temperaments } from "../../data/temperaments.js";
 
 /**
  * Creates a DOM element representing a standard icon.
@@ -71,6 +72,13 @@ export function createBattlerNameLabel(battler, options = {}) {
         nameSpan.id = options.nameElementId;
     }
     container.appendChild(nameSpan);
+
+    // Temperament Tooltip
+    const tempKey = battler.temperament || 'FREE';
+    const tempDef = temperaments[tempKey];
+    if (tempDef) {
+        container.title = `Temperament: ${tempDef.name}\n${tempDef.description}`;
+    }
 
     if (options.evolutionStatus && options.evolutionStatus !== 'NONE') {
         const iconId = options.evolutionStatus === 'AVAILABLE' ? 102 : 101;
@@ -432,6 +440,16 @@ export function renderCreatureInfo(container, battler, options = {}) {
         const flavorVal = document.createElement('span');
         flavorVal.textContent = battler.flavor || "—";
         createRow('Flavor', flavorVal);
+    }
+
+    // Temperament
+    const tempKey = battler.temperament || 'FREE';
+    const tempDef = temperaments[tempKey];
+    if (tempDef) {
+        const tempVal = document.createElement('span');
+        tempVal.textContent = tempDef.name;
+        tempVal.title = tempDef.description;
+        createRow('Temperament', tempVal);
     }
 }
 

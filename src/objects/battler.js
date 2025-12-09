@@ -57,6 +57,7 @@ export class Game_Battler extends Game_Base {
     this.evolutions = actorData.evolutions || [];
     this.gold = actorData.gold || 0;
     this.isEnemy = isEnemy;
+    this.temperament = actorData.temperament || 'FREE';
 
     /**
      * Active states on the battler.

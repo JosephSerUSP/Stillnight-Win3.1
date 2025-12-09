@@ -3,13 +3,14 @@ import { createBattlerNameLabel, renderElements, createInteractiveLabel, createG
 import { UI } from "./builder.js";
 import { evaluateFormula } from "../core/utils.js";
 import { ProgressionSystem } from "../managers/progression.js";
+import { temperaments } from "../../data/temperaments.js";
 
 /**
  * @class Window_Inspect
  */
 export class Window_Inspect extends Window_Base {
   constructor() {
-    super('center', 'center', 480, 320, { title: "Inspect", id: "inspect-window" });
+    super('center', 'center', 480, 380, { title: "Inspect", id: "inspect-window" });
 
     // Initialize content structure using UI.build
     this.mainPanel = UI.build(this.content, {
@@ -89,7 +90,7 @@ export class Window_Inspect extends Window_Base {
 
            const lbl = document.createElement("span");
            lbl.className = "inspect-label";
-           lbl.style.width = "80px";
+           lbl.style.width = "100px";
            lbl.textContent = label;
 
            const val = document.createElement("div");
@@ -107,6 +108,16 @@ export class Window_Inspect extends Window_Base {
            this.fieldsContainer.appendChild(row);
            return val;
       };
+
+      // Temperament
+      const tempKey = member.temperament || 'FREE';
+      const tempDef = temperaments[tempKey];
+      const tempLabel = document.createElement("span");
+      tempLabel.textContent = tempDef ? tempDef.name : tempKey;
+      if (tempDef && tempDef.description) {
+          tempLabel.title = tempDef.description;
+      }
+      addRow('Temperament', tempLabel);
 
       // HP Bar
       const hpContainer = document.createElement("div");
@@ -370,7 +381,7 @@ export class Window_Evolution extends Window_Base {
               type: 'flex',
               props: { className: 'inspect-row', align: 'center' },
               children: [
-                  { type: 'label', props: { className: 'inspect-label', text: label } },
+                  { type: 'label', props: { className: 'inspect-label', text: label, style: { minWidth: '100px' } } },
                   { type: 'panel', props: { className: 'inspect-value' } }
               ]
           });
@@ -394,6 +405,16 @@ export class Window_Evolution extends Window_Base {
 
       // Role
       addRow('Role', battler.role || "—");
+
+      // Temperament
+      const tempKey = battler.temperament || 'FREE';
+      const tempDef = temperaments[tempKey];
+      const tempLabel = document.createElement("span");
+      tempLabel.textContent = tempDef ? tempDef.name : tempKey;
+      if (tempDef && tempDef.description) {
+          tempLabel.title = tempDef.description;
+      }
+      addRow('Temperament', tempLabel);
 
       // HP
       addRow('Max HP', `${battler.maxHp}`);

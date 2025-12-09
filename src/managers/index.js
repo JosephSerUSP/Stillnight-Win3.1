@@ -7,3 +7,4 @@ export { ThemeManager } from "./theme.js";
 export { ConfigManager } from "./config.js";
 export { EffectProcessor } from "./effect_processor.js";
 export { MidiParser, MidiPlayer } from "./midi.js";
+export { TemperamentSystem } from "./temperament.js";
