@@ -927,9 +927,18 @@ export class Scene_Map extends Scene_Base {
         onEvolve: (evoData) => this.openEvolution(member, evoData)
     });
 
+    // Hide sacrifice button for Summoner
+    if (member.role === 'Summoner') {
+        this.hudManager.inspectWindow.btnSacrifice.style.display = "none";
+    }
+
     this.windowManager.push(this.hudManager.inspectWindow);
     this.setStatus(`Inspecting ${member.name}`);
-    this.logMessage(`[Inspect] ${member.name} – Lv${member.level}, ${this.partyRow(index)}, HP ${member.hp}/${member.maxHp}.`);
+    if (member.role === 'Summoner') {
+        this.logMessage(`[Inspect] ${member.name} – Lv${member.level}, HP ${member.hp}/${member.maxHp}, MP ${member.mp}/${member.maxMp}.`);
+    } else {
+        this.logMessage(`[Inspect] ${member.name} – Lv${member.level}, ${this.partyRow(index)}, HP ${member.hp}/${member.maxHp}.`);
+    }
 
     this.hudManager.inspectWindow.onUserClose = () => this.closeInspect();
   }

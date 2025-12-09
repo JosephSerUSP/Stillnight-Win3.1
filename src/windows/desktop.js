@@ -200,6 +200,14 @@ export class Window_PartyPanel extends Window_Base {
         this.btnFormation = this.header.querySelector("#btn-formation");
         this.btnInventory = this.header.querySelector("#btn-inventory");
 
+        // Summoner Section
+        UI.build(this.content, {
+            type: 'panel',
+            props: { id: 'summoner-slot', className: 'summoner-slot', style: { borderBottom: '1px solid var(--bezel-shadow)', paddingBottom: '4px', marginBottom: '4px' } }
+        });
+
+        this.summonerSlotEl = this.content.querySelector("#summoner-slot");
+
         this.partyGridEl = UI.build(this.content, {
             type: 'panel',
             props: { className: 'party-grid', id: 'party-grid' }
@@ -207,6 +215,25 @@ export class Window_PartyPanel extends Window_Base {
     }
 
     updateParty(party, onInspect, context = null) {
+        // Render Summoner
+        this.summonerSlotEl.innerHTML = "";
+        if (party.summoner) {
+             const summoner = party.summoner;
+             const sContainer = UI.build(this.summonerSlotEl, {
+                 type: 'flex',
+                 props: {
+                     style: { alignItems: 'center', gap: '5px', cursor: 'pointer' },
+                     onClick: () => onInspect(summoner, 'summoner')
+                 },
+                 children: [
+                     { type: 'label', props: { text: 'CMD', className: 'role-badge', style: { backgroundColor: '#FFD700', color: 'black', fontSize: '9px', padding: '1px 3px' } } },
+                     { type: 'label', props: { text: summoner.name, style: { fontWeight: 'bold', flex: '1' } } },
+                     { type: 'label', props: { text: `HP:${summoner.hp}/${summoner.maxHp}`, style: { fontSize: '10px' } } },
+                     { type: 'label', props: { text: `MP:${summoner.mp}/${summoner.maxMp}`, style: { fontSize: '10px' } } }
+                 ]
+             });
+        }
+
         this.partyGridEl.innerHTML = "";
         party.slots.slice(0, 4).forEach((member, index) => {
             let evolutionStatus = null;
