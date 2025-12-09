@@ -33,6 +33,12 @@ export class Game_Party {
      * @type {Array}
      */
     this.inventory = [];
+
+    /**
+     * The summoner (player character).
+     * @type {Game_Battler}
+     */
+    this.summoner = null;
   }
 
   /**
@@ -57,6 +63,14 @@ export class Game_Party {
    */
   checkDeaths() {
       const events = [];
+
+      // Check Summoner Death
+      if (this.summoner && this.summoner.hp <= 0) {
+          events.push({ type: 'GAME_OVER', member: this.summoner });
+          // Typically we can return early, but maybe we want to process other deaths for log consistency?
+          // Since it's game over, it might not matter.
+      }
+
       const members = [...this.members];
 
       for (const member of members) {
@@ -114,6 +128,62 @@ export class Game_Party {
             this.slots[i] = m;
         }
     });
+
+    // Initialize Summoner
+    const summonerData = actors.find(a => a.id === 'summoner');
+    if (summonerData) {
+        this.summoner = Game_Battler.create(summonerData, 1);
+    } else {
+        console.warn("Summoner data not found in actors.json. Creating default.");
+        this.summoner = new Game_Battler({
+            id: 'summoner',
+            name: 'Commander',
+            maxHp: 50,
+            maxMp: 100,
+            level: 1,
+            role: 'Summoner',
+            traits: []
+        });
+    }
+  }
+
+  /**
+   * Handles map steps. Drains MP and applies Weakened effects.
+   * @returns {Array} List of events (e.g. damage logs).
+   */
+  onStep() {
+      const events = [];
+      const activeCount = this.activeMembers.length;
+      if (activeCount === 0 || !this.summoner) return events;
+
+      // Drain MP
+      const mpCostPerStep = activeCount; // 1 MP per active creature
+      this.summoner.mp = Math.max(0, this.summoner.mp - mpCostPerStep);
+
+      // Check Weakened State
+      if (this.summoner.mp === 0) {
+          // Apply Weakened State if not already applied
+          this.activeMembers.forEach(m => {
+              if (!m.isStateAffected('weakened')) {
+                  m.addState('weakened');
+                  events.push({ type: 'text', msg: `${m.name} is weakened!` });
+              }
+              // HP Drain
+              const damage = Math.max(1, Math.floor(m.maxHp * 0.05));
+              m.hp = Math.max(0, m.hp - damage);
+              // events.push({ type: 'damage', target: m, value: damage }); // Too spammy for map?
+          });
+      } else {
+          // Remove Weakened State if applied
+          this.activeMembers.forEach(m => {
+              if (m.isStateAffected('weakened')) {
+                  m.removeState('weakened');
+                  events.push({ type: 'text', msg: `${m.name} recovered strength.` });
+              }
+          });
+      }
+
+      return events;
   }
 
   /**

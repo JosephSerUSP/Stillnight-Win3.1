@@ -199,6 +199,52 @@ export class Window_Battle extends Window_Base {
 
     battlers.forEach((e, idx) => renderBattler(e, idx, true));
     partySlots.forEach((p, idx) => renderBattler(p, idx, false));
+
+    // Render Summoner
+    if (partyInstance && partyInstance.summoner) {
+        this.renderSummoner(partyInstance.summoner);
+    }
+  }
+
+  renderSummoner(summoner) {
+      if (!summoner) return;
+
+      const containerId = 'battler-summoner';
+      let container = this.viewportEl.querySelector('#' + containerId);
+
+      if (!container) {
+          container = UI.build(this.viewportEl, {
+              type: 'panel',
+              props: {
+                  id: containerId,
+                  className: 'battler-container',
+                  style: {
+                      position: 'absolute',
+                      bottom: '5px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      whiteSpace: 'pre',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      zIndex: 10
+                  }
+              },
+              children: [
+                  { type: 'label', props: { className: 'battler-name', style: { color: '#FFD700' } } }, // Gold color for commander
+                  { type: 'label', props: { className: 'battler-hp' } },
+                  { type: 'label', props: { className: 'battler-mp' } }
+              ]
+          });
+      }
+
+      const nameEl = container.children[0];
+      const hpEl = container.children[1];
+      const mpEl = container.children[2];
+
+      nameEl.textContent = summoner.name;
+      hpEl.textContent = `HP: ${summoner.hp}/${summoner.maxHp}`;
+      mpEl.textContent = `MP: ${summoner.mp}/${summoner.maxMp}`;
   }
 
   createHpGauge(hp, maxHp) {
@@ -216,13 +262,14 @@ export class Window_Battle extends Window_Base {
   }
 
   getBattlerElement(index, isEnemy) {
+      if (index === 'summoner') return this.viewportEl.querySelector('#battler-summoner');
       return this.viewportEl.querySelector(`#${this.getBattlerId(index, isEnemy)}`);
   }
 
   getHpElement(index, isEnemy) {
       const el = this.getBattlerElement(index, isEnemy);
       if (!el) return null;
-      const container = el.closest('.battler-container');
+      const container = el.closest('.battler-container') || el;
       if (!container) return null;
       return container.querySelector('.battler-hp');
   }
@@ -232,6 +279,7 @@ export class Window_Battle extends Window_Base {
       if (enemyIndex !== -1) return { index: enemyIndex, isEnemy: true };
       const partyIndex = partySlots.indexOf(battler);
       if (partyIndex !== -1) return { index: partyIndex, isEnemy: false };
+      if (battler.role === 'Summoner') return { isSummoner: true };
       return null;
   }
 
@@ -258,10 +306,14 @@ export class Window_Battle extends Window_Base {
         const currentHp = Math.round(startHp + (endHp - startHp) * progress);
 
         if (ctx) {
-             const hpEl = this.getHpElement(ctx.index, ctx.isEnemy);
-             if (hpEl) {
-                 hpEl.textContent = this.createHpGauge(currentHp, battler.maxHp);
-                 // Name text update removed as we use structured label now
+             if (ctx.isSummoner) {
+                 const hpEl = this.getHpElement('summoner', false);
+                 if (hpEl) hpEl.textContent = `HP: ${currentHp}/${battler.maxHp}`;
+             } else {
+                 const hpEl = this.getHpElement(ctx.index, ctx.isEnemy);
+                 if (hpEl) {
+                     hpEl.textContent = this.createHpGauge(currentHp, battler.maxHp);
+                 }
              }
         }
 
@@ -290,7 +342,12 @@ export class Window_Battle extends Window_Base {
     const ctx = this._getBattlerContext(battler, enemies, partySlots);
     if (!ctx) return;
 
-    const battlerElement = this.getBattlerElement(ctx.index, ctx.isEnemy);
+    let battlerElement;
+    if (ctx.isSummoner) {
+        battlerElement = this.getBattlerElement('summoner', false);
+    } else {
+        battlerElement = this.getBattlerElement(ctx.index, ctx.isEnemy);
+    }
 
     if (battlerElement) {
       let animationClass = '';

@@ -177,6 +177,31 @@ export class Scene_Map extends Scene_Base {
    */
   movePlayer(dx, dy) {
     const result = this.explorationEngine.tryMove(dx, dy);
+
+    // Summoner MP Drain / Weakened Check on successful move or interaction
+    if (result.type === 'MOVED' || result.type === 'SEQUENCE') {
+        const stepEvents = this.party.onStep();
+        if (stepEvents.length > 0) {
+            stepEvents.forEach(e => {
+                if (e.msg) this.logMessage(e.msg);
+            });
+            // Check for game over if HP drain kills
+            const deathEvents = this.party.checkDeaths();
+            if (deathEvents.some(e => e.type === 'GAME_OVER')) {
+                // Game Over - we need a clean way to handle this.
+                // For now, let's just log it and stop input? Or maybe trigger a GameOver scene if it existed.
+                // I'll reuse the battle defeat logic essentially.
+                this.logMessage("The Commander falls... Game Over.");
+                SoundManager.play('GAME_OVER');
+                this.runActive = false;
+                this.updateAll();
+                // Ideally transition to title or game over screen.
+                // But Scene_Map doesn't have a game over screen transition method yet except via Battle.
+                return;
+            }
+        }
+    }
+
     this.handleExplorationResult(result);
   }
 
