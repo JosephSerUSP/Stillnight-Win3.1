@@ -33,6 +33,12 @@ export class Game_Party {
      * @type {Array}
      */
     this.inventory = [];
+
+    /**
+     * Story flags for tracking quest states and decisions.
+     * @type {Object}
+     */
+    this.storyFlags = {};
   }
 
   /**
@@ -233,5 +239,13 @@ export class Game_Party {
           }
           return { success: true, msg: `${member.name} equipped ${item.name}.` };
       }
+  }
+
+  setFlag(flag, value) {
+    this.storyFlags[flag] = value;
+  }
+
+  getFlag(flag) {
+    return this.storyFlags[flag];
   }
 }

@@ -65,6 +65,13 @@ export class Window_Event extends Window_Base {
       this.imageEl.src = `assets/eventArt/${imgName}`;
       this.imageContainer.style.display = "block";
 
+      // Reset base styles
+      this.element.style.bottom = "auto";
+      this.element.style.top = "50%";
+      this.element.style.left = "50%";
+      this.element.style.transform = "translate(-50%, -50%)";
+      this.element.style.width = "520px";
+
       if (data.style === 'terminal') {
           this.descriptionEl.className = "event-description terminal-style";
           this.descriptionEl.removeAttribute("style");
@@ -75,6 +82,22 @@ export class Window_Event extends Window_Base {
               } else {
                   this.appendLog(data.description);
               }
+          }
+      } else if (data.style === 'dialogue') {
+          // VN Style
+          this.element.style.top = "auto";
+          this.element.style.bottom = "20px";
+          this.element.style.left = "50%";
+          this.element.style.transform = "translateX(-50%)";
+          this.element.style.width = "600px";
+
+          this.descriptionEl.className = "event-description";
+          this.descriptionEl.style.marginBottom = "10px";
+          this.descriptionEl.style.fontSize = "16px";
+          this.descriptionEl.innerHTML = "";
+
+          if (data.description) {
+               this.descriptionEl.textContent = data.description;
           }
       } else {
           this.descriptionEl.className = "event-description";

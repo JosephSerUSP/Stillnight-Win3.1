@@ -152,5 +152,45 @@
         "effect": { "type": "gold", "value": 10 }
       }
     ]
+  },
+  {
+    "id": "intro_cutscene_trigger",
+    "type": "story",
+    "symbol": "!",
+    "cssClass": "tile-story",
+    "trigger": "touch",
+    "actions": [
+       { "type": "CHECK_FLAG", "condition": { "flag": "intro_seen", "op": "eq", "value": true },
+         "then": [
+             { "type": "MESSAGE", "text": "The air feels different here..." }
+         ],
+         "else": [
+             { "type": "MESSAGE", "text": "You feel a presence..." },
+             { "type": "WAIT", "ms": 500 },
+             { "type": "FLASH_SCREEN", "color": "#FFFFFF", "duration": 500 },
+             { "type": "PLAY_SOUND", "sound": "UI_SELECT" },
+             { "type": "WAIT", "ms": 500 },
+             { "type": "SHOW_DIALOGUE", "style": "dialogue", "name": "Mysterious Figure", "text": "Greetings, traveler. You have come far.", "choices": [
+                 { "label": "Who are you?", "actions": [
+                     { "type": "SHOW_DIALOGUE", "style": "dialogue", "name": "Mysterious Figure", "text": "I am but a shadow of the past. The question is, who are you?", "choices": [
+                         { "label": "I seek power.", "actions": [
+                             { "type": "SET_FLAG", "flag": "path", "value": "power" },
+                             { "type": "SHOW_DIALOGUE", "style": "dialogue", "name": "Mysterious Figure", "text": "Power comes at a price. Remember that." }
+                         ]},
+                         { "label": "I seek truth.", "actions": [
+                             { "type": "SET_FLAG", "flag": "path", "value": "truth" },
+                             { "type": "SHOW_DIALOGUE", "style": "dialogue", "name": "Mysterious Figure", "text": "The truth is often painful. Prepare yourself." }
+                         ]}
+                     ]}
+                 ]},
+                 { "label": "..." }
+             ]},
+             { "type": "WAIT", "ms": 500 },
+             { "type": "FLASH_SCREEN", "color": "#000000", "duration": 1000 },
+             { "type": "MESSAGE", "text": "The figure vanishes into the mist." },
+             { "type": "SET_FLAG", "flag": "intro_seen", "value": true }
+         ]
+       }
+    ]
   }
 ]

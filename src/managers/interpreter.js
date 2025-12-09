@@ -33,7 +33,7 @@ export class Game_Interpreter {
      * @param {Object} action - The action object.
      * @param {import("../objects/objects.js").Game_Event} event - The source event.
      */
-    execute(action, event) {
+    async execute(action, event) {
         switch(action.type) {
             case 'BATTLE':
                 this.scene.startBattle(event.x, event.y);
@@ -72,7 +72,127 @@ export class Game_Interpreter {
             case 'BREAKABLE_WALL':
                 this.triggerBreakableWall(action, event);
                 break;
+            // Storytelling expansion
+            case 'WAIT':
+                await this.wait(action.ms);
+                break;
+            case 'FLASH_SCREEN':
+                this.scene.flashScreen(action.color, action.duration);
+                break;
+            case 'SHAKE_SCREEN':
+                this.scene.shakeScreen(action.power, action.duration);
+                break;
+            case 'MOVE_EVENT':
+                await this.moveEvent(action);
+                break;
+            case 'SET_FLAG':
+                this.party.setFlag(action.flag, action.value);
+                break;
+            case 'CHECK_FLAG':
+                if (this.checkCondition(action.condition)) {
+                     if (action.then) {
+                         for (const subAction of action.then) {
+                             await this.execute(subAction, event);
+                         }
+                     }
+                } else {
+                     if (action.else) {
+                         for (const subAction of action.else) {
+                             await this.execute(subAction, event);
+                         }
+                     }
+                }
+                break;
+             case 'SHOW_DIALOGUE':
+                await this.showDialogue(action);
+                break;
+             case 'PLAY_SOUND':
+                SoundManager.play(action.sound);
+                break;
         }
+    }
+
+    wait(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async moveEvent(action) {
+        // Find the event
+        const floor = this.map.floors[this.map.floorIndex];
+        let targetEvent;
+        if (action.target === 'player') {
+             // Not implemented for player yet, or just move coords
+        } else {
+             targetEvent = floor.events.find(e => e.id === action.target);
+        }
+
+        if (targetEvent) {
+             if (action.moveTo === 'player') {
+                 // Teleport to player adjacent? Or pathfind?
+                 // Simple teleport for now or use pathfinding logic if we want to animate steps
+                 // For now, let's just teleport to near player
+                 let tx = this.map.playerX;
+                 let ty = this.map.playerY;
+                 // Adjust to be adjacent
+                 if (targetEvent.x < tx) tx -= 1;
+                 else if (targetEvent.x > tx) tx += 1;
+                 else if (targetEvent.y < ty) ty -= 1;
+                 else if (targetEvent.y > ty) ty += 1;
+
+                 targetEvent.x = tx;
+                 targetEvent.y = ty;
+                 this.scene.updateGrid();
+             } else if (action.x !== undefined && action.y !== undefined) {
+                 targetEvent.x = action.x;
+                 targetEvent.y = action.y;
+                 this.scene.updateGrid();
+             }
+        }
+    }
+
+    checkCondition(condition) {
+        if (!condition) return true;
+        const val = this.party.getFlag(condition.flag);
+        if (condition.op === 'eq') return val === condition.value;
+        if (condition.op === 'gt') return val > condition.value;
+        return !!val;
+    }
+
+    async showDialogue(action) {
+         return new Promise(resolve => {
+             const style = action.style || 'dialogue'; // 'terminal', 'dialogue'
+
+             // Prepare choices if any
+             const choices = action.choices ? action.choices.map(c => ({
+                 label: c.label,
+                 onClick: async () => {
+                     // Close window? Or just proceed?
+                     // If choices have actions, execute them
+                     this.windowManager.close(this.scene.hudManager.eventWindow);
+                     if (c.actions) {
+                         for (const subAction of c.actions) {
+                             await this.execute(subAction, null);
+                         }
+                     }
+                     resolve();
+                 }
+             })) : [{
+                 label: "Continue",
+                 onClick: () => {
+                     this.windowManager.close(this.scene.hudManager.eventWindow);
+                     resolve();
+                 }
+             }];
+
+             this.scene.hudManager.eventWindow.show({
+                 title: action.name || "",
+                 description: action.text,
+                 image: action.face,
+                 style: style,
+                 choices: choices
+             });
+             this.windowManager.push(this.scene.hudManager.eventWindow);
+         });
     }
 
     triggerBreakableWall(action, event) {

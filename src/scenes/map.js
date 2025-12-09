@@ -332,6 +332,52 @@ export class Scene_Map extends Scene_Base {
    * Re-renders the map grid based on current state (fog, player pos, etc).
    * @method updateGrid
    */
+  flashScreen(color, duration) {
+    // Basic implementation: overlay a div
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100vw';
+    overlay.style.height = '100vh';
+    overlay.style.backgroundColor = color;
+    overlay.style.opacity = '0.5';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.zIndex = '9999';
+    overlay.style.transition = `opacity ${duration}ms`;
+
+    document.body.appendChild(overlay);
+
+    setTimeout(() => {
+        overlay.style.opacity = '0';
+    }, 50);
+
+    setTimeout(() => {
+        document.body.removeChild(overlay);
+    }, duration);
+  }
+
+  shakeScreen(power, duration) {
+      const container = document.getElementById("game-container");
+      const startTime = Date.now();
+      const originalTransform = container.style.transform;
+
+      const shake = () => {
+          const now = Date.now();
+          const elapsed = now - startTime;
+          if (elapsed >= duration) {
+              container.style.transform = originalTransform;
+              return;
+          }
+
+          const dx = (Math.random() - 0.5) * power;
+          const dy = (Math.random() - 0.5) * power;
+          container.style.transform = `translate(${dx}px, ${dy}px)`;
+          requestAnimationFrame(shake);
+      };
+      shake();
+  }
+
   updateGrid() {
     const floor = this.map.floors[this.map.floorIndex];
     const gridData = [];
