@@ -33,8 +33,11 @@ export class Game_Interpreter {
      * @param {Object} action - The action object.
      * @param {import("../objects/objects.js").Game_Event} event - The source event.
      */
-    execute(action, event) {
+    async execute(action, event) {
         switch(action.type) {
+            case 'SEQUENCE':
+                await this.executeSequence(action.commands, event);
+                break;
             case 'BATTLE':
                 this.scene.startBattle(event.x, event.y);
                 break;
@@ -72,6 +75,194 @@ export class Game_Interpreter {
             case 'BREAKABLE_WALL':
                 this.triggerBreakableWall(action, event);
                 break;
+        }
+    }
+
+    /**
+     * Executes a sequence of storytelling commands.
+     * @param {Array} sequence - List of command objects.
+     * @param {import("../objects/objects.js").Game_Event} event - The source event.
+     */
+    async executeSequence(sequence, event) {
+        this.scene.inputLocked = true;
+
+        // Ensure event window is active if needed for dialogue
+        const win = this.scene.hudManager.eventWindow;
+        let windowOpened = false;
+
+        const closeWindow = () => {
+            if (windowOpened) {
+                this.windowManager.close(win);
+                windowOpened = false;
+            }
+        };
+
+        const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        try {
+            for (let i = 0; i < sequence.length; i++) {
+                const cmd = sequence[i];
+
+                switch (cmd.type) {
+                    case 'TEXT':
+                        if (!windowOpened) {
+                            this.windowManager.push(win);
+                            windowOpened = true;
+                            // Clear previous content
+                            win.clearLog();
+                            // If title is not set by command, default to Event
+                            win.setTitle(cmd.title || "Event");
+                        } else {
+                            // If window already open, maybe just clear log if desired?
+                            // For VN style, usually we replace text.
+                            if (cmd.clear) win.clearLog();
+                        }
+
+                        if (cmd.title) win.setTitle(cmd.title);
+                        if (cmd.speaker !== undefined) win.setSpeaker(cmd.speaker);
+                        if (cmd.image) win.updateImage(cmd.image);
+                        if (cmd.text) {
+                            // If array, append lines. If string, append line.
+                            if (Array.isArray(cmd.text)) {
+                                cmd.text.forEach(line => win.appendLog(line));
+                            } else {
+                                win.appendLog(cmd.text);
+                            }
+                        }
+
+                        // If 'waitForInput' is true (default for VN), we show a 'Continue' button or just wait for click
+                        // But usually TEXT just shows it. If we want to pause, use WAIT or CHOICE.
+                        // However, standard RPG Text waits for confirmation.
+                        if (cmd.waitForInput !== false) {
+                            await new Promise(resolve => {
+                                win.updateChoices([{
+                                    label: "Continue...",
+                                    onClick: () => resolve()
+                                }]);
+                            });
+                            // Clear choices after click
+                            win.updateChoices([]);
+                        }
+                        break;
+
+                    case 'CHOICE':
+                        if (!windowOpened) {
+                            this.windowManager.push(win);
+                            windowOpened = true;
+                        }
+
+                        await new Promise(resolve => {
+                            const choices = cmd.choices.map(c => ({
+                                label: c.label,
+                                onClick: async () => {
+                                    // Handle branching
+                                    if (c.jumpTo) {
+                                        // Find label index
+                                        const jumpIdx = sequence.findIndex(s => s.label === c.jumpTo);
+                                        if (jumpIdx !== -1) i = jumpIdx - 1; // -1 because loop increments
+                                    }
+                                    if (c.commands) {
+                                        // Execute sub-sequence
+                                        await this.executeSequence(c.commands, event);
+                                    }
+                                    resolve();
+                                }
+                            }));
+                            win.updateChoices(choices);
+                        });
+                        win.updateChoices([]); // Clear choices
+                        break;
+
+                    case 'WAIT':
+                        await delay(cmd.ms || 1000);
+                        break;
+
+                    case 'SOUND':
+                        SoundManager.play(cmd.sound);
+                        break;
+
+                    case 'GIVE_ITEM':
+                        const item = this.dataManager.items.find(it => it.id === cmd.itemId);
+                        if (item) {
+                            this.party.inventory.push(item);
+                            this.scene.logMessage(`Received ${item.name}.`, 'low');
+                            SoundManager.play('ITEM_GET');
+                        }
+                        break;
+
+                    case 'SET_FLAG':
+                        this.party.setFlag(cmd.key, cmd.value);
+                        break;
+
+                    case 'CHECK_FLAG':
+                         const val = this.party.getFlag(cmd.key);
+                         // simple equality check
+                         if (val === cmd.value) {
+                             if (cmd.jumpTo) {
+                                 const jumpIdx = sequence.findIndex(s => s.label === cmd.jumpTo);
+                                 if (jumpIdx !== -1) i = jumpIdx - 1;
+                             }
+                             if (cmd.then) {
+                                 await this.executeSequence(cmd.then, event);
+                             }
+                         } else {
+                             if (cmd.else) {
+                                 await this.executeSequence(cmd.else, event);
+                             }
+                         }
+                         break;
+
+                    case 'MOVE_EVENT':
+                        // eventId can be 'player' or event id
+                        // dx, dy or x, y
+                        if (cmd.eventId === 'player') {
+                            // Direct player move (teleport or step?)
+                            // cmd.x/y is absolute, cmd.dx/dy relative
+                            if (cmd.x !== undefined) {
+                                this.map.playerX = cmd.x;
+                                this.map.playerY = cmd.y;
+                            } else if (cmd.dx !== undefined) {
+                                this.map.playerX += cmd.dx;
+                                this.map.playerY += cmd.dy;
+                            }
+                        } else {
+                             // Move this event or another
+                             const target = (cmd.eventId === 'this' || !cmd.eventId) ? event : this.map.floors[this.map.floorIndex].events.find(e => e.id === cmd.eventId);
+                             if (target) {
+                                 if (cmd.x !== undefined) {
+                                     target.x = cmd.x;
+                                     target.y = cmd.y;
+                                 } else if (cmd.dx !== undefined) {
+                                     target.x += cmd.dx;
+                                     target.y += cmd.dy;
+                                 }
+                             }
+                        }
+                        this.scene.updateGrid();
+                        break;
+
+                    case 'REMOVE_EVENT':
+                         if (cmd.eventId === 'this') {
+                             this.map.removeEvent(this.map.floorIndex, event.x, event.y);
+                         } else {
+                             // find and remove
+                             // Not fully implemented for ID lookup yet, assume 'this' for now
+                             if (event) this.map.removeEvent(this.map.floorIndex, event.x, event.y);
+                         }
+                         this.scene.updateGrid();
+                         break;
+
+                    case 'CLOSE_WINDOW':
+                        closeWindow();
+                        break;
+                }
+            }
+        } catch (e) {
+            console.error("Sequence Error:", e);
+        } finally {
+            closeWindow();
+            this.scene.inputLocked = false;
+            this.scene.updateAll();
         }
     }
 

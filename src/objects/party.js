@@ -33,6 +33,30 @@ export class Game_Party {
      * @type {Array}
      */
     this.inventory = [];
+
+    /**
+     * Persistent story flags for tracking quest progress.
+     * @type {Object}
+     */
+    this.storyFlags = {};
+  }
+
+  /**
+   * Sets a story flag.
+   * @param {string} key - The flag key.
+   * @param {any} value - The flag value (boolean, string, number).
+   */
+  setFlag(key, value) {
+      this.storyFlags[key] = value;
+  }
+
+  /**
+   * Gets a story flag.
+   * @param {string} key - The flag key.
+   * @returns {any} The flag value or null/undefined.
+   */
+  getFlag(key) {
+      return this.storyFlags[key];
   }
 
   /**
