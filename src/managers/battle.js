@@ -187,7 +187,17 @@ export class BattleManager {
 
       // Context for targeting
       const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
-      const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
+      let opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
+
+      // Special Targeting Rule: Enemies target Summoner if party is empty/dead
+      if (isEnemy) {
+          const livingParty = this.party.activeMembers.filter(m => m.hp > 0);
+          if (livingParty.length === 0 && this.party.summoner && this.party.summoner.hp > 0) {
+              opposingTeam = [this.party.summoner];
+          } else {
+              opposingTeam = livingParty;
+          }
+      }
 
       // 1. Decide Action Type (Skill or Attack)
       // Simple logic: 60% chance to use skill if available
@@ -243,12 +253,44 @@ export class BattleManager {
 
     if (subject.hp <= 0) return [];
 
+    // Summoner MP Drain on Creature Action
+    if (!subject.isEnemy && this.party.summoner) {
+        // Only drain if it's a creature (in active slots)
+        if (this.party.activeMembers.includes(subject)) {
+             // Simple cost: 2 MP per action for now (User said calculable, base+multiplier)
+             // Defaulting to 2 to be slightly more impactful than steps.
+             const drain = 2;
+             this.party.summoner.mp = Math.max(0, this.party.summoner.mp - drain);
+
+             // Apply Weakened State logic here too if MP hits 0?
+             if (this.party.summoner.mp === 0) {
+                  if (!subject.isStateAffected('weakened')) {
+                      subject.addState('weakened');
+                      // Log it?
+                      // events.push({ type: 'text', msg: `${subject.name} weakens!` }); // Can't easily push to events yet, we return them later.
+                  }
+                  // HP Loss for acting while weakened
+                  const damage = Math.max(1, Math.floor(subject.maxHp * 0.05));
+                  subject.hp = Math.max(0, subject.hp - damage);
+             }
+        }
+    }
+
     // Re-validate target (Smart re-targeting)
     if (!target || target.hp <= 0) {
         // If target is dead, try to find a new target
         const isEnemy = subject.isEnemy;
         const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
-        const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
+        let opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
+
+        if (isEnemy) {
+            const livingParty = this.party.activeMembers.filter(m => m.hp > 0);
+            if (livingParty.length === 0 && this.party.summoner && this.party.summoner.hp > 0) {
+                opposingTeam = [this.party.summoner];
+            } else {
+                opposingTeam = livingParty;
+            }
+        }
 
         const targets = action.makeTargets(myTeam, opposingTeam);
         if (targets.length > 0) {
@@ -274,12 +316,30 @@ export class BattleManager {
   _checkBattleEnd(events) {
     const anyEnemyAlive = this.enemies.some((e) => e.hp > 0);
     const anyPartyAlive = this.party.activeMembers.some((p) => p.hp > 0);
+    const summonerAlive = this.party.summoner ? this.party.summoner.hp > 0 : true;
 
-    if (!anyPartyAlive) {
-      this.isBattleFinished = true;
-      this.turnQueue = [];
-      SoundManager.play('GAME_OVER');
-      events.push({ type: "end", result: "defeat", msg: this.dataManager.terms.battle.your_party_collapses });
+    if (!summonerAlive) {
+        this.isBattleFinished = true;
+        this.turnQueue = [];
+        SoundManager.play('GAME_OVER');
+        events.push({ type: "end", result: "defeat", msg: "The Commander has fallen!" });
+    } else if (!anyPartyAlive && !anyEnemyAlive) {
+         // Mutual destruction (rare), but if party dead and enemies dead, usually victory or draw?
+         // Assuming victory if enemies dead.
+         this.isBattleFinished = true;
+         this.isVictoryPending = true;
+         this.turnQueue = [];
+         events.push({ type: "end", result: "victory", msg: this.dataManager.terms.battle.victory });
+    } else if (!anyPartyAlive) {
+       // If creatures are dead but Summoner is alive, battle continues (enemies will target summoner).
+       // So we DO NOT end battle here if summoner is alive.
+       // However, we need to ensure turnQueue allows for that.
+       // But wait, "Summoner doesn't act".
+       // If all creatures are dead, the Summoner is just a sitting duck taking hits until they die or flee?
+       // User said: "only targeted if there are no creatures".
+       // And "actions are the player's actions - Formation, Item, etc."
+       // So the player can still use Items/Flee.
+       // So battle continues.
     } else if (!anyEnemyAlive) {
       this.isBattleFinished = true;
       this.isVictoryPending = true;

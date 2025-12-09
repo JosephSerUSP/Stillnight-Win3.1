@@ -238,7 +238,9 @@ export class Scene_Battle extends Scene_Base {
   }
 
   async processItemAction(item, target) {
-      const action = new Game_Action(this.party);
+      // Use Summoner as subject if available, otherwise fallback to generic party context
+      const subject = this.party.summoner || this.party;
+      const action = new Game_Action(subject);
       action.setItem(item.id, this.dataManager);
       action.target = target;
 

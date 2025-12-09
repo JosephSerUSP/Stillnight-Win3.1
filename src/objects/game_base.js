@@ -48,6 +48,19 @@ export class Game_Base {
      * @type {string[]}
      */
     this._baseElements = unitData.elements || [];
+
+    /**
+     * The base maximum MP of the unit.
+     * @type {number}
+     * @protected
+     */
+    this._baseMaxMp = unitData.maxMp || 0;
+
+    /**
+     * The current MP of the unit.
+     * @type {number}
+     */
+    this.mp = unitData.maxMp || 0;
   }
 
   /**

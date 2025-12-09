@@ -153,6 +153,19 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
+   * Gets the effective maximum MP.
+   * @type {number}
+   */
+  get maxMp() {
+      const base = this._baseMaxMp;
+      const plus = this.traits.filter(t => t.code === 'PARAM_PLUS' && t.dataId === 'maxMp')
+                               .reduce((sum, t) => sum + t.value, 0);
+      const rate = this.traits.filter(t => t.code === 'PARAM_RATE' && t.dataId === 'maxMp')
+                               .reduce((acc, t) => acc * t.value, 1.0);
+      return Math.floor((base + plus) * rate);
+  }
+
+  /**
    * Gets the effective Attack power.
    * @type {number}
    */
