@@ -152,8 +152,8 @@ export class BattleManager {
       let rank = 3; // Default rank
 
       // Check action rank/speed
-      // Using action.item() data if available
-      const item = action.item();
+      // Using action.item data if available
+      const item = action.item;
       if (item) {
           // Check for ctb_delay effect or property
           // Assuming 'speed' property in item/skill implies rank?

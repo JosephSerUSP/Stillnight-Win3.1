@@ -2,7 +2,7 @@ import { Window_Selectable } from "./selectable.js";
 
 export class Window_Command extends Window_Selectable {
   constructor() {
-    super("command-window", 10, 10, 200, 300);
+    super(20, 200, 200, 'auto', { title: "Command" });
     this.setup([]);
     this.hide();
   }
