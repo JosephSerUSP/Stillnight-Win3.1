@@ -144,7 +144,7 @@ export class Window_Exploration extends Window_Base {
         // Content
         const root = UI.build(this.content, {
             type: 'panel',
-            props: { className: 'exploration-frame panel' },
+            props: { className: 'exploration-frame window-panel' },
             children: [
                 { type: 'panel', props: { className: 'exploration-grid', id: 'exploration-grid' } }
             ]

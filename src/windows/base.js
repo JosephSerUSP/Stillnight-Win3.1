@@ -164,6 +164,7 @@ export class Window_Base {
         };
 
         if (this.embedded) {
+            elementProps.className += " embedded";
             elementProps.style.position = "relative";
             if (width !== 'auto') elementProps.style.width = `${width}px`;
             if (height !== 'auto') elementProps.style.height = `${height}px`;
