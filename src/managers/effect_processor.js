@@ -31,6 +31,28 @@ export class EffectProcessor {
                 return { type: 'heal', value: target.hp - oldHp, target };
             }
 
+            case 'mp_heal': {
+                // Not standard yet, but supported for consistency if MP exists
+                if (target.mp !== undefined) {
+                    let base = this._evaluate(effectValue, target, source);
+                    const oldMp = target.mp;
+                    target.mp = Math.min(target.maxMp, target.mp + base);
+                    return { type: 'heal', value: target.mp - oldMp, target, msg: `${target.name} recovers ${target.mp - oldMp} MP.` };
+                }
+                return null;
+            }
+
+            case 'revive': {
+                if (target.hp <= 0) {
+                     const rate = this._evaluate(effectValue, target, source);
+                     const healAmount = Math.max(1, Math.floor(target.maxHp * rate));
+                     target.hp = healAmount;
+                     target.removeState('dead');
+                     return { type: 'heal', value: healAmount, target, msg: `${target.name} is revived!` };
+                }
+                return null;
+            }
+
             case 'maxHp': {
                 const value = this._evaluate(effectValue, target, source);
                 target.maxHp += value;
@@ -58,6 +80,18 @@ export class EffectProcessor {
                 return { type: 'damage', value: oldHp - target.hp, target };
             }
 
+            case 'mp_drain': {
+                // Simplified MP drain logic
+                 if (target.mp !== undefined && source.mp !== undefined) {
+                     let base = this._evaluate(effectValue, target, source);
+                     const drain = Math.min(target.mp, base);
+                     target.mp -= drain;
+                     source.mp = Math.min(source.maxMp, source.mp + drain);
+                     return { type: 'mp_drain', value: drain, target, msg: `${source.name} drains ${drain} MP from ${target.name}.` };
+                 }
+                 return null;
+            }
+
             case 'add_status': {
                 const statusId = (typeof effectValue === 'object') ? effectValue.id : effectValue;
                 const chance = ((typeof effectValue === 'object' ? effectValue.chance : 1) || 1) * (context.boost || 1);
@@ -67,6 +101,44 @@ export class EffectProcessor {
                     return { type: 'status', status: statusId, target };
                 }
                 return null;
+            }
+
+            case 'remove_status': {
+                // 'all_bad' logic
+                if (effectValue === 'all_bad' || (typeof effectValue === 'object' && effectValue.status === 'all_bad')) {
+                     // Filter negative states - for now hardcoded list or assume all but 'regen'/'haste' etc?
+                     // Or define "isBad" in states.js?
+                     // Simplified: remove common bad ones.
+                     const badStates = ['poison', 'sleep', 'darkness', 'stone', 'power_break', 'armor_break'];
+                     badStates.forEach(s => target.removeState(s));
+                     return { type: 'status_remove', msg: `${target.name} is cured of all ailments.` };
+                } else {
+                     const sId = (typeof effectValue === 'object') ? effectValue.status : effectValue;
+                     if (target.isStateAffected(sId)) {
+                         target.removeState(sId);
+                         return { type: 'status_remove', msg: `${target.name} is cured of ${sId}.` };
+                     }
+                }
+                return null;
+            }
+
+            case 'steal': {
+                 // Logic: check target drops, pick one, add to source inventory
+                 if (target.actorData && target.actorData.drops && target.actorData.drops.length > 0) {
+                      // Attempt steal
+                      const drop = target.actorData.drops[0]; // Simplification: steal first
+                      if (context.party && context.party.inventory) {
+                           // We need item object.
+                           // Assuming we can't easily access dataManager here without passing it.
+                           // But often drops have itemId.
+                           // We'll return a special 'steal_success' result and let Scene handle adding item if possible,
+                           // or if we have Game_Party instance we can try adding.
+                           // But usually EffectProcessor doesn't have dataManager.
+                           // Let's assume we just log success for now or require caller to handle.
+                           return { type: 'steal_success', itemId: drop.itemId, msg: `Stole ${drop.itemId}!` };
+                      }
+                 }
+                 return { type: 'steal_fail', msg: "Nothing to steal!" };
             }
 
             case 'hp_drain': {

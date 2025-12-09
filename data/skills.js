@@ -1,161 +1,293 @@
 /**
  * @file data/skills.js
- * @description Defines the skills available in the game.
- * Skills are used by battlers in combat to deal damage, heal, or apply status effects.
+ * @description FFX Skills
  */
 
-/**
- * @typedef {Object} SkillEffect
- * @property {string} type - The type of effect (e.g., 'hp_damage', 'hp_heal', 'add_status').
- * @property {string} [formula] - The formula for calculating the effect value (e.g., '5 + 1.2 * a.level').
- * @property {string} [status] - The status ID to apply (if type is 'add_status').
- * @property {number} [chance] - The chance to apply the effect (0-1).
- * @property {number} [duration] - The duration of the effect in turns.
- */
-
-/**
- * @typedef {Object} Skill
- * @property {string} id - The unique ID of the skill.
- * @property {string} name - The display name of the skill.
- * @property {string} target - The target scope (e.g., 'enemy-any', 'ally-any', 'self').
- * @property {string} element - The elemental affinity of the skill.
- * @property {string} description - The flavor text description.
- * @property {SkillEffect[]} effects - The list of effects produced by the skill.
- */
-
-/**
- * @type {Object.<string, Skill>}
- */
 export const skills = {
-    // Pixie
-    windBlade: {
-        id: 'windBlade',
-        name: 'Wind Blade',
-        target: 'enemy-any',
+    // Tidus
+    attack: {
+        id: 'attack',
+        name: 'Attack',
+        target: 'enemy-single',
+        element: 'Physical',
+        description: "Standard physical attack.",
+        effects: [{ type: 'hp_damage', formula: 'a.atk * 1.5 - b.def' }]
+    },
+    quickHit: {
+        id: 'quickHit',
+        name: 'Quick Hit',
+        target: 'enemy-single',
+        element: 'Physical',
+        description: "A fast attack with reduced delay.",
+        effects: [{ type: 'hp_damage', formula: 'a.atk * 1.2 - b.def' }],
+        // TODO: Implement delay reduction in battle system if possible
+    },
+    spiralCut: {
+        id: 'spiralCut',
+        name: 'Spiral Cut',
+        target: 'enemy-single',
+        element: 'Physical',
+        description: "Overdrive: A spinning slash dealing massive damage.",
+        effects: [{ type: 'hp_damage', formula: 'a.atk * 3.5 - b.def' }]
+    },
+    haste: {
+        id: 'haste',
+        name: 'Haste',
+        target: 'ally-single',
+        element: 'Time',
+        description: "Increases action speed.",
+        effects: [{ type: 'add_status', status: 'haste', chance: 1.0, duration: 5 }]
+    },
+
+    // Yuna
+    cure: {
+        id: 'cure',
+        name: 'Cure',
+        target: 'ally-single',
+        element: 'White',
+        description: "Restores HP.",
+        effects: [{ type: 'hp_heal', formula: '20 + a.spi * 2' }]
+    },
+    esuna: {
+        id: 'esuna',
+        name: 'Esuna',
+        target: 'ally-single',
+        element: 'White',
+        description: "Removes negative status effects.",
+        effects: [{ type: 'remove_status', status: 'all_bad' }] // Needs implementation
+    },
+    holy: {
+        id: 'holy',
+        name: 'Holy',
+        target: 'enemy-single',
+        element: 'White',
+        description: "Powerful holy magic damage.",
+        effects: [{ type: 'hp_damage', formula: 'a.mag * 3.0 - b.res' }]
+    },
+    grandSummon: {
+        id: 'grandSummon',
+        name: 'Grand Summon',
+        target: 'self',
+        element: 'Summon',
+        description: "Overdrive: Call forth Valefor.",
+        effects: [
+            { type: 'add_status', status: 'valefor_form', chance: 1.0, duration: 3 }
+        ]
+    },
+
+    // Auron
+    powerBreak: {
+        id: 'powerBreak',
+        name: 'Power Break',
+        target: 'enemy-single',
+        element: 'Physical',
+        description: "Damages and lowers Strength.",
+        effects: [
+            { type: 'hp_damage', formula: 'a.atk * 1.5 - b.def' },
+            { type: 'add_status', status: 'power_break', chance: 1.0, duration: 3 }
+        ]
+    },
+    armorBreak: {
+        id: 'armorBreak',
+        name: 'Armor Break',
+        target: 'enemy-single',
+        element: 'Physical',
+        description: "Damages and lowers Defense.",
+        effects: [
+            { type: 'hp_damage', formula: 'a.atk * 1.5 - b.def' },
+            { type: 'add_status', status: 'armor_break', chance: 1.0, duration: 3 }
+        ]
+    },
+    shootingStar: {
+        id: 'shootingStar',
+        name: 'Shooting Star',
+        target: 'enemy-single',
+        element: 'Wind',
+        description: "Overdrive: Ejects an enemy from battle.",
+        effects: [{ type: 'hp_damage', formula: 'a.atk * 4.0 - b.def' }]
+    },
+
+    // Wakka
+    darkAttack: {
+        id: 'darkAttack',
+        name: 'Dark Attack',
+        target: 'enemy-single',
+        element: 'Physical',
+        description: "Inflicts Darkness.",
+        effects: [
+            { type: 'hp_damage', formula: 'a.atk * 1.2 - b.def' },
+            { type: 'add_status', status: 'darkness', chance: 1.0, duration: 3 }
+        ]
+    },
+    statusReels: {
+        id: 'statusReels',
+        name: 'Status Reels',
+        target: 'enemy-group',
+        element: 'Physical',
+        description: "Overdrive: Inflicts multiple statuses on enemies.",
+        effects: [
+            { type: 'hp_damage', formula: 'a.atk * 2.0 - b.def' },
+            { type: 'add_status', status: 'poison', chance: 0.8, duration: 3 },
+            { type: 'add_status', status: 'darkness', chance: 0.8, duration: 3 }
+        ]
+    },
+
+    // Lulu
+    fire: {
+        id: 'fire',
+        name: 'Fire',
+        target: 'enemy-single',
+        element: 'Red',
+        description: "Deals Fire damage.",
+        effects: [{ type: 'hp_damage', formula: '10 + a.mag * 1.5 - b.res' }]
+    },
+    blizzard: {
+        id: 'blizzard',
+        name: 'Blizzard',
+        target: 'enemy-single',
+        element: 'Blue',
+        description: "Deals Ice damage.",
+        effects: [{ type: 'hp_damage', formula: '10 + a.mag * 1.5 - b.res' }]
+    },
+    thunder: {
+        id: 'thunder',
+        name: 'Thunder',
+        target: 'enemy-single',
+        element: 'Yellow',
+        description: "Deals Lightning damage.",
+        effects: [{ type: 'hp_damage', formula: '10 + a.mag * 1.5 - b.res' }]
+    },
+    water: {
+        id: 'water',
+        name: 'Water',
+        target: 'enemy-single',
+        element: 'Blue',
+        description: "Deals Water damage.",
+        effects: [{ type: 'hp_damage', formula: '10 + a.mag * 1.5 - b.res' }]
+    },
+    fury: {
+        id: 'fury',
+        name: 'Fury',
+        target: 'enemy-group',
+        element: 'Black',
+        description: "Overdrive: Barrage of magic.",
+        effects: [{ type: 'hp_damage', formula: 'a.mag * 4.0 - b.res' }]
+    },
+
+    // Kimahri
+    lancet: {
+        id: 'lancet',
+        name: 'Lancet',
+        target: 'enemy-single',
+        element: 'Physical',
+        description: "Drains HP and MP.",
+        effects: [
+            { type: 'hp_drain', formula: 'a.atk * 1.0' },
+            { type: 'mp_drain', formula: 'a.mag * 0.5' }
+        ]
+    },
+    jump: {
+        id: 'jump',
+        name: 'Jump',
+        target: 'enemy-single',
+        element: 'Physical',
+        description: "Leaps into the air and strikes.",
+        effects: [{ type: 'hp_damage', formula: 'a.atk * 2.0 - b.def' }]
+    },
+    ronsoRage: {
+        id: 'ronsoRage',
+        name: 'Ronso Rage',
+        target: 'enemy-group',
+        element: 'Physical',
+        description: "Overdrive: Unleashes beastly power.",
+        effects: [{ type: 'hp_damage', formula: 'a.atk * 3.0 - b.def' }]
+    },
+
+    // Rikku
+    steal: {
+        id: 'steal',
+        name: 'Steal',
+        target: 'enemy-single',
+        element: 'Physical',
+        description: "Steals an item from the enemy.",
+        effects: [
+             { type: 'steal', chance: 1.0 }, // Needs implementation
+             { type: 'hp_damage', formula: 'a.atk * 0.5' }
+        ]
+    },
+    use: {
+        id: 'use',
+        name: 'Use',
+        target: 'friend-single',
+        element: 'Item',
+        description: "Use an item with enhanced effect.",
+        effects: [] // Driven by item choice logic
+    },
+    mix: {
+        id: 'mix',
+        name: 'Mix',
+        target: 'enemy-group',
+        element: 'Special',
+        description: "Overdrive: Concocts a dangerous explosive.",
+        effects: [{ type: 'hp_damage', formula: '500' }] // Flat damage
+    },
+
+    // Enemy Skills
+    breath: {
+        id: 'breath',
+        name: 'Bad Breath',
+        target: 'party',
         element: 'Green',
-        description: "Strikes a foe with a blade of wind.",
+        description: "Malboro's signature move.",
         effects: [
-            { type: 'hp_damage', formula: '6 + 1.2 * a.level' }
+             { type: 'hp_damage', formula: 'a.atk * 1.5' },
+             { type: 'add_status', status: 'poison', chance: 1.0 },
+             { type: 'add_status', status: 'sleep', chance: 0.5 }
         ]
     },
-    soothingMote: {
-        id: 'soothingMote',
-        name: 'Soothing Mote',
-        target: 'ally-any',
-        element: 'White',
-        description: "Heals a small amount of HP for an ally.",
-        effects: [
-            { type: 'hp_heal', formula: '5 + 1.5 * a.level' }
-        ]
-    },
-
-    // Skeleton
-    boneRush: {
-        id: 'boneRush',
-        name: 'Bone Rush',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "A reckless charge.",
-        effects: [
-            { type: 'hp_damage', formula: '7 + 1.2 * a.level' }
-        ]
-    },
-
-    // Angel
-    holySmite: {
-        id: 'holySmite',
-        name: 'Holy Smite',
-        target: 'enemy-any',
-        element: 'White',
-        description: "Smite evil with holy light.",
-        effects: [
-            { type: 'hp_damage', formula: '6 + 1.4 * a.level' }
-        ]
-    },
-    divineFavor: {
-        id: 'divineFavor',
-        name: 'Divine Favor',
-        target: 'ally-any',
-        element: 'White',
-        description: "Grants regeneration to an ally.",
-        effects: [
-            { type: 'add_status', status: 'regen', chance: 1.0, duration: 3 }
-        ]
-    },
-
-    // Demon
-    shadowClaw: {
-        id: 'shadowClaw',
-        name: 'Shadow Claw',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "Tears at the enemy from the shadows.",
-        effects: [
-            { type: 'hp_damage', formula: '8 + 1.3 * a.level' }
-        ]
-    },
-    infernalPact: {
-        id: 'infernalPact',
-        name: 'Infernal Pact',
-        target: 'self',
+    firaga: {
+        id: 'firaga',
+        name: 'Firaga',
+        target: 'ally-single',
         element: 'Red',
-        description: "Sacrifice safety for power. (Grants Berserk)",
-        effects: [
-            { type: 'add_status', status: 'berserk', chance: 1.0, duration: 3 }
-        ]
+        description: "Massive fire damage.",
+        effects: [{ type: 'hp_damage', formula: '30 + a.mag * 2.5' }]
     },
-
-    wait: {
-        id: 'wait',
-        name: 'Wait',
-        target: 'self',
-        element: 'White',
-        description: "Do nothing.",
-        effects: []
-    },
-
-    flameRebirth: {
-        id: 'flameRebirth',
-        name: 'Flame Rebirth',
-        target: 'self',
-        element: 'Red',
-        description: "Rise from the ashes.",
-        effects: []
-    },
-
-    // Nurse
-    needleShot: {
-        id: 'needleShot',
-        name: 'Needle Shot',
-        target: 'enemy-any',
+    gravija: {
+        id: 'gravija',
+        name: 'Gravija',
+        target: 'party',
         element: 'Black',
-        description: "A precise strike that injects toxins.",
-        effects: [
-            { type: 'hp_damage', formula: '5 + 1.2 * a.level' },
-            { type: 'add_status', status: 'poison', chance: 0.4, duration: 3 }
-        ]
+        description: "Reduces HP by 50%.",
+        effects: [{ type: 'hp_damage', formula: 'b.hp * 0.5' }]
     },
-    fieldSurgery: {
-        id: 'fieldSurgery',
-        name: 'Field Surgery',
-        target: 'ally-any',
-        element: 'Black',
-        description: "Emergency medical attention. It might hurt.",
+    jechtBeam: {
+        id: 'jechtBeam',
+        name: 'Jecht Beam',
+        target: 'ally-single',
+        element: 'Special',
+        description: "Petrifies a target.",
         effects: [
-            { type: 'hp_heal', formula: '10 + 2.0 * a.level' }
+            { type: 'hp_damage', formula: '50' },
+            { type: 'add_status', status: 'stone', chance: 1.0 }
         ]
     },
 
-    // Incubus
-    drainKiss: {
-        id: 'drainKiss',
-        name: 'Drain Kiss',
-        target: 'enemy-any',
-        element: 'Black',
-        description: "Steals vitality and puts the target to sleep.",
-        effects: [
-            { type: 'hp_drain', formula: '4 + 0.6 * a.level' },
-            { type: 'add_status', status: 'sleep', chance: 0.5, duration: 3 }
-        ]
+    // Valefor
+    sonicWings: {
+        id: 'sonicWings',
+        name: 'Sonic Wings',
+        target: 'enemy-single',
+        element: 'Wind',
+        description: "Valefor: Delays enemy turn.",
+        effects: [{ type: 'hp_damage', formula: 'a.atk * 2.0' }]
+    },
+    energyBlast: {
+        id: 'energyBlast',
+        name: 'Energy Blast',
+        target: 'enemy-group',
+        element: 'Special',
+        description: "Valefor's Overdrive.",
+        effects: [{ type: 'hp_damage', formula: 'a.atk * 5.0' }]
     }
 };

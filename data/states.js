@@ -40,6 +40,58 @@ export const states = {
         removeAtDamage: true,
         traits: []
     },
+    poison: {
+        id: 'poison',
+        name: 'Poison',
+        icon: 2,
+        duration: 3,
+        traits: [
+            { code: 'HRG', value: -0.1 } // Drains 10% max HP
+        ]
+    },
+    darkness: {
+        id: 'darkness',
+        name: 'Darkness',
+        icon: 3,
+        duration: 3,
+        traits: [
+             { code: 'PARAM_RATE', dataId: 'hit', value: 0.5 } // Halves hit rate (needs implementation in Action)
+        ]
+    },
+    haste: {
+        id: 'haste',
+        name: 'Haste',
+        icon: 4,
+        duration: 5,
+        traits: [
+            { code: 'PARAM_RATE', dataId: 'asp', value: 1.5 }
+        ]
+    },
+    power_break: {
+        id: 'power_break',
+        name: 'Power Break',
+        icon: 5,
+        duration: 3,
+        traits: [
+            { code: 'PARAM_RATE', dataId: 'atk', value: 0.5 }
+        ]
+    },
+    armor_break: {
+        id: 'armor_break',
+        name: 'Armor Break',
+        icon: 6,
+        duration: 3,
+        traits: [
+            { code: 'PARAM_RATE', dataId: 'def', value: 0.5 }
+        ]
+    },
+    stone: {
+        id: 'stone',
+        name: 'Petrify',
+        icon: 7,
+        restriction: 4,
+        traits: []
+    },
     regen: {
         id: 'regen',
         name: 'Regeneration',
@@ -56,6 +108,21 @@ export const states = {
         duration: 3,
         traits: [
             { code: 'PARAM_PLUS', dataId: 'atk', value: 3 }
+        ]
+    },
+    valefor_form: {
+        id: 'valefor_form',
+        name: 'Summoned: Valefor',
+        icon: 10,
+        duration: 3,
+        traits: [
+            { code: 'SPRITE_OVERRIDE', dataId: 'highPixie', value: 0 },
+            { code: 'PARAM_RATE', dataId: 'maxHp', value: 2.0 },
+            { code: 'PARAM_RATE', dataId: 'atk', value: 2.0 },
+            { code: 'PARAM_RATE', dataId: 'mag', value: 2.0 },
+            { code: 'SKILL_ADD', dataId: 'sonicWings', value: 1 },
+            { code: 'SKILL_ADD', dataId: 'energyBlast', value: 1 }
+            // Ideally we seal other skills, but for now adding these is enough.
         ]
     }
 };

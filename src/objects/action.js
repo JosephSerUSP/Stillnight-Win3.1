@@ -88,7 +88,7 @@ export class Game_Action {
             return [this.subject];
         }
 
-        const targetSide = scope.includes('ally') ? allies : opponents;
+        const targetSide = scope.includes('ally') || scope.includes('friend') ? allies : opponents;
         return targetSide.filter(b => b.hp > 0);
     }
 
@@ -157,6 +157,10 @@ export class Game_Action {
         const hpBefore = target.hp;
         target.hp = Math.max(0, target.hp - dmg);
 
+        // FFX Mechanic: Gain TP on attack and damage
+        if (battler.gainTp) battler.gainTp(10); // Standard gain
+        if (target.gainTp) target.gainTp(Math.min(20, Math.floor((dmg / target.maxHp) * 50)));
+
         SoundManager.play('DAMAGE');
 
         const msg = isCritical
@@ -215,6 +219,12 @@ export class Game_Action {
             const result = EffectProcessor.apply(effectKey, effectValue, battler, target, context);
 
             if (!result) return;
+
+             // TP Gain logic for skills (mostly damage)
+             if (result.type === 'damage' || result.type === 'hp_drain') {
+                 if (battler.gainTp) battler.gainTp(5);
+                 if (target.gainTp && result.value > 0) target.gainTp(Math.min(20, Math.floor((result.value / target.maxHp) * 50)));
+             }
 
              if (result.type === 'damage') {
                  SoundManager.play('DAMAGE');

@@ -185,6 +185,18 @@ export class Window_Battle extends Window_Base {
             ]
         });
 
+        // Add TP Gauge for party members
+        if (!isEnemy && b.tp !== undefined) {
+            UI.build(container, {
+                type: 'label',
+                props: {
+                    className: 'battler-tp',
+                    text: this.createTpGauge(b.tp, b.maxTp),
+                    style: { fontSize: '0.8em', color: '#ffd700' }
+                }
+            });
+        }
+
         const nameEl = container.children[0];
         nameEl.innerHTML = "";
 
@@ -209,6 +221,15 @@ export class Window_Battle extends Window_Base {
     const emptyCount = totalLength - filledCount;
     if (emptyCount < 0) return `[${"#".repeat(totalLength)}]`;
     return `[${"#".repeat(filledCount)}${" ".repeat(emptyCount)}]`;
+  }
+
+  createTpGauge(tp, maxTp) {
+      const totalLength = 10;
+      let filledCount = Math.round((tp / maxTp) * totalLength);
+      if (filledCount < 0) filledCount = 0;
+      if (filledCount > totalLength) filledCount = totalLength;
+      const emptyCount = totalLength - filledCount;
+      return `OD[${"=".repeat(filledCount)}${".".repeat(emptyCount)}]`;
   }
 
   getBattlerId(index, isEnemy) {

@@ -58,6 +58,10 @@ export class Game_Battler extends Game_Base {
     this.gold = actorData.gold || 0;
     this.isEnemy = isEnemy;
 
+    // FFX Mechanics
+    this.tp = 0;
+    this.maxTp = 100;
+
     /**
      * Active states on the battler.
      * @type {Array<{id: string, turns: number}>}
@@ -199,6 +203,10 @@ export class Game_Battler extends Game_Base {
     if (traitSum !== 0) return traitSum;
 
     return 0;
+  }
+
+  gainTp(value) {
+      this.tp = Math.min(this.tp + value, this.maxTp);
   }
 
   /**
