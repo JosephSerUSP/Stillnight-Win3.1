@@ -14,6 +14,10 @@ def run(playwright):
     bg_color = page.evaluate("window.getComputedStyle(document.body).backgroundColor")
     print(f"Body background color: {bg_color}")
 
+    # Check overflow
+    overflow = page.evaluate("window.getComputedStyle(document.getElementById('game-container')).overflow")
+    print(f"Game container overflow: {overflow}")
+
     # 2. Screenshot Desktop
     page.screenshot(path='verification/screenshot_desktop.png')
     print("Desktop screenshot taken.")

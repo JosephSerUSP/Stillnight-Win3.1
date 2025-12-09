@@ -92,6 +92,10 @@ html, body {
     pointer-events: auto;
 }
 
+#game-container {
+    overflow: visible !important;
+}
+
 /* ===== Window System (Window_Base) ============================== */
 
 /* Main Frame */
@@ -452,9 +456,9 @@ input:checked + .toggle-slider:before { transform: translateX(16px); background-
     border: 1px solid var(--bezel-shadow);
     box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
     display: flex;
-    flex-direction: column; /* Changed to column based on logic */
+    flex-direction: column;
     padding: 2px;
-    gap: 0; /* Handled by children margins */
+    gap: 0;
     font-size: 10px;
     cursor: pointer;
 }
@@ -618,6 +622,14 @@ input:checked + .toggle-slider:before { transform: translateX(16px); background-
 ::-webkit-scrollbar-track { background: var(--bezel-light); border-left: 1px solid var(--window-border); }
 ::-webkit-scrollbar-thumb {
     background: var(--button-bg);
+    border: 1px solid var(--window-border);
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+}
+::-webkit-scrollbar-button {
+    display: block;
+    background-color: var(--button-bg);
+    width: 12px;
+    height: 12px;
     border: 1px solid var(--window-border);
     box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
 }

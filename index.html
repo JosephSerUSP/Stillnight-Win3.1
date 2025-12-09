@@ -7,19 +7,21 @@
 </head>
 <body>
 <div class="desktop">
-    <div class="win-window">
-        <div class="title-bar">
+    <!-- Main Window Frame -->
+    <div class="window-frame" style="width: 976px; height: 600px;"> <!-- Approximate size + decorations -->
+        <div class="window-header">
             <div class="title-group">
                 <div class="title-icon"></div>
                 <div class="title">Stillnight – Windows 3.1 Stack</div>
             </div>
-            <div class="sys-buttons">
+            <div class="sys-buttons" style="display: flex; gap: 2px;">
                 <button class="win-btn" id="btn-theme" title="Theme">🎨</button>
                 <button class="win-btn" title="Minimize">_</button>
                 <button class="win-btn" title="Maximize">▢</button>
                 <button class="win-btn" title="Close">X</button>
             </div>
         </div>
+        <!-- Game Stage: Overflow visible to allow floating windows outside -->
         <div class="window-content" id="game-container">
             <!-- Game content will be dynamically inserted here -->
         </div>
