@@ -200,122 +200,21 @@ export class Window_PartyPanel extends Window_Base {
         this.btnFormation = this.header.querySelector("#btn-formation");
         this.btnInventory = this.header.querySelector("#btn-inventory");
 
-        // Summoner Section
-        UI.build(this.content, {
-            type: 'panel',
-            props: { id: 'summoner-slot', className: 'summoner-slot', style: { borderBottom: '1px solid var(--bezel-shadow)', paddingBottom: '4px', marginBottom: '4px' } }
-        });
-
-        this.summonerSlotEl = this.content.querySelector("#summoner-slot");
-
         this.partyGridEl = UI.build(this.content, {
             type: 'panel',
             props: { className: 'party-grid', id: 'party-grid' }
         });
+
+        // Summoner Section (Placed after party-grid to be at the bottom/third row)
+        UI.build(this.content, {
+            type: 'panel',
+            props: { id: 'summoner-slot', className: 'summoner-slot', style: { marginTop: '4px', borderTop: '1px solid var(--bezel-shadow)', paddingTop: '4px' } }
+        });
+
+        this.summonerSlotEl = this.content.querySelector("#summoner-slot");
     }
 
     updateParty(party, onInspect, context = null) {
-        // Render Summoner
-        this.summonerSlotEl.innerHTML = "";
-        if (party.summoner) {
-             const summoner = party.summoner;
-
-             // Build custom summoner panel
-             const sContainer = UI.build(this.summonerSlotEl, {
-                 type: 'flex',
-                 props: {
-                     style: {
-                         width: '100%',
-                         height: '60px', // Shorter than creature panel (116px)
-                         boxSizing: 'border-box',
-                         border: '1px solid var(--bezel-light)',
-                         backgroundColor: 'var(--desktop-bg)',
-                         cursor: 'pointer',
-                         padding: '4px'
-                     },
-                     onClick: () => onInspect(summoner, 'summoner')
-                 },
-                 children: [
-                     // Left: Portrait
-                     {
-                         type: 'panel',
-                         props: {
-                             style: {
-                                 width: '48px',
-                                 height: '48px',
-                                 backgroundImage: `url('assets/portraits/${summoner.spriteKey || "egg"}.png')`,
-                                 backgroundSize: 'cover',
-                                 flexShrink: '0',
-                                 marginRight: '6px'
-                             }
-                         }
-                     },
-                     // Right: Info Column
-                     {
-                         type: 'flex',
-                         props: {
-                             style: { flexDirection: 'column', flexGrow: '1', justifyContent: 'space-between' }
-                         },
-                         children: [
-                             // Top Row: Name + Equip
-                             {
-                                 type: 'flex',
-                                 props: { style: { justifyContent: 'space-between', alignItems: 'center' } },
-                                 children: [
-                                     { type: 'label', props: { text: summoner.name, style: { fontWeight: 'bold' } } },
-                                     {
-                                         type: 'label',
-                                         props: {
-                                             text: summoner.equipmentItem ? summoner.equipmentItem.name : "-",
-                                             style: { fontSize: '10px', color: 'var(--text-muted)' }
-                                         }
-                                     }
-                                 ]
-                             },
-                             // Bottom Row: Gauges (HP + MP)
-                             {
-                                 type: 'flex',
-                                 props: { style: { gap: '4px' } },
-                                 children: [
-                                     // HP Gauge Container
-                                     {
-                                         type: 'panel',
-                                         props: { style: { flex: '1', display: 'flex', flexDirection: 'column' } },
-                                         children: [
-                                             { type: 'label', props: { text: `HP ${summoner.hp}/${summoner.maxHp}`, style: { fontSize: '9px', marginBottom: '1px' } } },
-                                             { type: 'panel', props: { className: 'gauge-container hp-gauge-container', style: { height: '6px', backgroundColor: '#333' } } }
-                                         ]
-                                     },
-                                     // MP Gauge Container
-                                     {
-                                         type: 'panel',
-                                         props: { style: { flex: '1', display: 'flex', flexDirection: 'column' } },
-                                         children: [
-                                             { type: 'label', props: { text: `MP ${summoner.mp}/${summoner.maxMp}`, style: { fontSize: '9px', marginBottom: '1px' } } },
-                                             { type: 'panel', props: { className: 'gauge-container mp-gauge-container', style: { height: '6px', backgroundColor: '#333' } } }
-                                         ]
-                                     }
-                                 ]
-                             }
-                         ]
-                     }
-                 ]
-             });
-
-             // Fill Gauges
-             const hpFill = document.createElement('div');
-             hpFill.style.height = '100%';
-             hpFill.style.backgroundColor = 'var(--gauge-hp)';
-             hpFill.style.width = `${Math.max(0, (summoner.hp / summoner.maxHp) * 100)}%`;
-             sContainer.querySelector('.hp-gauge-container').appendChild(hpFill);
-
-             const mpFill = document.createElement('div');
-             mpFill.style.height = '100%';
-             mpFill.style.backgroundColor = '#60a0ff'; // MP Color
-             mpFill.style.width = `${Math.max(0, (summoner.mp / summoner.maxMp) * 100)}%`;
-             sContainer.querySelector('.mp-gauge-container').appendChild(mpFill);
-        }
-
         this.partyGridEl.innerHTML = "";
         party.slots.slice(0, 4).forEach((member, index) => {
             let evolutionStatus = null;
@@ -349,6 +248,104 @@ export class Window_PartyPanel extends Window_Base {
             }
             this.partyGridEl.appendChild(slot);
         });
+
+        // Render Summoner
+        this.summonerSlotEl.innerHTML = "";
+        if (party.summoner) {
+             const summoner = party.summoner;
+             const slot = document.createElement("div");
+             slot.className = "party-slot";
+             slot.style.width = "100%";
+             slot.style.height = "60px"; // Shorter than standard 116px
+             slot.style.display = "flex";
+             slot.style.flexDirection = "column";
+             slot.style.boxSizing = "border-box";
+             slot.style.cursor = "pointer";
+             slot.onclick = () => onInspect(summoner, 'summoner');
+
+             // Header
+             const header = document.createElement("div");
+             header.className = "party-slot-header";
+             header.style.display = "flex";
+             header.style.justifyContent = "space-between";
+             header.style.alignItems = "center";
+             header.style.marginBottom = "2px";
+
+             const nameEl = document.createElement("div");
+             nameEl.className = "party-slot-name";
+             nameEl.style.fontWeight = "bold";
+             nameEl.textContent = summoner.name;
+             header.appendChild(nameEl);
+
+             const equipEl = document.createElement("div");
+             equipEl.style.fontSize = "10px";
+             equipEl.style.color = "var(--text-muted)";
+             equipEl.textContent = summoner.equipmentItem ? summoner.equipmentItem.name : "-";
+             header.appendChild(equipEl);
+
+             slot.appendChild(header);
+
+             // Body
+             const body = document.createElement("div");
+             body.className = "party-slot-body";
+             body.style.display = "flex";
+             body.style.flexGrow = "1";
+             body.style.alignItems = "center";
+
+             const portrait = document.createElement("div");
+             portrait.className = "party-slot-portrait";
+             portrait.style.backgroundImage = `url('assets/portraits/${summoner.spriteKey || "egg"}.png')`;
+             portrait.style.width = "48px";
+             portrait.style.height = "48px";
+             portrait.style.flexShrink = "0";
+             body.appendChild(portrait);
+
+             // Stats Container
+             const stats = document.createElement("div");
+             stats.style.flexGrow = "1";
+             stats.style.marginLeft = "4px";
+             stats.style.display = "flex";
+             stats.style.flexDirection = "column";
+             stats.style.justifyContent = "center";
+             stats.style.gap = "2px";
+
+             // Helper for gauge
+             const createMiniGauge = (label, current, max, color) => {
+                 const row = document.createElement("div");
+                 row.style.display = "flex";
+                 row.style.alignItems = "center";
+                 row.style.width = "100%";
+
+                 const text = document.createElement("span");
+                 text.textContent = `${label} ${current}/${max}`;
+                 text.style.fontSize = "9px";
+                 text.style.minWidth = "55px";
+                 row.appendChild(text);
+
+                 const gaugeBg = document.createElement("div");
+                 gaugeBg.style.flexGrow = "1";
+                 gaugeBg.style.height = "5px";
+                 gaugeBg.style.backgroundColor = "#333";
+                 gaugeBg.style.border = "1px solid #555";
+
+                 const fill = document.createElement("div");
+                 fill.style.height = "100%";
+                 fill.style.backgroundColor = color;
+                 fill.style.width = `${Math.max(0, (current / max) * 100)}%`;
+
+                 gaugeBg.appendChild(fill);
+                 row.appendChild(gaugeBg);
+                 return row;
+             };
+
+             stats.appendChild(createMiniGauge("HP", summoner.hp, summoner.maxHp, "var(--gauge-hp)"));
+             stats.appendChild(createMiniGauge("MP", summoner.mp, summoner.maxMp, "#60a0ff"));
+
+             body.appendChild(stats);
+             slot.appendChild(body);
+
+             this.summonerSlotEl.appendChild(slot);
+        }
     }
 
     animateGauge(element, startHp, endHp, maxHp, duration) {
