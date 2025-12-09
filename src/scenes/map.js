@@ -550,11 +550,17 @@ export class Scene_Map extends Scene_Base {
    * @method executeEvent
    * @param {import("../objects/objects.js").Game_Event} event - The event to execute.
    */
-  executeEvent(event) {
+  async executeEvent(event) {
+      if (this.inputLocked) return;
+
       if (event.type === 'BATTLE' || (event.type === 'enemy' || event.id === 'enemy')) {
           this.startBattle(event.x, event.y, event.encounterData, event.isSneakAttack, event.isPlayerFirstStrike);
       } else if (event.actions) {
-          event.actions.forEach(action => this.interpreter.execute(action, event));
+          this.inputLocked = true;
+          for (const action of event.actions) {
+              await this.interpreter.execute(action, event);
+          }
+          this.inputLocked = false;
       }
   }
 

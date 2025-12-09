@@ -4,11 +4,29 @@
     "intro": "A quiet settlement on the edge of the void.",
     "depth": 0,
     "music": "town1",
+    "meta": {
+      "layout": [
+        "####################",
+        "#..................#",
+        "#...S......R.......#",
+        "#..................#",
+        "#.......!..........#",
+        "#..................#",
+        "#...U......¥.......#",
+        "#..................#",
+        "#..................#",
+        "#..................#",
+        "#..................#"
+      ],
+      "startX": 8,
+      "startY": 5
+    },
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "count": 1 },
       { "id": "shop", "count": 1 },
-      { "id": "npc", "count": 2 }
+      { "id": "npc", "count": 2 },
+      { "id": "intro_cutscene_trigger", "count": 1, "x": 8, "y": 4 }
     ],
     "treasures": [],
     "encounters": [],

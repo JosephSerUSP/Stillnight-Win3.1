@@ -165,29 +165,32 @@
              { "type": "MESSAGE", "text": "The air feels different here..." }
          ],
          "else": [
-             { "type": "MESSAGE", "text": "You feel a presence..." },
+             { "type": "MESSAGE", "text": "As you step forward, the shadows lengthen." },
              { "type": "WAIT", "ms": 500 },
              { "type": "FLASH_SCREEN", "color": "#FFFFFF", "duration": 500 },
-             { "type": "PLAY_SOUND", "sound": "UI_SELECT" },
+             { "type": "SHAKE_SCREEN", "power": 5, "duration": 500 },
+             { "type": "PLAY_SOUND", "sound": "THUNDER" },
              { "type": "WAIT", "ms": 500 },
-             { "type": "SHOW_DIALOGUE", "style": "dialogue", "name": "Mysterious Figure", "text": "Greetings, traveler. You have come far.", "choices": [
+             { "type": "SHOW_DIALOGUE", "style": "dialogue", "name": "Mysterious Figure", "face": "wisp.png", "text": "Greetings, traveler. You have come far into the Stillnight.", "choices": [
                  { "label": "Who are you?", "actions": [
-                     { "type": "SHOW_DIALOGUE", "style": "dialogue", "name": "Mysterious Figure", "text": "I am but a shadow of the past. The question is, who are you?", "choices": [
+                     { "type": "SHOW_DIALOGUE", "style": "dialogue", "name": "Mysterious Figure", "face": "wisp.png", "text": "I am but a shadow of the past. The question is, who are you?", "choices": [
                          { "label": "I seek power.", "actions": [
                              { "type": "SET_FLAG", "flag": "path", "value": "power" },
-                             { "type": "SHOW_DIALOGUE", "style": "dialogue", "name": "Mysterious Figure", "text": "Power comes at a price. Remember that." }
+                             { "type": "SHOW_DIALOGUE", "style": "dialogue", "name": "Mysterious Figure", "face": "wisp.png", "text": "Power comes at a price. The deeper you go, the more you will lose." }
                          ]},
                          { "label": "I seek truth.", "actions": [
                              { "type": "SET_FLAG", "flag": "path", "value": "truth" },
-                             { "type": "SHOW_DIALOGUE", "style": "dialogue", "name": "Mysterious Figure", "text": "The truth is often painful. Prepare yourself." }
+                             { "type": "SHOW_DIALOGUE", "style": "dialogue", "name": "Mysterious Figure", "face": "wisp.png", "text": "The truth is often painful. Prepare yourself." }
                          ]}
                      ]}
                  ]},
-                 { "label": "..." }
+                 { "label": "...", "actions": [
+                     { "type": "SHOW_DIALOGUE", "style": "dialogue", "name": "Mysterious Figure", "face": "wisp.png", "text": "Silent? A wise choice. Words have power here." }
+                 ]}
              ]},
              { "type": "WAIT", "ms": 500 },
              { "type": "FLASH_SCREEN", "color": "#000000", "duration": 1000 },
-             { "type": "MESSAGE", "text": "The figure vanishes into the mist." },
+             { "type": "MESSAGE", "text": "The figure vanishes into the mist, leaving only a chill in the air." },
              { "type": "SET_FLAG", "flag": "intro_seen", "value": true }
          ]
        }
