@@ -77,21 +77,63 @@ export class BattleManager {
   }
 
   getAIAction(battlerContext) {
-      const { battler, index, isEnemy } = battlerContext;
+      const { battler, isEnemy } = battlerContext;
       const action = new Game_Action(battler);
 
-      // AI Logic (Simple)
       const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
       const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
 
-      const validSkills = battler.skills.filter(id => {
-          // Check costs? (MP not implemented fully yet, assume available)
-          return true;
-      });
+      // 1. Healing Priority
+      const lowHpAlly = myTeam.find(m => m.hp > 0 && m.hp < m.maxHp * 0.5);
+      if (lowHpAlly) {
+          const healSkillId = battler.skills.find(id => {
+              const skill = this.dataManager.skills[id];
+              return skill && skill.effects.some(e => e.type === 'hp_heal');
+          });
+          if (healSkillId) {
+              action.setSkill(healSkillId, this.dataManager);
+              action.target = lowHpAlly;
+              return action;
+          }
+      }
 
+      // 2. Elemental Weakness
+      // Find an enemy with a weakness we can exploit
+      const validSkills = battler.skills.filter(id => this.dataManager.skills[id]);
+
+      for (const target of opposingTeam.filter(t => t.hp > 0)) {
+          // Check normal attack element
+          const attackMult = action._elementMultiplier(battler.elements, target.elements, this.dataManager);
+          if (attackMult > 1.0) {
+              action.setAttack();
+              action.target = target;
+              return action;
+          }
+
+          // Check skills
+          const effectiveSkill = validSkills.find(id => {
+              const skill = this.dataManager.skills[id];
+              if (!skill.element || skill.element === 'Physical') return false;
+              const mult = action._elementMultiplier([skill.element], target.elements, this.dataManager);
+              return mult > 1.0;
+          });
+
+          if (effectiveSkill) {
+              action.setSkill(effectiveSkill, this.dataManager);
+              action.target = target;
+              return action;
+          }
+      }
+
+      // 3. Random Skill or Attack
       let skillId = null;
-      if (validSkills.length > 0 && Math.random() < 0.6) {
-          skillId = validSkills[randInt(0, validSkills.length - 1)];
+      if (validSkills.length > 0 && Math.random() < 0.4) {
+          // Prefer damage skills
+          const dmgSkills = validSkills.filter(id => {
+              const s = this.dataManager.skills[id];
+              return s.target.includes('enemy');
+          });
+          if (dmgSkills.length > 0) skillId = dmgSkills[randInt(0, dmgSkills.length - 1)];
       }
 
       if (skillId) {
@@ -103,12 +145,8 @@ export class BattleManager {
       const targets = action.makeTargets(myTeam, opposingTeam);
       if (targets.length === 0) return null;
 
-      // Smart targeting (lowest HP for heals, random for attack)
-      if (action.isHeal()) {
-           action.target = targets.reduce((p, c) => (c.hp < p.hp ? c : p));
-      } else {
-           action.target = targets[randInt(0, targets.length - 1)];
-      }
+      // Random target if not already set
+      action.target = targets[randInt(0, targets.length - 1)];
 
       return action;
   }

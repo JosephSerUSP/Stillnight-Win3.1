@@ -3,7 +3,7 @@
  * @description Manages persistent game configuration settings.
  */
 export class ConfigManager {
-    static autoBattle = false;
+    static autoBattle = true;
     static windowAnimations = true;
     static masterVolume = 0.5;
     static sfxVolume = 0.5;

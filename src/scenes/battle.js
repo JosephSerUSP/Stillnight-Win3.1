@@ -46,18 +46,16 @@ export class Scene_Battle extends Scene_Base {
     this.confirmEffectWindow.onUserClose = () => this.windowManager.close(this.confirmEffectWindow);
     this.confirmWindow.onUserClose = () => this.windowManager.close(this.confirmWindow);
 
-    this.commandWindow.onUserClose = () => {}; // Root menu, can't close
+    this.commandWindow.onUserClose = () => {};
     this.skillWindow.onUserClose = () => {
         this.windowManager.close(this.skillWindow);
         this.windowManager.push(this.commandWindow);
     };
     this.targetWindow.onUserClose = () => {
         this.windowManager.close(this.targetWindow);
-        this.windowManager.push(this.commandWindow); // Back to command? Or Skill?
-        // Context dependent... logic needed
+        this.windowManager.push(this.commandWindow);
     };
 
-    // Disable old buttons handlers
     this.battleWindow.setHandlers({
         onRound: () => {},
         onFlee: () => {},
@@ -70,25 +68,17 @@ export class Scene_Battle extends Scene_Base {
   start() {
     this.battleWindow.updateAutoButton(ConfigManager.autoBattle);
 
-    // Hide old buttons
-    if (this.battleWindow.btnRound) this.battleWindow.btnRound.style.display = 'none';
-    if (this.battleWindow.btnFlee) this.battleWindow.btnFlee.style.display = 'none';
-    if (this.battleWindow.btnFormation) this.battleWindow.btnFormation.style.display = 'none';
-    if (this.battleWindow.btnItem) this.battleWindow.btnItem.style.display = 'none';
-
     const floor = this.map.floors[this.map.floorIndex];
     const depth = floor.depth;
     const actorTemplates = this.dataManager.actors;
     let enemies = [];
 
-    // Encounter Setup (Same as before)
+    // Encounter Setup
     if (this.map.floorIndex === this.map.floors.length - 1) {
-       // Boss override logic
        const bossId = this.map.floorIndex === 0 ? "klikk" : "seymour";
        const bossTpl = actorTemplates.find(a => a.id === bossId);
        if (bossTpl) enemies.push(new Game_Battler(bossTpl, depth, true));
        else {
-           // Fallback
            const bossHp = 40 + (depth - 3) * 5;
            enemies.push(new Game_Battler({
                 name: "Eternal Warden", role: "Boss", maxHp: bossHp, elements: ["Black"], skills: ["attack"], gold: 100
@@ -122,7 +112,6 @@ export class Scene_Battle extends Scene_Base {
         }
     }
     if (enemies.length === 0) {
-        // Fallback
         const tpl = actorTemplates.find(a => a.id === 'sinscale');
         enemies.push(new Game_Battler(tpl || { name: 'Sinscale', maxHp: 50 }, depth, true));
     }
@@ -144,7 +133,17 @@ export class Scene_Battle extends Scene_Base {
       else ConfigManager.autoBattle = !ConfigManager.autoBattle;
       ConfigManager.save();
       this.battleWindow.updateAutoButton(ConfigManager.autoBattle);
-      // Trigger update if stuck?
+
+      if (ConfigManager.autoBattle && !this.battleBusy && !this.battleManager.isBattleFinished) {
+          // If enabled while waiting for input, resume battle flow
+          // Close any open command windows
+          if (this.windowManager.stack.includes(this.commandWindow)) this.windowManager.close(this.commandWindow);
+          if (this.windowManager.stack.includes(this.skillWindow)) this.windowManager.close(this.skillWindow);
+          if (this.windowManager.stack.includes(this.targetWindow)) this.windowManager.close(this.targetWindow);
+          if (this.windowManager.stack.includes(this.inventoryWindow)) this.windowManager.close(this.inventoryWindow);
+
+          this.updateBattle();
+      }
   }
 
   stop() {
@@ -182,22 +181,25 @@ export class Scene_Battle extends Scene_Base {
       await this.animateEvents(events);
 
       if (this.battleManager.isBattleFinished) {
-           this.updateBattle(); // Recursion to handle end
+           this.updateBattle();
            return;
       }
 
       const { battler, isEnemy } = battlerContext;
 
       if (!isEnemy) {
+          // Player Turn
           if (ConfigManager.autoBattle) {
               const action = this.battleManager.getAIAction(battlerContext);
               await this.executeAction(action);
-              setTimeout(() => this.updateBattle(), 100);
+              // Small delay to make auto-battle watchable
+              setTimeout(() => this.updateBattle(), 300);
           } else {
               this.currentActor = battler;
               this.showCommandWindow();
           }
       } else {
+          // Enemy Turn
           await this.wait(300);
           const action = this.battleManager.getAIAction(battlerContext);
           await this.executeAction(action);
@@ -206,13 +208,13 @@ export class Scene_Battle extends Scene_Base {
   }
 
   showCommandWindow() {
+      this.battleBusy = false; // Allow input
       const commands = [
           { name: 'Attack', key: 'attack' },
           { name: 'Skill', key: 'skill' },
           { name: 'Item', key: 'item' },
           { name: 'Flee', key: 'flee' }
       ];
-      // Overdrive logic
       if (this.currentActor.overdrive >= 100) {
           commands.unshift({ name: 'Overdrive', key: 'overdrive' });
       }
@@ -233,7 +235,7 @@ export class Scene_Battle extends Scene_Base {
               this.executePlayerAction(action);
           }, () => {
               this.windowManager.close(this.targetWindow);
-              this.windowManager.push(this.commandWindow); // Back
+              this.windowManager.push(this.commandWindow);
           });
       } else if (key === 'skill') {
           this.showSkillSelection();
@@ -252,11 +254,8 @@ export class Scene_Battle extends Scene_Base {
       this.targetWindow.setup(commands, (key) => {
           onSelect(commands[key].data);
       });
-      // Need a way to handle cancel in Window_Command or setup a back button?
-      // For now, I'll rely on onUserClose logic defined in constructor which pushes commandWindow back
-      // But I need to override onUserClose per call?
       this.targetWindow.onUserClose = () => {
-          onCancel();
+          if (onCancel) onCancel();
       };
 
       this.windowManager.close(this.commandWindow);
@@ -274,9 +273,7 @@ export class Scene_Battle extends Scene_Base {
               this.windowManager.push(this.commandWindow);
               return;
           }
-          // Target selection for skill
           const skill = this.dataManager.skills[key];
-          // Check target scope
           if (skill.target.includes('ally')) {
               this.showAllySelection(skill, (target) => {
                    const action = new Game_Action(this.currentActor);
@@ -320,7 +317,6 @@ export class Scene_Battle extends Scene_Base {
           this.party,
           (item, action) => {
               if (action === 'use') {
-                  // Select Target
                    this.partySelectWindow.setup(this.party, `Use ${item.name} on:`, (target) => {
                        const act = new Game_Action(this.currentActor);
                        act.setItem(item.id, this.dataManager);
@@ -333,7 +329,7 @@ export class Scene_Battle extends Scene_Base {
                    this.windowManager.push(this.partySelectWindow);
               }
           },
-          () => {} // cancel
+          () => {}
       );
       this.windowManager.close(this.commandWindow);
   }
@@ -350,32 +346,22 @@ export class Scene_Battle extends Scene_Base {
   }
 
   animateEvents(events) {
-      // (Keep existing implementation logic)
       const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-      // Simplified for brevity, reusing logical flow from original but ensuring it works with new context
-      // I'll copy the original animateEvents code back in a moment or assume I can reference it?
-      // No, overwrite replaces it. I must implement it.
-
       return new Promise(async (resolve) => {
         for (let i = 0; i < events.length; i++) {
             const event = events[i];
-
             if (event.battler && event.battler.name) {
                 await this.battleWindow.animateBattlerName(event.battler, this.battleManager.enemies, this.party.slots.slice(0,4));
             }
-
             if (event.msg) {
                 this.battleWindow.appendLog(event.msg);
             }
-
             let targetOldHp = event.target ? event.target.hp : 0;
             let targetNewHp = event.target ? event.target.hp : 0;
-
             if (event.hpBefore !== undefined) {
                 targetOldHp = event.hpBefore;
                 targetNewHp = event.hpAfter;
             }
-
             if (event.type === 'damage' && event.target) {
                 this.battleWindow.animateBattler(event.target, 'flash', this.battleManager.enemies, this.party.slots.slice(0,4));
                 await this.battleWindow.animateBattleHpGauge(event.target, targetOldHp, targetNewHp, this.battleManager.enemies, this.party.slots.slice(0,4));
@@ -385,7 +371,6 @@ export class Scene_Battle extends Scene_Base {
             } else if (event.type === 'heal' && event.target) {
                 await this.battleWindow.animateBattleHpGauge(event.target, targetOldHp, targetNewHp, this.battleManager.enemies, this.party.slots.slice(0,4));
             }
-
             await delay(300);
         }
         this.renderBattleAscii();
@@ -394,8 +379,7 @@ export class Scene_Battle extends Scene_Base {
   }
 
   attemptFlee() {
-      // Simple Flee
-      if (Math.random() < 0.8) { // High flee chance in CTB?
+      if (Math.random() < 0.8) {
           this.battleWindow.appendLog("Escaped!");
           SoundManager.play('ESCAPE');
           setTimeout(() => {
@@ -404,13 +388,12 @@ export class Scene_Battle extends Scene_Base {
           }, 500);
       } else {
           this.battleWindow.appendLog("Couldn't escape!");
-          this.battleManager._applyTurnDelay(this.currentActor, null); // Skip turn
+          this.battleManager._applyTurnDelay(this.currentActor, new Game_Action(this.currentActor)); // Pass dummy action for default delay
           setTimeout(() => this.updateBattle(), 500);
       }
   }
 
   showVictoryPopup() {
-      // Reuse logic from memory or existing
        const enemies = this.battleManager.enemies;
       let totalGold = enemies.reduce((sum, e) => sum + (e.gold || 0), 0);
       const totalXp = enemies.reduce((sum, e) => sum + probabilisticRound(e.level * (e.expGrowth * 0.5) + 8), 0);
@@ -431,7 +414,5 @@ export class Scene_Battle extends Scene_Base {
       SoundManager.playMusic('victory1');
   }
 
-  wait(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-  }
+  wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 }

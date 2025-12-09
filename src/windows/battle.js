@@ -3,6 +3,7 @@ import { createToggleSwitch, createBattlerNameLabel } from "./utils.js";
 import { getPrimaryElements, elementToAscii } from "../core/utils.js";
 import { UI } from "./builder.js";
 import { ProgressionSystem } from "../managers/progression.js";
+import { ConfigManager } from "../managers/config.js";
 
 export class Window_Battle extends Window_Base {
   constructor() {
@@ -32,7 +33,18 @@ export class Window_Battle extends Window_Base {
     this.viewportEl = terminal.children[1];
     this.logEl = terminal.children[2];
 
-    // No footer buttons for CTB
+    // Restore Auto Toggle
+    const autoSwitchContainer = createToggleSwitch("Auto", ConfigManager.autoBattle, (val) => {
+        if (this.handlers.onAutoToggle) this.handlers.onAutoToggle(val);
+    });
+    // Style adjustments for footer placement
+    autoSwitchContainer.style.marginLeft = "4px";
+    this.footer.innerHTML = ""; // Clear existing generic footer content if any
+    this.footer.style.justifyContent = "flex-start";
+    this.footer.appendChild(autoSwitchContainer);
+
+    this.autoCheckbox = autoSwitchContainer.querySelector('input');
+
     this.handlers = {};
   }
 
@@ -41,11 +53,10 @@ export class Window_Battle extends Window_Base {
   }
 
   updateAutoButton(isAuto) {
-      // No button
+      if (this.autoCheckbox) this.autoCheckbox.checked = isAuto;
   }
 
   onUserClose() {
-      // Shake
       this.animator.shake(this.element);
   }
 
@@ -247,7 +258,7 @@ export class Window_Battle extends Window_Base {
                collapse();
                return;
            }
-           resolve(); // Fallback for complex text anims not rewritten
+           resolve();
        });
   }
 }
