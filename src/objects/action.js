@@ -58,6 +58,16 @@ export class Game_Action {
         return this._skillId;
     }
 
+    isHeal() {
+        if (!this._item || !this._item.effects) return false;
+        return this._item.effects.some(e => e.type === 'hp_heal' || e.type === 'hp');
+    }
+
+    isRevive() {
+        if (!this._item || !this._item.effects) return false;
+        return this._item.effects.some(e => e.type === 'revive' || e.type === 'revive_all');
+    }
+
     /**
      * Speed of the action for turn order.
      */
@@ -89,6 +99,11 @@ export class Game_Action {
         }
 
         const targetSide = scope.includes('ally') ? allies : opponents;
+
+        if (this.isRevive()) {
+            return targetSide.filter(b => b.hp <= 0);
+        }
+
         return targetSide.filter(b => b.hp > 0);
     }
 

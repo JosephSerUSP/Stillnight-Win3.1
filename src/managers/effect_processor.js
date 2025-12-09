@@ -47,6 +47,17 @@ export class EffectProcessor {
             case 'recruit_egg':
                  return { type: 'recruit_egg', value: effectValue, target };
 
+            case 'revive':
+            case 'revive_all': {
+                if (target.hp > 0) return null; // Only works on dead
+
+                let percent = this._evaluate(effectValue, target, source);
+                const healAmount = Math.max(1, Math.floor(target.maxHp * percent));
+                target.hp = healAmount;
+
+                return { type: 'heal', value: healAmount, target, msg: `${target.name} is revived!` };
+            }
+
             case 'hp_damage': {
                 let base = this._evaluate(effectValue, target, source);
                 if (context.boost) base *= context.boost;
