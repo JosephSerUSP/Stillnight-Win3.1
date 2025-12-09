@@ -1,6 +1,7 @@
 import { randInt } from "../core/utils.js";
 import { SoundManager } from "./sound.js";
 import { Game_Action } from "../objects/objects.js";
+import { Temperaments } from "../../data/temperaments.js";
 
 /**
  * @class BattleManager
@@ -188,44 +189,12 @@ export class BattleManager {
       // Context for targeting
       const myTeam = isEnemy ? this.enemies : this.party.activeMembers;
       const opposingTeam = isEnemy ? this.party.activeMembers : this.enemies;
+      const context = { battler, myTeam, opposingTeam, index, isEnemy };
 
-      // 1. Decide Action Type (Skill or Attack)
-      // Simple logic: 60% chance to use skill if available
-      const skillId = (battler.skills && battler.skills.length && Math.random() < 0.6)
-          ? battler.skills[randInt(0, battler.skills.length - 1)]
-          : null;
+      // Get Temperament
+      const temperament = Temperaments[battler.temperament] || Temperaments.balanced;
 
-      if (skillId) {
-          action.setSkill(skillId, this.dataManager);
-          const targets = action.makeTargets(myTeam, opposingTeam);
-
-          if (targets.length === 0) return null; // No valid targets for this skill, maybe fallback to attack?
-
-          // Smart targeting for healing: prefer lowest HP
-          const skill = this.dataManager.skills[skillId];
-          const scope = skill ? skill.target : 'enemy';
-
-          let target;
-          if (scope.includes('ally') && (skill.effects.some(e => e.type === 'hp_heal'))) {
-              // Find ally with lowest HP percentage
-              target = targets.reduce((prev, curr) => {
-                  return (curr.hp / curr.maxHp) < (prev.hp / prev.maxHp) ? curr : prev;
-              });
-          } else {
-              target = targets[randInt(0, targets.length - 1)];
-          }
-
-          action.target = target;
-          return action;
-      } else {
-          // Attack (Scope: enemy)
-          action.setAttack();
-          const targets = action.makeTargets(myTeam, opposingTeam);
-          if (targets.length === 0) return null;
-          const target = targets[randInt(0, targets.length - 1)];
-          action.target = target;
-          return action;
-      }
+      return temperament.evaluate(action, context, this.dataManager);
   }
 
   /**

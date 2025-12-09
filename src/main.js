@@ -53,6 +53,10 @@ async function main() {
     window.Game_Party = Game_Party;
     window.Game_Map = Game_Map;
     window.Game_Event = Game_Event;
+    // Expose Temperaments for testing
+    import('./data/temperaments.js').then(module => {
+        window.Temperaments = module.Temperaments;
+    });
   }
 }
 

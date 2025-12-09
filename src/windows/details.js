@@ -3,6 +3,7 @@ import { createBattlerNameLabel, renderElements, createInteractiveLabel, createG
 import { UI } from "./builder.js";
 import { evaluateFormula } from "../core/utils.js";
 import { ProgressionSystem } from "../managers/progression.js";
+import { Temperaments } from "../../data/temperaments.js";
 
 /**
  * @class Window_Inspect
@@ -107,6 +108,12 @@ export class Window_Inspect extends Window_Base {
            this.fieldsContainer.appendChild(row);
            return val;
       };
+
+      // Temperament
+      const tempId = member.temperament || 'balanced';
+      const tempDef = Temperaments[tempId] || Temperaments.balanced;
+      const tempLabel = createInteractiveLabel({ name: tempDef.name, description: tempDef.description }, 'temperament', { tooltipText: tempDef.description });
+      addRow("Temperament", tempLabel);
 
       // HP Bar
       const hpContainer = document.createElement("div");
