@@ -138,6 +138,125 @@ export function drawBattlerStats(battler) {
 }
 
 /**
+ * Creates a Commander (Summoner) slot.
+ * @param {import("../objects/objects.js").Game_Battler} summoner
+ * @param {Object} options
+ */
+export function createCommanderSlot(summoner, options = {}) {
+    const slot = document.createElement("div");
+    slot.className = "party-slot commander-slot";
+    slot.style.width = "100%";
+    slot.style.height = "60px";
+    slot.style.display = "flex";
+    slot.style.alignItems = "center"; // Align Portrait and Info vertically center
+    slot.style.boxSizing = "border-box";
+    slot.style.padding = "2px";
+
+    if (options.onClick) {
+        slot.style.cursor = "pointer";
+        slot.addEventListener("click", (e) => options.onClick(e));
+    }
+
+    // Left: Portrait
+    const portrait = document.createElement("div");
+    portrait.className = "party-slot-portrait";
+    portrait.style.backgroundImage = `url('assets/portraits/${summoner.spriteKey || "egg"}.png')`;
+    portrait.style.width = "48px";
+    portrait.style.height = "48px";
+    portrait.style.flexShrink = "0";
+    portrait.style.marginRight = "6px";
+    slot.appendChild(portrait);
+
+    // Right: Info Column
+    const infoCol = document.createElement("div");
+    infoCol.style.flexGrow = "1";
+    infoCol.style.display = "flex";
+    infoCol.style.flexDirection = "column";
+    infoCol.style.justifyContent = "center";
+    infoCol.style.minWidth = "0";
+
+    // Row 1: Name (Left) + Equip (Right)
+    const topRow = document.createElement("div");
+    topRow.style.display = "flex";
+    topRow.style.justifyContent = "space-between";
+    topRow.style.alignItems = "baseline";
+    topRow.style.marginBottom = "2px";
+
+    const nameLabel = createBattlerNameLabel(summoner, { evolutionStatus: 'NONE' });
+    topRow.appendChild(nameLabel);
+
+    const equipEl = document.createElement("div");
+    equipEl.style.fontSize = "10px";
+    equipEl.style.color = "var(--text-muted)";
+    equipEl.textContent = summoner.equipmentItem ? summoner.equipmentItem.name : "-";
+    topRow.appendChild(equipEl);
+
+    infoCol.appendChild(topRow);
+
+    // Row 2: Gauges (HP + MP side by side)
+    const gaugesRow = document.createElement("div");
+    gaugesRow.style.display = "flex";
+    gaugesRow.style.gap = "6px";
+    gaugesRow.style.width = "100%";
+    gaugesRow.style.marginBottom = "2px";
+
+    const createMiniGauge = (label, current, max, color) => {
+         const container = document.createElement("div");
+         container.style.flex = "1";
+         container.style.display = "flex";
+         container.style.flexDirection = "column";
+
+         const text = document.createElement("div");
+         text.textContent = `${label} ${current}/${max}`;
+         text.style.fontSize = "9px";
+         text.style.marginBottom = "1px";
+         container.appendChild(text);
+
+         const gaugeBg = document.createElement("div");
+         gaugeBg.style.height = "5px";
+         gaugeBg.style.backgroundColor = "#333";
+         gaugeBg.style.border = "1px solid #555";
+         gaugeBg.className = 'gauge-container'; // for verification
+         if (label === 'HP') gaugeBg.classList.add('hp-gauge-container');
+         if (label === 'MP') gaugeBg.classList.add('mp-gauge-container');
+
+         const fill = document.createElement("div");
+         fill.style.height = "100%";
+         fill.style.backgroundColor = color;
+         fill.style.width = `${Math.max(0, (current / max) * 100)}%`;
+
+         gaugeBg.appendChild(fill);
+         container.appendChild(gaugeBg);
+         return container;
+    };
+
+    gaugesRow.appendChild(createMiniGauge("HP", summoner.hp, summoner.maxHp, "var(--gauge-hp)"));
+    gaugesRow.appendChild(createMiniGauge("MP", summoner.mp, summoner.maxMp, "#60a0ff"));
+    infoCol.appendChild(gaugesRow);
+
+    // Row 3: XP Gauge (Full width)
+    const xpRow = document.createElement("div");
+    xpRow.style.width = "100%";
+    xpRow.style.display = "flex";
+
+    const xpNeeded = ProgressionSystem.xpNeeded(summoner.level, summoner.expGrowth);
+    const xpPercent = Math.min(100, Math.max(0, ((summoner.xp || 0) / xpNeeded) * 100));
+
+    const { fill: xpFill } = Component_Gauge(xpRow, {
+        height: "4px",
+        color: "#60a0ff",
+        bgColor: "#333",
+        width: "100%"
+    });
+    xpFill.style.width = `${xpPercent}%`;
+    infoCol.appendChild(xpRow);
+
+    slot.appendChild(infoCol);
+
+    return slot;
+}
+
+/**
  * Creates a standard party member slot.
  */
 export function createPartySlot(battler, index, options = {}) {

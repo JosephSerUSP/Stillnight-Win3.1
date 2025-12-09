@@ -1,5 +1,5 @@
 import { Window_Base } from "./base.js";
-import { createPartySlot } from "./utils.js";
+import { createPartySlot, createCommanderSlot } from "./utils.js";
 import { ProgressionSystem } from "../managers/progression.js";
 import { UI } from "./builder.js";
 
@@ -204,10 +204,19 @@ export class Window_PartyPanel extends Window_Base {
             type: 'panel',
             props: { className: 'party-grid', id: 'party-grid' }
         });
+
+        // Summoner Section (Placed after party-grid to be at the bottom/third row)
+        UI.build(this.content, {
+            type: 'panel',
+            props: { id: 'summoner-slot', className: 'summoner-slot', style: { marginTop: '4px', borderTop: '1px solid var(--bezel-shadow)', paddingTop: '4px' } }
+        });
+
+        this.summonerSlotEl = this.content.querySelector("#summoner-slot");
     }
 
     updateParty(party, onInspect, context = null) {
         this.partyGridEl.innerHTML = "";
+        // Render slots 0-3 (Active Party)
         party.slots.slice(0, 4).forEach((member, index) => {
             let evolutionStatus = null;
             if (member && context) {
@@ -240,6 +249,16 @@ export class Window_PartyPanel extends Window_Base {
             }
             this.partyGridEl.appendChild(slot);
         });
+
+        // Render Summoner (Slot 4)
+        this.summonerSlotEl.innerHTML = "";
+        const summoner = party.slots[4];
+        if (summoner) {
+             const slot = createCommanderSlot(summoner, {
+                 onClick: () => onInspect(summoner, 'summoner')
+             });
+             this.summonerSlotEl.appendChild(slot);
+        }
     }
 
     animateGauge(element, startHp, endHp, maxHp, duration) {

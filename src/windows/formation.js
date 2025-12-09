@@ -1,5 +1,5 @@
 import { Window_Base } from "./base.js";
-import { createPartySlot, createReserveSlot } from "./utils.js";
+import { createPartySlot, createReserveSlot, createCommanderSlot } from "./utils.js";
 import { SoundManager } from "../managers/index.js";
 import { ProgressionSystem } from "../managers/progression.js";
 
@@ -26,6 +26,10 @@ export class Window_Formation extends Window_Base {
     this.gridEl.style.gap = '4px';
     this.gridEl.style.marginBottom = '4px';
     formationBody.appendChild(this.gridEl);
+
+    this.commanderSlotContainer = document.createElement('div');
+    this.commanderSlotContainer.style.marginBottom = '4px';
+    formationBody.appendChild(this.commanderSlotContainer);
 
     const reserveLabel = document.createElement('div');
     reserveLabel.className = 'formation-label';
@@ -63,10 +67,23 @@ export class Window_Formation extends Window_Base {
   renderFormationGrid() {
     this.gridEl.innerHTML = "";
     this.reserveGridEl.innerHTML = "";
+    this.commanderSlotContainer.innerHTML = "";
 
     if (!this.party) return;
 
     this.party.slots.forEach((m, index) => {
+      // Special handling for Slot 4 (Summoner)
+      if (index === 4) {
+          if (m) {
+              const cSlot = createCommanderSlot(m, {
+                  onClick: () => SoundManager.play('UI_ERROR') // Non-interactible
+              });
+              cSlot.style.cursor = 'default';
+              this.commanderSlotContainer.appendChild(cSlot);
+          }
+          return;
+      }
+
       let evolutionStatus = null;
       if (m && this.context) {
           const statusObj = ProgressionSystem.getEvolutionStatus(m, this.context.inventory, this.context.floorDepth, this.context.gold);
@@ -75,7 +92,7 @@ export class Window_Formation extends Window_Base {
           }
       }
 
-      const isReserve = index >= 4;
+      const isReserve = index >= 5; // 5 and above are reserve
       const options = {
           onClick: this.onSlotClick.bind(this),
           evolutionStatus: evolutionStatus
@@ -94,7 +111,7 @@ export class Window_Formation extends Window_Base {
 
       if (index < 4) {
         this.gridEl.appendChild(slot);
-      } else {
+      } else if (index >= 5) {
         this.reserveGridEl.appendChild(slot);
       }
     });

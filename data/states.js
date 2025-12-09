@@ -57,5 +57,16 @@ export const states = {
         traits: [
             { code: 'PARAM_PLUS', dataId: 'atk', value: 3 }
         ]
+    },
+    weakened: {
+        id: 'weakened',
+        name: 'Weakened',
+        icon: 11,
+        duration: 9999,
+        traits: [
+            { code: 'PARAM_RATE', dataId: 'atk', value: 0.5 },
+            { code: 'PARAM_RATE', dataId: 'def', value: 0.5 },
+            { code: 'PARAM_RATE', dataId: 'asp', value: 0.5 }
+        ]
     }
 };

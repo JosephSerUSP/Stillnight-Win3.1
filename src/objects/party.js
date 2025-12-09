@@ -33,6 +33,15 @@ export class Game_Party {
      * @type {Array}
      */
     this.inventory = [];
+
+  }
+
+  /**
+   * Gets the Summoner (Commander), who occupies the fixed 5th slot (index 4).
+   * @type {Game_Battler|null}
+   */
+  get summoner() {
+      return this.slots[4];
   }
 
   /**
@@ -48,7 +57,7 @@ export class Game_Party {
   }
 
   get reserveMembers() {
-      return this.slots.slice(4).filter(m => m !== null);
+      return this.slots.slice(5).filter(m => m !== null);
   }
 
   /**
@@ -57,6 +66,14 @@ export class Game_Party {
    */
   checkDeaths() {
       const events = [];
+
+      // Check Summoner Death
+      if (this.summoner && this.summoner.hp <= 0) {
+          events.push({ type: 'GAME_OVER', member: this.summoner });
+          // Typically we can return early, but maybe we want to process other deaths for log consistency?
+          // Since it's game over, it might not matter.
+      }
+
       const members = [...this.members];
 
       for (const member of members) {
@@ -109,20 +126,88 @@ export class Game_Party {
       return Game_Battler.create(actorData, config.level);
     }).filter(member => member !== null);
 
-    initialMembers.forEach((m, i) => {
-        if (i < this.MAX_MEMBERS) {
-            this.slots[i] = m;
+    // Place initial members in slots 0-3, then 5+
+    let slotIndex = 0;
+    initialMembers.forEach((m) => {
+        if (slotIndex === 4) slotIndex++; // Skip Summoner slot
+        if (slotIndex < this.MAX_MEMBERS) {
+            this.slots[slotIndex] = m;
+            slotIndex++;
         }
     });
+
+    // Initialize Summoner in Slot 4
+    const summonerData = actors.find(a => a.id === 'summoner');
+    let summoner;
+    if (summonerData) {
+        summoner = Game_Battler.create(summonerData, 1);
+    } else {
+        console.warn("Summoner data not found in actors.json. Creating default.");
+        summoner = new Game_Battler({
+            id: 'summoner',
+            name: 'Commander',
+            maxHp: 50,
+            maxMp: 100,
+            level: 1,
+            role: 'Summoner',
+            traits: []
+        });
+    }
+    this.slots[4] = summoner;
   }
 
   /**
-   * Adds a member to the first available slot.
+   * Handles map steps. Drains MP and applies Weakened effects.
+   * @returns {Array} List of events (e.g. damage logs).
+   */
+  onStep() {
+      const events = [];
+      const activeCount = this.activeMembers.length;
+      if (activeCount === 0 || !this.summoner) return events;
+
+      // Drain MP
+      const mpCostPerStep = activeCount; // 1 MP per active creature
+      this.summoner.mp = Math.max(0, this.summoner.mp - mpCostPerStep);
+
+      // Check Weakened State
+      if (this.summoner.mp === 0) {
+          // Apply Weakened State if not already applied
+          this.activeMembers.forEach(m => {
+              if (!m.isStateAffected('weakened')) {
+                  m.addState('weakened');
+                  events.push({ type: 'text', msg: `${m.name} is weakened!` });
+              }
+              // HP Drain
+              const damage = Math.max(1, Math.floor(m.maxHp * 0.05));
+              m.hp = Math.max(0, m.hp - damage);
+              // events.push({ type: 'damage', target: m, value: damage }); // Too spammy for map?
+          });
+      } else {
+          // Remove Weakened State if applied
+          this.activeMembers.forEach(m => {
+              if (m.isStateAffected('weakened')) {
+                  m.removeState('weakened');
+                  events.push({ type: 'text', msg: `${m.name} recovered strength.` });
+              }
+          });
+      }
+
+      return events;
+  }
+
+  /**
+   * Adds a member to the first available slot (skipping index 4).
    * @param {Game_Battler} battler - The battler to add.
    * @returns {boolean} True if added, false if party is full.
    */
   addMember(battler) {
-      const index = this.slots.indexOf(null);
+      let index = this.slots.indexOf(null);
+
+      // If found index is 4 (Summoner slot), find next null
+      if (index === 4) {
+          index = this.slots.indexOf(null, 5);
+      }
+
       if (index === -1) return false;
       this.slots[index] = battler;
       return true;
@@ -164,6 +249,7 @@ export class Game_Party {
 
   /**
    * Reorders a party member/slot from one index to another.
+   * Prevent moving index 4 (Summoner).
    * @param {number} fromIndex - The current index of the member.
    * @param {number} toIndex - The target index.
    * @returns {boolean} True if successful.
@@ -171,6 +257,8 @@ export class Game_Party {
   reorderMembers(fromIndex, toIndex) {
       if (fromIndex < 0 || fromIndex >= this.MAX_MEMBERS) return false;
       if (toIndex < 0 || toIndex >= this.MAX_MEMBERS) return false;
+
+      if (fromIndex === 4 || toIndex === 4) return false; // Locked slot
 
       const temp = this.slots[fromIndex];
       this.slots[fromIndex] = this.slots[toIndex];
