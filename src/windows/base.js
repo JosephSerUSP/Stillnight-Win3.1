@@ -158,7 +158,7 @@ export class Window_Base {
 
         // Main Element Construction
         const elementProps = {
-            className: "window-frame",
+            className: `window-frame${this.embedded ? ' embedded' : ''}`,
             id: options.id || undefined,
             style: {}
         };

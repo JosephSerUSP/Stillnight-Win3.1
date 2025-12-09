@@ -1,4 +1,9 @@
-/* ===== Global Windows 3.1 look ================================== */
+/* ==========================================================================
+   STILLNIGHT - WINDOWS 3.1 CSS OVERHAUL
+   ========================================================================== */
+
+/* 1. VARIABLES & THEME DEFAULTS
+   -------------------------------------------------------------------------- */
 :root {
     /* Desktop */
     --desktop-bg: #008080;
@@ -40,7 +45,7 @@
     --selection-bg: #000080;
     --selection-text: #ffffff;
 
-    /* New Semantic Variables */
+    /* Semantic Variables */
     --content-bg: #ffffff;
     --gauge-hp: #00a000;
     --gauge-bg: #808080;
@@ -51,6 +56,8 @@
     --tooltip-text: #000000;
 }
 
+/* 2. BASE & RESET
+   -------------------------------------------------------------------------- */
 html, body {
     margin: 0;
     padding: 0;
@@ -61,12 +68,20 @@ html, body {
     font-family: "MS Sans Serif", "Microsoft Sans Serif", Tahoma, sans-serif;
     font-size: 11px;
     color: var(--window-text);
+    /* Ensure crisp pixel art scaling globally */
+    image-rendering: pixelated;
 }
 
-/* Simple tiled wallpaper using gradients; center the window */
+* {
+    box-sizing: border-box;
+}
+
+/* 3. LAYOUT UTILITIES
+   -------------------------------------------------------------------------- */
 .desktop {
     width: 100%;
     height: 100%;
+    /* Tiled wallpaper pattern */
     background-image:
         linear-gradient(45deg, rgba(255,255,255,0.2) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.2) 75%, rgba(255,255,255,0.2)),
         linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.1) 75%, rgba(0,0,0,0.1));
@@ -78,20 +93,47 @@ html, body {
     justify-content: center;
 }
 
-/* ===== Window frame ============================================= */
-.win-window {
-    /* Layout handled in JS */
+#window-layer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 960px;
+    height: 560px;
+    margin-left: -480px;
+    margin-top: -280px;
+    pointer-events: none; /* Pass clicks through */
+}
+
+/* 4. WINDOW SYSTEM
+   -------------------------------------------------------------------------- */
+/* Standard Window Frame (Main Application Windows) */
+.win-window, .window-frame {
     background-color: var(--window-bg);
-    box-sizing: border-box;
+    color: var(--window-text);
+    display: flex;
+    flex-direction: column;
+    /* Thick Win 3.1 Style Border */
     border: 2px solid var(--window-border);
     box-shadow:
         0 0 0 1px var(--bezel-light) inset,
         0 0 0 2px var(--bezel-shadow) inset,
         0 0 0 3px var(--bezel-dark) inset;
+    pointer-events: auto;
 }
 
-/* Generic Window Header (Replaces .title-bar and .dialog-titlebar) */
-.window-header {
+/* Embedded Window / Tool Window (Thinner Borders) */
+/* Reduces visual clutter for docked panels */
+.window-frame.embedded {
+    /* Reset the complex shadow */
+    box-shadow: none;
+    /* Simpler border for internal panes */
+    border: 1px solid var(--window-border);
+    /* Subtle highlight for 3D effect without bulk */
+    box-shadow: 1px 1px 0 var(--bezel-light) inset;
+}
+
+/* Window Header / Title Bar */
+.window-header, .title-bar, .dialog-titlebar {
     height: 20px;
     background: linear-gradient(90deg, var(--window-header-bg-start), var(--window-header-bg-end));
     color: var(--window-header-text);
@@ -99,138 +141,141 @@ html, body {
     align-items: center;
     justify-content: space-between;
     padding: 2px 4px;
-    box-sizing: border-box;
-}
-
-/* Legacy support until JS is fully updated */
-.title-bar, .dialog-titlebar {
-    height: 20px;
-    background: linear-gradient(90deg, var(--window-header-bg-start), var(--window-header-bg-end));
-    color: var(--window-header-text);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 2px 4px;
-    box-sizing: border-box;
     font-size: 11px;
+    font-weight: bold;
+    flex-shrink: 0; /* Prevent header collapse */
+    user-select: none;
 }
 
 .title-group {
     display: flex;
     align-items: center;
 }
+
 .title-icon {
     width: 14px;
     height: 14px;
     margin-right: 4px;
     background-color: var(--window-bg);
     border: 1px solid var(--window-border);
-    box-shadow:
-        1px 1px 0 var(--bezel-light) inset,
-        -1px -1px 0 var(--bezel-shadow) inset;
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-shadow) inset;
     padding: 2px;
 }
+
 .title {
     font-weight: bold;
     white-space: nowrap;
 }
+
 .sys-buttons {
     display: flex;
     gap: 2px;
 }
 
-.icon {
-    width: 12px;
-    height: 12px;
-    background-image: url('assets/system/iconset.png');
-    display: inline-block;
-    vertical-align: middle;
-    image-rendering: pixelated;
-}
-
-.element-icon-container, .element-icon-container-name, .element-container {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.element-icon-container-name {
-    margin-right: 2px;
-}
-
-.element-icon-container {
+/* Window Content Area */
+.window-content {
+    flex: 1;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
     position: relative;
-    width: 12px;
-    height: 12px;
-    margin-right: 4px;
 }
 
-.element-icon {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    background-image: url('assets/system/iconset.png');
+.window-footer {
+    padding: 0 4px 4px 4px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
 }
 
-/* ===== Buttons & panels ========================================= */
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    z-index: 9999;
+}
+.modal-overlay.active { display: flex; }
+.window--dimmed { pointer-events: none; }
+.window--dimmed .window-frame { filter: brightness(0.7); }
+
+/* 5. CONTROLS & COMPONENTS
+   -------------------------------------------------------------------------- */
+/* Buttons */
 .win-btn {
     font-family: inherit;
     font-size: 11px;
     min-width: 18px;
-    padding: 0 4px;
-    height: 18px;
+    padding: 0 6px;
+    height: 20px;
     background-color: var(--button-bg);
+    color: var(--window-text);
     border-width: 2px;
     border-style: solid;
+    /* Outset border */
     border-color: var(--bezel-light) var(--bezel-dark) var(--bezel-dark) var(--bezel-light);
-    box-sizing: border-box;
     cursor: pointer;
-    color: var(--window-text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
 }
-.win-btn:active {
+
+.win-btn:active, .win-btn.active {
+    /* Inset border */
     border-color: var(--bezel-dark) var(--bezel-light) var(--bezel-light) var(--bezel-dark);
-    padding-top: 1px;
-    padding-left: 5px;
+    padding-top: 2px; /* Visual press */
+    padding-left: 7px;
 }
 
-.window-content {
-    flex: 1;
-    padding: 4px;
-    box-sizing: border-box;
-    display: flex;
-    gap: 4px;
+.win-btn.disabled, .disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: default;
+    filter: grayscale(100%);
 }
 
-.panel {
+/* Panels (Generic Containers) */
+.panel, .window-panel {
     background-color: var(--window-bg);
+    /* Inset border for panels */
     border: 2px solid var(--bezel-shadow);
-    box-shadow:
-        1px 1px 0 var(--bezel-light) inset,
-        -1px -1px 0 var(--bezel-dark) inset;
-    box-sizing: border-box;
-}
-
-/* ===== Left panel: Stack / Run controls ========================= */
-.stack-nav {
-    width: 210px;
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+    padding: 4px;
+    font-size: 11px;
+    color: var(--window-text);
     display: flex;
     flex-direction: column;
-    padding: 4px;
-    gap: 4px;
 }
-.stack-nav h1 {
-    font-size: 11px;
-    margin: 0 0 4px 0;
-    font-weight: bold;
+.panel.no-border { border: none; box-shadow: none; }
+
+.window-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 2px;
+}
+.window-row.selected {
+    background-color: var(--selection-bg);
+    color: var(--selection-text);
 }
 
+/* Group Boxes (Fieldsets) */
 .group-box {
     position: relative;
     padding: 10px 4px 4px 4px;
     margin-top: 6px;
     border: 1px solid var(--bezel-shadow);
-    box-shadow:
-        1px 1px 0 var(--bezel-light) inset,
-        -1px -1px 0 var(--bezel-dark) inset;
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+    display: flex;
+    flex-direction: column;
 }
 .group-box legend {
     position: absolute;
@@ -241,26 +286,71 @@ html, body {
     font-size: 11px;
 }
 
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 18px;
+    vertical-align: middle;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--button-bg);
+    border: 2px solid var(--bezel-shadow);
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+}
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 10px; width: 10px;
+    left: 2px; bottom: 2px;
+    background-color: var(--window-text);
+    transition: .2s;
+}
+input:checked + .toggle-slider { background-color: var(--selection-bg); }
+input:checked + .toggle-slider:before { transform: translateX(18px); background-color: var(--selection-text); }
+
+/* Icons */
+.icon, .element-icon {
+    width: 12px; height: 12px;
+    background-image: url('assets/system/iconset.png');
+    display: inline-block;
+    vertical-align: middle;
+    filter: drop-shadow(1px 1px 0px rgba(0,0,0,0.5));
+}
+.element-icon-container { position: relative; width: 12px; height: 12px; margin-right: 4px; display: inline-block; }
+.element-icon { position: absolute; }
+.element-icon-container-name, .element-container { display: inline-block; vertical-align: middle; }
+.element-icon-container-name { margin-right: 2px; }
+
+/* 6. GAME LAYOUT STRUCTURE
+   -------------------------------------------------------------------------- */
+/* Stack Nav (Left Column) */
+.stack-nav {
+    width: 210px;
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+    gap: 4px;
+}
 .stack-nav-buttons {
     display: flex;
     flex-wrap: wrap;
     gap: 2px;
     margin-bottom: 4px;
 }
-.stack-nav-buttons .win-btn {
-    flex: 1 1 48%;
-    text-align: center;
-    white-space: nowrap;
-}
+.stack-nav-buttons .win-btn { flex: 1 1 48%; }
 
 .card-list {
     height: 110px;
     overflow-y: auto;
     background-color: var(--content-bg);
     border: 1px solid var(--bezel-shadow);
-    box-shadow:
-        1px 1px 0 var(--bezel-light) inset,
-        -1px -1px 0 var(--bezel-dark) inset;
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
 }
 .card-item {
     padding: 2px 4px;
@@ -268,35 +358,182 @@ html, body {
     white-space: nowrap;
     color: var(--window-text);
 }
-.card-item:hover {
-    background-color: var(--bezel-shadow);
-    color: #ffffff;
-}
-.card-item.selected {
-    background-color: var(--selection-bg);
-    color: var(--selection-text);
-}
-.card-item.disabled {
-    color: var(--bezel-shadow);
-    background-color: var(--window-bg);
-    cursor: default;
-    pointer-events: none;
-}
+.card-item:hover { background-color: var(--bezel-shadow); color: #ffffff; }
+.card-item.selected { background-color: var(--selection-bg); color: var(--selection-text); }
+.card-item.disabled { color: var(--bezel-shadow); pointer-events: none; }
 
-.info-box {
-    font-size: 10px;
-    line-height: 1.4;
-}
+.info-box { font-size: 10px; line-height: 1.4; }
 
-/* ===== Right side: main “card” + party/log ===================== */
+/* Right Side (Card Area) */
 .right-side {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
+.card-area {
+    flex: 1;
+    display: flex;
+    gap: 4px;
+}
+.card-main {
+    flex: 1;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.card-side-panels {
+    flex: 0 0 260px;
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.card-header { display: flex; justify-content: space-between; align-items: center; }
+.card-header-title { font-weight: bold; }
+.label { display: inline-block; min-width: 60px; }
 
-/* ===== Terminal Look for Battle Window ===== */
+/* Exploration Grid */
+.exploration-frame {
+    flex: 1;
+    padding: 4px;
+    background-color: var(--bezel-shadow);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.exploration-grid {
+    width: 416px; height: 416px;
+    display: grid;
+    grid-template-columns: repeat(var(--grid-cols, 19), 1fr);
+    grid-template-rows: repeat(var(--grid-rows, 19), 1fr);
+    gap: 2px;
+}
+.tile {
+    background-color: var(--tile-bg);
+    border: 1px solid var(--bezel-shadow);
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+    height: 20px; width: 20px;
+    line-height: 20px;
+}
+.tile:hover { background-color: var(--bezel-light); }
+.tile-fog { background-color: var(--tile-fog-bg); color: var(--tile-fog-text); }
+.tile-player {
+    background-color: var(--tile-player-bg);
+    box-shadow: 0 0 0 2px var(--bezel-light), 0 0 0 3px #000000 inset;
+    font-weight: bold;
+}
+.tile-wall { background-color: var(--bezel-dark); color: transparent; border: 1px solid #000; }
+
+/* Functional Colors */
+.tile-enemy   { color: var(--text-danger); }
+.tile-stairs  { color: var(--text-highlight); }
+.tile-recovery{ color: var(--text-success); }
+.tile-shrine  { color: var(--text-mystic); }
+.tile-shop    { color: var(--text-warning); }
+.tile-recruit { color: var(--text-special); }
+.tile-npc     { color: var(--text-info); }
+.tile-breakable-wall { border: 2px dashed var(--text-warning); }
+
+.legend { font-size: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Party Panel */
+.party-panel, .log-panel {
+    padding: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.party-panel { flex: 1 1 auto; }
+.log-panel { flex: 0 0 230px; }
+
+.party-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 2px;
+}
+.party-slot {
+    background-color: var(--window-bg);
+    border: 1px solid var(--bezel-shadow);
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+    display: flex;
+    padding: 2px;
+    font-size: 10px;
+    cursor: pointer;
+    gap: 4px;
+}
+.party-slot.selected {
+    background-color: var(--selection-bg);
+    color: var(--selection-text);
+    border-color: var(--selection-text);
+}
+.party-slot:hover { background-color: var(--bezel-light); }
+.party-slot.dragging { opacity: 0.5; }
+.party-slot.drag-over { border-color: var(--selection-text); background-color: var(--bezel-light); }
+
+.party-slot-portrait {
+    flex-shrink: 0;
+    width: 48px; height: 48px;
+    background-color: #000;
+    border: 1px solid var(--bezel-shadow);
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+    background-size: cover;
+    background-position: 50% 25%;
+    image-rendering: pixelated;
+}
+.party-slot-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+.party-slot-name { font-weight: bold; }
+
+.gauge {
+    border: 1px solid #000000;
+    background-color: var(--gauge-bg);
+    overflow: hidden;
+    height: 8px;
+}
+.gauge-fill { height: 100%; background-color: var(--gauge-hp); }
+.gauge-xp { background-color: #60a0ff; }
+
+/* Log Panel */
+.log-content {
+    background-color: var(--terminal-bg);
+    color: var(--terminal-text);
+    border: 1px solid var(--bezel-shadow);
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+    padding: 2px;
+    font-family: "Fixedsys", "Lucida Console", "Courier New", monospace;
+    font-size: 10px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    flex: 1;
+    /* Ensure fixed height inheritance */
+    height: 100%;
+}
+
+/* Status Bar */
+.status-bar {
+    height: 20px;
+    border-top: 1px solid var(--bezel-light);
+    box-shadow: 0 -1px 0 var(--bezel-shadow) inset;
+    padding: 2px 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    background-color: var(--window-bg);
+}
+.status-bar span { margin-right: 8px; }
+
+/* 7. BATTLE TERMINAL
+   -------------------------------------------------------------------------- */
 .terminal {
     background-color: var(--terminal-bg);
     color: var(--terminal-text);
@@ -310,11 +547,7 @@ html, body {
     flex-direction: column;
     gap: 4px;
 }
-.terminal-viewport {
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-}
+.terminal-viewport { flex: 1; position: relative; overflow: hidden; }
 .terminal-log {
     height: 80px;
     overflow-y: auto;
@@ -322,13 +555,10 @@ html, body {
     border-top: 1px solid var(--terminal-text);
     padding-top: 4px;
 }
+.battler-name { margin-bottom: 3px; }
 
-@keyframes blink {
-    50% {
-        opacity: 0;
-    }
-}
-
+/* Animations */
+@keyframes blink { 50% { opacity: 0; } }
 @keyframes shake {
     0% { transform: translate(1px, 1px) rotate(0deg); }
     10% { transform: translate(-1px, -2px) rotate(-1deg); }
@@ -342,344 +572,13 @@ html, body {
     90% { transform: translate(1px, 2px) rotate(0deg); }
     100% { transform: translate(1px, -2px) rotate(-1deg); }
 }
+.shake { animation: shake 0.5s; animation-iteration-count: 1; }
+.blink { animation: blink 0.1s step-end 2; }
+.flash { animation: blink 0.1s step-end 2; background-color: var(--text-highlight); color: white; }
 
-.shake {
-    animation: shake 0.5s;
-    animation-iteration-count: 1;
-}
-
-.blink {
-    animation: blink 0.1s step-end 2;
-}
-
-.flash {
-    animation: blink 0.1s step-end 2;
-    background-color: var(--text-highlight);
-    color: white;
-}
-
-.battler-name {
-    margin-bottom: 3px;
-}
-
-.card-area {
-    flex: 1;
-    display: flex;
-    gap: 4px;
-}
-
-/* map column stretches, right column fixed width */
-.card-main {
-    flex: 1;
-    padding: 4px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-.card-side-panels {
-    flex: 0 0 260px;   /* fixed width for party/log column */
-    width: 260px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.card-header-title {
-    font-weight: bold;
-}
-.label {
-    display: inline-block;
-    min-width: 60px;
-}
-
-/* Exploration frame / grid = main “card” content */
-.exploration-frame {
-    flex: 1;
-    padding: 4px;
-    background-color: var(--bezel-shadow);
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-/* 19x19 grid, centered map */
-.exploration-grid {
-    width: 416px;
-    height: 416px;
-    display: grid;
-    /* Use variables injected by JS, fallback to 19 */
-    grid-template-columns: repeat(var(--grid-cols, 19), 1fr);
-    grid-template-rows: repeat(var(--grid-rows, 19), 1fr);
-    gap: 2px;
-}
-
-.tile {
-    background-color: var(--tile-bg);
-    border: 1px solid var(--bezel-shadow);
-    box-shadow:
-        1px 1px 0 var(--bezel-light) inset,
-        -1px -1px 0 var(--bezel-dark) inset;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    cursor: pointer;
-    user-select: none;
-    height: 20px;
-    width: 20px;
-    line-height: 20px;
-}
-.tile:hover {
-    background-color: var(--bezel-light);
-}
-.tile-fog {
-    background-color: var(--tile-fog-bg);
-    color: var(--tile-fog-text);
-}
-.tile-player {
-    font-weight: bold;
-    box-shadow: 0 0 0 2px var(--bezel-light), 0 0 0 3px #000000 inset;
-    background-color: var(--tile-player-bg);
-}
-
-/* Mapping Semantic Classes to Functional Variables */
-.tile-enemy   { color: var(--text-danger); }
-.tile-stairs  { color: var(--text-highlight); }
-.tile-recovery{ color: var(--text-success); }
-.tile-shrine  { color: var(--text-mystic); }
-.tile-shop    { color: var(--text-warning); }
-.tile-recruit { color: var(--text-special); }
-.tile-npc     { color: var(--text-info); }
-.tile-breakable-wall { border: 2px dashed var(--text-warning); }
-
-/* Functional Utility Classes */
-.text-danger { color: var(--text-danger); }
-.text-highlight { color: var(--text-highlight); }
-.text-success { color: var(--text-success); }
-.text-mystic { color: var(--text-mystic); }
-.text-warning { color: var(--text-warning); }
-.text-special { color: var(--text-special); }
-.text-info { color: var(--text-info); }
-.text-functional { color: var(--text-functional); }
-
-.legend {
-    font-size: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-/* Party + log side panels */
-.party-panel, .log-panel {
-    padding: 3px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-/* party grows; log fixed height window */
-.party-panel {
-    flex: 1 1 auto;
-}
-.log-panel {
-    flex: 0 0 230px;
-}
-
-.party-grid {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 2px;
-}
-
-.party-slot {
-    background-color: var(--window-bg);
-    border: 1px solid var(--bezel-shadow);
-    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
-    display: flex;
-    padding: 2px;
-    font-size: 10px;
-    cursor: pointer;
-    gap: 4px;
-}
-.party-slot-portrait {
-    flex-shrink: 0;
-    width: 48px;
-    height: 48px;
-    background-color: #000;
-    border: 1px solid var(--bezel-shadow);
-    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
-    background-size: cover;
-    background-position: 50% 25%;
-    image-rendering: pixelated;
-}
-.party-slot-info {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-.party-slot:hover {
-    background-color: var(--bezel-light);
-}
-.party-slot-name {
-     font-weight: bold;
-}
-.gauge {
-    border: 1px solid #000000;
-    background-color: var(--gauge-bg);
-    overflow: hidden;
-}
-.gauge-fill {
-    height: 100%;
-    background-color: var(--gauge-hp);
-}
-
-/* Log = Fixedsys-style console */
-.log-content {
-    background-color: var(--terminal-bg);
-    color: var(--terminal-text);
-    border: 1px solid var(--bezel-shadow);
-    box-shadow:
-        1px 1px 0 var(--bezel-light) inset,
-        -1px -1px 0 var(--bezel-dark) inset;
-    padding: 2px;
-    font-family: "Fixedsys", "Lucida Console", "Courier New", monospace;
-    font-size: 10px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    height: 190px;
-}
-
-/* Status bar */
-.status-bar {
-    height: 20px;
-    border-top: 1px solid var(--bezel-light);
-    box-shadow: 0 -1px 0 var(--bezel-shadow) inset;
-    padding: 2px 4px;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 10px;
-}
-.status-bar span {
-    margin-right: 8px;
-}
-
-#window-layer {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 960px;
-    height: 560px;
-    margin-left: -480px;
-    margin-top: -280px;
-    /* transform: translate(-50%, -50%); Removed to avoid containing block for fixed children */
-    pointer-events: none; /* Allow clicks to pass through to the game */
-}
-
-/* ===== Modal overlay / dialogs ================================= */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0,0,0,0.4);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    pointer-events: auto; /* Capture clicks on the overlay */
-}
-.modal-overlay.active {
-    display: flex;
-}
-.window--dimmed {
-    pointer-events: none;
-}
-.window--dimmed .window-frame {
-    filter: brightness(0.7);
-}
-
-/* Inspect dialog – larger sprite box + flavor */
-.inspect-layout {
-    display: flex;
-    gap: 10px;
-}
-.inspect-sprite {
-    width: 128px;
-    height: 192px;
-    border: 1px solid var(--bezel-shadow);
-    box-shadow:
-        1px 1px 0 var(--bezel-light) inset,
-        -1px -1px 0 var(--bezel-dark) inset;
-    background-color: #000000;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-}
-.inspect-fields { flex: 1; }
-.inspect-row {
-    display: flex;
-    margin-bottom: 2px;
-}
-.inspect-label {
-    width: 80px;
-    font-weight: bold;
-}
-.inspect-value { flex: 1; }
-.inspect-notes {
-    margin-top: 4px;
-    font-size: 10px;
-}
-
-/* Shop dialog */
-.shop-gold { font-weight: bold; }
-
-/* Formation dialog */
-.formation-slot {
-    border: 1px solid var(--bezel-shadow);
-    padding: 2px;
-    font-size: 10px;
-    background-color: var(--window-bg);
-    box-shadow:
-        1px 1px 0 var(--bezel-light) inset,
-        -1px -1px 0 var(--bezel-dark) inset;
-    cursor: pointer;
-}
-.formation-slot.selected {
-    background-color: var(--selection-bg);
-    color: var(--selection-text);
-}
-.formation-label {
-    font-size: 10px;
-    margin-bottom: 4px;
-}
-
-/* Event dialog */
-.event-description {
-    font-size: 11px;
-    line-height: 1.4;
-}
-
-.terminal-style {
-    font-family: monospace;
-    background-color: var(--terminal-bg);
-    color: var(--terminal-text);
-    padding: 10px;
-    height: 150px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    border: 1px inset #444;
-}
-
-/* ===== Tooltip ================================================== */
+/* 8. MISC UI COMPONENTS
+   -------------------------------------------------------------------------- */
+/* Tooltip */
 #tooltip {
     position: absolute;
     background-color: var(--tooltip-bg);
@@ -693,65 +592,27 @@ html, body {
     max-width: 250px;
     display: none;
 }
-.tooltip-title {
-    font-weight: bold;
-    margin-bottom: 2px;
-}
-.tooltip-text {
-    font-size: 10px;
-}
+.tooltip-title { font-weight: bold; margin-bottom: 2px; }
+.tooltip-text { font-size: 10px; }
 
-/* Evolution Window */
-.evolution-arrow {
-    font-size: 24px;
-    margin: 0 10px;
-    color: var(--window-text);
-}
-
-
-/* Tab navigation for inventory */
+/* Tab Nav */
 .tab-nav {
-    display: flex;
-    gap: 2px;
-    margin-bottom: 4px;
-    padding-bottom: 4px;
+    display: flex; gap: 2px; margin-bottom: 4px; padding-bottom: 4px;
     border-bottom: 1px solid var(--bezel-shadow);
     box-shadow: 0 1px 0 var(--bezel-light);
 }
-
 .tab-btn {
     flex: 1;
-    font-family: inherit;
-    font-size: 11px;
-    padding: 2px 4px;
+    font-family: inherit; font-size: 11px; padding: 2px 4px;
     background-color: var(--button-bg);
-    border-width: 2px;
-    border-style: solid;
+    border: 2px solid;
     border-color: var(--bezel-light) var(--bezel-dark) var(--bezel-dark) var(--bezel-light);
-    cursor: pointer;
-    text-align: center;
+    cursor: pointer; text-align: center;
 }
-
 .tab-btn:active, .tab-btn.active {
     border-color: var(--bezel-dark) var(--bezel-light) var(--bezel-light) var(--bezel-dark);
     background-color: var(--bezel-light);
     font-weight: bold;
-}
-/* ... (existing styles) */
-
-
-/* Dragging styles for party-slot */
-.party-slot.dragging {
-    opacity: 0.5;
-}
-.party-slot.drag-over {
-    border-color: var(--selection-text);
-    background-color: var(--bezel-light);
-}
-
-/* XP Gauge */
-.gauge-xp {
-    background-color: #60a0ff; /* Fallback if inline style not used */
 }
 
 /* Location Art */
@@ -761,294 +622,125 @@ html, body {
     border: 1px solid var(--bezel-shadow);
     box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
     background-color: #000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
+    display: flex; justify-content: center; align-items: center; overflow: hidden;
+}
+.location-art-img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+
+/* Inspect / Shop / Formation */
+.inspect-layout { display: flex; gap: 10px; }
+.inspect-sprite {
+    width: 128px; height: 192px;
+    border: 1px solid var(--bezel-shadow);
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+    background-color: #000000;
+    background-size: contain; background-repeat: no-repeat; background-position: center;
+}
+.inspect-fields { flex: 1; }
+.inspect-row { display: flex; margin-bottom: 2px; }
+.inspect-label { width: 80px; font-weight: bold; }
+.inspect-value { flex: 1; }
+.inspect-notes { margin-top: 4px; font-size: 10px; }
+.shop-gold { font-weight: bold; }
+.formation-slot {
+    border: 1px solid var(--bezel-shadow);
+    padding: 2px;
+    font-size: 10px;
+    background-color: var(--window-bg);
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+    cursor: pointer;
+}
+.formation-slot.selected { background-color: var(--selection-bg); color: var(--selection-text); }
+.formation-label { font-size: 10px; margin-bottom: 4px; }
+.event-description { font-size: 11px; line-height: 1.4; }
+.terminal-style {
+    font-family: monospace;
+    background-color: var(--terminal-bg);
+    color: var(--terminal-text);
+    padding: 10px;
+    height: 150px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    border: 1px inset #444;
 }
 
-.location-art-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    image-rendering: pixelated;
-}
+/* Evolution Window */
+.evolution-arrow { font-size: 24px; margin: 0 10px; color: var(--window-text); }
 
-/* Help Window Styles */
+/* Help Window */
 .help-body {
     background-color: var(--content-bg);
     border: 1px solid var(--bezel-shadow);
-    padding: 6px;
-    color: var(--window-text);
-    overflow-y: auto;
-    flex-grow: 1;
-    font-size: 11px;
+    padding: 6px; color: var(--window-text);
+    overflow-y: auto; flex-grow: 1; font-size: 11px;
 }
-.help-section {
-    margin-bottom: 10px;
-}
-.help-section h2 {
-    font-size: 12px;
-    font-weight: bold;
-    margin: 0 0 4px 0;
-    border-bottom: 1px solid var(--bezel-shadow);
-}
-.help-legend-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 4px;
-    margin-top: 4px;
-}
-.help-legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
+.help-section { margin-bottom: 10px; }
+.help-section h2 { font-size: 12px; font-weight: bold; margin: 0 0 4px 0; border-bottom: 1px solid var(--bezel-shadow); }
+.help-legend-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 4px; }
+.help-legend-item { display: flex; align-items: center; gap: 6px; }
 .help-legend-icon {
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--bezel-shadow);
-    background-color: var(--tile-bg);
-    font-size: 13px;
+    width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--bezel-shadow); background-color: var(--tile-bg); font-size: 13px;
 }
 
-/* ===== Refactored Window System ===== */
-.window-frame {
-    display: flex;
-    flex-direction: column;
-    background-color: var(--window-bg);
-    border: 2px solid var(--window-border);
-    box-shadow:
-        0 0 0 1px var(--bezel-light) inset,
-        0 0 0 2px var(--bezel-shadow) inset,
-        0 0 0 3px var(--bezel-dark) inset;
-    box-sizing: border-box;
-    pointer-events: auto; /* Ensure window captures clicks */
-}
-
-.window-content {
-    flex: 1;
-    padding: 6px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    overflow: hidden;
-}
-
-.window-footer {
-    padding: 0 4px 4px 4px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 4px;
-    flex-shrink: 0;
-}
-
-.window-panel {
-    background-color: var(--content-bg);
-    border: 1px solid var(--bezel-shadow);
-    box-shadow:
-        1px 1px 0 var(--bezel-light) inset,
-        -1px -1px 0 var(--bezel-dark) inset;
-    padding: 4px;
-    font-size: 11px;
-    color: var(--window-text);
-    display: flex;
-    flex-direction: column;
-}
-
-.window-row {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-bottom: 2px;
-}
-
-.window-row.selected {
-    background-color: var(--selection-bg);
-    color: var(--selection-text);
-}
-
-.party-slot.selected {
-    background-color: var(--selection-bg);
-    color: var(--selection-text);
-    border-color: var(--selection-text);
-}
-
-/* Refactor: Icon Drop Shadow */
-.icon, .element-icon {
-    filter: drop-shadow(2px 2px 0px #4B4B4B);
-}
-
-/* Toggle Switch */
-.toggle-switch {
-    position: relative;
-    display: inline-block;
-    width: 36px;
-    height: 18px;
-    vertical-align: middle;
-}
-
-.toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.toggle-slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--button-bg);
-    border: 2px solid var(--bezel-shadow);
-    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
-    transition: .2s;
-}
-
-.toggle-slider:before {
-    position: absolute;
-    content: "";
-    height: 10px;
-    width: 10px;
-    left: 2px;
-    bottom: 2px;
-    background-color: var(--window-text);
-    transition: .2s;
-}
-
-input:checked + .toggle-slider {
-    background-color: var(--selection-bg);
-}
-
-input:checked + .toggle-slider:before {
-    transform: translateX(18px);
-    background-color: var(--selection-text);
-}
-
-/* Disabled State */
-.win-btn.disabled, .disabled {
-    opacity: 0.5;
-    pointer-events: none;
-    cursor: default;
-    filter: grayscale(100%);
-}
-
-/* ===== Windows 3.1 Scrollbars ===== */
-::-webkit-scrollbar {
-    width: 16px;
-    height: 16px;
-    background-color: #ffffff;
-}
-
-::-webkit-scrollbar-track {
-    background-color: #ffffff;
-    border-left: 1px solid #000000;
-}
-
-::-webkit-scrollbar-thumb {
-    background-color: #c0c0c0;
-    border-top: 2px solid #ffffff;
-    border-left: 2px solid #ffffff;
-    border-right: 2px solid #000000;
-    border-bottom: 2px solid #000000;
-    box-shadow: 1px 1px 0 #808080;
-}
-
-::-webkit-scrollbar-thumb:active {
-    background-color: #a0a0a0;
-}
-
-::-webkit-scrollbar-button {
-    background-color: #c0c0c0;
-    width: 16px;
-    height: 16px;
-    border-top: 2px solid #ffffff;
-    border-left: 2px solid #ffffff;
-    border-right: 2px solid #000000;
-    border-bottom: 2px solid #000000;
-    display: block;
-}
-
-::-webkit-scrollbar-corner {
-    background-color: #c0c0c0;
-}
-
-
-/* ===== Windows 3.1 Slider ===== */
-.win-slider {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    background: transparent;
-    height: 24px; /* Container height to accommodate the thumb */
-    cursor: pointer;
-}
-
-.win-slider:focus {
-    outline: none;
-}
-
-/* --- WebKit Thumb --- */
+/* Sliders */
+.win-slider { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; height: 24px; cursor: pointer; }
+.win-slider:focus { outline: none; }
 .win-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    height: 20px;
-    width: 10px;
-    background: var(--button-bg);
-    border: 2px solid var(--window-border); /* Fallback */
-    border-top-color: var(--bezel-light);
-    border-left-color: var(--bezel-light);
-    border-right-color: var(--bezel-dark);
-    border-bottom-color: var(--bezel-dark);
-    box-shadow: 1px 1px 0 #000;
-    margin-top: -8px; /* Centers thumb on track */
-}
-
-/* --- WebKit Track --- */
-.win-slider::-webkit-slider-runnable-track {
-    width: 100%;
-    height: 4px;
-    background: var(--window-bg);
-    border: 1px solid var(--bezel-shadow); /* Inset effect */
-    border-top-color: var(--bezel-shadow);
-    border-left-color: var(--bezel-shadow);
-    border-right-color: var(--bezel-light);
-    border-bottom-color: var(--bezel-light);
-    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
-}
-
-/* --- Firefox Thumb --- */
-.win-slider::-moz-range-thumb {
-    height: 20px;
-    width: 10px;
+    -webkit-appearance: none; height: 20px; width: 10px; margin-top: -8px;
     background: var(--button-bg);
     border: 2px solid;
-    border-top-color: var(--bezel-light);
-    border-left-color: var(--bezel-light);
-    border-right-color: var(--bezel-dark);
-    border-bottom-color: var(--bezel-dark);
+    border-color: var(--bezel-light) var(--bezel-dark) var(--bezel-dark) var(--bezel-light);
     box-shadow: 1px 1px 0 #000;
-    border-radius: 0; /* Reset radius */
 }
-
-/* --- Firefox Track --- */
+.win-slider::-webkit-slider-runnable-track {
+    width: 100%; height: 4px;
+    background: var(--window-bg);
+    border: 1px solid var(--bezel-shadow);
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+}
+.win-slider::-moz-range-thumb {
+    height: 20px; width: 10px;
+    background: var(--button-bg);
+    border: 2px solid;
+    border-color: var(--bezel-light) var(--bezel-dark) var(--bezel-dark) var(--bezel-light);
+    box-shadow: 1px 1px 0 #000;
+    border-radius: 0;
+}
 .win-slider::-moz-range-track {
-    width: 100%;
-    height: 4px;
+    width: 100%; height: 4px;
     background: var(--window-bg);
     border: 1px solid;
-    border-top-color: var(--bezel-shadow);
-    border-left-color: var(--bezel-shadow);
-    border-right-color: var(--bezel-light);
-    border-bottom-color: var(--bezel-light);
+    border-color: var(--bezel-shadow) var(--bezel-light) var(--bezel-light) var(--bezel-shadow);
 }
 
-.tile-wall {
-    background-color: var(--bezel-dark);
-    color: transparent;
+/* 9. SCROLLBARS (Windows 3.1 Style)
+   -------------------------------------------------------------------------- */
+::-webkit-scrollbar { width: 16px; height: 16px; background-color: #ffffff; }
+::-webkit-scrollbar-track { background-color: #ffffff; border-left: 1px solid #000000; }
+::-webkit-scrollbar-thumb {
+    background-color: var(--button-bg);
+    border-top: 2px solid var(--bezel-light);
+    border-left: 2px solid var(--bezel-light);
+    border-right: 2px solid var(--bezel-dark);
+    border-bottom: 2px solid var(--bezel-dark);
+    box-shadow: 1px 1px 0 #000000;
 }
+::-webkit-scrollbar-thumb:active { background-color: var(--bezel-shadow); }
+::-webkit-scrollbar-button {
+    background-color: var(--button-bg);
+    width: 16px; height: 16px;
+    border: 2px solid;
+    border-color: var(--bezel-light) var(--bezel-dark) var(--bezel-dark) var(--bezel-light);
+    display: block;
+}
+::-webkit-scrollbar-corner { background-color: var(--button-bg); }
+
+/* Utilities */
+.text-danger { color: var(--text-danger); }
+.text-highlight { color: var(--text-highlight); }
+.text-success { color: var(--text-success); }
+.text-mystic { color: var(--text-mystic); }
+.text-warning { color: var(--text-warning); }
+.text-special { color: var(--text-special); }
+.text-info { color: var(--text-info); }
+.text-functional { color: var(--text-functional); }
