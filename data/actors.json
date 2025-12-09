@@ -554,15 +554,15 @@
   },
   {
     "id": "summoner",
-    "name": "Commander",
+    "name": "Alex",
     "level": 1,
-    "maxHp": 50,
-    "maxMp": 100,
+    "maxHp": 18,
+    "maxMp": 820,
     "role": "Summoner",
     "elements": [],
     "skills": [],
     "traits": [],
-    "spriteKey": "Summoner",
+    "spriteKey": "egg",
     "gold": 0,
     "expGrowth": 0
   }

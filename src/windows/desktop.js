@@ -219,19 +219,101 @@ export class Window_PartyPanel extends Window_Base {
         this.summonerSlotEl.innerHTML = "";
         if (party.summoner) {
              const summoner = party.summoner;
+
+             // Build custom summoner panel
              const sContainer = UI.build(this.summonerSlotEl, {
                  type: 'flex',
                  props: {
-                     style: { alignItems: 'center', gap: '5px', cursor: 'pointer' },
+                     style: {
+                         width: '100%',
+                         height: '60px', // Shorter than creature panel (116px)
+                         boxSizing: 'border-box',
+                         border: '1px solid var(--bezel-light)',
+                         backgroundColor: 'var(--desktop-bg)',
+                         cursor: 'pointer',
+                         padding: '4px'
+                     },
                      onClick: () => onInspect(summoner, 'summoner')
                  },
                  children: [
-                     { type: 'label', props: { text: 'CMD', className: 'role-badge', style: { backgroundColor: '#FFD700', color: 'black', fontSize: '9px', padding: '1px 3px' } } },
-                     { type: 'label', props: { text: summoner.name, style: { fontWeight: 'bold', flex: '1' } } },
-                     { type: 'label', props: { text: `HP:${summoner.hp}/${summoner.maxHp}`, style: { fontSize: '10px' } } },
-                     { type: 'label', props: { text: `MP:${summoner.mp}/${summoner.maxMp}`, style: { fontSize: '10px' } } }
+                     // Left: Portrait
+                     {
+                         type: 'panel',
+                         props: {
+                             style: {
+                                 width: '48px',
+                                 height: '48px',
+                                 backgroundImage: `url('assets/portraits/${summoner.spriteKey || "egg"}.png')`,
+                                 backgroundSize: 'cover',
+                                 flexShrink: '0',
+                                 marginRight: '6px'
+                             }
+                         }
+                     },
+                     // Right: Info Column
+                     {
+                         type: 'flex',
+                         props: {
+                             style: { flexDirection: 'column', flexGrow: '1', justifyContent: 'space-between' }
+                         },
+                         children: [
+                             // Top Row: Name + Equip
+                             {
+                                 type: 'flex',
+                                 props: { style: { justifyContent: 'space-between', alignItems: 'center' } },
+                                 children: [
+                                     { type: 'label', props: { text: summoner.name, style: { fontWeight: 'bold' } } },
+                                     {
+                                         type: 'label',
+                                         props: {
+                                             text: summoner.equipmentItem ? summoner.equipmentItem.name : "-",
+                                             style: { fontSize: '10px', color: 'var(--text-muted)' }
+                                         }
+                                     }
+                                 ]
+                             },
+                             // Bottom Row: Gauges (HP + MP)
+                             {
+                                 type: 'flex',
+                                 props: { style: { gap: '4px' } },
+                                 children: [
+                                     // HP Gauge Container
+                                     {
+                                         type: 'panel',
+                                         props: { style: { flex: '1', display: 'flex', flexDirection: 'column' } },
+                                         children: [
+                                             { type: 'label', props: { text: `HP ${summoner.hp}/${summoner.maxHp}`, style: { fontSize: '9px', marginBottom: '1px' } } },
+                                             { type: 'panel', props: { className: 'gauge-container hp-gauge-container', style: { height: '6px', backgroundColor: '#333' } } }
+                                         ]
+                                     },
+                                     // MP Gauge Container
+                                     {
+                                         type: 'panel',
+                                         props: { style: { flex: '1', display: 'flex', flexDirection: 'column' } },
+                                         children: [
+                                             { type: 'label', props: { text: `MP ${summoner.mp}/${summoner.maxMp}`, style: { fontSize: '9px', marginBottom: '1px' } } },
+                                             { type: 'panel', props: { className: 'gauge-container mp-gauge-container', style: { height: '6px', backgroundColor: '#333' } } }
+                                         ]
+                                     }
+                                 ]
+                             }
+                         ]
+                     }
                  ]
              });
+
+             // Fill Gauges
+             const hpFill = document.createElement('div');
+             hpFill.style.height = '100%';
+             hpFill.style.backgroundColor = 'var(--gauge-hp)';
+             hpFill.style.width = `${Math.max(0, (summoner.hp / summoner.maxHp) * 100)}%`;
+             sContainer.querySelector('.hp-gauge-container').appendChild(hpFill);
+
+             const mpFill = document.createElement('div');
+             mpFill.style.height = '100%';
+             mpFill.style.backgroundColor = '#60a0ff'; // MP Color
+             mpFill.style.width = `${Math.max(0, (summoner.mp / summoner.maxMp) * 100)}%`;
+             sContainer.querySelector('.mp-gauge-container').appendChild(mpFill);
         }
 
         this.partyGridEl.innerHTML = "";
