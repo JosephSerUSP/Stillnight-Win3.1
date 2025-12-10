@@ -165,24 +165,23 @@ export class Window_Battle extends Window_Base {
         let battlerId = '';
         let showMp = false;
         let gaugeLength = GAUGE_LENGTH_STANDARD;
+        let battlerH = 48;
+        let battlerW = 256;
 
+            left = battlerW / 8 + (idx % 2) * battlerW;
+            top = battlerH + Math.floor(idx / 2) * battlerH;
         if (isEnemy) {
-            top = 30 + Math.floor(idx / 2) * 32;
-            left = 20 + (idx % 2) * 220;
             battlerId = `battler-enemy-${idx}`;
         } else if (isSummoner) {
             // Summoner (3rd row)
-            top = 192;
-            left = 20; // Align with left column of creatures
-            width = "auto";
-            textAlign = "left";
-            battlerId = `battler-summoner`; // Simplified ID for summoner
+            top = battlerH * 7;
+            left = battlerW / 8; 
+            battlerId = `battler-summoner`; 
             showMp = true;
             gaugeLength = GAUGE_LENGTH_SUMMONER;
         } else {
             // Party members
-            top = 128 + Math.floor(idx / 2) * 32;
-            left = 20 + (idx % 2) * 220;
+            top += battlerH * 2;
             battlerId = `battler-party-${idx}`;
         }
 
