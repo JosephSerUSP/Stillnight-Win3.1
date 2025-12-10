@@ -367,6 +367,9 @@ export class Scene_Battle extends Scene_Base {
         const action = battlerContext.action;
 
         if (action) {
+             // Animate consumption (Action --> Target slide)
+             await this.battleWindow.animateActionConsumption(action.subject, this.battleManager.enemies, this.party.slots.slice(0,4));
+
              const actionEvents = this.battleManager.executeAction(action);
              await this.animateEvents(actionEvents);
         }

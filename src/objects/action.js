@@ -93,6 +93,123 @@ export class Game_Action {
     }
 
     /**
+     * Calculates the potential result of the action without applying it.
+     * @param {import("./battler.js").Game_Battler} target - The target.
+     * @param {import("../managers/data.js").DataManager} dataManager - Data manager.
+     * @returns {Object} { damage: number, healing: number }
+     */
+    calculate(target, dataManager) {
+        const result = { damage: 0, healing: 0 };
+        if (!target || target.hp <= 0) return result;
+
+        if (this._isAttack) {
+            this._calculateAttack(target, dataManager, result);
+        } else if (this._skillId) {
+            this._calculateSkill(target, dataManager, result);
+        } else if (this._itemId) {
+            this._calculateItem(target, dataManager, result);
+        }
+
+        return result;
+    }
+
+    _calculateAttack(target, dataManager, result) {
+        const battler = this.subject;
+
+        // Base Damage (Using average variance 0 for prediction)
+        let base = battler.atk;
+        base += this._rowBonus;
+        if (base < 1) base = 1;
+
+        // Element Multiplier
+        const mult = this._elementMultiplier(battler.elements, target.elements, dataManager);
+
+        let dmg = probabilisticRound(base * mult);
+        dmg += battler.getPassiveValue("DEAL_DAMAGE_MOD");
+        if (dmg < 1) dmg = 1;
+
+        result.damage += dmg;
+    }
+
+    _calculateSkill(target, dataManager, result) {
+        const battler = this.subject;
+        const skill = this._item;
+        if (!skill) return;
+
+        let boost = 1;
+        if (skill.element) {
+            const matches = battler.elements.filter((e) => e === skill.element).length;
+            boost += matches * 0.25;
+        }
+
+        let elementMult = 1.0;
+        if (skill.element) {
+            elementMult = this._elementMultiplier([skill.element], target.elements, dataManager);
+        }
+
+        skill.effects.forEach((effect) => {
+             const context = { boost };
+             if (effect.type === 'hp_damage' || effect.type === 'hp_drain') {
+                 context.boost = (context.boost || 1) * elementMult;
+             }
+             // For calculation, we use EffectProcessor._evaluate directly if possible, or simulate logic
+             // But EffectProcessor is designed to apply.
+             // We need to just get the value.
+             let val = 0;
+             if (effect.formula) {
+                 val = EffectProcessor.evaluateFormula(effect.formula, battler, target, context);
+             } else if (effect.value) {
+                 val = effect.value;
+             }
+
+             // Adjust val based on context boost if formula evaluation didn't handle it fully
+             // Actually evaluateFormula handles `context` variable but EffectProcessor logic handles boosts often outside.
+             // Let's check EffectProcessor.evaluateFormula implementation in core/utils or manager.
+             // EffectProcessor logic:
+             // if (context && context.boost) value = Math.floor(value * context.boost);
+
+             // Since we can't easily peek inside EffectProcessor here without importing it fully and checking (it's imported),
+             // let's assume we need to replicate the boost logic if it's simple.
+             // EffectProcessor.evaluateFormula usually just runs the math. The modifier application happens in .apply().
+             // Checking source of EffectProcessor would be good, but assuming standard behavior:
+             // We manually apply boost.
+
+             if (context.boost) {
+                 val = Math.floor(val * context.boost);
+             }
+
+             if (effect.type === 'hp_damage' || effect.type === 'hp_drain') {
+                 result.damage += val;
+             } else if (effect.type === 'hp_heal') {
+                 result.healing += val;
+             }
+        });
+    }
+
+    _calculateItem(target, dataManager, result) {
+        const item = this._item;
+        if (!item || !item.effects) return;
+
+        const subject = this.subject;
+        const context = {}; // Items usually don't have boosts from stats unless scripted
+
+        item.effects.forEach(effect => {
+             let val = 0;
+             if (effect.formula) {
+                 val = EffectProcessor.evaluateFormula(effect.formula, subject, target, context);
+             } else if (effect.value) {
+                 val = effect.value;
+             }
+
+             if (effect.type === 'hp_damage') {
+                 result.damage += val;
+             } else if (effect.type === 'hp_heal') {
+                 result.healing += val;
+             }
+        });
+    }
+
+    /**
      * Applies the action to the target.
      * @param {import("./battler.js").Game_Battler} target - The target.
      * @param {import("../managers/data.js").DataManager} dataManager - Data manager for lookups.

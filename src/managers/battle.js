@@ -161,6 +161,33 @@ export class BattleManager {
   }
 
   /**
+   * Calculates the predicted HP for a battler based on queued actions.
+   * @method getPredictedHp
+   * @param {import("../objects/objects.js").Game_Battler} battler - The battler to predict HP for.
+   * @returns {number} The predicted HP (cannot be lower than 0).
+   */
+  getPredictedHp(battler) {
+    let totalDamage = 0;
+    let totalHealing = 0;
+
+    this.turnQueue.forEach(entry => {
+        const action = entry.action;
+        if (action && action.target === battler) {
+            // Calculate potential effect
+            const prediction = action.calculate(battler, this.dataManager);
+            totalDamage += prediction.damage;
+            totalHealing += prediction.healing;
+        }
+    });
+
+    // Calculate result
+    // Note: This simple model doesn't account for turn order (who hits first)
+    // or whether the battler might die midway. It just sums all incoming intent.
+    const result = battler.hp - totalDamage + totalHealing;
+    return Math.max(0, result);
+  }
+
+  /**
    * Retrieves the next active participant from the turn queue.
    * Skips units that are dead.
    * @method getNextBattler
