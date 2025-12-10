@@ -102,6 +102,18 @@ export function createAsciiGauge(current, max, length = 15, fillChar = '#') {
 }
 
 /**
+ * Formats an ASCII HP gauge with the current HP value displayed beside it.
+ * @param {number} current
+ * @param {number} max
+ * @param {number} length
+ * @returns {string}
+ */
+export function formatHpGaugeText(current, max, length) {
+    const gauge = createAsciiGauge(current, max, length);
+    return `${gauge}・${current}`;
+}
+
+/**
  * Creates a standard battle unit display (Name + ASCII gauges).
  * @param {import("../objects/objects.js").Game_Battler} battler
  * @param {Object} options
@@ -151,7 +163,7 @@ export function createBattleUnitSlot(battler, options = {}) {
     // HP Gauge
     const hpDiv = document.createElement("div");
     hpDiv.className = "battler-hp";
-    hpDiv.textContent = createAsciiGauge(battler.hp, battler.maxHp, gaugeLength);
+    hpDiv.textContent = formatHpGaugeText(battler.hp, battler.maxHp, gaugeLength);
     container.appendChild(hpDiv);
 
     // MP Gauge (Optional)

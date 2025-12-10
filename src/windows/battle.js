@@ -1,5 +1,5 @@
 import { Window_Base } from "./base.js";
-import { createToggleSwitch, createBattleUnitSlot, createAsciiGauge } from "./utils.js";
+import { createToggleSwitch, createBattleUnitSlot, formatHpGaugeText } from "./utils.js";
 import { getPrimaryElements, elementToAscii } from "../core/utils.js";
 import { UI } from "./builder.js";
 import { ProgressionSystem } from "../managers/progression.js";
@@ -286,7 +286,7 @@ export class Window_Battle extends Window_Base {
             const hpEl = this.getHpElement(ctx.index, ctx.isEnemy);
             if (hpEl) {
                 const gaugeLength = ctx.isSummoner ? GAUGE_LENGTH_SUMMONER : GAUGE_LENGTH_STANDARD;
-                hpEl.textContent = createAsciiGauge(currentHp, battler.maxHp, gaugeLength);
+                hpEl.textContent = formatHpGaugeText(currentHp, battler.maxHp, gaugeLength);
             }
         }
 
