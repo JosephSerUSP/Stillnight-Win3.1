@@ -17,6 +17,7 @@ export class Game_Action {
         this._skillId = null;
         this._itemId = null;
         this._rowBonus = 0; // -1 for Back, +1 for Front (Player only)
+        this._calculatedResults = null;
     }
 
     setAttack() {
@@ -24,12 +25,14 @@ export class Game_Action {
         this._item = null;
         this._skillId = null;
         this._itemId = null;
+        this._calculatedResults = null;
     }
 
     setSkill(skillId, dataManager) {
         this._isAttack = false;
         this._skillId = skillId;
         this._item = dataManager.skills[skillId];
+        this._calculatedResults = null;
     }
 
     setItem(itemId, dataManager) {
@@ -40,6 +43,7 @@ export class Game_Action {
         } else {
             this._item = dataManager.items[itemId];
         }
+        this._calculatedResults = null;
     }
 
     setRowBonus(bonus) {
@@ -93,6 +97,30 @@ export class Game_Action {
     }
 
     /**
+     * Pre-calculates the action outcome to support preview and deterministic execution.
+     * Does NOT modify state, but stores the resulting events and RNG outcomes.
+     * @param {import("./battler.js").Game_Battler} target - The target.
+     * @param {import("../managers/data.js").DataManager} dataManager - Data manager.
+     */
+    calculate(target, dataManager) {
+        if (!target) return;
+
+        // Perform a dry run
+        const events = [];
+        const context = { dryRun: true };
+
+        if (this._isAttack) {
+            this._applyAttack(target, dataManager, events, context);
+        } else if (this._skillId) {
+            this._applySkill(target, dataManager, events, context);
+        } else if (this._itemId) {
+            this._applyItem(target, dataManager, events, context);
+        }
+
+        this._calculatedResults = { events, context };
+    }
+
+    /**
      * Applies the action to the target.
      * @param {import("./battler.js").Game_Battler} target - The target.
      * @param {import("../managers/data.js").DataManager} dataManager - Data manager for lookups.
@@ -113,7 +141,7 @@ export class Game_Action {
         return events;
     }
 
-    _applyAttack(target, dataManager, events) {
+    _applyAttack(target, dataManager, events, context = {}) {
         const battler = this.subject;
 
         // Base Damage
@@ -124,7 +152,7 @@ export class Game_Action {
         // Evasion
         const evasionChance = target.getPassiveValue("EVA");
         if (evasionChance > 0 && Math.random() < evasionChance) {
-            SoundManager.play('UI_CANCEL');
+            if (!context.dryRun) SoundManager.play('UI_CANCEL');
             events.push({
                 type: "miss",
                 battler: battler,
@@ -155,9 +183,15 @@ export class Game_Action {
         if (dmg < 1) dmg = 1;
 
         const hpBefore = target.hp;
-        target.hp = Math.max(0, target.hp - dmg);
+        let hpAfter = target.hp;
 
-        SoundManager.play('DAMAGE');
+        if (!context.dryRun) {
+            target.hp = Math.max(0, target.hp - dmg);
+            hpAfter = target.hp;
+            SoundManager.play('DAMAGE');
+        } else {
+            hpAfter = Math.max(0, target.hp - dmg);
+        }
 
         const msg = isCritical
             ? `CRITICAL! ${battler.name} deals ${dmg} damage to ${target.name}!`
@@ -169,13 +203,13 @@ export class Game_Action {
             target: target,
             value: dmg,
             hpBefore: hpBefore,
-            hpAfter: target.hp,
+            hpAfter: hpAfter,
             isCritical: isCritical,
             msg: msg,
         });
     }
 
-    _applySkill(target, dataManager, events) {
+    _applySkill(target, dataManager, events, context = {}) {
         const battler = this.subject;
         const skill = this._item;
 
@@ -199,10 +233,10 @@ export class Game_Action {
         events.push({ type: 'use_skill', battler: battler, skillName, msg: `${battler.name} uses ${skillName}!` });
 
         skill.effects.forEach((effect) => {
-            const context = { boost };
+            const ctx = { ...context, boost };
             // Apply element multiplier to damage effects
             if (effect.type === 'hp_damage' || effect.type === 'hp_drain') {
-                 context.boost = (context.boost || 1) * elementMult;
+                 ctx.boost = (ctx.boost || 1) * elementMult;
             }
 
             let effectKey = effect.type;
@@ -212,37 +246,37 @@ export class Game_Action {
                  effectValue = { id: effect.status, chance: effect.chance };
             }
 
-            const result = EffectProcessor.apply(effectKey, effectValue, battler, target, context);
+            const result = EffectProcessor.apply(effectKey, effectValue, battler, target, ctx);
 
             if (!result) return;
 
              if (result.type === 'damage') {
-                 SoundManager.play('DAMAGE');
+                 if (!context.dryRun) SoundManager.play('DAMAGE');
                  events.push({
                     type: 'damage',
                     battler: battler,
                     target: target,
                     value: result.value,
-                    hpBefore: target.hp + result.value,
-                    hpAfter: target.hp,
+                    hpBefore: result.newHp + result.value, // Approximate if dryRun
+                    hpAfter: result.newHp,
                     msg: `  ${target.name} takes ${result.value} damage.`
                  });
             } else if (result.type === 'heal') {
-                 SoundManager.play('HEAL');
+                 if (!context.dryRun) SoundManager.play('HEAL');
                  events.push({
                      type: 'heal',
                      battler: battler,
                      target: target,
                      value: result.value,
-                     hpBefore: target.hp - result.value,
-                     hpAfter: target.hp,
+                     hpBefore: result.newHp - result.value,
+                     hpAfter: result.newHp,
                      msg: `  ${target.name} heals ${result.value} HP.`,
                      animation: 'healing_sparkle'
                  });
             } else if (result.type === 'status') {
                  events.push({ type: 'status', target: target, status: result.status, msg: `  ${target.name} is afflicted with ${result.status}.` });
             } else if (result.type === 'hp_drain') {
-                 SoundManager.play('DAMAGE');
+                 if (!context.dryRun) SoundManager.play('DAMAGE');
                  events.push({
                      type: 'hp_drain',
                      battler: battler,
@@ -259,14 +293,14 @@ export class Game_Action {
         });
     }
 
-    _applyItem(target, dataManager, events) {
+    _applyItem(target, dataManager, events, context = {}) {
         const subject = this.subject;
         const item = this._item;
 
         if (!item) return;
 
         // Consumption logic: if subject has inventory, remove item.
-        if (item.type !== 'equipment' && subject.inventory && Array.isArray(subject.inventory)) {
+        if (!context.dryRun && item.type !== 'equipment' && subject.inventory && Array.isArray(subject.inventory)) {
              const idx = subject.inventory.findIndex(i => i.id === item.id);
              if (idx !== -1) {
                  subject.inventory.splice(idx, 1);
@@ -281,9 +315,9 @@ export class Game_Action {
                 const key = effect.type;
                 const value = effect.formula || effect.value;
                 // Determine context/boost if needed
-                const context = {};
+                const ctx = { ...context };
                 // Pass item as source
-                const result = EffectProcessor.apply(key, value, item, target, context);
+                const result = EffectProcessor.apply(key, value, item, target, ctx);
 
                 if (result) {
                     if (!result.battler) result.battler = subject;
@@ -292,10 +326,10 @@ export class Game_Action {
                          if (result.type === 'heal') {
                              result.msg = `  ${target.name} heals ${result.value} HP.`;
                              result.animation = 'healing_sparkle';
-                             SoundManager.play('HEAL'); // ensure sound
+                             if (!context.dryRun) SoundManager.play('HEAL');
                          } else if (result.type === 'damage') {
                              result.msg = `  ${target.name} takes ${result.value} damage.`;
-                             SoundManager.play('DAMAGE');
+                             if (!context.dryRun) SoundManager.play('DAMAGE');
                          } else if (result.type === 'recruit_egg') {
                              result.msg = `  The egg hatches!`;
                          } else if (result.type === 'maxHp') {
@@ -305,7 +339,7 @@ export class Game_Action {
                          }
                     } else if (result.type === 'heal' && !result.animation) {
                         result.animation = 'healing_sparkle';
-                        SoundManager.play('HEAL');
+                        if (!context.dryRun) SoundManager.play('HEAL');
                     }
 
                     events.push(result);
