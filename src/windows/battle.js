@@ -302,6 +302,54 @@ export class Window_Battle extends Window_Base {
   }
 
   /**
+   * Animates the action preview consumption (text moves, target flashes, then clears).
+   * @param {Object} battler - The battler performing the action.
+   */
+  animateActionConsumption(battler, enemies, partySlots) {
+      return new Promise((resolve) => {
+          const ctx = this._getBattlerContext(battler, enemies, partySlots);
+          if (!ctx) { resolve(); return; }
+
+          const battlerEl = this.getBattlerElement(ctx.index, ctx.isEnemy);
+          if (!battlerEl) { resolve(); return; }
+
+          const previewEl = battlerEl.querySelector('.action-preview');
+          if (!previewEl || previewEl.style.visibility === 'hidden') { resolve(); return; }
+
+          const nameEl = previewEl.querySelector('.action-name');
+          const targetEl = previewEl.querySelector('.action-target') || previewEl.querySelector('.action-target-unknown');
+
+          if (nameEl) {
+              // Animate name shifting right
+              nameEl.style.transition = "transform 0.2s ease-in, opacity 0.2s ease-in";
+              nameEl.style.transform = "translateX(12px)";
+              nameEl.style.opacity = "0";
+          }
+
+          setTimeout(() => {
+              if (targetEl) {
+                  // Flash target
+                  // We can use a CSS class or manual opacity toggling.
+                  // Let's manually toggle for precise timing matching the prompt "flashes".
+                  const flash = (count) => {
+                      if (count <= 0) {
+                          previewEl.style.visibility = "hidden";
+                          resolve();
+                          return;
+                      }
+                      targetEl.style.visibility = (targetEl.style.visibility === 'hidden' ? 'visible' : 'hidden');
+                      setTimeout(() => flash(count - 1), 80);
+                  };
+                  flash(4); // Flash twice (hide, show, hide, show -> then final hide container)
+              } else {
+                  previewEl.style.visibility = "hidden";
+                  resolve();
+              }
+          }, 200); // Wait for shift
+      });
+  }
+
+  /**
    * Applies a visual animation class to a battler's DOM element.
    */
   animateBattler(battler, animationType, enemies, partySlots) {
