@@ -84,6 +84,89 @@ export function createBattlerNameLabel(battler, options = {}) {
 }
 
 /**
+ * Generates an ASCII-style gauge string.
+ * @param {number} current
+ * @param {number} max
+ * @param {number} [length=15]
+ * @param {string} [fillChar='#']
+ * @returns {string} e.g. "[#####     ]"
+ */
+export function createAsciiGauge(current, max, length = 15, fillChar = '#') {
+    const totalLength = length;
+    let filledCount = Math.round((current / max) * totalLength);
+    if (current > 0 && filledCount === 0) filledCount = 1;
+    if (filledCount < 0) filledCount = 0;
+    const emptyCount = totalLength - filledCount;
+    if (emptyCount < 0) return `[${fillChar.repeat(totalLength)}]`;
+    return `[${fillChar.repeat(filledCount)}${" ".repeat(emptyCount)}]`;
+}
+
+/**
+ * Creates a standard battle unit display (Name + ASCII gauges).
+ * @param {import("../objects/objects.js").Game_Battler} battler
+ * @param {Object} options
+ * @param {string} [options.id] - Element ID.
+ * @param {number} [options.top]
+ * @param {number} [options.left]
+ * @param {string} [options.width]
+ * @param {string} [options.textAlign]
+ * @param {boolean} [options.showMp=false]
+ * @param {number} [options.gaugeLength=15]
+ * @param {string} [options.evolutionStatus]
+ * @param {string} [options.nameElementId] - ID for the name span (for animations).
+ * @returns {HTMLElement}
+ */
+export function createBattleUnitSlot(battler, options = {}) {
+    const container = document.createElement("div");
+    container.className = "battler-container";
+    if (options.id) container.id = options.id;
+
+    container.style.position = "absolute";
+    if (options.top !== undefined) container.style.top = `${options.top}px`;
+    if (options.left !== undefined) container.style.left = `${options.left}px`;
+    if (options.width) container.style.width = options.width;
+    if (options.textAlign) container.style.textAlign = options.textAlign;
+
+    // Style consistency
+    container.style.whiteSpace = "pre";
+    container.style.display = "flex";
+    container.style.flexDirection = "column";
+    if (options.textAlign === 'center') {
+        container.style.alignItems = 'center';
+    }
+
+    const gaugeLength = options.gaugeLength || 15;
+
+    // Name
+    const nameLabel = createBattlerNameLabel(battler, {
+        nameElementId: options.nameElementId,
+        evolutionStatus: options.evolutionStatus
+    });
+
+    const nameWrapper = document.createElement("div");
+    nameWrapper.className = "battler-name";
+    nameWrapper.appendChild(nameLabel);
+    container.appendChild(nameWrapper);
+
+    // HP Gauge
+    const hpDiv = document.createElement("div");
+    hpDiv.className = "battler-hp";
+    hpDiv.textContent = createAsciiGauge(battler.hp, battler.maxHp, gaugeLength);
+    container.appendChild(hpDiv);
+
+    // MP Gauge (Optional)
+    if (options.showMp) {
+        const mpDiv = document.createElement("div");
+        mpDiv.className = "battler-mp";
+        // Use * for MP to distinguish from HP
+        mpDiv.textContent = createAsciiGauge(battler.mp, battler.maxMp, gaugeLength, '*');
+        container.appendChild(mpDiv);
+    }
+
+    return container;
+}
+
+/**
  * Creates a generic gauge element.
  * @param {Object} options - Configuration options.
  */
