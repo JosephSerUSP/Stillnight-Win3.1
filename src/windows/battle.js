@@ -564,4 +564,73 @@ export class Window_Victory extends Window_Base {
       this.spoilsEl.textContent = spoils;
       this.btnClaim.onclick = onClaim;
   }
+
+  /**
+   * Animates the consumption of the action preview text.
+   * "Firaga -->" becomes "Firag -->", "Fira -->", etc.
+   * Then flashes the target name, then clears the preview.
+   */
+  animateActionConsumption(battler, enemies, partySlots) {
+    return new Promise((resolve) => {
+      const ctx = this._getBattlerContext(battler, enemies, partySlots);
+      if (!ctx) {
+        resolve();
+        return;
+      }
+
+      const battlerElement = this.getBattlerElement(ctx.index, ctx.isEnemy);
+      if (!battlerElement) {
+        resolve();
+        return;
+      }
+
+      const previewContainer = battlerElement.querySelector('.action-preview-container');
+      const actionNameSpan = battlerElement.querySelector('.action-name-arrow');
+      const targetLabel = battlerElement.querySelector('.action-preview-target');
+
+      if (!previewContainer || !actionNameSpan) {
+        resolve();
+        return;
+      }
+
+      const originalName = actionNameSpan.dataset.actionName || "";
+      if (!originalName) {
+        // Fallback cleanup if name missing
+        previewContainer.style.visibility = 'hidden';
+        resolve();
+        return;
+      }
+
+      let currentName = originalName;
+      const interval = 50;
+
+      const step = () => {
+        if (currentName.length > 0) {
+          currentName = currentName.slice(0, -1);
+          actionNameSpan.textContent = `${currentName} --> `;
+          setTimeout(step, interval);
+        } else {
+          // Name consumed. Flash target if exists.
+          if (targetLabel) {
+             targetLabel.classList.add('blink');
+             setTimeout(() => {
+                 targetLabel.classList.remove('blink');
+                 finalize();
+             }, 200);
+          } else {
+             finalize();
+          }
+        }
+      };
+
+      const finalize = () => {
+          previewContainer.style.visibility = 'hidden';
+          // Also clear text to be safe? Or leave it hidden.
+          // Reset for next time? Next refresh() will recreate the slot anyway.
+          resolve();
+      };
+
+      step();
+    });
+  }
 }

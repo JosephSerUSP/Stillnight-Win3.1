@@ -367,6 +367,9 @@ export class Scene_Battle extends Scene_Base {
         const action = battlerContext.action;
 
         if (action) {
+             // Animate action preview consumption before execution
+             await this.battleWindow.animateActionConsumption(battlerContext.battler, this.battleManager.enemies, this.party.slots.slice(0,4));
+
              const actionEvents = this.battleManager.executeAction(action);
              await this.animateEvents(actionEvents);
         }
