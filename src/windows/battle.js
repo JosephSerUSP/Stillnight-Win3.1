@@ -4,6 +4,9 @@ import { getPrimaryElements, elementToAscii } from "../core/utils.js";
 import { UI } from "./builder.js";
 import { ProgressionSystem } from "../managers/progression.js";
 
+const GAUGE_LENGTH_STANDARD = 15;
+const GAUGE_LENGTH_SUMMONER = 40;
+
 /**
  * @class Window_Battle
  */
@@ -161,7 +164,7 @@ export class Window_Battle extends Window_Base {
         let top, left, width, textAlign;
         let battlerId = '';
         let showMp = false;
-        let gaugeLength = 15;
+        let gaugeLength = GAUGE_LENGTH_STANDARD;
 
         if (isEnemy) {
             top = 30 + Math.floor(idx / 2) * 32;
@@ -170,12 +173,12 @@ export class Window_Battle extends Window_Base {
         } else if (isSummoner) {
             // Summoner (3rd row)
             top = 192;
-            left = 0; // Centering handled by CSS or container width
-            width = "100%"; // Occupy full row
-            textAlign = "center";
+            left = 20; // Align with left column of creatures
+            width = "auto";
+            textAlign = "left";
             battlerId = `battler-summoner`; // Simplified ID for summoner
             showMp = true;
-            gaugeLength = 40;
+            gaugeLength = GAUGE_LENGTH_SUMMONER;
         } else {
             // Party members
             top = 128 + Math.floor(idx / 2) * 32;
@@ -207,9 +210,7 @@ export class Window_Battle extends Window_Base {
         // If left is undefined, it defaults to auto. If width is 100%, it fills.
         // If left is 0, it starts at left edge.
         if (isSummoner) {
-            slot.style.left = "0";
-            // Also ensure it is visually centered if width is constrained?
-            // User requested "Wider", "Entire row". width 100% satisfies this.
+            // Override if needed, but 'left' passed to createBattleUnitSlot handles it.
         }
 
         this.viewportEl.appendChild(slot);
@@ -275,7 +276,8 @@ export class Window_Battle extends Window_Base {
         if (ctx) {
             const hpEl = this.getHpElement(ctx.index, ctx.isEnemy);
             if (hpEl) {
-                hpEl.textContent = createAsciiGauge(currentHp, battler.maxHp);
+                const gaugeLength = ctx.isSummoner ? GAUGE_LENGTH_SUMMONER : GAUGE_LENGTH_STANDARD;
+                hpEl.textContent = createAsciiGauge(currentHp, battler.maxHp, gaugeLength);
             }
         }
 
