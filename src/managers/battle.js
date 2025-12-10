@@ -95,9 +95,9 @@ export class BattleManager {
 
   /**
    * Initializes a new round of combat by creating a turn queue sorted by the default order.
-   * @method startRound
+   * @method planRound
    */
-  startRound(isFirstStrike = false) {
+  planRound(isFirstStrike = false) {
     if (this.isBattleFinished) return;
     this.round++;
 
@@ -135,6 +135,29 @@ export class BattleManager {
     } else {
         this.turnQueue = sortBySpeed(plannedQueue);
     }
+  }
+
+  /**
+   * Retrieves the intended action for a specific battler from the current turn queue.
+   * @method getPlannedAction
+   * @param {Object} battler - The battler to query.
+   * @returns {Object|null} The planned action info { actionName, target } or null.
+   */
+  getPlannedAction(battler) {
+      const entry = this.turnQueue.find(e => e.battler === battler);
+      if (!entry || !entry.action) return null;
+
+      const action = entry.action;
+      let actionName = "Attack";
+      if (action.skillId) {
+          const skill = this.dataManager.skills[action.skillId];
+          actionName = skill ? skill.name : "Skill";
+      }
+
+      return {
+          actionName,
+          target: action.target
+      };
   }
 
   /**

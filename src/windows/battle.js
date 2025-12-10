@@ -144,7 +144,7 @@ export class Window_Battle extends Window_Base {
     });
   }
 
-  refresh(battlers, partySlots, partyInstance) {
+  refresh(battlers, partySlots, partyInstance, battleManager) {
     this.viewportEl.innerHTML = "";
 
     UI.build(this.viewportEl, {
@@ -168,14 +168,18 @@ export class Window_Battle extends Window_Base {
         let battlerH = 48;
         let battlerW = 256;
 
-            left = battlerW / 8 + (idx % 2) * battlerW;
-            top = battlerH + Math.floor(idx / 2) * battlerH;
+        // Default positioning logic
+        left = battlerW / 8 + (idx % 2) * battlerW;
+        top = battlerH + Math.floor(idx / 2) * battlerH;
+
         if (isEnemy) {
             battlerId = `battler-enemy-${idx}`;
         } else if (isSummoner) {
-            // Summoner (3rd row)
+            // Summoner (3rd row) - Fixed to center
             top = battlerH * 7;
-            left = battlerW / 8; 
+            left = 0;
+            width = "100%";
+            textAlign = "center";
             battlerId = `battler-summoner`; 
             showMp = true;
             gaugeLength = GAUGE_LENGTH_SUMMONER;
@@ -191,6 +195,11 @@ export class Window_Battle extends Window_Base {
             evoStatus = status.status;
         }
 
+        let actionPreview = null;
+        if (!isSummoner && battleManager) {
+            actionPreview = battleManager.getPlannedAction(b);
+        }
+
         const slot = createBattleUnitSlot(b, {
             id: battlerId,
             top,
@@ -200,7 +209,8 @@ export class Window_Battle extends Window_Base {
             nameElementId: battlerId + '-name',
             evolutionStatus: evoStatus,
             showMp,
-            gaugeLength
+            gaugeLength,
+            actionPreview
         });
 
         // Extra positioning for Summoner if needed to center specifically
