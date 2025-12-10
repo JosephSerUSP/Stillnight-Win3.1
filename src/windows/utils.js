@@ -84,21 +84,64 @@ export function createBattlerNameLabel(battler, options = {}) {
 }
 
 /**
- * Generates an ASCII-style gauge string.
+ * Generates an ASCII-style gauge HTML string.
  * @param {number} current
  * @param {number} max
  * @param {number} [length=15]
  * @param {string} [fillChar='#']
- * @returns {string} e.g. "[#####     ]"
+ * @param {number} [previewValue] - Optional predicted next value for damage/healing preview.
+ * @returns {string} HTML string e.g. "[<span...>###</span>...]"
  */
-export function createAsciiGauge(current, max, length = 15, fillChar = '#') {
+export function createAsciiGauge(current, max, length = 15, fillChar = '#', previewValue = null) {
     const totalLength = length;
-    let filledCount = Math.round((current / max) * totalLength);
-    if (current > 0 && filledCount === 0) filledCount = 1;
-    if (filledCount < 0) filledCount = 0;
-    const emptyCount = totalLength - filledCount;
-    if (emptyCount < 0) return `[${fillChar.repeat(totalLength)}]`;
-    return `[${fillChar.repeat(filledCount)}${" ".repeat(emptyCount)}]`;
+    const currentRatio = Math.max(0, Math.min(1, current / max));
+    let currentFilled = Math.round(currentRatio * totalLength);
+    if (current > 0 && currentFilled === 0) currentFilled = 1;
+
+    let html = '[';
+
+    if (previewValue !== null) {
+        const previewRatio = Math.max(0, Math.min(1, previewValue / max));
+        let previewFilled = Math.round(previewRatio * totalLength);
+        if (previewValue > 0 && previewFilled === 0) previewFilled = 1;
+
+        if (previewFilled < currentFilled) {
+            // Damage Preview (Current > Preview)
+            // Render [Keep][Damage][Empty]
+            const keep = previewFilled;
+            const damage = currentFilled - previewFilled;
+            const empty = totalLength - currentFilled;
+
+            if (keep > 0) html += fillChar.repeat(keep);
+            if (damage > 0) html += `<span style="color: red">${fillChar.repeat(damage)}</span>`;
+            if (empty > 0) html += " ".repeat(empty);
+
+        } else if (previewFilled > currentFilled) {
+            // Healing Preview (Preview > Current)
+            // Render [Current][Heal][Empty]
+            const keep = currentFilled;
+            const heal = previewFilled - currentFilled;
+            const empty = totalLength - previewFilled;
+
+            if (keep > 0) html += fillChar.repeat(keep);
+            if (heal > 0) html += `<span style="opacity: 0.5">${fillChar.repeat(heal)}</span>`;
+            if (empty > 0) html += " ".repeat(empty);
+
+        } else {
+            // No change visible in gauge resolution
+            const empty = totalLength - currentFilled;
+            html += fillChar.repeat(currentFilled);
+            if (empty > 0) html += " ".repeat(empty);
+        }
+    } else {
+        // Standard render
+        const empty = totalLength - currentFilled;
+        html += fillChar.repeat(currentFilled);
+        if (empty > 0) html += " ".repeat(empty);
+    }
+
+    html += ']';
+    return html;
 }
 
 /**
@@ -114,6 +157,8 @@ export function createAsciiGauge(current, max, length = 15, fillChar = '#') {
  * @param {number} [options.gaugeLength=15]
  * @param {string} [options.evolutionStatus]
  * @param {string} [options.nameElementId] - ID for the name span (for animations).
+ * @param {number} [options.predictedHp] - The predicted HP for the next turn.
+ * @param {Object} [options.actionPreview] - { actionName, target }
  * @returns {HTMLElement}
  */
 export function createBattleUnitSlot(battler, options = {}) {
@@ -148,43 +193,71 @@ export function createBattleUnitSlot(battler, options = {}) {
     nameWrapper.appendChild(nameLabel);
     container.appendChild(nameWrapper);
 
+    // HP Gauge Container
+    const hpContainer = document.createElement("div");
+    hpContainer.className = "battler-hp-container";
+    hpContainer.style.display = "flex";
+    hpContainer.style.alignItems = "center";
+    hpContainer.style.gap = "4px";
+
     // HP Gauge
     const hpDiv = document.createElement("div");
     hpDiv.className = "battler-hp";
-    hpDiv.textContent = createAsciiGauge(battler.hp, battler.maxHp, gaugeLength);
-    container.appendChild(hpDiv);
+    hpDiv.innerHTML = createAsciiGauge(battler.hp, battler.maxHp, gaugeLength, '#', options.predictedHp);
+    hpContainer.appendChild(hpDiv);
+
+    // Numeric HP (Current · Max)
+    const hpText = document.createElement("span");
+    hpText.className = "battler-hp-text";
+    hpText.style.fontSize = "10px";
+    hpText.textContent = `${battler.hp} · ${battler.maxHp}`;
+    hpContainer.appendChild(hpText);
+
+    container.appendChild(hpContainer);
 
     // MP Gauge (Optional)
     if (options.showMp) {
         const mpDiv = document.createElement("div");
         mpDiv.className = "battler-mp";
         // Use * for MP to distinguish from HP
-        mpDiv.textContent = createAsciiGauge(battler.mp, battler.maxMp, gaugeLength, '*');
+        mpDiv.innerHTML = createAsciiGauge(battler.mp, battler.maxMp, gaugeLength, '*');
         container.appendChild(mpDiv);
     }
 
     // Action Preview
     if (options.actionPreview) {
         const previewDiv = document.createElement("div");
+        previewDiv.className = "action-preview";
         previewDiv.style.color = "#ffaa00";
         previewDiv.style.fontSize = "10px";
         previewDiv.style.whiteSpace = "nowrap";
         previewDiv.style.marginTop = "2px";
+        previewDiv.style.position = "relative"; // For absolute positioning during animation if needed
 
         const actionSpan = document.createElement("span");
-        actionSpan.textContent = `${options.actionPreview.actionName} --> `;
-        previewDiv.appendChild(actionSpan);
+        actionSpan.className = "preview-action";
+        actionSpan.textContent = options.actionPreview.actionName;
+        actionSpan.style.display = "inline-block";
+        actionSpan.style.transition = "transform 0.3s ease-in, opacity 0.3s ease-in"; // Setup transition
 
+        const arrowSpan = document.createElement("span");
+        arrowSpan.textContent = " --> ";
+        arrowSpan.className = "preview-arrow";
+
+        const targetSpan = document.createElement("span");
+        targetSpan.className = "preview-target";
+        // Use text content for simple targeting display or just string
+        let targetName = "Unknown";
         if (options.actionPreview.target) {
-            // Use createBattlerNameLabel for the target if available
-            const targetLabel = createBattlerNameLabel(options.actionPreview.target, { evolutionStatus: 'NONE' });
-            targetLabel.style.display = "inline-flex";
-            previewDiv.appendChild(targetLabel);
-        } else {
-            const unknownSpan = document.createElement("span");
-            unknownSpan.textContent = "Unknown";
-            previewDiv.appendChild(unknownSpan);
+            targetName = options.actionPreview.target.name;
         }
+        targetSpan.textContent = targetName;
+        targetSpan.style.display = "inline-block";
+        targetSpan.style.transition = "transform 0.3s ease-in, opacity 0.3s ease-in";
+
+        previewDiv.appendChild(actionSpan);
+        previewDiv.appendChild(arrowSpan);
+        previewDiv.appendChild(targetSpan);
 
         container.appendChild(previewDiv);
     }

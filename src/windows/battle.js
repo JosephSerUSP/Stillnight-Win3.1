@@ -196,8 +196,10 @@ export class Window_Battle extends Window_Base {
         }
 
         let actionPreview = null;
+        let predictedHp = b.hp; // Default to current HP
         if (!isSummoner && battleManager) {
             actionPreview = battleManager.getPlannedAction(b);
+            predictedHp = battleManager.getPredictedHp(b);
         }
 
         const slot = createBattleUnitSlot(b, {
@@ -210,7 +212,8 @@ export class Window_Battle extends Window_Base {
             evolutionStatus: evoStatus,
             showMp,
             gaugeLength,
-            actionPreview
+            actionPreview,
+            predictedHp
         });
 
         // Extra positioning for Summoner if needed to center specifically
@@ -286,7 +289,16 @@ export class Window_Battle extends Window_Base {
             const hpEl = this.getHpElement(ctx.index, ctx.isEnemy);
             if (hpEl) {
                 const gaugeLength = ctx.isSummoner ? GAUGE_LENGTH_SUMMONER : GAUGE_LENGTH_STANDARD;
-                hpEl.textContent = createAsciiGauge(currentHp, battler.maxHp, gaugeLength);
+                hpEl.innerHTML = createAsciiGauge(currentHp, battler.maxHp, gaugeLength);
+
+                // Update text if exists
+                const container = hpEl.parentElement;
+                if (container) {
+                    const textEl = container.querySelector('.battler-hp-text');
+                    if (textEl) {
+                        textEl.textContent = `${currentHp} · ${battler.maxHp}`;
+                    }
+                }
             }
         }
 
@@ -299,6 +311,43 @@ export class Window_Battle extends Window_Base {
 
       interpolator();
     });
+  }
+
+  /**
+   * Animates the action consumption (text sliding together).
+   */
+  animateActionConsumption(battler, enemies, partySlots) {
+      return new Promise((resolve) => {
+          const ctx = this._getBattlerContext(battler, enemies, partySlots);
+          if (!ctx) { resolve(); return; }
+
+          const slot = this.getBattlerElement(ctx.index, ctx.isEnemy);
+          if (!slot) { resolve(); return; }
+
+          const previewDiv = slot.querySelector('.action-preview');
+          if (!previewDiv) { resolve(); return; }
+
+          const actionSpan = previewDiv.querySelector('.preview-action');
+          const targetSpan = previewDiv.querySelector('.preview-target');
+
+          // Animate sliding towards the center (arrow)
+          if (actionSpan) {
+              actionSpan.style.transform = "translateX(20px)";
+              actionSpan.style.opacity = "0";
+          }
+          if (targetSpan) {
+              targetSpan.style.transform = "translateX(-20px)";
+              targetSpan.style.opacity = "0";
+          }
+
+          // Wait for transition end
+          setTimeout(() => {
+              if (previewDiv && previewDiv.parentNode) {
+                  previewDiv.style.visibility = "hidden"; // Hide it after animation
+              }
+              resolve();
+          }, 300);
+      });
   }
 
   /**

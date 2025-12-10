@@ -34,7 +34,7 @@ test.describe('Battle System', () => {
             const enemy = new Game_Battler(slimeData, 1, true);
 
             bm.setup([enemy], 0, 0);
-            bm.startRound();
+            bm.planRound();
 
             return {
                 queueLength: bm.turnQueue.length,
@@ -227,7 +227,7 @@ test.describe('Battle System', () => {
             const enemy = new Game_Battler({ name: "Slime", maxHp: 10, level: 1 }, 1, true);
 
             bm.setup([enemy], 0, 0);
-            bm.startRound();
+            bm.planRound();
 
             return bm.turnQueue.filter(t => !t.isEnemy).length;
         });
