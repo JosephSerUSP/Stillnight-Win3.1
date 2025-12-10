@@ -505,6 +505,11 @@ export class Scene_Battle extends Scene_Base {
             }
 
             if (event.type === 'use_skill' || event.type === 'use_item') {
+                // Animate the action preview being consumed
+                if (event.battler) {
+                    await this.battleWindow.animateActionConsumption(event.battler, this.battleManager.enemies, this.party.slots.slice(0,4));
+                }
+
                 // Look ahead to see if there is exactly one dependent result (starts with spaces)
                 let resultCount = 0;
                 for (let j = i + 1; j < events.length; j++) {
