@@ -113,6 +113,71 @@ export class Game_Action {
         return events;
     }
 
+    /**
+     * Calculates the potential outcome of the action without applying it.
+     * @param {import("./battler.js").Game_Battler} target - The target.
+     * @param {import("../managers/data.js").DataManager} dataManager - Data manager.
+     * @returns {Object} Predicted result { damage: number, healing: number, ... }
+     */
+    calculate(target, dataManager) {
+        if (!target) return {};
+
+        const result = { damage: 0, healing: 0 };
+        const battler = this.subject;
+
+        // DRY: Logic duplicated from _apply methods but without RNG for criticals/misses (assume average or max?)
+        // For preview, we generally want the expected value.
+
+        if (this._isAttack) {
+            let base = battler.atk; // No random variance for preview
+            base += this._rowBonus;
+            if (base < 1) base = 1;
+
+            const mult = this._elementMultiplier(battler.elements, target.elements, dataManager);
+            let dmg = Math.round(base * mult);
+            dmg += battler.getPassiveValue("DEAL_DAMAGE_MOD");
+            if (dmg < 1) dmg = 1;
+
+            result.damage = dmg;
+        } else if (this._skillId && this._item) {
+             const skill = this._item;
+             let boost = 1;
+             if (skill.element) {
+                const matches = battler.elements.filter((e) => e === skill.element).length;
+                boost += matches * 0.25;
+             }
+
+             let elementMult = 1.0;
+             if (skill.element) {
+                 elementMult = this._elementMultiplier([skill.element], target.elements, dataManager);
+             }
+
+             skill.effects.forEach((effect) => {
+                 const context = { boost };
+                 if (effect.type === 'hp_damage' || effect.type === 'hp_drain') {
+                      context.boost = (context.boost || 1) * elementMult;
+                 }
+
+                 let value = effect.formula || effect.value;
+
+                 // Use EffectProcessor._evaluate to calculate value
+                 if (effect.type === 'hp_damage' || effect.type === 'hp_drain') {
+                     let base = EffectProcessor._evaluate(value, target, battler); // Note: evaluate(val, target, source)
+                     if (context.boost) base *= context.boost;
+                     const damage = Math.round(base);
+                     result.damage += damage;
+                 } else if (effect.type === 'hp_heal') {
+                     let base = EffectProcessor._evaluate(value, target, battler);
+                     if (context.boost) base *= context.boost;
+                     const heal = Math.round(base);
+                     result.healing += heal;
+                 }
+             });
+        }
+
+        return result;
+    }
+
     _applyAttack(target, dataManager, events) {
         const battler = this.subject;
 

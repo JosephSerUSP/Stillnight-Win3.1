@@ -91,14 +91,37 @@ export function createBattlerNameLabel(battler, options = {}) {
  * @param {string} [fillChar='#']
  * @returns {string} e.g. "[#####     ]"
  */
-export function createAsciiGauge(current, max, length = 15, fillChar = '#') {
+export function createAsciiGauge(current, max, length = 15, fillChar = '#', previewValue = 0) {
     const totalLength = length;
     let filledCount = Math.round((current / max) * totalLength);
     if (current > 0 && filledCount === 0) filledCount = 1;
     if (filledCount < 0) filledCount = 0;
+    if (filledCount > totalLength) filledCount = totalLength;
+
+    let previewCount = 0;
+    if (previewValue > 0) {
+        // Damage preview (reduction in HP)
+        // Ensure we don't preview more than current HP
+        const actualDamage = Math.min(current, previewValue);
+        previewCount = Math.round((actualDamage / max) * totalLength);
+
+        // Ensure visible preview if damage is significant but scaled down to 0
+        if (actualDamage > 0 && previewCount === 0) previewCount = 1;
+
+        // Don't exceed filled count
+        if (previewCount > filledCount) previewCount = filledCount;
+    }
+
+    const safeFilledCount = filledCount - previewCount;
     const emptyCount = totalLength - filledCount;
+
     if (emptyCount < 0) return `[${fillChar.repeat(totalLength)}]`;
-    return `[${fillChar.repeat(filledCount)}${" ".repeat(emptyCount)}]`;
+
+    const filledStr = fillChar.repeat(safeFilledCount);
+    const previewStr = previewValue > 0 ? "!".repeat(previewCount) : ""; // '!' for damage
+    const emptyStr = " ".repeat(emptyCount);
+
+    return `[${filledStr}${previewStr}${emptyStr}]`;
 }
 
 /**
@@ -114,6 +137,7 @@ export function createAsciiGauge(current, max, length = 15, fillChar = '#') {
  * @param {number} [options.gaugeLength=15]
  * @param {string} [options.evolutionStatus]
  * @param {string} [options.nameElementId] - ID for the name span (for animations).
+ * @param {number} [options.pendingDamage=0] - Projected damage to preview in HP gauge.
  * @returns {HTMLElement}
  */
 export function createBattleUnitSlot(battler, options = {}) {
@@ -151,7 +175,7 @@ export function createBattleUnitSlot(battler, options = {}) {
     // HP Gauge
     const hpDiv = document.createElement("div");
     hpDiv.className = "battler-hp";
-    hpDiv.textContent = createAsciiGauge(battler.hp, battler.maxHp, gaugeLength);
+    hpDiv.textContent = createAsciiGauge(battler.hp, battler.maxHp, gaugeLength, '#', options.pendingDamage || 0) + ` ${battler.hp}/${battler.maxHp}`;
     container.appendChild(hpDiv);
 
     // MP Gauge (Optional)
@@ -159,7 +183,7 @@ export function createBattleUnitSlot(battler, options = {}) {
         const mpDiv = document.createElement("div");
         mpDiv.className = "battler-mp";
         // Use * for MP to distinguish from HP
-        mpDiv.textContent = createAsciiGauge(battler.mp, battler.maxMp, gaugeLength, '*');
+        mpDiv.textContent = createAsciiGauge(battler.mp, battler.maxMp, gaugeLength, '*') + ` ${battler.mp}/${battler.maxMp}`;
         container.appendChild(mpDiv);
     }
 

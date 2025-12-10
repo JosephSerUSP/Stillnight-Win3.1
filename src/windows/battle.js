@@ -196,8 +196,28 @@ export class Window_Battle extends Window_Base {
         }
 
         let actionPreview = null;
-        if (!isSummoner && battleManager) {
-            actionPreview = battleManager.getPlannedAction(b);
+        let pendingDamage = 0;
+
+        if (battleManager) {
+            // 1. What is this battler doing?
+            if (!isSummoner) {
+                actionPreview = battleManager.getPlannedAction(b);
+            }
+
+            // 2. Is this battler being targeted?
+            if (battleManager.turnQueue) {
+                battleManager.turnQueue.forEach(entry => {
+                    if (entry.action && entry.action.target === b) {
+                         // Calculate damage
+                         if (entry.action.calculate) {
+                             const pred = entry.action.calculate(b, battleManager.dataManager);
+                             if (pred && pred.damage) {
+                                 pendingDamage += pred.damage;
+                             }
+                         }
+                    }
+                });
+            }
         }
 
         const slot = createBattleUnitSlot(b, {
@@ -210,7 +230,8 @@ export class Window_Battle extends Window_Base {
             evolutionStatus: evoStatus,
             showMp,
             gaugeLength,
-            actionPreview
+            actionPreview,
+            pendingDamage
         });
 
         // Extra positioning for Summoner if needed to center specifically
@@ -286,7 +307,8 @@ export class Window_Battle extends Window_Base {
             const hpEl = this.getHpElement(ctx.index, ctx.isEnemy);
             if (hpEl) {
                 const gaugeLength = ctx.isSummoner ? GAUGE_LENGTH_SUMMONER : GAUGE_LENGTH_STANDARD;
-                hpEl.textContent = createAsciiGauge(currentHp, battler.maxHp, gaugeLength);
+                // Maintain the number display
+                hpEl.textContent = createAsciiGauge(currentHp, battler.maxHp, gaugeLength) + ` ${currentHp}/${battler.maxHp}`;
             }
         }
 
