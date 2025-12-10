@@ -362,6 +362,35 @@ html, body {
     margin-bottom: 3px;
 }
 
+.action-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-preview-leading,
+.action-preview-target {
+    display: inline-flex;
+    align-items: center;
+}
+
+.action-preview-arrow {
+    margin: 0 2px;
+}
+
+.action-preview-animate {
+    animation: action-preview-shift 350ms ease forwards;
+}
+
+@keyframes action-preview-shift {
+    to {
+        transform: translateX(var(--action-preview-shift, 12px));
+        opacity: 0;
+    }
+}
+
 .card-area {
     flex: 1;
     display: flex;
