@@ -178,22 +178,32 @@ export function createBattleUnitSlot(battler, options = {}) {
     // Action Preview
     if (options.actionPreview) {
         const previewDiv = document.createElement("div");
+        previewDiv.className = "action-preview";
         previewDiv.style.color = "#ffaa00";
         previewDiv.style.fontSize = "10px";
         previewDiv.style.whiteSpace = "nowrap";
         previewDiv.style.marginTop = "2px";
 
         const actionSpan = document.createElement("span");
-        actionSpan.textContent = `${options.actionPreview.actionName} --> `;
+        actionSpan.className = "action-preview-action";
+        actionSpan.textContent = `${options.actionPreview.actionName}`;
+
+        const arrowSpan = document.createElement("span");
+        arrowSpan.className = "action-preview-arrow";
+        arrowSpan.textContent = " --> ";
+
         previewDiv.appendChild(actionSpan);
+        previewDiv.appendChild(arrowSpan);
 
         if (options.actionPreview.target) {
             // Use createBattlerNameLabel for the target if available
             const targetLabel = createBattlerNameLabel(options.actionPreview.target, { evolutionStatus: 'NONE' });
             targetLabel.style.display = "inline-flex";
+            targetLabel.classList.add("action-preview-target");
             previewDiv.appendChild(targetLabel);
         } else {
             const unknownSpan = document.createElement("span");
+            unknownSpan.className = "action-preview-target";
             unknownSpan.textContent = "Unknown";
             previewDiv.appendChild(unknownSpan);
         }

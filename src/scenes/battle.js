@@ -504,6 +504,10 @@ export class Scene_Battle extends Scene_Base {
                 await this.battleWindow.animateBattlerName(event.battler, this.battleManager.enemies, this.party.slots.slice(0,4));
             }
 
+            if (event.type === 'use_skill') {
+                await this.battleWindow.animateActionPreview(event.battler, this.battleManager.enemies, this.party.slots.slice(0,4));
+            }
+
             if (event.type === 'use_skill' || event.type === 'use_item') {
                 // Look ahead to see if there is exactly one dependent result (starts with spaces)
                 let resultCount = 0;

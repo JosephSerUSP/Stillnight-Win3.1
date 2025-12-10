@@ -302,6 +302,46 @@ export class Window_Battle extends Window_Base {
   }
 
   /**
+   * Animates the action preview line by sliding the action name into the arrow before clearing it.
+   */
+  animateActionPreview(battler, enemies, partySlots) {
+    return new Promise((resolve) => {
+      const ctx = this._getBattlerContext(battler, enemies, partySlots);
+      if (!ctx) return resolve();
+
+      const battlerElement = this.getBattlerElement(ctx.index, ctx.isEnemy);
+      const previewDiv = battlerElement?.querySelector('.action-preview');
+      const actionSpan = previewDiv?.querySelector('.action-preview-action');
+      const arrowSpan = previewDiv?.querySelector('.action-preview-arrow');
+
+      if (!previewDiv || !actionSpan || !arrowSpan) {
+        return resolve();
+      }
+
+      const actionRect = actionSpan.getBoundingClientRect();
+      const arrowRect = arrowSpan.getBoundingClientRect();
+      const distanceToArrow = (arrowRect.left + arrowRect.width) - (actionRect.left + actionRect.width);
+      const shiftDistance = Math.max(arrowRect.width, distanceToArrow);
+
+      const animation = actionSpan.animate(
+        [
+          { transform: 'translateX(0)', opacity: 1 },
+          { transform: `translateX(${shiftDistance}px)`, opacity: 0 }
+        ],
+        { duration: 450, easing: 'ease-in-out' }
+      );
+
+      const finish = () => {
+        previewDiv.textContent = "";
+        resolve();
+      };
+
+      animation.onfinish = finish;
+      animation.oncancel = finish;
+    });
+  }
+
+  /**
    * Applies a visual animation class to a battler's DOM element.
    */
   animateBattler(battler, animationType, enemies, partySlots) {
