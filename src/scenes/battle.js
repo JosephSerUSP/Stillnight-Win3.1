@@ -517,6 +517,10 @@ export class Scene_Battle extends Scene_Base {
                 appendNextResult = (resultCount === 1);
             }
 
+            if (event.type === 'use_skill') {
+                await this.battleWindow.animateActionPreview(event.battler, this.battleManager.enemies, this.party.slots.slice(0,4));
+            }
+
             if (event.msg) {
                 const isDependentResult = event.msg.startsWith('  ');
                 const priority = isDependentResult ? 'low' : undefined;

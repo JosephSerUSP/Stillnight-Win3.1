@@ -395,6 +395,63 @@ export class Window_Battle extends Window_Base {
   }
 
   /**
+   * Animates the action preview text into the arrow before clearing it.
+   */
+  animateActionPreview(battler, enemies, partySlots) {
+    return new Promise((resolve) => {
+      const ctx = this._getBattlerContext(battler, enemies, partySlots);
+      const battlerEl = ctx ? this.getBattlerElement(ctx.index, ctx.isEnemy) : null;
+      const previewEl = battlerEl ? battlerEl.querySelector('.action-preview') : null;
+
+      if (!previewEl) {
+        resolve();
+        return;
+      }
+
+      const leadingEl = previewEl.querySelector('.action-preview-leading');
+      const arrowEl = previewEl.querySelector('.action-preview-arrow');
+      const targetEl = previewEl.querySelector('.action-preview-target');
+
+      if (!leadingEl || !arrowEl) {
+        previewEl.textContent = '';
+        resolve();
+        return;
+      }
+
+      const leadingRect = leadingEl.getBoundingClientRect();
+      const arrowRect = arrowEl.getBoundingClientRect();
+      const shift = Math.max(arrowRect.left - leadingRect.left + arrowRect.width, 0);
+      previewEl.style.setProperty('--action-preview-shift', `${shift}px`);
+
+      const animatedEls = [leadingEl, targetEl].filter(Boolean);
+      if (animatedEls.length === 0) {
+        previewEl.textContent = '';
+        resolve();
+        return;
+      }
+
+      let remaining = animatedEls.length;
+      const handleComplete = () => {
+        remaining -= 1;
+        if (remaining === 0) {
+          previewEl.textContent = '';
+          resolve();
+        }
+      };
+
+      animatedEls.forEach((el) => {
+        el.classList.remove('action-preview-animate');
+        void el.offsetWidth; // restart animation
+        el.classList.add('action-preview-animate');
+        el.addEventListener('animationend', function onEnd() {
+          el.removeEventListener('animationend', onEnd);
+          handleComplete();
+        });
+      });
+    });
+  }
+
+  /**
    * Plays a data-driven animation on a target.
    */
   playAnimation(target, animationId, dataManager, enemies, partySlots) {
