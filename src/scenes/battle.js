@@ -159,6 +159,9 @@ export class Scene_Battle extends Scene_Base {
         SoundManager.play('UI_SUCCESS');
     }
 
+    // Plan the first round immediately so actions are visible
+    this.battleManager.planRound(this.isPlayerFirstStrike);
+
     this.applyBattleStartPassives();
     this.renderBattleAscii();
     this.windowManager.push(this.battleWindow);
@@ -331,7 +334,7 @@ export class Scene_Battle extends Scene_Base {
   renderBattleAscii() {
     if (!this.battleManager) return;
     const enemies = this.battleManager.enemies;
-    this.battleWindow.refresh(enemies, this.party.slots.slice(0, 4), this.party);
+    this.battleWindow.refresh(enemies, this.party.slots.slice(0, 4), this.party, this.battleManager);
   }
 
   /**
@@ -348,7 +351,7 @@ export class Scene_Battle extends Scene_Base {
     this.battleWindow.btnFlee.disabled = true;
     this.disableActionButtons();
 
-    this.battleManager.startRound(isFirstStrike);
+    // Note: Actions are already planned by planRound() call at start or end of previous round.
 
     const delay = (ms) => new Promise((res) => setTimeout(res, ms));
     SoundManager.play('UI_SELECT');
@@ -390,6 +393,10 @@ export class Scene_Battle extends Scene_Base {
       this.enableActionButtons();
 
       this.battleWindow.appendLog("Use Resolve Round or Flee.");
+
+      // Plan next round so user can see intentions
+      this.battleManager.planRound();
+      this.renderBattleAscii();
 
       this.battleBusy = false;
 
