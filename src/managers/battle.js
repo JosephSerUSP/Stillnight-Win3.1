@@ -135,6 +135,19 @@ export class BattleManager {
     } else {
         this.turnQueue = sortBySpeed(plannedQueue);
     }
+
+    // 5. Pre-calculate outcomes for precise preview
+    // NOTE: This runs on the *current* state.
+    // Ideally we would chain state, but for now we calculate based on current state.
+    // We iterate the sorted queue so earlier actions might impact later ones if we simulated state.
+    // For "Exact Outcome" user request, we simply pre-roll the RNG.
+    this.turnQueue.forEach(entry => {
+        if (entry.action && entry.action.target) {
+            // Check if target is still valid (alive)? AI targeting handles this mostly.
+            // We run calculate() to lock in the RNG result.
+            entry.action.calculate(entry.action.target, this.dataManager);
+        }
+    });
   }
 
   /**
@@ -161,6 +174,31 @@ export class BattleManager {
   }
 
   /**
+   * Retrieves the projected HP delta for a battler based on all queued actions.
+   * @param {Game_Battler} battler
+   * @returns {Object} { damage, healing }
+   */
+  getBattlerProjectedHp(battler) {
+      let damage = 0;
+      let healing = 0;
+
+      this.turnQueue.forEach(entry => {
+          if (entry.action && entry.action.target === battler && entry.action._calculatedResults) {
+              const res = entry.action._calculatedResults;
+              res.events.forEach(e => {
+                  if (e.type === 'damage' || e.type === 'hp_drain') {
+                      damage += e.value;
+                  } else if (e.type === 'heal') {
+                      healing += e.value;
+                  }
+              });
+          }
+      });
+
+      return { damage, healing };
+  }
+
+  /**
    * Retrieves the next active participant from the turn queue.
    * Skips units that are dead.
    * @method getNextBattler
@@ -168,6 +206,11 @@ export class BattleManager {
    */
   getNextBattler() {
       if (this.isBattleFinished) return null;
+
+      // Note: We use this.turnQueue[0] instead of shift() immediately
+      // if we want to preview the *current* action in UI before executing.
+      // But resolving loop calls getNextBattler() then immediately startTurn/execute.
+      // Standard: shift().
 
       let p = this.turnQueue.shift();
       while (p && p.battler.hp <= 0) {
@@ -319,11 +362,16 @@ export class BattleManager {
         if (targets.length > 0) {
             target = targets[randInt(0, targets.length - 1)];
             action.target = target; // Update action
+
+            // Recalculate because target changed (RNG needs to be re-rolled for new target)
+            action._calculatedResults = null;
+            action.calculate(target, this.dataManager);
         } else {
             return []; // Fizzle if no valid targets
         }
     }
 
+    // Apply (uses calculated results if available)
     const events = action.apply(target, this.dataManager);
 
     this._checkBattleEnd(events);
