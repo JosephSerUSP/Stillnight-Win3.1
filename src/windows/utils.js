@@ -178,12 +178,15 @@ export function createBattleUnitSlot(battler, options = {}) {
     // Action Preview
     if (options.actionPreview) {
         const previewDiv = document.createElement("div");
+        previewDiv.className = "action-preview-container";
         previewDiv.style.color = "#ffaa00";
         previewDiv.style.fontSize = "10px";
         previewDiv.style.whiteSpace = "nowrap";
         previewDiv.style.marginTop = "2px";
 
         const actionSpan = document.createElement("span");
+        actionSpan.className = "action-name-arrow";
+        actionSpan.dataset.actionName = options.actionPreview.actionName;
         actionSpan.textContent = `${options.actionPreview.actionName} --> `;
         previewDiv.appendChild(actionSpan);
 
@@ -191,6 +194,7 @@ export function createBattleUnitSlot(battler, options = {}) {
             // Use createBattlerNameLabel for the target if available
             const targetLabel = createBattlerNameLabel(options.actionPreview.target, { evolutionStatus: 'NONE' });
             targetLabel.style.display = "inline-flex";
+            targetLabel.classList.add("action-preview-target");
             previewDiv.appendChild(targetLabel);
         } else {
             const unknownSpan = document.createElement("span");
