@@ -169,9 +169,7 @@ export class Scene_Battle extends Scene_Base {
     SoundManager.play('BATTLE_START');
     SoundManager.playMusic('battle1');
 
-    if (this.isPlayerFirstStrike) {
-        this.resolveBattleRound(true);
-    } else if (ConfigManager.autoBattle) {
+    if (ConfigManager.autoBattle && !this.isPlayerFirstStrike) {
         this.resolveBattleRound();
     }
   }
