@@ -198,6 +198,14 @@ export class Window_Battle extends Window_Base {
         let actionPreview = null;
         if (!isSummoner && battleManager) {
             actionPreview = battleManager.getPlannedAction(b);
+            if (actionPreview && actionPreview.target) {
+                // Determine team relationship
+                const isActorEnemy = isEnemy;
+                const isTargetEnemy = battleManager.enemies.includes(actionPreview.target);
+
+                // Opposite team if one is enemy and other is not
+                actionPreview.isOppositeTeam = (isActorEnemy !== isTargetEnemy);
+            }
         }
 
         const slot = createBattleUnitSlot(b, {
@@ -212,15 +220,6 @@ export class Window_Battle extends Window_Base {
             gaugeLength,
             actionPreview
         });
-
-        // Extra positioning for Summoner if needed to center specifically
-        // But with width 100% and textAlign center, it should be fine if container is 100% relative to viewport.
-        // Viewport is relative? Yes, 'terminal-viewport' is a panel.
-        // If left is undefined, it defaults to auto. If width is 100%, it fills.
-        // If left is 0, it starts at left edge.
-        if (isSummoner) {
-            // Override if needed, but 'left' passed to createBattleUnitSlot handles it.
-        }
 
         this.viewportEl.appendChild(slot);
     };
@@ -346,12 +345,6 @@ export class Window_Battle extends Window_Base {
 
       const ctx = this._getBattlerContext(battler, enemies, partySlots);
       const battlerEl = ctx ? this.getBattlerElement(ctx.index, ctx.isEnemy) : null;
-
-      // Look for the name span.
-      // Structure: .battler-container -> .battler-name -> .battler-name-label -> [Elements] [Level] [Name]
-      // We need to find the specific span with the name.
-      // Standard heuristic: span text matches originalName? Or simply the last text node?
-      // createBattlerNameLabel puts name in a span.
 
       let targetEl = null;
       if (battlerEl) {
@@ -520,6 +513,78 @@ export class Window_Battle extends Window_Base {
            }
        });
   }
+
+  /**
+   * Animates the consumption of the action preview text.
+   * "Firaga -->" becomes "Firag -->", "Fira -->", etc.
+   * Then flashes the target name, then clears the preview.
+   */
+  animateActionConsumption(battler, enemies, partySlots) {
+    return new Promise((resolve) => {
+      const ctx = this._getBattlerContext(battler, enemies, partySlots);
+      if (!ctx) {
+        resolve();
+        return;
+      }
+
+      const battlerElement = this.getBattlerElement(ctx.index, ctx.isEnemy);
+      if (!battlerElement) {
+        resolve();
+        return;
+      }
+
+      const previewContainer = battlerElement.querySelector('.action-preview-container');
+      const actionNameSpan = battlerElement.querySelector('.action-name-arrow');
+      const targetLabel = battlerElement.querySelector('.action-preview-target');
+
+      if (!previewContainer || !actionNameSpan) {
+        resolve();
+        return;
+      }
+
+      const originalName = actionNameSpan.dataset.actionName || "";
+      if (!originalName) {
+        previewContainer.style.visibility = 'hidden';
+        resolve();
+        return;
+      }
+
+      let currentName = originalName;
+      const interval = 50;
+      const originalLength = originalName.length;
+
+      const step = () => {
+        if (currentName.length > 0) {
+          // Remove from END (slice(0, -1))
+          // Pad START with spaces to simulate moving right into arrow
+          currentName = currentName.slice(0, -1);
+
+          // E.g. "Firaga" -> " Firag" -> "  Fira"
+          const displayString = currentName.padStart(originalLength, ' ');
+          actionNameSpan.textContent = `${displayString} --> `;
+
+          setTimeout(step, interval);
+        } else {
+          if (targetLabel) {
+             targetLabel.classList.add('blink');
+             setTimeout(() => {
+                 targetLabel.classList.remove('blink');
+                 finalize();
+             }, 200);
+          } else {
+             finalize();
+          }
+        }
+      };
+
+      const finalize = () => {
+          previewContainer.style.visibility = 'hidden';
+          resolve();
+      };
+
+      step();
+    });
+  }
 }
 
 /**
@@ -563,74 +628,5 @@ export class Window_Victory extends Window_Base {
   setup(spoils, onClaim) {
       this.spoilsEl.textContent = spoils;
       this.btnClaim.onclick = onClaim;
-  }
-
-  /**
-   * Animates the consumption of the action preview text.
-   * "Firaga -->" becomes "Firag -->", "Fira -->", etc.
-   * Then flashes the target name, then clears the preview.
-   */
-  animateActionConsumption(battler, enemies, partySlots) {
-    return new Promise((resolve) => {
-      const ctx = this._getBattlerContext(battler, enemies, partySlots);
-      if (!ctx) {
-        resolve();
-        return;
-      }
-
-      const battlerElement = this.getBattlerElement(ctx.index, ctx.isEnemy);
-      if (!battlerElement) {
-        resolve();
-        return;
-      }
-
-      const previewContainer = battlerElement.querySelector('.action-preview-container');
-      const actionNameSpan = battlerElement.querySelector('.action-name-arrow');
-      const targetLabel = battlerElement.querySelector('.action-preview-target');
-
-      if (!previewContainer || !actionNameSpan) {
-        resolve();
-        return;
-      }
-
-      const originalName = actionNameSpan.dataset.actionName || "";
-      if (!originalName) {
-        // Fallback cleanup if name missing
-        previewContainer.style.visibility = 'hidden';
-        resolve();
-        return;
-      }
-
-      let currentName = originalName;
-      const interval = 50;
-
-      const step = () => {
-        if (currentName.length > 0) {
-          currentName = currentName.slice(0, -1);
-          actionNameSpan.textContent = `${currentName} --> `;
-          setTimeout(step, interval);
-        } else {
-          // Name consumed. Flash target if exists.
-          if (targetLabel) {
-             targetLabel.classList.add('blink');
-             setTimeout(() => {
-                 targetLabel.classList.remove('blink');
-                 finalize();
-             }, 200);
-          } else {
-             finalize();
-          }
-        }
-      };
-
-      const finalize = () => {
-          previewContainer.style.visibility = 'hidden';
-          // Also clear text to be safe? Or leave it hidden.
-          // Reset for next time? Next refresh() will recreate the slot anyway.
-          resolve();
-      };
-
-      step();
-    });
   }
 }
