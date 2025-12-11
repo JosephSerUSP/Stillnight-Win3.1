@@ -163,6 +163,9 @@ export function createBattleUnitSlot(battler, options = {}) {
     // HP Gauge
     const hpDiv = document.createElement("div");
     hpDiv.className = "battler-hp";
+    hpDiv.style.height = "14px";
+    hpDiv.style.lineHeight = "14px";
+    hpDiv.style.overflow = "hidden";
     hpDiv.textContent = formatHpGaugeText(battler.hp, battler.maxHp, gaugeLength);
     container.appendChild(hpDiv);
 
@@ -181,7 +184,7 @@ export function createBattleUnitSlot(battler, options = {}) {
         previewDiv.className = "action-preview-container";
         previewDiv.style.color = "#ffaa00";
         previewDiv.style.fontSize = "10px";
-        previewDiv.style.whiteSpace = "nowrap";
+        previewDiv.style.whiteSpace = "pre";
         previewDiv.style.marginTop = "2px";
 
         const actionSpan = document.createElement("span");
