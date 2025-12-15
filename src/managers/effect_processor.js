@@ -13,10 +13,11 @@ export class EffectProcessor {
      * @param {number|string|Object} effectValue - The value/formula/config of the effect.
      * @param {Object} source - The source of the effect (item/skill object, or battler).
      * @param {Game_Battler} target - The target battler.
-     * @param {Object} [context={}] - Additional context (boost, etc.).
+     * @param {Object} [context={}] - Additional context (boost, dryRun, etc.).
      * @returns {Object|null} Result object describing the outcome.
      */
     static apply(effectKey, effectValue, source, target, context = {}) {
+        const dryRun = context.dryRun || false;
 
         switch (effectKey) {
             case 'hp':
@@ -27,20 +28,32 @@ export class EffectProcessor {
                 if (value < 1) value = 1;
 
                 const oldHp = target.hp;
-                target.hp = Math.min(target.maxHp, target.hp + value);
-                return { type: 'heal', value: target.hp - oldHp, target };
+                const newHp = Math.min(target.maxHp, target.hp + value);
+                const healedAmount = newHp - oldHp;
+
+                if (!dryRun) {
+                    target.hp = newHp;
+                }
+
+                // In dryRun, we simulate the result based on current state
+                return { type: 'heal', value: healedAmount, target, newHp };
             }
 
             case 'maxHp': {
                 const value = this._evaluate(effectValue, target, source);
-                target.maxHp += value;
-                target.hp += value;
+                if (!dryRun) {
+                    target.maxHp += value;
+                    target.hp += value;
+                }
                 return { type: 'maxHp', value: value, target };
             }
 
             case 'xp': {
                 const value = this._evaluate(effectValue, target, source);
-                const result = ProgressionSystem.gainXp(target, value);
+                let result = null;
+                if (!dryRun) {
+                    result = ProgressionSystem.gainXp(target, value);
+                }
                 return { type: 'xp', value: value, result, target };
             }
 
@@ -54,16 +67,28 @@ export class EffectProcessor {
                 if (val < 1) val = 1;
 
                 const oldHp = target.hp;
-                target.hp = Math.max(0, target.hp - val);
-                return { type: 'damage', value: oldHp - target.hp, target };
+                const newHp = Math.max(0, target.hp - val);
+                const damageDealt = oldHp - newHp;
+
+                if (!dryRun) {
+                    target.hp = newHp;
+                }
+
+                return { type: 'damage', value: damageDealt, target, newHp };
             }
 
             case 'add_status': {
                 const statusId = (typeof effectValue === 'object') ? effectValue.id : effectValue;
                 const chance = ((typeof effectValue === 'object' ? effectValue.chance : 1) || 1) * (context.boost || 1);
 
-                if (Math.random() < chance) {
-                    target.addState(statusId);
+                // Use pre-rolled random if provided in context (for deterministic replay)
+                // Otherwise roll now
+                const roll = context.rng_status !== undefined ? context.rng_status : Math.random();
+
+                if (roll < chance) {
+                    if (!dryRun) {
+                        target.addState(statusId);
+                    }
                     return { type: 'status', status: statusId, target };
                 }
                 return null;
@@ -76,11 +101,16 @@ export class EffectProcessor {
                 if (val < 1) val = 1;
 
                 const hpBeforeTarget = target.hp;
-                target.hp = Math.max(0, target.hp - val);
-                const damageDealt = hpBeforeTarget - target.hp;
+                const targetNewHp = Math.max(0, target.hp - val);
+                const damageDealt = hpBeforeTarget - targetNewHp;
 
                 const hpBeforeSource = source.hp;
-                source.hp = Math.min(source.maxHp, source.hp + damageDealt);
+                const sourceNewHp = Math.min(source.maxHp, source.hp + damageDealt);
+
+                if (!dryRun) {
+                    target.hp = targetNewHp;
+                    source.hp = sourceNewHp;
+                }
 
                 return {
                     type: 'hp_drain',
@@ -88,9 +118,9 @@ export class EffectProcessor {
                     target,
                     source,
                     hpBeforeTarget,
-                    hpAfterTarget: target.hp,
+                    hpAfterTarget: targetNewHp,
                     hpBeforeSource,
-                    hpAfterSource: source.hp
+                    hpAfterSource: sourceNewHp
                 };
             }
 
