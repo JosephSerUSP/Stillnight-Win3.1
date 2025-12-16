@@ -162,19 +162,57 @@ export class Window_Exploration extends Window_Base {
     }
 
     renderGrid(gridData, onTileClick) {
-        this.explorationGrid.innerHTML = "";
-        gridData.forEach(cell => {
-             UI.build(this.explorationGrid, {
-                 type: 'label', // Use label to support text
-                 props: {
-                     tag: 'div',
-                     className: `tile ${cell.cssClass || ''}`,
-                     dataset: { x: cell.x, y: cell.y },
-                     text: cell.symbol,
-                     onClick: () => onTileClick(cell.x, cell.y)
-                 }
-             });
-        });
+        // Architecture Analysis: Optimize rendering by reusing DOM nodes (Virtual DOM-lite)
+        const total = gridData.length;
+        const children = this.explorationGrid.children;
+
+        // Check if we need a full rebuild (grid size/layout changed)
+        let needsRebuild = children.length !== total;
+        if (!needsRebuild && total > 0) {
+            // Verify structure matches (check first and last cell coordinates)
+            // This detects if map aspect ratio changed (e.g. 20x20 -> 10x40) even if total tiles same
+            const firstEl = children[0];
+            const lastEl = children[total - 1];
+            const firstCell = gridData[0];
+            const lastCell = gridData[total - 1];
+
+            if (firstEl.dataset.x != firstCell.x || firstEl.dataset.y != firstCell.y ||
+                lastEl.dataset.x != lastCell.x || lastEl.dataset.y != lastCell.y) {
+                needsRebuild = true;
+            }
+        }
+
+        if (needsRebuild) {
+            this.explorationGrid.innerHTML = "";
+            gridData.forEach(cell => {
+                 UI.build(this.explorationGrid, {
+                     type: 'label',
+                     props: {
+                         tag: 'div',
+                         className: `tile ${cell.cssClass || ''}`,
+                         dataset: { x: cell.x, y: cell.y },
+                         text: cell.symbol,
+                         onClick: () => onTileClick(cell.x, cell.y)
+                     }
+                 });
+            });
+            return;
+        }
+
+        // Fast Path: Update existing nodes
+        for (let i = 0; i < total; i++) {
+            const cell = gridData[i];
+            const el = children[i];
+            const newClass = cell.cssClass ? `tile ${cell.cssClass}` : 'tile';
+
+            // Only touch DOM if changed
+            if (el.className !== newClass) {
+                el.className = newClass;
+            }
+            if (el.textContent !== cell.symbol) {
+                el.textContent = cell.symbol;
+            }
+        }
     }
 }
 

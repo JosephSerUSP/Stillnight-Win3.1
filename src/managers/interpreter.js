@@ -20,6 +20,35 @@ export class Game_Interpreter {
     constructor(sceneContext) {
         this.scene = sceneContext;
         this._onRecruitCallback = null;
+        this._initHandlers();
+    }
+
+    _initHandlers() {
+        this._handlers = {
+            'BATTLE': (action, event) => this.scene.startBattle(event.x, event.y),
+            'SHOP': () => this.scene.startShop(),
+            'SHRINE': () => {
+                this.scene.logMessage("[Shrine] You encounter a shrine.");
+                this.openShrineEvent();
+            },
+            'RECRUIT': () => this.openRecruitEvent(),
+            'NPC_DIALOGUE': (action) => {
+                this.openNpcEvent(action.id);
+                this.scene.updateAll();
+            },
+            'DESCEND': () => {
+                this.descendStairs();
+                SoundManager.play('STAIRS');
+            },
+            'HEAL_PARTY': () => this.healParty(),
+            'MESSAGE': (action) => {
+                if (action.text) this.scene.logMessage(action.text);
+                this.scene.updateAll();
+            },
+            'TREASURE': () => this.openTreasureEvent(),
+            'TRAP_TRIGGER': (action) => this.triggerTrap(action),
+            'BREAKABLE_WALL': (action, event) => this.triggerBreakableWall(action, event)
+        };
     }
 
     get dataManager() { return this.scene.dataManager; }
@@ -34,44 +63,11 @@ export class Game_Interpreter {
      * @param {import("../objects/objects.js").Game_Event} event - The source event.
      */
     execute(action, event) {
-        switch(action.type) {
-            case 'BATTLE':
-                this.scene.startBattle(event.x, event.y);
-                break;
-            case 'SHOP':
-                this.scene.startShop();
-                break;
-            case 'SHRINE':
-                this.scene.logMessage("[Shrine] You encounter a shrine.");
-                this.openShrineEvent();
-                break;
-            case 'RECRUIT':
-                this.openRecruitEvent();
-                break;
-            case 'NPC_DIALOGUE':
-                this.openNpcEvent(action.id);
-                this.scene.updateAll();
-                break;
-            case 'DESCEND':
-                this.descendStairs();
-                SoundManager.play('STAIRS');
-                break;
-            case 'HEAL_PARTY':
-                this.healParty();
-                break;
-            case 'MESSAGE':
-                if (action.text) this.scene.logMessage(action.text);
-                this.scene.updateAll();
-                break;
-            case 'TREASURE':
-                this.openTreasureEvent();
-                break;
-            case 'TRAP_TRIGGER':
-                this.triggerTrap(action);
-                break;
-            case 'BREAKABLE_WALL':
-                this.triggerBreakableWall(action, event);
-                break;
+        const handler = this._handlers[action.type];
+        if (handler) {
+            handler(action, event);
+        } else {
+            console.warn(`Game_Interpreter: Unknown action type '${action.type}'`, action);
         }
     }
 
