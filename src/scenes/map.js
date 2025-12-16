@@ -186,19 +186,8 @@ export class Scene_Map extends Scene_Base {
                 if (e.msg) this.logMessage(e.msg);
             });
             // Check for game over if HP drain kills
-            const deathEvents = this.party.checkDeaths();
-            if (deathEvents.some(e => e.type === 'GAME_OVER')) {
-                // Game Over - we need a clean way to handle this.
-                // For now, let's just log it and stop input? Or maybe trigger a GameOver scene if it existed.
-                // I'll reuse the battle defeat logic essentially.
-                this.logMessage("The Commander falls... Game Over.");
-                SoundManager.play('GAME_OVER');
-                this.runActive = false;
-                this.updateAll();
-                // Ideally transition to title or game over screen.
-                // But Scene_Map doesn't have a game over screen transition method yet except via Battle.
-                return;
-            }
+            this.checkPermadeath();
+            if (!this.runActive) return;
         }
     }
 
@@ -298,40 +287,25 @@ export class Scene_Map extends Scene_Base {
    * @method checkPermadeath
    */
   checkPermadeath() {
+    const events = this.party.checkDeaths();
     let deadFound = false;
-    const members = [...this.party.members];
-    for (const member of members) {
-        if (member.hp <= 0) {
-            deadFound = true;
-            const permadeathTraits = member.traits.filter(t => t.code === 'ON_PERMADEATH');
 
-            if (permadeathTraits.length > 0) {
-                 this.logMessage(`[Passive] ${member.name}'s Rebirth activates!`);
-
-                 const heal = Math.floor(member.maxHp * 0.2) || 1;
-                 member.hp = heal;
-
-                 const oldLevel = member.level;
-                 const levelsLost = 2;
-                 member.level = Math.max(1, member.level - levelsLost);
-
-                 if (member.level < oldLevel) {
-                     const lost = oldLevel - member.level;
-                     member._baseMaxHp = Math.max(1, member._baseMaxHp - (lost * 3));
-                     member.xp = 0;
-                 }
-
-                 if (member.hp > member.maxHp) member.hp = member.maxHp;
-
-                 this.logMessage(`${member.name} returned at Lv${member.level}.`);
-            } else {
-                this.party.removeMember(member);
-                this.logMessage(`[Death] ${member.name} has fallen and is lost forever.`);
-            }
+    events.forEach(e => {
+        if (e.type === 'GAME_OVER') {
+             this.logMessage("The Commander falls... Game Over.");
+             SoundManager.play('GAME_OVER');
+             this.runActive = false;
+        } else if (e.type === 'REBIRTH') {
+             this.logMessage(`[Passive] ${e.member.name}'s Rebirth activates!`);
+             this.logMessage(`${e.member.name} returned at Lv${e.member.level}.`);
+             deadFound = true;
+        } else if (e.type === 'DEATH') {
+             this.logMessage(`[Death] ${e.member.name} has fallen and is lost forever.`);
+             deadFound = true;
         }
-    }
+    });
 
-    if (deadFound) {
+    if (deadFound || events.length > 0) {
         this.updateAll();
     }
   }
@@ -859,7 +833,7 @@ export class Scene_Map extends Scene_Base {
 
   useItem(item, target) {
       const action = new Game_Action(this.party);
-      action.setItem(item.id, this.dataManager);
+      action.setItem(item, this.dataManager);
 
       const events = action.apply(target, this.dataManager);
 

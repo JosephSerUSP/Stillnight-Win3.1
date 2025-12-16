@@ -32,13 +32,18 @@ export class Game_Action {
         this._item = dataManager.skills[skillId];
     }
 
-    setItem(itemId, dataManager) {
+    setItem(itemOrId, dataManager) {
         this._isAttack = false;
-        this._itemId = itemId;
-        if (Array.isArray(dataManager.items)) {
-            this._item = dataManager.items.find(i => i.id === itemId);
+        if (typeof itemOrId === 'object' && itemOrId !== null) {
+            this._item = itemOrId;
+            this._itemId = itemOrId.id;
         } else {
-            this._item = dataManager.items[itemId];
+            this._itemId = itemOrId;
+            if (Array.isArray(dataManager.items)) {
+                this._item = dataManager.items.find(i => i.id === itemOrId);
+            } else {
+                this._item = dataManager.items[itemOrId];
+            }
         }
     }
 
