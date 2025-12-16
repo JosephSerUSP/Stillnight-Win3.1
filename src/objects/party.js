@@ -1,4 +1,4 @@
-import { EffectProcessor } from "../managers/effect_processor.js";
+import { EffectManager } from "../managers/effect_manager.js";
 import { Game_Battler } from "./battler.js";
 
 /**
@@ -282,7 +282,7 @@ export class Game_Party {
           item.effects.forEach(effect => {
               const key = effect.type;
               const value = effect.formula || effect.value;
-              const result = EffectProcessor.apply(key, value, item, targetMember);
+              const result = EffectManager.apply(key, value, item, targetMember);
               if (result) outcomes.push(result);
           });
       }

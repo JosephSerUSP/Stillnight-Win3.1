@@ -1,6 +1,6 @@
 import { randInt, elementToAscii, probabilisticRound } from "../core/utils.js";
 import { SoundManager } from "../managers/sound.js";
-import { EffectProcessor } from "../managers/effect_processor.js";
+import { EffectManager } from "../managers/effect_manager.js";
 
 /**
  * @class Game_Action
@@ -212,7 +212,7 @@ export class Game_Action {
                  effectValue = { id: effect.status, chance: effect.chance };
             }
 
-            const result = EffectProcessor.apply(effectKey, effectValue, battler, target, context);
+            const result = EffectManager.apply(effectKey, effectValue, battler, target, context);
 
             if (!result) return;
 
@@ -283,7 +283,7 @@ export class Game_Action {
                 // Determine context/boost if needed
                 const context = {};
                 // Pass item as source
-                const result = EffectProcessor.apply(key, value, item, target, context);
+                const result = EffectManager.apply(key, value, item, target, context);
 
                 if (result) {
                     if (!result.battler) result.battler = subject;
