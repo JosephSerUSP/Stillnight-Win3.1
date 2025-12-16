@@ -266,30 +266,6 @@ export class Game_Party {
       return true;
   }
 
-  /**
-   * Consumes an item on a target member.
-   * @param {Object} item - The item object (from inventory).
-   * @param {import("./objects.js").Game_Battler} targetMember - The target.
-   * @returns {Object} Result of the operation.
-   */
-  useItem(item, targetMember) {
-      const index = this.inventory.indexOf(item);
-      if (index === -1) return { success: false, msg: "Item not in inventory." };
-
-      const outcomes = [];
-
-      if (item.effects) {
-          item.effects.forEach(effect => {
-              const key = effect.type;
-              const value = effect.formula || effect.value;
-              const result = EffectManager.apply(key, value, item, targetMember);
-              if (result) outcomes.push(result);
-          });
-      }
-
-      this.inventory.splice(index, 1);
-      return { success: true, outcomes, item };
-  }
 
   /**
    * Equips an item to a member, handling swaps and inventory updates.

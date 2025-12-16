@@ -13,6 +13,16 @@ export function randInt(min, max) {
 }
 
 /**
+ * Deep clones an item object.
+ * @param {Object} item - The item to clone.
+ * @returns {Object} The cloned item.
+ */
+export function cloneItem(item) {
+    if (!item) return null;
+    return JSON.parse(JSON.stringify(item));
+}
+
+/**
  * Probabilistically rounds a floating point number.
  * For example, 1.25 becomes 1 (75% chance) or 2 (25% chance).
  * @param {number} value - The value to round.
