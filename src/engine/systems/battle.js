@@ -122,7 +122,8 @@ export class BattleSystem {
   getAIAction(state, battlerContext) {
       const { battler, isEnemy } = battlerContext;
 
-      if (!isEnemy) return null; // Player input handles their actions later.
+      // FIX: Allow player creatures to generate actions too
+      // if (!isEnemy) return null;
 
       // AI Logic: 60% Skill, 40% Attack
       const skills = battler.skills || [];
@@ -149,22 +150,32 @@ export class BattleSystem {
           action.isAttack = true;
       }
 
-      // Target Selection (Simplified for now)
-      // Accessing party members safely
+      // Target Selection
       let opponents = [];
-      if (state.participants.party.activeMembers) {
-          opponents = state.participants.party.activeMembers.filter(m => m.hp > 0);
+      if (isEnemy) {
+          // Enemies target Player Party
+           if (state.participants.party.activeMembers) {
+              opponents = state.participants.party.activeMembers.filter(m => m.hp > 0);
+           } else {
+              const slots = state.participants.party.slots || [];
+              opponents = slots.slice(0, 4).filter(m => m && m.hp > 0);
+           }
+           if (opponents.length === 0 && state.participants.party.summoner && state.participants.party.summoner.hp > 0) {
+               opponents = [state.participants.party.summoner];
+           }
       } else {
-          // Fallback if getter missing (e.g. mock)
-          const slots = state.participants.party.slots || [];
-          opponents = slots.slice(0, 4).filter(m => m && m.hp > 0);
+          // Player Party targets Enemies
+          const enemies = state.participants.enemies || [];
+          opponents = enemies.filter(m => m.hp > 0);
       }
 
       if (opponents.length > 0) {
           action.target = opponents[randInt(0, opponents.length - 1)];
-      } else if (state.participants.party.summoner && state.participants.party.summoner.hp > 0) {
-          action.target = state.participants.party.summoner;
       }
+
+      // If no valid targets, action might be null or invalid, but we return the object
+      // executeAction checks for target validity and retargets if possible.
+      // But if we have no target here, let's leave it undefined and let executeAction handle it (fizzle or retarget).
 
       return action;
   }
