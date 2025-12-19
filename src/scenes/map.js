@@ -1,14 +1,14 @@
 import { Scene_Base } from "./base.js";
 import { Scene_Battle } from "./battle.js";
 import { Scene_Shop } from "./shop.js";
-import { Game_Map, Game_Party, Game_Battler, Game_Action } from "../objects/objects.js";
+import { Game_Party, Game_Battler, Game_Action } from "../objects/objects.js";
 import { Game_Interpreter } from "../managers/interpreter.js";
-import { BattleManager, SoundManager, ConfigManager, ThemeManager } from "../managers/index.js";
+import { SoundManager, ConfigManager, ThemeManager } from "../managers/index.js";
 import { InputController } from "../managers/input_controller.js";
 import { HUDManager } from "../managers/hud_manager.js";
 import { Window_Desktop } from "../windows/index.js";
 import { ProgressionSystem } from "../managers/progression.js";
-import { ExplorationEngine } from "../managers/exploration.js";
+import { ExplorationAdapter } from "../adapters/exploration_adapter.js";
 
 /**
  * @class Scene_Map
@@ -26,10 +26,11 @@ export class Scene_Map extends Scene_Base {
   constructor(dataManager, sceneManager, windowManager) {
     super(dataManager, windowManager);
     this.sceneManager = sceneManager;
-    this.map = new Game_Map();
     this.party = new Game_Party();
+    this.map = new ExplorationAdapter(this.party);
     this.interpreter = new Game_Interpreter(this);
-    this.battleManager = new BattleManager(this.party, this.dataManager);
+    // BattleManager is deprecated; Scene_Battle uses BattleAdapter internally.
+    this.battleManager = null;
     this.runActive = true;
     this.inputLocked = false;
     this.draggedIndex = null;
@@ -44,7 +45,6 @@ export class Scene_Map extends Scene_Base {
 
     this.hudManager = new HUDManager(windowManager, gameContainer);
     this.inputController = new InputController(this);
-    this.explorationEngine = new ExplorationEngine(this.map, this.party);
 
     // Callbacks mapping
     this.hudManager.eventWindow.onUserClose = this.interpreter.closeEvent.bind(this.interpreter);
@@ -176,7 +176,7 @@ export class Scene_Map extends Scene_Base {
    * @param {number} dy - Y delta.
    */
   movePlayer(dx, dy) {
-    const result = this.explorationEngine.tryMove(dx, dy);
+    const result = this.map.tryMove(dx, dy);
 
     // Summoner MP Drain / Weakened Check on successful move or interaction
     if (result.type === 'MOVED' || result.type === 'SEQUENCE') {
@@ -220,7 +220,7 @@ export class Scene_Map extends Scene_Base {
            this.updateAll();
 
            // Check entity updates
-           const entityResults = this.explorationEngine.updateEntities();
+           const entityResults = this.map.updateEntities();
            entityResults.forEach(r => this.handleExplorationResult(r));
            if (entityResults.length > 0) this.updateGrid();
 
@@ -494,7 +494,7 @@ export class Scene_Map extends Scene_Base {
       return;
     }
 
-    const result = this.explorationEngine.handleTileInteraction(x, y);
+    const result = this.map.handleTileInteraction(x, y);
     this.handleExplorationResult(result);
   }
 

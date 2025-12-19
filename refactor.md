@@ -45,7 +45,7 @@ This document outlines the architectural refactor to create a single source of t
     *   Forbid imports from `src/engine/systems/**` inside `src/presentation/windows/**`.
 *   Create `src/legacy/` folder.
 
-## Phase 2 — Migrate Battle as the first “vertical slice”
+## Phase 2 — Migrate Battle as the first “vertical slice” (Completed)
 **Goal:** Migrate Battle and delete legacy battle.
 
 *   **Build new battle surface**: `BattleState`, `BattleSystem` (start, chooseAction, step).
@@ -53,12 +53,14 @@ This document outlines the architectural refactor to create a single source of t
 *   **Bridge the UI**: `Scene_Battle` asks `BattleSystem` for event list.
 *   **Delete legacy battle path**: Remove `managers/battle.js`.
 
-## Phase 3 — Migrate Exploration + Encounters
+## Phase 3 — Migrate Exploration + Encounters (Completed)
 **Goal:** Migrate Exploration and delete legacy.
 
 *   **Exploration System**: `ExplorationSystem` (move, interact) emitting events.
-*   **Encounter System**: `EncounterSystem.roll`.
+*   **Exploration State**: `ExplorationState` holding dungeon data.
+*   **Adapter**: `ExplorationAdapter` bridging `Scene_Map` and `ExplorationSystem`.
 *   **Key Change**: Exploration emits events like `PlayerMoved`, `DoorOpened`. `Scene_Map` renders events.
+*   Note: Encounters are currently handled via static event placement by Generator + `EncounterManager` utils.
 
 ## Phase 4 — Migrate Interpreter / Events
 **Goal:** Engine-side serializable interpreter.
