@@ -36,8 +36,8 @@ export class WindowAnimator {
                 if (frameCounter % 3 === 0) {
                      // No easing (constant intensity)
                      // Snap to integer to fit Win 3.1 aesthetic
-                     const x = Math.round((Math.random() * 2 - 1) * intensity);
-                     const y = Math.round((Math.random() * 2 - 1) * intensity);
+                 const x = Math.round((Math.random() * 2 - 1) * intensity);
+                 const y = Math.round((Math.random() * 2 - 1) * intensity);
                      element.style.transform = `translate(${x}px, ${y}px)`;
                 }
 

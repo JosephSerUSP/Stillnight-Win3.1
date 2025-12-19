@@ -1,4 +1,5 @@
 import { Game_Battler } from "../objects/battler.js";
+import { random } from "../core/utils.js";
 
 /**
  * @class EncounterManager
@@ -44,17 +45,17 @@ export class EncounterManager {
 
         if (partyInitChance > 0 && enemyInitChance > 0) {
             const totalInit = partyInitChance + enemyInitChance;
-            if (Math.random() < partyInitChance / totalInit) {
+            if (random() < partyInitChance / totalInit) {
                 partyWins = true;
             } else {
                 enemyWins = true;
             }
         } else if (partyInitChance > 0) {
-            if (Math.random() < partyInitChance) {
+            if (random() < partyInitChance) {
                 partyWins = true;
             }
         } else if (enemyInitChance > 0) {
-            if (Math.random() < enemyInitChance) {
+            if (random() < enemyInitChance) {
                 enemyWins = true;
             }
         }

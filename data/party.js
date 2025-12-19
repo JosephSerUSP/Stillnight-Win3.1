@@ -1,4 +1,4 @@
-import { randInt, shuffleArray } from "../src/core/utils.js";
+import { randInt, shuffleArray, random } from "../src/core/utils.js";
 
 /**
  * @file data/party.js
@@ -52,7 +52,7 @@ export const startingParty = {
   getMembers: (allActors) => {
     const availableCreatures = allActors.filter(creature => creature.initialParty);
 
-    if (Math.random() < 0.25) {
+    if (random() < 0.25) {
       // 2 creatures, one leveled up
       const [creature1, creature2] = shuffleArray(availableCreatures).slice(0, 2);
       return [

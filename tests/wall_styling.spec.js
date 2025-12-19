@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
 test('Wall tiles should have tile-wall class and empty symbol', async ({ page }) => {
   await page.goto('/?test=true');

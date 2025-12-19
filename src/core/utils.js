@@ -1,6 +1,17 @@
 import { TRAIT_DEFINITIONS } from "../../data/traits.js";
+import { rng } from "./rng.js";
 
 export { findPath } from "./pathfinding.js";
+export { rng };
+
+/**
+ * Generates a random number between 0 (inclusive) and 1 (exclusive).
+ * Replaces Math.random() for deterministic behavior.
+ * @returns {number}
+ */
+export function random() {
+    return rng.random();
+}
 
 /**
  * Generates a random integer within a given range (inclusive).
@@ -9,7 +20,7 @@ export { findPath } from "./pathfinding.js";
  * @returns {number} The random integer.
  */
 export function randInt(min, max) {
-  return min + Math.floor(Math.random() * (max - min + 1));
+  return rng.nextInt(min, max);
 }
 
 /**
@@ -31,7 +42,7 @@ export function cloneItem(item) {
 export function probabilisticRound(value) {
     const floor = Math.floor(value);
     const fraction = value - floor;
-    return Math.random() < fraction ? floor + 1 : floor;
+    return rng.random() < fraction ? floor + 1 : floor;
 }
 
 /**
@@ -41,7 +52,7 @@ export function probabilisticRound(value) {
  */
 export function shuffleArray(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rng.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
@@ -128,7 +139,7 @@ export function getIconStyle(iconId) {
 export function pickWeighted(options) {
   if (!options || options.length === 0) return null;
   const totalWeight = options.reduce((sum, opt) => sum + (opt.weight || 1), 0);
-  let r = Math.random() * totalWeight;
+  let r = rng.random() * totalWeight;
   for (const opt of options) {
     r -= (opt.weight || 1);
     if (r <= 0) return opt;

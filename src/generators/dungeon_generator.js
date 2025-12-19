@@ -1,4 +1,4 @@
-import { randInt, pickWeighted } from "../core/utils.js";
+import { randInt, pickWeighted, random } from "../core/utils.js";
 import { Game_Event } from "../objects/event.js";
 import { EncounterManager } from "../managers/encounter.js";
 
@@ -68,7 +68,7 @@ export class DungeonGenerator {
                 if (config.count !== undefined) count = config.count;
                 else if (config.min !== undefined && config.max !== undefined)
                     count = randInt(config.min, config.max);
-                else if (config.chance !== undefined && Math.random() < config.chance)
+                else if (config.chance !== undefined && random() < config.chance)
                     count = 1;
 
                 for (let i = 0; i < count; i++) {

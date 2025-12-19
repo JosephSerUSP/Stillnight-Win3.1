@@ -1,4 +1,4 @@
-import { evaluateFormula, probabilisticRound } from "../core/utils.js";
+import { evaluateFormula, probabilisticRound, random } from "../core/utils.js";
 import { ProgressionSystem } from "./progression.js";
 
 /**
@@ -150,7 +150,7 @@ EffectManager.register('add_status',
         const statusId = (typeof val === 'object') ? val.id : val;
         const chance = ((typeof val === 'object' ? val.chance : 1) || 1) * (context.boost || 1);
 
-        if (Math.random() < chance) {
+        if (random() < chance) {
             target.addState(statusId);
             return { type: 'status', status: statusId, target };
         }
