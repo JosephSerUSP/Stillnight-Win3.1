@@ -10,7 +10,7 @@ Anxious Attachment.
 She runs the Consumables shop. 
 Her quests all revolve about pleasing Laura somehow - she's desperate for her affection.
 
-Laura: A beautiful, tall blonde woman. She's very flirty and touchy with everyone. She loves having a good time, but is very down to earth and no-nonsense as well. Sometimes she's in charge of Alicia's shop - they live together part of the time. Her quests are very pragmatic.
+Laura: A beautiful, tall blonde woman. She's very flirty and touchy with everyone. She loves having a good time, but is very down to earth and no-nonsense as well. Out of her many skills, she's a goldsmith - her quests sometimes reward rare accessories, and when she's in charge of Alicia's shop you can buy some unique accessories from her as well. Sometimes she's in charge of Alicia's shop - they live together part of the time. Her quests are very pragmatic - except one, that requires slaying a rare undead mob for his golden ring, which she will use to craft a wedding ring for her fiancee Raphael. 
 CPTSD. 
 
 
