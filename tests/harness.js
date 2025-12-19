@@ -35,7 +35,9 @@ global.fetch = async (url) => {
 
 // Import Engine Modules
 import { DataManager } from '../src/managers/data.js';
-import { BattleManager } from '../src/managers/battle.js';
+import { BattleSystem } from '../src/engine/systems/battle.js';
+import { BattleAdapter } from '../src/adapters/battle_adapter.js';
+import { Registry } from '../src/engine/data/registry.js';
 import { RandomWalkGenerator } from '../src/generators/dungeon_generator.js';
 import { Game_Party } from '../src/objects/party.js';
 import { Game_Battler } from '../src/objects/battler.js';
@@ -43,11 +45,19 @@ import { rng } from '../src/core/utils.js';
 
 // Setup Data
 const dataManager = new DataManager();
+global.window.dataManager = dataManager; // For BattleAdapter compatibility fallback
+
 const party = new Game_Party();
-const battleManager = new BattleManager(party, dataManager);
+const battleSystem = new BattleSystem();
+const battleManager = new BattleAdapter(party, battleSystem);
 
 async function init() {
     await dataManager.loadData();
+    if (dataManager.skills) Registry.set('skills', dataManager.skills);
+    if (dataManager.items) Registry.set('items', dataManager.items);
+    if (dataManager.elements) Registry.set('elements', dataManager.elements);
+    if (dataManager.states) Registry.set('states', dataManager.states);
+
     // Create Default Party
     party.createInitialMembers(dataManager);
 }

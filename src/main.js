@@ -1,4 +1,4 @@
-import { DataManager, SceneManager, ThemeManager, ConfigManager, SoundManager, BattleManager } from "./managers/index.js";
+import { DataManager, SceneManager, ThemeManager, ConfigManager, SoundManager } from "./managers/index.js";
 import { Scene_Boot, Scene_Map, Scene_Battle, Scene_Shop } from "./scenes/scenes.js";
 import { WindowManager } from "./windows/index.js";
 import { Game_Interpreter } from "./managers/interpreter.js";
@@ -46,7 +46,6 @@ async function main() {
     window.Scene_Shop = Scene_Shop;
     window.ConfigManager = ConfigManager;
     window.SoundManager = SoundManager;
-    window.BattleManager = BattleManager;
     window.Game_Interpreter = Game_Interpreter;
     window.ThemeManager = ThemeManager;
     window.Game_Battler = Game_Battler;
