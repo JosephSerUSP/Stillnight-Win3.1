@@ -649,11 +649,27 @@ export class Scene_Map extends Scene_Base {
   openFormation() {
     if (this.sceneManager.currentScene() !== this) return;
     this.windowManager.push(this.hudManager.formationWindow);
+
+    // Define the swap handler which acts as the 'refresh' source of truth
+    const handleSwap = (idx1, idx2) => {
+        if (this.party.reorderMembers(idx1, idx2)) {
+             SoundManager.play('UI_SELECT');
+             const newView = selectPartyHUD(this.party, this.getContext());
+             // Re-bind to ensure closure freshness
+             this.hudManager.formationWindow.refresh(newView, () => {}, handleSwap);
+             this.updateParty();
+             this.logMessage("[Formation] Party order changed.");
+             return true;
+        }
+        return false;
+    };
+
     const partyView = selectPartyHUD(this.party, this.getContext());
-    this.hudManager.formationWindow.refresh(partyView, () => {
-        this.updateParty();
-        this.logMessage("[Formation] Party order changed.");
-    });
+    this.hudManager.formationWindow.refresh(
+        partyView,
+        () => {}, // onChange (legacy, mostly unused if we handle swap directly)
+        handleSwap
+    );
   }
 
   /**
@@ -900,7 +916,7 @@ export class Scene_Map extends Scene_Base {
   openInspect(member, index) {
     const detailsView = selectBattlerDetails(member, this.getContext(), this.dataManager);
     this.hudManager.inspectWindow.setup(detailsView, {
-        onEquip: () => this.openEquipmentScreen(),
+        onEquip: () => this.openEquipmentScreen(member),
         onSacrifice: (val) => {
              this.hudManager.confirmWindow.titleEl.textContent = "Sacrifice Unit";
              this.hudManager.confirmWindow.messageEl.textContent = `Sacrifice ${member.name} for ${val} Gold? This cannot be undone.`;
@@ -961,8 +977,7 @@ export class Scene_Map extends Scene_Base {
    * Opens the equipment selection screen within the inspect window.
    * @method openEquipmentScreen
    */
-  openEquipmentScreen() {
-    const member = this.hudManager.inspectWindow.member;
+  openEquipmentScreen(member) {
     const inventoryItems = this.party.inventory.filter(i => i.type === "equipment");
     const otherMemberItems = this.party.members
       .filter((m) => m !== member && m.equipmentItem)

@@ -115,14 +115,11 @@ export class Window_Formation extends Window_Base {
               if (this.onSwapAttempt) {
                   // Delegate swap logic to callback
                   this.onSwapAttempt(this.selectedSlotIndex, index);
-                  // Selection clears after attempt regardless of outcome usually, but can be controlled by Scene
+                  // Selection clears after attempt
                   this.selectedSlotIndex = null;
               } else {
-                  // Default immediate swap
-                  if (this.party.reorderMembers(this.selectedSlotIndex, index)) {
-                      SoundManager.play('UI_SELECT');
-                      if (this.onChange) this.onChange();
-                  }
+                  // Fallback or Error: No swap handler provided
+                  console.error("Window_Formation: No swap handler provided.");
                   this.selectedSlotIndex = null;
               }
           } else {

@@ -26,6 +26,7 @@ export function selectInventoryItem(item) {
 
     return {
         id: item.id,
+        icon: item.icon,
         name: item.name,
         type: item.type,
         description: item.description,
