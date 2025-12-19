@@ -1,5 +1,6 @@
 import { Scene_Base } from "./base.js";
-import { Game_Battler, Game_Action } from "../../objects/objects.js";
+import { Game_Battler } from "../../objects/battler.js";
+import { Game_Action } from "../../objects/action.js";
 import { randInt, pickWeighted, probabilisticRound, random } from "../../core/utils.js";
 import { SoundManager, ConfigManager } from "../../managers/index.js";
 import { Window_Battle, Window_Victory } from "../windows/index.js";

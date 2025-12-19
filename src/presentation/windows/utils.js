@@ -1,6 +1,5 @@
-import { getPrimaryElements, elementToAscii, getIconStyle, elementToIconId, evaluateFormula } from "../../core/utils.js";
-import { tooltip } from "../../core/tooltip.js";
-import { Component_Icon, Component_ElementIcon, Component_Gauge, Component_InteractiveLabel, Component_Label } from "./components.js";
+import { elementToIconId } from "../../core/utils.js";
+import { Component_Icon, Component_ElementIcon, Component_Gauge, Component_InteractiveLabel } from "./components.js";
 
 /**
  * Creates a DOM element representing a standard icon.

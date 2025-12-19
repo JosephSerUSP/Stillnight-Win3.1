@@ -83,11 +83,11 @@ This document outlines the architectural refactor to create a single source of t
 *   `SessionSerializer.fromJSON(...)`
 *   Status: Implemented `src/engine/session/serializer.js` and added unit tests.
 
-## Phase 7 — Remove the remaining legacy knot (In Progress)
+## Phase 7 — Remove the remaining legacy knot (Completed)
 **Goal:** Cleanups.
 
-*   Retire `src/objects/objects.js` barrel.
-*   Replace `window.*` debug globals with `DebugTools`.
-*   Stop "core" importing data.
+*   Retire `src/objects/objects.js` barrel. (Completed)
+*   Replace `window.*` debug globals with `DebugTools`. (Completed)
+*   Stop "core" importing data. (Completed)
 *   Delete `src/legacy/**` (Completed).
-*   Migrated `ProgressionSystem` to `src/engine/systems/progression.js`.
+*   Migrated `ProgressionSystem` to `src/engine/systems/progression.js`. (Completed)
