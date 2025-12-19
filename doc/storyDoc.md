@@ -1,3 +1,19 @@
 The Summoner is the player's avatar.
 
 Underneath the remote town of Alencar, 
+
+
+NPCS:
+
+Alicia: The sweetest klutz; A pink-haired doofus who lives with her best friend Laura. She is madly in love with Laura, and everyone knows it at this point. People tend to point out how Laura's relationship to Alicia seems malicious or abusive, considering Laura teases Alicia's feelings constantly yet is committed to a 7 years relationship with her soon to be husband, Raphael. 
+Anxious Attachment. 
+She runs the Consumables shop. 
+Her quests all revolve about pleasing Laura somehow - she's desperate for her affection.
+
+Laura: A beautiful, tall blonde woman. She's very flirty and touchy with everyone. She loves having a good time, but is very down to earth and no-nonsense as well. Sometimes she's in charge of Alicia's shop - they live together part of the time. Her quests are very pragmatic.
+CPTSD. 
+
+
+????: Runs the Weapons and Armor shop. A stub.
+
+????: Runs the Auction house, where one can buy rare, unidentified items. A stub. 
