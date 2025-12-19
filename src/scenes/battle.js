@@ -3,6 +3,9 @@ import { Game_Battler, Game_Action } from "../objects/objects.js";
 import { randInt, pickWeighted, probabilisticRound, random } from "../core/utils.js";
 import { SoundManager, ConfigManager } from "../managers/index.js";
 import { Window_Battle, Window_Victory } from "../windows/index.js";
+import { BattleSystem } from "../engine/systems/battle.js";
+import { BattleAdapter } from "../adapters/battle_adapter.js";
+import { Registry } from "../engine/data/registry.js";
 
 /**
  * @class Scene_Battle
@@ -13,23 +16,21 @@ import { Window_Battle, Window_Victory } from "../windows/index.js";
 export class Scene_Battle extends Scene_Base {
   /**
    * Creates a new Scene_Battle.
-   * @param {import("../managers/index.js").DataManager} dataManager - The data manager.
-   * @param {import("../managers/index.js").SceneManager} sceneManager - The scene manager.
-   * @param {import("../windows/index.js").WindowManager} windowManager - The window manager.
-   * @param {import("../objects/objects.js").Game_Party} party - The player's party.
-   * @param {import("../managers/index.js").BattleManager} battleManager - The battle manager.
-   * @param {import("../windows/index.js").WindowLayer} windowLayer - The window layer to attach the battle window to.
-   * @param {import("../objects/objects.js").Game_Map} map - The game map.
-   * @param {number} tileX - The X coordinate of the battle on the map.
-   * @param {number} tileY - The Y coordinate of the battle on the map.
-   * @param {Object} [encounterData] - Specific encounter data for this battle.
-   * @param {boolean} [isSneakAttack] - Whether this is a sneak attack.
    */
   constructor(dataManager, sceneManager, windowManager, party, battleManager, windowLayer, map, tileX, tileY, sharedWindows, encounterData = null, isSneakAttack = false, isPlayerFirstStrike = false) {
     super(dataManager, windowManager);
     this.sceneManager = sceneManager;
     this.party = party;
-    this.battleManager = battleManager;
+
+    // NEW: Bridge DataManager to Registry
+    this.populateRegistry(dataManager);
+
+    // NEW: Use BattleAdapter wrapping BattleSystem
+    // We ignore the passed battleManager for the core logic but keep it for legacy signature if needed
+    // Actually, we replace this.battleManager with our Adapter.
+    this.battleSystem = new BattleSystem();
+    this.battleManager = new BattleAdapter(party, this.battleSystem);
+
     this.windowLayer = windowLayer;
     this.map = map;
     this.tileX = tileX;
@@ -68,6 +69,13 @@ export class Scene_Battle extends Scene_Base {
         onItem: () => this.onItemClick(),
         onAutoToggle: (val) => this.toggleAutoBattle(val)
     });
+  }
+
+  populateRegistry(dataManager) {
+      if (dataManager.skills) Registry.set('skills', dataManager.skills);
+      if (dataManager.items) Registry.set('items', dataManager.items);
+      if (dataManager.elements) Registry.set('elements', dataManager.elements);
+      if (dataManager.states) Registry.set('states', dataManager.states);
   }
 
   /**
