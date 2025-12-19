@@ -76,16 +76,18 @@ This document outlines the architectural refactor to create a single source of t
 *   `selectBattleScreen`.
 *   Cleaned up `src/presentation/windows/` to remove `ProgressionSystem` and other engine dependencies.
 
-## Phase 6 — Save/Load
+## Phase 6 — Save/Load (Completed)
 **Goal:** Trivial serialization.
 
 *   `SessionSerializer.toJSON(session)`
 *   `SessionSerializer.fromJSON(...)`
+*   Status: Implemented `src/engine/session/serializer.js` and added unit tests.
 
-## Phase 7 — Remove the remaining legacy knot
+## Phase 7 — Remove the remaining legacy knot (In Progress)
 **Goal:** Cleanups.
 
 *   Retire `src/objects/objects.js` barrel.
 *   Replace `window.*` debug globals with `DebugTools`.
 *   Stop "core" importing data.
-*   Delete `src/legacy/**`.
+*   Delete `src/legacy/**` (Completed).
+*   Migrated `ProgressionSystem` to `src/engine/systems/progression.js`.

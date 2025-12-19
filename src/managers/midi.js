@@ -232,7 +232,7 @@ export class MidiPlayer {
       try {
         osc.stop();
         osc.disconnect();
-      } catch (e) {}
+      } catch (e) { /* ignore */ }
     });
     this.activeOscillators = [];
   }
@@ -246,7 +246,7 @@ export class MidiPlayer {
         try {
             osc.stop();
             osc.disconnect();
-        } catch (e) {}
+        } catch (e) { /* ignore */ }
     });
     this.activeOscillators = [];
   }
@@ -348,7 +348,7 @@ export class MidiPlayer {
       // Garbage collection of AudioNodes handles the rest after disconnection/stop
       // We should disconnect after stop to be clean, but time-delayed stop prevents immediate disconnect.
       // So we rely on GC.
-      setTimeout(() => { try { osc.disconnect(); } catch(e){} }, (time - this.audioCtx.currentTime + 1) * 1000);
+      setTimeout(() => { try { osc.disconnect(); } catch(e){ /* ignore */ } }, (time - this.audioCtx.currentTime + 1) * 1000);
     }
   }
 }

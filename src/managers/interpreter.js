@@ -211,7 +211,7 @@ export class Game_Interpreter {
         case "message":
             log(effect.value);
             break;
-        case "random":
+        case "random": {
             const roll = random();
             let outcome;
             for (const o of effect.outcomes) {
@@ -224,6 +224,7 @@ export class Game_Interpreter {
             await this.applyEventEffect(outcome.effect);
             }
             break;
+        }
         case "multi":
             for (const e of effect.effects) {
                 await this.applyEventEffect(e);

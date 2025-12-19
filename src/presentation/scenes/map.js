@@ -7,7 +7,7 @@ import { SoundManager, ConfigManager, ThemeManager } from "../../managers/index.
 import { InputController } from "../../managers/input_controller.js";
 import { HUDManager } from "../../managers/hud_manager.js";
 import { Window_Desktop } from "../windows/index.js";
-import { ProgressionSystem } from "../../managers/progression.js";
+import { ProgressionSystem } from "../../engine/systems/progression.js";
 import { ExplorationAdapter } from "../../adapters/exploration_adapter.js";
 import { selectPartyHUD } from "../selectors/party.js";
 import { selectInventory } from "../selectors/inventory.js";

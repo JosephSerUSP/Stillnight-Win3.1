@@ -1,5 +1,5 @@
 import { evaluateFormula, probabilisticRound, random } from "../core/utils.js";
-import { ProgressionSystem } from "./progression.js";
+import { ProgressionSystem } from "../engine/systems/progression.js";
 
 /**
  * @class EffectManager

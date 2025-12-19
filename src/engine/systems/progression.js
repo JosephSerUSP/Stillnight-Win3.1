@@ -1,4 +1,4 @@
-import { randInt, probabilisticRound } from "../core/utils.js";
+import { randInt, probabilisticRound } from "../../core/utils.js";
 
 /**
  * @class ProgressionSystem
@@ -18,7 +18,7 @@ export class ProgressionSystem {
 
     /**
      * Adds XP to a battler and handles leveling.
-     * @param {import("../objects/objects.js").Game_Battler} battler - The battler.
+     * @param {import("../../objects/objects.js").Game_Battler} battler - The battler.
      * @param {number} amount - XP amount.
      * @returns {Object} { leveledUp, hpGain, newLevel }
      */
@@ -55,7 +55,7 @@ export class ProgressionSystem {
 
     /**
      * Checks if a battler meets evolution criteria.
-     * @param {import("../objects/objects.js").Game_Battler} battler
+     * @param {import("../../objects/objects.js").Game_Battler} battler
      * @param {Array} inventory
      * @param {number} floorDepth
      * @param {number} gold
