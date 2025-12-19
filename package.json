@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "main.js",
+  "type": "module",
   "scripts": {
-    "test": "npx playwright test"
+    "test": "npx playwright test",
+    "harness": "node tests/harness.js"
   },
   "keywords": [],
   "author": "",

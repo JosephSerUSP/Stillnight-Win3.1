@@ -1,6 +1,6 @@
 import { Scene_Base } from "./base.js";
 import { Game_Battler, Game_Action } from "../objects/objects.js";
-import { randInt, pickWeighted, probabilisticRound } from "../core/utils.js";
+import { randInt, pickWeighted, probabilisticRound, random } from "../core/utils.js";
 import { SoundManager, ConfigManager } from "../managers/index.js";
 import { Window_Battle, Window_Victory } from "../windows/index.js";
 
@@ -430,7 +430,7 @@ export class Scene_Battle extends Scene_Base {
       enemies.forEach(e => {
         if (e.actorData && e.actorData.drops) {
             e.actorData.drops.forEach(drop => {
-                if (Math.random() < drop.chance) {
+                if (random() < drop.chance) {
                     const item = this.dataManager.items.find(i => i.id === drop.itemId);
                     if (item) droppedItems.push(item);
                 }
@@ -646,7 +646,7 @@ export class Scene_Battle extends Scene_Base {
    * @method attemptFlee
    */
   attemptFlee() {
-    if (Math.random() < this.sceneManager.previous().getFleeChance()) {
+    if (random() < this.sceneManager.previous().getFleeChance()) {
       this.sceneManager.previous().logMessage("[Battle] You successfully fled!");
       SoundManager.play('ESCAPE');
       this.sceneManager.pop();

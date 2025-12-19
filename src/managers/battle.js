@@ -1,4 +1,4 @@
-import { randInt } from "../core/utils.js";
+import { randInt, random } from "../core/utils.js";
 import { SoundManager } from "./sound.js";
 import { Game_Action } from "../objects/objects.js";
 
@@ -224,7 +224,7 @@ export class BattleManager {
 
       // 1. Decide Action Type (Skill or Attack)
       // Simple logic: 60% chance to use skill if available
-      const skillId = (battler.skills && battler.skills.length && Math.random() < 0.6)
+      const skillId = (battler.skills && battler.skills.length && random() < 0.6)
           ? battler.skills[randInt(0, battler.skills.length - 1)]
           : null;
 

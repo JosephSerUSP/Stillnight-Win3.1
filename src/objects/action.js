@@ -1,4 +1,4 @@
-import { randInt, elementToAscii, probabilisticRound } from "../core/utils.js";
+import { randInt, elementToAscii, probabilisticRound, random } from "../core/utils.js";
 import { SoundManager } from "../managers/sound.js";
 import { EffectManager } from "../managers/effect_manager.js";
 
@@ -128,7 +128,7 @@ export class Game_Action {
 
         // Evasion
         const evasionChance = target.getPassiveValue("EVA");
-        if (evasionChance > 0 && Math.random() < evasionChance) {
+        if (evasionChance > 0 && random() < evasionChance) {
             SoundManager.play('UI_CANCEL');
             events.push({
                 type: "miss",
@@ -142,7 +142,7 @@ export class Game_Action {
         // Critical
         let isCritical = false;
         const critChance = battler.getPassiveValue("CRI");
-        if (critChance > 0 && Math.random() < critChance) {
+        if (critChance > 0 && random() < critChance) {
             isCritical = true;
         }
 

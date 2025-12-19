@@ -1,5 +1,5 @@
 import { Game_Battler } from "../objects/objects.js";
-import { randInt, pickWeighted, evaluateFormula } from "../core/utils.js";
+import { randInt, pickWeighted, evaluateFormula, random } from "../core/utils.js";
 import { SoundManager } from "../managers/index.js";
 import {
   createInteractiveLabel,
@@ -228,7 +228,7 @@ export class Game_Interpreter {
             log(effect.value);
             break;
         case "random":
-            const roll = Math.random();
+            const roll = random();
             let outcome;
             for (const o of effect.outcomes) {
             if (roll < o.chance) {

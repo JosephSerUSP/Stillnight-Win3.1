@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
 test('Verify Battle Layout and Evolution Preview', async ({ page }) => {
     // 1. Go to game with test mode
