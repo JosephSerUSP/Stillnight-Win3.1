@@ -46,6 +46,10 @@ export class BattleAdapter {
     this._sync();
   }
 
+  getPlannedAction(battler) {
+      return this.system.getPlannedAction(this.state, battler);
+  }
+
   getNextBattler() {
     const ctx = this.system.getNextBattler(this.state);
     this._sync();

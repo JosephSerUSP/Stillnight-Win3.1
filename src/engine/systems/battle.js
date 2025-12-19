@@ -72,6 +72,35 @@ export class BattleSystem {
   }
 
   /**
+   * Retrieves the intended action for a specific battler from the current turn queue.
+   * @param {BattleState} state
+   * @param {Object} battler - The battler to query.
+   * @returns {Object|null} The planned action info { actionName, target } or null.
+   */
+  getPlannedAction(state, battler) {
+      if (!state.turnQueue) return null;
+
+      const entry = state.turnQueue.find(e => e.battler === battler);
+      if (!entry || !entry.action) return null;
+
+      const action = entry.action;
+      let actionName = "Attack";
+
+      // Handle both pure action structure and legacy Game_Action wrapper
+      if (action.skillId) {
+          const skill = Registry.getSkill(action.skillId);
+          actionName = skill ? skill.name : "Skill";
+      } else if (action._item) { // Legacy Game_Action property
+          actionName = action._item.name;
+      }
+
+      return {
+          actionName,
+          target: action.target
+      };
+  }
+
+  /**
    * Gets the next battler from the queue.
    * @param {BattleState} state
    */
@@ -280,10 +309,14 @@ export class BattleSystem {
           const result = EffectSystem.apply(effectKey, effectValue, battler, target, context);
 
           if (result) {
+               // EffectSystem is pure, but BattleSystem can wrap output for Scene_Battle
+               // This wrapper logic needs to be robust for all result types.
                if (result.type === 'damage') {
                    result.msg = `  ${target.name} takes ${result.value} damage.`;
                } else if (result.type === 'heal') {
                    result.msg = `  ${target.name} heals ${result.value} HP.`;
+               } else if (result.type === 'status') {
+                    result.msg = `  ${target.name} is afflicted with ${result.status}.`;
                }
                events.push(result);
           }
