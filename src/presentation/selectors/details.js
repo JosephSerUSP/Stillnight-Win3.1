@@ -66,12 +66,28 @@ export function selectBattlerDetails(battler, context, dataManager) {
         role: battler.role,
         hp: battler.hp,
         maxHp: battler.maxHp,
+        mp: battler.mp,
+        maxMp: battler.maxMp,
+
+        // Stats
+        atk: battler.atk,
+        def: battler.def,
+        mat: battler.mat,
+        mdf: battler.mdf,
+        agi: battler.agi,
+        luk: battler.luk,
+
         xp: battler.xp,
         xpNeeded,
         xpPercent,
         elements: battler.elements,
         spriteKey: battler.spriteKey,
-        equipmentItem: battler.equipmentItem ? { name: battler.equipmentItem.name } : null,
+        equipmentItem: battler.equipmentItem ? {
+            name: battler.equipmentItem.name,
+            icon: battler.equipmentItem.icon,
+            description: battler.equipmentItem.description,
+            traits: battler.equipmentItem.traits
+        } : null,
         baseEquipment: battler.baseEquipment,
         flavor: battler.flavor,
 

@@ -156,13 +156,21 @@ export class Window_Inspect extends Window_Base {
       }
 
       // Equipment Button
-      const equipText = memberView.equipmentItem ? memberView.equipmentItem.name : (memberView.baseEquipment || "Unequipped");
-      const equipBtn = document.createElement("div");
-      equipBtn.className = "win-btn";
-      equipBtn.textContent = equipText;
-      equipBtn.style.cursor = "pointer";
-      equipBtn.style.padding = "2px 6px";
-      equipBtn.style.fontSize = "0.9em";
+      let equipBtn;
+      if (memberView.equipmentItem) {
+          equipBtn = createInteractiveLabel(memberView.equipmentItem, 'item');
+          equipBtn.classList.add("win-btn");
+          equipBtn.style.padding = "2px 6px";
+          equipBtn.style.cursor = "pointer";
+      } else {
+          equipBtn = document.createElement("div");
+          equipBtn.className = "win-btn";
+          equipBtn.textContent = memberView.baseEquipment || "Unequipped";
+          equipBtn.style.padding = "2px 6px";
+          equipBtn.style.fontSize = "0.9em";
+          equipBtn.style.cursor = "pointer";
+      }
+
       equipBtn.onclick = () => {
           if (this.callbacks.onEquip) this.callbacks.onEquip();
       };

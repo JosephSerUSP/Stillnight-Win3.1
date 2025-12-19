@@ -312,11 +312,19 @@ export function createCommanderSlot(summonerView, options = {}) {
     const nameLabel = createBattlerNameLabel(summonerView, { evolutionStatus: 'NONE' });
     row1.appendChild(nameLabel);
 
-    const equipEl = document.createElement("div");
-    equipEl.style.fontSize = "10px";
-    equipEl.style.color = "var(--text-muted)";
-    equipEl.textContent = summonerView.equipmentItem ? summonerView.equipmentItem.name : "-";
-    row1.appendChild(equipEl);
+    const equipContainer = document.createElement("div");
+    equipContainer.style.fontSize = "10px";
+    equipContainer.style.color = "var(--text-muted)";
+
+    if (summonerView.equipmentItem) {
+        const itemLabel = Component_InteractiveLabel(null, { data: summonerView.equipmentItem, type: 'item', showTooltip: false });
+        // Override label style to fit small slot
+        itemLabel.style.marginRight = "0";
+        equipContainer.appendChild(itemLabel);
+    } else {
+        equipContainer.textContent = "-";
+    }
+    row1.appendChild(equipContainer);
 
     infoCol.appendChild(row1);
 
@@ -639,9 +647,12 @@ export function renderCreatureInfo(container, battler, options = {}) {
 
     if (options.showEquipment) {
         const equipVal = document.createElement('span');
-        // Handle both view model structure and game object structure
-        const equipName = battler.equipmentItem ? battler.equipmentItem.name : (battler.equipment || "—");
-        equipVal.textContent = equipName;
+        if (battler.equipmentItem) {
+             const label = Component_InteractiveLabel(null, { data: battler.equipmentItem, type: 'item' });
+             equipVal.appendChild(label);
+        } else {
+             equipVal.textContent = battler.equipment || "—";
+        }
         createRow('Equipment', equipVal);
     }
 

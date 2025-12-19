@@ -37,7 +37,12 @@ export function selectPartyMemberView(battler, index, context = {}) {
         role: battler.role,
 
         // Equipment
-        equipmentItem: battler.equipmentItem ? { name: battler.equipmentItem.name, description: battler.equipmentItem.description } : null,
+        equipmentItem: battler.equipmentItem ? {
+            name: battler.equipmentItem.name,
+            icon: battler.equipmentItem.icon,
+            description: battler.equipmentItem.description,
+            traits: battler.equipmentItem.traits
+        } : null,
 
         // Computed
         evolutionStatus: statusObj.status,
