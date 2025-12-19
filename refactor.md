@@ -62,7 +62,7 @@ This document outlines the architectural refactor to create a single source of t
 *   **Key Change**: Exploration emits events like `PlayerMoved`, `DoorOpened`. `Scene_Map` renders events.
 *   Note: Encounters are currently handled via static event placement by Generator + `EncounterManager` utils.
 
-## Phase 4 — Migrate Interpreter / Events
+## Phase 4 — Migrate Interpreter / Events (Completed)
 **Goal:** Engine-side serializable interpreter.
 
 *   `InterpreterState` (stack, IP, locals).
