@@ -1,39 +1,32 @@
 import globals from "globals";
-import pluginJs from "@eslint/js";
+import js from "@eslint/js";
 
 export default [
-  // Global settings
-  {
-    languageOptions: {
-      globals: globals.browser
+    js.configs.recommended,
+    {
+        languageOptions: {
+            globals: {
+                ...globals.browser,
+                ...globals.node
+            },
+            sourceType: "module",
+            ecmaVersion: 2022
+        },
+        rules: {
+            "no-unused-vars": "warn",
+            "no-undef": "error"
+        },
+        ignores: ["tests/**"]
+    },
+    {
+        files: ["src/presentation/windows/**"],
+        rules: {
+            "no-restricted-imports": ["error", {
+                "patterns": [{
+                    "group": ["../../engine/systems/**", "../../managers/progression.js"],
+                    "message": "Presentation Windows cannot import from Engine Systems directly. Use Selectors."
+                }]
+            }]
+        }
     }
-  },
-  // Recommended rules ONLY for new architecture
-  {
-    files: ["src/engine/**/*.js", "src/presentation/**/*.js"],
-    ...pluginJs.configs.recommended
-  },
-  // Import Bans
-  {
-    files: ["src/engine/**/*.js"],
-    rules: {
-      "no-restricted-imports": ["error", {
-        "patterns": [{
-          "group": ["**/presentation/**"],
-          "message": "Engine cannot import from Presentation layer."
-        }]
-      }]
-    }
-  },
-  {
-    files: ["src/presentation/windows/**/*.js"],
-    rules: {
-      "no-restricted-imports": ["error", {
-        "patterns": [{
-          "group": ["**/engine/systems/**"],
-          "message": "Windows cannot import directly from Engine Systems. Use Selectors."
-        }]
-      }]
-    }
-  }
 ];

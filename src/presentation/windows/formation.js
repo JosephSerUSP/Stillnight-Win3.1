@@ -1,7 +1,6 @@
 import { Window_Base } from "./base.js";
 import { createPartySlot, createReserveSlot, createCommanderSlot } from "./utils.js";
 import { SoundManager } from "../../managers/index.js";
-import { ProgressionSystem } from "../../managers/progression.js";
 
 /**
  * @class Window_Formation
@@ -55,9 +54,8 @@ export class Window_Formation extends Window_Base {
     this.context = null;
   }
 
-  refresh(party, onChange, context = null, onSwapAttempt = null) {
-      this.party = party;
-      this.context = context;
+  refresh(partyView, onChange, onSwapAttempt = null) {
+      this.partyView = partyView;
       if (onChange) this.onChange = onChange;
       this.onSwapAttempt = onSwapAttempt;
       this.selectedSlotIndex = null;
@@ -69,13 +67,13 @@ export class Window_Formation extends Window_Base {
     this.reserveGridEl.innerHTML = "";
     this.commanderSlotContainer.innerHTML = "";
 
-    if (!this.party) return;
+    if (!this.partyView || !this.partyView.slots) return;
 
-    this.party.slots.forEach((m, index) => {
+    this.partyView.slots.forEach((memberView, index) => {
       // Special handling for Slot 4 (Summoner)
       if (index === 4) {
-          if (m) {
-              const cSlot = createCommanderSlot(m, {
+          if (memberView) {
+              const cSlot = createCommanderSlot(memberView, {
                   onClick: () => SoundManager.play('UI_ERROR') // Non-interactible
               });
               cSlot.style.cursor = 'default';
@@ -84,25 +82,17 @@ export class Window_Formation extends Window_Base {
           return;
       }
 
-      let evolutionStatus = null;
-      if (m && this.context) {
-          const statusObj = ProgressionSystem.getEvolutionStatus(m, this.context.inventory, this.context.floorDepth, this.context.gold);
-          if (statusObj.status !== 'NONE') {
-              evolutionStatus = statusObj.status;
-          }
-      }
-
       const isReserve = index >= 5; // 5 and above are reserve
       const options = {
           onClick: this.onSlotClick.bind(this),
-          evolutionStatus: evolutionStatus
+          evolutionStatus: memberView ? memberView.evolutionStatus : undefined
       };
 
       let slot;
       if (isReserve) {
-          slot = createReserveSlot(m, index, options);
+          slot = createReserveSlot(memberView, index, options);
       } else {
-          slot = createPartySlot(m, index, options);
+          slot = createPartySlot(memberView, index, options);
       }
 
       if (this.selectedSlotIndex === index) {

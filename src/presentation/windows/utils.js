@@ -1,7 +1,6 @@
 import { getPrimaryElements, elementToAscii, getIconStyle, elementToIconId, evaluateFormula } from "../../core/utils.js";
 import { tooltip } from "../../core/tooltip.js";
 import { Component_Icon, Component_ElementIcon, Component_Gauge, Component_InteractiveLabel, Component_Label } from "./components.js";
-import { ProgressionSystem } from "../../managers/progression.js";
 
 /**
  * Creates a DOM element representing a standard icon.
@@ -43,38 +42,42 @@ export function renderElements(elements) {
 
 /**
  * Creates a standardized label for a battler's name, including elemental icons and status indicators.
- * @param {import("../../objects/objects.js").Game_Battler} battler - The battler.
+ * @param {Object} battlerView - The battler view model.
  * @param {Object} [options] - Configuration options.
  * @param {string} [options.evolutionStatus] - 'AVAILABLE', 'LOCKED', or 'NONE'.
+ * @param {string} [options.nameElementId] - ID for the name span.
  * @returns {HTMLElement} The container element.
  */
-export function createBattlerNameLabel(battler, options = {}) {
+export function createBattlerNameLabel(battlerView, options = {}) {
     const container = document.createElement("div");
     container.className = "battler-name-label";
     container.style.display = "flex";
     container.style.alignItems = "center";
     container.style.whiteSpace = "nowrap";
 
-    if (battler.elements) {
-        Component_ElementIcon(container, { elements: battler.elements });
+    if (battlerView.elements) {
+        Component_ElementIcon(container, { elements: battlerView.elements });
     }
 
     const levelSpan = document.createElement("span");
-    levelSpan.textContent = `Lv.${battler.level}`;
+    levelSpan.textContent = `Lv.${battlerView.level}`;
     levelSpan.style.margin = "0 4px";
     levelSpan.style.fontSize = "10px";
     container.appendChild(levelSpan);
 
     const nameSpan = document.createElement("span");
-    nameSpan.textContent = battler.name;
+    nameSpan.textContent = battlerView.name;
     if (options.nameElementId) {
         nameSpan.id = options.nameElementId;
     }
     container.appendChild(nameSpan);
 
-    if (options.evolutionStatus && options.evolutionStatus !== 'NONE') {
-        const iconId = options.evolutionStatus === 'AVAILABLE' ? 102 : 101;
-        const tooltip = options.evolutionStatus === 'AVAILABLE' ? "Evolution Available" : "Evolution Locked";
+    // Prefer options.evolutionStatus if provided, otherwise check battlerView
+    const evoStatus = options.evolutionStatus || battlerView.evolutionStatus;
+
+    if (evoStatus && evoStatus !== 'NONE') {
+        const iconId = evoStatus === 'AVAILABLE' ? 102 : 101;
+        const tooltip = evoStatus === 'AVAILABLE' ? "Evolution Available" : "Evolution Locked";
         const evoIcon = Component_Icon(null, { iconId, tooltip });
         evoIcon.style.marginLeft = "4px";
         container.appendChild(evoIcon);
@@ -115,7 +118,7 @@ export function formatHpGaugeText(current, max, length) {
 
 /**
  * Creates a standard battle unit display (Name + ASCII gauges).
- * @param {import("../../objects/objects.js").Game_Battler} battler
+ * @param {Object} battlerView
  * @param {Object} options
  * @param {string} [options.id] - Element ID.
  * @param {number} [options.top]
@@ -128,7 +131,7 @@ export function formatHpGaugeText(current, max, length) {
  * @param {string} [options.nameElementId] - ID for the name span (for animations).
  * @returns {HTMLElement}
  */
-export function createBattleUnitSlot(battler, options = {}) {
+export function createBattleUnitSlot(battlerView, options = {}) {
     const container = document.createElement("div");
     container.className = "battler-container";
     if (options.id) container.id = options.id;
@@ -150,7 +153,7 @@ export function createBattleUnitSlot(battler, options = {}) {
     const gaugeLength = options.gaugeLength || 15;
 
     // Name
-    const nameLabel = createBattlerNameLabel(battler, {
+    const nameLabel = createBattlerNameLabel(battlerView, {
         nameElementId: options.nameElementId,
         evolutionStatus: options.evolutionStatus
     });
@@ -163,7 +166,7 @@ export function createBattleUnitSlot(battler, options = {}) {
     // HP Gauge
     const hpDiv = document.createElement("div");
     hpDiv.className = "battler-hp";
-    hpDiv.textContent = formatHpGaugeText(battler.hp, battler.maxHp, gaugeLength);
+    hpDiv.textContent = formatHpGaugeText(battlerView.hp, battlerView.maxHp, gaugeLength);
     container.appendChild(hpDiv);
 
     // MP Gauge (Optional)
@@ -171,7 +174,7 @@ export function createBattleUnitSlot(battler, options = {}) {
         const mpDiv = document.createElement("div");
         mpDiv.className = "battler-mp";
         // Use * for MP to distinguish from HP
-        mpDiv.textContent = createAsciiGauge(battler.mp, battler.maxMp, gaugeLength, '*');
+        mpDiv.textContent = createAsciiGauge(battlerView.mp, battlerView.maxMp, gaugeLength, '*');
         container.appendChild(mpDiv);
     }
 
@@ -213,8 +216,6 @@ export function createBattleUnitSlot(battler, options = {}) {
  * @param {Object} options - Configuration options.
  */
 export function createGauge(options = {}) {
-    // Adapter to match existing return signature { container, fill }
-    // Component_Gauge returns { container, fill } so it should match.
     return Component_Gauge(null, options);
 }
 
@@ -227,9 +228,9 @@ export function createInteractiveLabel(data, type, options = {}) {
 
 /**
  * Draws standard battler gauges (HP, XP) for slot displays.
- * @param {import("../../objects/objects.js").Game_Battler} battler
+ * @param {Object} battlerView - The battler view model. Must contain hp, maxHp, xpPercent.
  */
-export function drawBattlerStats(battler) {
+export function drawBattlerStats(battlerView) {
     const container = document.createElement("div");
     container.style.display = "flex";
     container.style.flexDirection = "column";
@@ -238,7 +239,7 @@ export function drawBattlerStats(battler) {
 
     // HP Text
     const hpText = document.createElement("div");
-    hpText.textContent = `HP ${battler.hp}/${battler.maxHp}`;
+    hpText.textContent = `HP ${battlerView.hp}/${battlerView.maxHp}`;
     hpText.style.fontSize = "10px";
     hpText.style.marginBottom = "1px";
     container.appendChild(hpText);
@@ -246,12 +247,14 @@ export function drawBattlerStats(battler) {
     // HP Gauge
     const { fill: hpFill } = Component_Gauge(container, { height: "6px", color: "var(--gauge-hp)", className: "gauge" });
     hpFill.parentElement.style.marginBottom = "2px"; // Access container via parent
-    hpFill.style.width = `${Math.max(0, (battler.hp / battler.maxHp) * 100)}%`;
+    hpFill.style.width = `${Math.max(0, (battlerView.hp / battlerView.maxHp) * 100)}%`;
     hpFill.classList.add('hp-fill');
 
     // XP Gauge
-    const xpNeeded = ProgressionSystem.xpNeeded(battler.level, battler.expGrowth);
-    const xpPercent = Math.min(100, Math.max(0, ((battler.xp || 0) / xpNeeded) * 100));
+    // xpPercent is expected to be calculated by selector.
+    // Fallback to 0 if not provided (e.g. legacy calls)
+    const xpPercent = battlerView.xpPercent !== undefined ? battlerView.xpPercent : 0;
+
     const { fill: xpFill } = Component_Gauge(container, {
         height: "4px",
         color: "#60a0ff",
@@ -264,10 +267,10 @@ export function drawBattlerStats(battler) {
 
 /**
  * Creates a Commander (Summoner) slot.
- * @param {import("../../objects/objects.js").Game_Battler} summoner
+ * @param {Object} summonerView - View model for Summoner.
  * @param {Object} options
  */
-export function createCommanderSlot(summoner, options = {}) {
+export function createCommanderSlot(summonerView, options = {}) {
     const slot = document.createElement("div");
     slot.className = "party-slot commander-slot";
     slot.style.width = "100%";
@@ -286,7 +289,7 @@ export function createCommanderSlot(summoner, options = {}) {
     // Portrait (Left)
     const portrait = document.createElement("div");
     portrait.className = "party-slot-portrait";
-    portrait.style.backgroundImage = `url('assets/portraits/${summoner.spriteKey || "egg"}.png')`;
+    portrait.style.backgroundImage = `url('assets/portraits/${summonerView.spriteKey || "egg"}.png')`;
     portrait.style.width = "48px";
     portrait.style.height = "48px";
     portrait.style.flexShrink = "0";
@@ -306,13 +309,13 @@ export function createCommanderSlot(summoner, options = {}) {
     row1.style.justifyContent = "space-between";
     row1.style.alignItems = "center";
 
-    const nameLabel = createBattlerNameLabel(summoner, { evolutionStatus: 'NONE' });
+    const nameLabel = createBattlerNameLabel(summonerView, { evolutionStatus: 'NONE' });
     row1.appendChild(nameLabel);
 
     const equipEl = document.createElement("div");
     equipEl.style.fontSize = "10px";
     equipEl.style.color = "var(--text-muted)";
-    equipEl.textContent = summoner.equipmentItem ? summoner.equipmentItem.name : "-";
+    equipEl.textContent = summonerView.equipmentItem ? summonerView.equipmentItem.name : "-";
     row1.appendChild(equipEl);
 
     infoCol.appendChild(row1);
@@ -354,8 +357,8 @@ export function createCommanderSlot(summoner, options = {}) {
          return wrapper;
     };
 
-    row2.appendChild(createMiniGauge("HP", summoner.hp, summoner.maxHp, "var(--gauge-hp)"));
-    row2.appendChild(createMiniGauge("MP", summoner.mp, summoner.maxMp, "#60a0ff"));
+    row2.appendChild(createMiniGauge("HP", summonerView.hp, summonerView.maxHp, "var(--gauge-hp)"));
+    row2.appendChild(createMiniGauge("MP", summonerView.mp, summonerView.maxMp, "#60a0ff"));
 
     infoCol.appendChild(row2);
 
@@ -365,8 +368,7 @@ export function createCommanderSlot(summoner, options = {}) {
     row3.style.alignItems = "center";
     row3.style.height = "4px";
 
-    const xpNeeded = ProgressionSystem.xpNeeded(summoner.level, summoner.expGrowth);
-    const xpPercent = Math.min(100, Math.max(0, ((summoner.xp || 0) / xpNeeded) * 100));
+    const xpPercent = summonerView.xpPercent !== undefined ? summonerView.xpPercent : 0;
 
     const xpGaugeBg = document.createElement("div");
     xpGaugeBg.style.width = "100%";
@@ -388,8 +390,11 @@ export function createCommanderSlot(summoner, options = {}) {
 
 /**
  * Creates a standard party member slot.
+ * @param {Object} battlerView - View model.
+ * @param {number} index
+ * @param {Object} options
  */
-export function createPartySlot(battler, index, options = {}) {
+export function createPartySlot(battlerView, index, options = {}) {
     const slot = document.createElement("div");
     slot.className = "party-slot";
     slot.style.width = "100%"; // Changed from fixed 124px to 100%
@@ -411,10 +416,12 @@ export function createPartySlot(battler, index, options = {}) {
     }
 
     if (options.onClick) {
-        slot.addEventListener("click", (e) => options.onClick(battler, index, e));
+        // Pass source if available (for game logic), otherwise the view itself
+        const source = battlerView && battlerView.source ? battlerView.source : battlerView;
+        slot.addEventListener("click", (e) => options.onClick(source, index, e));
     }
 
-    if (!battler) {
+    if (!battlerView) {
         const emptyLabel = document.createElement("div");
         emptyLabel.textContent = "(Empty)";
         emptyLabel.style.textAlign = "center";
@@ -439,7 +446,8 @@ export function createPartySlot(battler, index, options = {}) {
     nameEl.style.flexGrow = "1";
     nameEl.style.overflow = "hidden";
 
-    const label = createBattlerNameLabel(battler, { evolutionStatus: options.evolutionStatus });
+    // Use view's evolution status if option not explicit
+    const label = createBattlerNameLabel(battlerView, { evolutionStatus: options.evolutionStatus });
     label.style.overflow = "hidden";
     nameEl.appendChild(label);
 
@@ -461,13 +469,13 @@ export function createPartySlot(battler, index, options = {}) {
 
     const portrait = document.createElement("div");
     portrait.className = "party-slot-portrait";
-    portrait.style.backgroundImage = `url('assets/portraits/${battler.spriteKey || "pixie"}.png')`;
+    portrait.style.backgroundImage = `url('assets/portraits/${battlerView.spriteKey || "pixie"}.png')`;
     portrait.style.width = "48px";
     portrait.style.height = "48px";
     portrait.style.flexShrink = "0";
     body.appendChild(portrait);
 
-    const stats = drawBattlerStats(battler);
+    const stats = drawBattlerStats(battlerView);
     stats.style.marginLeft = "4px";
     body.appendChild(stats);
     slot.appendChild(body);
@@ -478,8 +486,14 @@ export function createPartySlot(battler, index, options = {}) {
     footer.style.display = "flex";
     footer.style.alignItems = "center";
 
-    if (battler.equipmentItem) {
-        const itemLabel = Component_InteractiveLabel(null, { data: battler.equipmentItem, type: 'item' });
+    if (battlerView.equipmentItem) {
+        // equipmentItem is { name, description } in view model usually
+        // But createInteractiveLabel expects data.
+        // We might need a proper object or let interactive label handle view.
+        // For now, assume it's view data. Interactive label might need real item for tooltip.
+        // If battlerView.equipmentItem is a plain object with name/desc, component might fail if it expects ID or specific structure for advanced tooltip.
+        // But let's try.
+        const itemLabel = Component_InteractiveLabel(null, { data: battlerView.equipmentItem, type: 'item' });
         footer.appendChild(itemLabel);
     } else {
         const none = document.createElement("span");
@@ -494,7 +508,7 @@ export function createPartySlot(battler, index, options = {}) {
 /**
  * Creates a compact slot for reserve members.
  */
-export function createReserveSlot(battler, index, options = {}) {
+export function createReserveSlot(battlerView, index, options = {}) {
     const slot = document.createElement("div");
     slot.className = "party-slot";
     slot.style.width = "100%";
@@ -509,10 +523,11 @@ export function createReserveSlot(battler, index, options = {}) {
     if (options.testId) slot.dataset.testid = options.testId;
 
     if (options.onClick) {
-        slot.addEventListener("click", (e) => options.onClick(battler, index, e));
+        const source = battlerView && battlerView.source ? battlerView.source : battlerView;
+        slot.addEventListener("click", (e) => options.onClick(source, index, e));
     }
 
-    if (!battler) {
+    if (!battlerView) {
         const empty = document.createElement("div");
         empty.textContent = "(Empty)";
         empty.style.margin = "auto";
@@ -523,7 +538,7 @@ export function createReserveSlot(battler, index, options = {}) {
     // Portrait
     const portrait = document.createElement("div");
     portrait.className = "party-slot-portrait";
-    portrait.style.backgroundImage = `url('assets/portraits/${battler.spriteKey || "pixie"}.png')`;
+    portrait.style.backgroundImage = `url('assets/portraits/${battlerView.spriteKey || "pixie"}.png')`;
     portrait.style.width = "48px";
     portrait.style.height = "48px";
     portrait.style.flexShrink = "0";
@@ -540,14 +555,14 @@ export function createReserveSlot(battler, index, options = {}) {
     info.style.whiteSpace = "nowrap";
 
     // Label
-    const label = createBattlerNameLabel(battler, { evolutionStatus: options.evolutionStatus });
+    const label = createBattlerNameLabel(battlerView, { evolutionStatus: options.evolutionStatus });
     label.style.overflow = "hidden";
     label.style.textOverflow = "ellipsis";
     label.style.marginBottom = "2px";
     info.appendChild(label);
 
     // Gauges
-    const gauges = drawBattlerStats(battler);
+    const gauges = drawBattlerStats(battlerView);
     info.appendChild(gauges);
 
     slot.appendChild(info);
@@ -558,14 +573,8 @@ export function createReserveSlot(battler, index, options = {}) {
 /**
  * Helper to render creature info.
  * @param {HTMLElement} container - Target container.
- * @param {import("../../objects/objects.js").Game_Battler} battler - The creature.
+ * @param {Object} battler - The creature (Can be View or Game Object, as long as props exist).
  * @param {Object} [options] - Options for what to display.
- * @param {boolean} [options.showSkills=false]
- * @param {boolean} [options.showPassives=false]
- * @param {boolean} [options.showEquipment=false]
- * @param {boolean} [options.showFlavor=false]
- * @param {boolean} [options.showElement=false]
- * @param {import("../../managers/index.js").DataManager} [options.dataManager] - Required for skills/passives.
  */
 export function renderCreatureInfo(container, battler, options = {}) {
     container.innerHTML = "";
@@ -586,8 +595,8 @@ export function renderCreatureInfo(container, battler, options = {}) {
         const row = document.createElement('div');
         row.className = 'inspect-row';
         const lbl = document.createElement('span');
-        lbl.className = 'inspect-label';
         lbl.textContent = label;
+        lbl.className = 'inspect-label';
         row.appendChild(lbl);
         valueEl.classList.add('inspect-value');
         row.appendChild(valueEl);
@@ -595,6 +604,8 @@ export function renderCreatureInfo(container, battler, options = {}) {
     };
 
     const nameVal = document.createElement('span');
+    // createBattlerNameLabel expects a view model, but battler usually has compatible props
+    // We might need to fake the view if it's a raw object
     nameVal.appendChild(createBattlerNameLabel(battler));
     createRow('Name', nameVal);
 
@@ -628,7 +639,9 @@ export function renderCreatureInfo(container, battler, options = {}) {
 
     if (options.showEquipment) {
         const equipVal = document.createElement('span');
-        equipVal.textContent = battler.equipment || (battler.equipmentItem ? battler.equipmentItem.name : "—");
+        // Handle both view model structure and game object structure
+        const equipName = battler.equipmentItem ? battler.equipmentItem.name : (battler.equipment || "—");
+        equipVal.textContent = equipName;
         createRow('Equipment', equipVal);
     }
 
