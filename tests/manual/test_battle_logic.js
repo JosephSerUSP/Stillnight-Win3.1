@@ -15,9 +15,9 @@ Registry.set('elements', {
 
 // Mock Battler
 class MockBattler extends Game_Battler {
-    constructor(id, stats) {
+    constructor(id, stats, isEnemy = false) {
         // Pass minimal checks
-        super({ id, level: 1, ...stats }, 1, false);
+        super({ id, level: 1, ...stats }, 1, isEnemy);
         this.name = id;
         this._stats = stats; // Store raw stats
         this.hp = stats.maxHp;
@@ -31,13 +31,13 @@ class MockBattler extends Game_Battler {
 }
 
 const party = new Game_Party();
-const hero = new MockBattler('Hero', { maxHp: 100, atk: 20, asp: 10, role: 'hero', elements: ['water'] });
+const hero = new MockBattler('Hero', { maxHp: 100, atk: 20, asp: 10, role: 'hero', elements: ['water'] }, false);
 party.slots[0] = hero;
 
 // Ensure getter works
 console.log(`Hero ATK Check: ${hero.atk}`);
 
-const enemy = new MockBattler('Goblin', { maxHp: 50, atk: 8, asp: 5, skills: ['fireball'], elements: ['fire'] });
+const enemy = new MockBattler('Goblin', { maxHp: 50, atk: 8, asp: 5, skills: ['fireball'], elements: ['fire'] }, true);
 const enemies = [enemy];
 
 const battleSystem = new BattleSystem();
@@ -69,8 +69,10 @@ if (!enemyTurn) {
 
     console.log(`Enemy executes ${enemyAction.isAttack ? 'Attack' : 'Skill'} (Speed: ${enemyAction.speed})`);
 
-    // Force target if not set (AI stub might rely on full party logic)
-    if (!enemyAction.target) enemyAction.target = hero;
+    // Target should be Hero
+    if (enemyAction.target !== hero) {
+        console.error(`Enemy targeted ${enemyAction.target ? enemyAction.target.name : 'null'} instead of Hero!`);
+    }
 
     const enemyEvents = battleSystem.executeAction(state, enemyAction);
     enemyEvents.forEach(e => console.log(`[Event] ${e.type}: ${e.msg}`));

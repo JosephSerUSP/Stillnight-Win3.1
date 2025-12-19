@@ -122,9 +122,6 @@ export class BattleSystem {
   getAIAction(state, battlerContext) {
       const { battler, isEnemy } = battlerContext;
 
-      // FIX: Allow player creatures to generate actions too
-      // if (!isEnemy) return null;
-
       // AI Logic: 60% Skill, 40% Attack
       const skills = battler.skills || [];
       const skillId = (skills.length > 0 && random() < 0.6)
@@ -136,6 +133,8 @@ export class BattleSystem {
           speed: battler.asp || 0
       };
 
+      let scope = 'enemy';
+
       if (skillId) {
           const skill = Registry.getSkill(skillId);
           if (skill) {
@@ -143,6 +142,7 @@ export class BattleSystem {
                action.isAttack = false;
                action.speed += (skill.speed || 0);
                action.item = skill; // Attach data for convenience
+               scope = skill.target || 'enemy';
           } else {
                action.isAttack = true;
           }
@@ -150,34 +150,76 @@ export class BattleSystem {
           action.isAttack = true;
       }
 
-      // Target Selection
-      let opponents = [];
-      if (isEnemy) {
-          // Enemies target Player Party
-           if (state.participants.party.activeMembers) {
-              opponents = state.participants.party.activeMembers.filter(m => m.hp > 0);
-           } else {
-              const slots = state.participants.party.slots || [];
-              opponents = slots.slice(0, 4).filter(m => m && m.hp > 0);
-           }
-           if (opponents.length === 0 && state.participants.party.summoner && state.participants.party.summoner.hp > 0) {
-               opponents = [state.participants.party.summoner];
-           }
-      } else {
-          // Player Party targets Enemies
-          const enemies = state.participants.enemies || [];
-          opponents = enemies.filter(m => m.hp > 0);
-      }
+      const validTargets = this._getValidTargets(state, battler, scope);
 
-      if (opponents.length > 0) {
-          action.target = opponents[randInt(0, opponents.length - 1)];
+      if (validTargets.length > 0) {
+          // Smart targeting for healing: prefer lowest HP percentage
+          if (scope.includes('ally') && action.item && action.item.effects.some(e => e.type === 'hp_heal' || e.type === 'hp')) {
+              action.target = validTargets.reduce((prev, curr) => {
+                  return (curr.hp / curr.maxHp) < (prev.hp / prev.maxHp) ? curr : prev;
+              });
+          } else {
+              action.target = validTargets[randInt(0, validTargets.length - 1)];
+          }
       }
-
-      // If no valid targets, action might be null or invalid, but we return the object
-      // executeAction checks for target validity and retargets if possible.
-      // But if we have no target here, let's leave it undefined and let executeAction handle it (fizzle or retarget).
 
       return action;
+  }
+
+  _getValidTargets(state, subject, scope = 'enemy') {
+      const isEnemy = subject.isEnemy;
+
+      // Define Teams
+      let myTeam = [];
+      let opposingTeam = [];
+
+      // Get Opposing Team (Player Party vs Enemies)
+      if (isEnemy) {
+           // Enemy pov
+           opposingTeam = this._getPartyActive(state);
+           if (opposingTeam.length === 0 && state.participants.party.summoner && state.participants.party.summoner.hp > 0) {
+               opposingTeam = [state.participants.party.summoner];
+           }
+           myTeam = state.participants.enemies || [];
+      } else {
+           // Player pov
+           opposingTeam = (state.participants.enemies || []).filter(m => m.hp > 0);
+           myTeam = this._getPartyActive(state);
+           // Summoner is ally to player creatures
+           if (state.participants.party.summoner && state.participants.party.summoner.hp > 0) {
+               myTeam.push(state.participants.party.summoner);
+           }
+      }
+
+      // Filter by Scope
+      if (scope.includes('self')) {
+          return [subject];
+      }
+
+      let targets = [];
+      if (scope.includes('ally')) {
+          targets = myTeam;
+      } else {
+          targets = opposingTeam;
+      }
+
+      // Default filter: alive
+      if (!scope.includes('dead')) {
+          targets = targets.filter(b => b.hp > 0);
+      } else {
+          // If scope targets dead (revive), filter for hp <= 0
+          // Not implemented fully yet but placeholder logic
+          targets = targets.filter(b => b.hp <= 0);
+      }
+
+      return targets;
+  }
+
+  _getPartyActive(state) {
+      if (state.participants.party.activeMembers) {
+          return state.participants.party.activeMembers.filter(m => m.hp > 0);
+      }
+      return (state.participants.party.slots || []).slice(0, 4).filter(m => m && m.hp > 0);
   }
 
   /**
@@ -196,28 +238,14 @@ export class BattleSystem {
 
       // Re-targeting logic
       if (!target || target.hp <= 0) {
-           const isEnemy = subject.isEnemy;
-           let opponents = [];
+           let scope = 'enemy';
+           if (action.item) scope = action.item.target || 'enemy';
+           else if (action.isAttack) scope = 'enemy';
 
-           if (isEnemy) {
-               if (state.participants.party.activeMembers) {
-                   opponents = state.participants.party.activeMembers.filter(m => m.hp > 0);
-               } else {
-                   const slots = state.participants.party.slots || [];
-                   opponents = slots.slice(0, 4).filter(m => m && m.hp > 0);
-               }
+           const targets = this._getValidTargets(state, subject, scope);
 
-               if (opponents.length === 0 && state.participants.party.summoner && state.participants.party.summoner.hp > 0) {
-                   opponents = [state.participants.party.summoner];
-               }
-           } else {
-               // Player targeting enemy
-               const enemies = state.participants.enemies || [];
-               opponents = enemies.filter(m => m.hp > 0);
-           }
-
-           if (opponents && opponents.length > 0) {
-               target = opponents[randInt(0, opponents.length - 1)];
+           if (targets.length > 0) {
+               target = targets[randInt(0, targets.length - 1)];
                action.target = target;
            } else {
                return []; // Fizzle
@@ -320,8 +348,6 @@ export class BattleSystem {
           const result = EffectSystem.apply(effectKey, effectValue, battler, target, context);
 
           if (result) {
-               // EffectSystem is pure, but BattleSystem can wrap output for Scene_Battle
-               // This wrapper logic needs to be robust for all result types.
                if (result.type === 'damage') {
                    result.msg = `  ${target.name} takes ${result.value} damage.`;
                } else if (result.type === 'heal') {
