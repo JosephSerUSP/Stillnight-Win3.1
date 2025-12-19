@@ -1,6 +1,6 @@
 import { randInt, shuffleArray, probabilisticRound, pickWeighted } from "../core/utils.js";
 import { TraitManager } from "../managers/trait_manager.js";
-import { ProgressionSystem } from "../managers/progression.js";
+import { ProgressionSystem } from "../engine/systems/progression.js";
 import { passives as passivesData } from "../../data/passives.js";
 import { states as statesData } from "../../data/states.js";
 import { Game_Base } from "./game_base.js";

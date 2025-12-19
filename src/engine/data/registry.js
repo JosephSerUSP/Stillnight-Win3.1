@@ -4,22 +4,32 @@
  * This separates the "engine" from the "loader".
  */
 export const Registry = {
-    skills: {},
-    items: {},
-    enemies: {},
-    states: {},
-    elements: {},
+    _data: {},
 
     // Allow injection of data
     set(type, data) {
-        this[type] = data;
+        this._data[type] = data;
     },
 
-    get(type, id) {
-        return this[type] ? this[type][id] : null;
+    get(type) {
+        return this._data[type];
     },
 
-    getSkill(id) { return this.skills[id]; },
-    getItem(id) { return this.items[id] || (Array.isArray(this.items) ? this.items.find(i => i.id === id) : null); },
-    getState(id) { return this.states[id]; }
+    // Helpers
+    getSkill(id) {
+        const skills = this._data.skills || {};
+        return skills[id];
+    },
+
+    getItem(id) {
+        const items = this._data.items;
+        if (!items) return null;
+        if (Array.isArray(items)) return items.find(i => i.id === id);
+        return items[id];
+    },
+
+    getState(id) {
+        const states = this._data.states || {};
+        return states[id];
+    }
 };

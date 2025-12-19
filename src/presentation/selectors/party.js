@@ -1,4 +1,4 @@
-import { ProgressionSystem } from "../../managers/progression.js";
+import { ProgressionSystem } from "../../engine/systems/progression.js";
 
 // Helper: Calculate XP Percent
 function calculateXpPercent(level, expGrowth, currentXp) {

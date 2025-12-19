@@ -36,7 +36,7 @@ export function findPath(width, height, isWalkable, start, end) {
 
     for (const next of neighbors) {
       if (next.x >= 0 && next.x < width && next.y >= 0 && next.y < height) {
-         if (!cameFrom.hasOwnProperty(key(next.x, next.y))) {
+         if (!Object.prototype.hasOwnProperty.call(cameFrom, key(next.x, next.y))) {
              // For the end node, we don't check isWalkable (it might be the player/target)
              // But usually we do. However, if the target is "blocked" (e.g. player stands there),
              // and we want to path TO them, we must allow it.

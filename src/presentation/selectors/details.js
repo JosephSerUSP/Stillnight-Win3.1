@@ -1,4 +1,4 @@
-import { ProgressionSystem } from "../../managers/progression.js";
+import { ProgressionSystem } from "../../engine/systems/progression.js";
 import { evaluateFormula } from "../../core/utils.js";
 
 export function selectBattlerDetails(battler, context, dataManager) {
