@@ -7,6 +7,8 @@ import { BattleSystem } from "../../engine/systems/battle.js";
 import { BattleAdapter } from "../../adapters/battle_adapter.js";
 import { Registry } from "../../engine/data/registry.js";
 import { selectBattleScreen } from "../selectors/battle.js";
+import { selectInventory } from "../selectors/inventory.js";
+import { selectPartyHUD } from "../selectors/party.js";
 
 /**
  * @class Scene_Battle
@@ -207,11 +209,11 @@ export class Scene_Battle extends Scene_Base {
       this.formationChanged = false;
       this.windowManager.push(this.formationWindow);
 
-      this.formationWindow.refresh(this.party,
+      const partyView = selectPartyHUD(this.party, this.sceneManager.previous().getContext());
+      this.formationWindow.refresh(partyView,
           () => {
              this.renderBattleAscii();
           },
-          this.sceneManager.previous().getContext(),
           (idx1, idx2) => {
               this.confirmWindow.titleEl.textContent = "Confirm Swap?";
               this.confirmWindow.messageEl.textContent = "Swapping members counts as your turn action.";
@@ -242,8 +244,9 @@ export class Scene_Battle extends Scene_Base {
       if (this.actionTakenThisTurn || this.battleBusy) return;
 
       this.windowManager.push(this.inventoryWindow);
+      const items = selectInventory(this.party);
       this.inventoryWindow.setup(
-          this.party,
+          items,
           (item, action) => this.onInventoryAction(item, action),
           (item) => {}
       );

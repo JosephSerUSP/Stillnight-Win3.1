@@ -9,6 +9,9 @@ import { HUDManager } from "../../managers/hud_manager.js";
 import { Window_Desktop } from "../windows/index.js";
 import { ProgressionSystem } from "../../managers/progression.js";
 import { ExplorationAdapter } from "../../adapters/exploration_adapter.js";
+import { selectPartyHUD } from "../selectors/party.js";
+import { selectInventory } from "../selectors/inventory.js";
+import { selectBattlerDetails } from "../selectors/details.js";
 
 /**
  * @class Scene_Map
@@ -467,7 +470,8 @@ export class Scene_Map extends Scene_Base {
    * @method updateParty
    */
   updateParty() {
-    this.hud.updateParty(this.party, (member, index) => this.openInspect(member, index), this.getContext());
+    const partyView = selectPartyHUD(this.party, this.getContext());
+    this.hud.updateParty(partyView, (member, index) => this.openInspect(member, index));
   }
 
   /**
@@ -645,10 +649,27 @@ export class Scene_Map extends Scene_Base {
   openFormation() {
     if (this.sceneManager.currentScene() !== this) return;
     this.windowManager.push(this.hudManager.formationWindow);
-    this.hudManager.formationWindow.refresh(this.party, () => {
-        this.updateParty();
-        this.logMessage("[Formation] Party order changed.");
-    }, this.getContext());
+
+    // Define the swap handler which acts as the 'refresh' source of truth
+    const handleSwap = (idx1, idx2) => {
+        if (this.party.reorderMembers(idx1, idx2)) {
+             SoundManager.play('UI_SELECT');
+             const newView = selectPartyHUD(this.party, this.getContext());
+             // Re-bind to ensure closure freshness
+             this.hudManager.formationWindow.refresh(newView, () => {}, handleSwap);
+             this.updateParty();
+             this.logMessage("[Formation] Party order changed.");
+             return true;
+        }
+        return false;
+    };
+
+    const partyView = selectPartyHUD(this.party, this.getContext());
+    this.hudManager.formationWindow.refresh(
+        partyView,
+        () => {}, // onChange (legacy, mostly unused if we handle swap directly)
+        handleSwap
+    );
   }
 
   /**
@@ -666,8 +687,9 @@ export class Scene_Map extends Scene_Base {
   openInventory() {
     if (this.sceneManager.currentScene() !== this) return;
     this.windowManager.push(this.hudManager.inventoryWindow);
+    const items = selectInventory(this.party);
     this.hudManager.inventoryWindow.setup(
-        this.party,
+        items,
         (item, action) => this.onInventoryAction(item, action),
         (item) => this.confirmDiscard(item)
     );
@@ -848,7 +870,10 @@ export class Scene_Map extends Scene_Base {
           });
 
           this.updateParty();
-          this.hudManager.inventoryWindow.updateList();
+          // Update inventory window if open
+          if (this.windowManager.stack.includes(this.hudManager.inventoryWindow)) {
+               this.hudManager.inventoryWindow.updateItems(selectInventory(this.party));
+          }
           this.updateAll();
       } else {
           this.logMessage("No effect.");
@@ -873,7 +898,9 @@ export class Scene_Map extends Scene_Base {
       const index = this.party.inventory.indexOf(item);
       if (index > -1) {
           this.party.inventory.splice(index, 1);
-          this.hudManager.inventoryWindow.updateList();
+          if (this.windowManager.stack.includes(this.hudManager.inventoryWindow)) {
+              this.hudManager.inventoryWindow.updateItems(selectInventory(this.party));
+          }
           this.updateAll();
           this.logMessage(`[Inventory] Discarded ${item.name}.`);
           SoundManager.play('UI_CANCEL');
@@ -887,8 +914,9 @@ export class Scene_Map extends Scene_Base {
    * @param {number} index - The member's index.
    */
   openInspect(member, index) {
-    this.hudManager.inspectWindow.setup(member, this.getContext(), this.dataManager, {
-        onEquip: () => this.openEquipmentScreen(),
+    const detailsView = selectBattlerDetails(member, this.getContext(), this.dataManager);
+    this.hudManager.inspectWindow.setup(detailsView, {
+        onEquip: () => this.openEquipmentScreen(member),
         onSacrifice: (val) => {
              this.hudManager.confirmWindow.titleEl.textContent = "Sacrifice Unit";
              this.hudManager.confirmWindow.messageEl.textContent = `Sacrifice ${member.name} for ${val} Gold? This cannot be undone.`;
@@ -949,8 +977,7 @@ export class Scene_Map extends Scene_Base {
    * Opens the equipment selection screen within the inspect window.
    * @method openEquipmentScreen
    */
-  openEquipmentScreen() {
-    const member = this.hudManager.inspectWindow.member;
+  openEquipmentScreen(member) {
     const inventoryItems = this.party.inventory.filter(i => i.type === "equipment");
     const otherMemberItems = this.party.members
       .filter((m) => m !== member && m.equipmentItem)
@@ -984,7 +1011,10 @@ export class Scene_Map extends Scene_Base {
       // Copy equipment to ensure stat preview includes equipment bonuses
       nextBattler.equipmentItem = member.equipmentItem;
 
-      this.hudManager.evolutionWindow.setup(member, nextBattler, this.dataManager);
+      const currentView = selectBattlerDetails(member, this.getContext(), this.dataManager);
+      const nextView = selectBattlerDetails(nextBattler, this.getContext(), this.dataManager);
+
+      this.hudManager.evolutionWindow.setup(currentView, nextView);
 
       this.hudManager.evolutionWindow.btnConfirm.onclick = () => {
           this.confirmEvolution(member, nextBattler, evolutionData);

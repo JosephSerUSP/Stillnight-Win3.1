@@ -1,6 +1,5 @@
 import { Window_Base } from "./base.js";
 import { createPartySlot, createCommanderSlot } from "./utils.js";
-import { ProgressionSystem } from "../../managers/progression.js";
 import { UI } from "./builder.js";
 
 /**
@@ -104,7 +103,6 @@ export class Window_StackNav extends Window_Base {
     updateCardList(floors, currentIndex, maxReachedIndex, onSelect) {
         this.cardListEl.innerHTML = "";
         floors.forEach((f, idx) => {
-            // Using UI.build for list items
             const item = UI.build(this.cardListEl, {
                 type: 'panel',
                 props: {
@@ -113,10 +111,6 @@ export class Window_StackNav extends Window_Base {
                     onClick: (f.discovered && idx <= maxReachedIndex) ? () => onSelect(idx) : undefined
                 }
             });
-            // Component_Panel defaults to div. Using text prop I assume I implemented support or use innerText if supported?
-            // Component_Panel implementation: applyBaseProps(el, props). applyBaseProps doesn't set text.
-            // I need to use Component_Label or set textContent manually.
-            // Let's use Component_Label with div tag.
             item.textContent = `${idx + 1}. ${f.discovered ? f.title : "Unknown Floor"}`;
         });
     }
@@ -130,9 +124,8 @@ export class Window_Exploration extends Window_Base {
         super(0, 0, 'auto', 'auto', { title: "Floor 1", embedded: true });
         this.element.classList.add("card-main");
 
-        // Header extra: "Mode: Exploration"
         UI.build(this.header, {
-            type: 'panel', // Wrapper
+            type: 'panel',
             children: [
                  { type: 'label', props: { text: 'Mode:', className: 'label' } },
                  { type: 'label', props: { text: 'Exploration', id: 'mode-label' } }
@@ -141,7 +134,6 @@ export class Window_Exploration extends Window_Base {
 
         this.titleEl.id = "card-title";
 
-        // Content
         const root = UI.build(this.content, {
             type: 'panel',
             props: { className: 'exploration-frame panel' },
@@ -162,15 +154,11 @@ export class Window_Exploration extends Window_Base {
     }
 
     renderGrid(gridData, onTileClick) {
-        // Architecture Analysis: Optimize rendering by reusing DOM nodes (Virtual DOM-lite)
         const total = gridData.length;
         const children = this.explorationGrid.children;
 
-        // Check if we need a full rebuild (grid size/layout changed)
         let needsRebuild = children.length !== total;
         if (!needsRebuild && total > 0) {
-            // Verify structure matches (check first and last cell coordinates)
-            // This detects if map aspect ratio changed (e.g. 20x20 -> 10x40) even if total tiles same
             const firstEl = children[0];
             const lastEl = children[total - 1];
             const firstCell = gridData[0];
@@ -199,13 +187,11 @@ export class Window_Exploration extends Window_Base {
             return;
         }
 
-        // Fast Path: Update existing nodes
         for (let i = 0; i < total; i++) {
             const cell = gridData[i];
             const el = children[i];
             const newClass = cell.cssClass ? `tile ${cell.cssClass}` : 'tile';
 
-            // Only touch DOM if changed
             if (el.className !== newClass) {
                 el.className = newClass;
             }
@@ -243,7 +229,6 @@ export class Window_PartyPanel extends Window_Base {
             props: { className: 'party-grid', id: 'party-grid' }
         });
 
-        // Summoner Section (Placed after party-grid to be at the bottom/third row)
         UI.build(this.content, {
             type: 'panel',
             props: { id: 'summoner-slot', className: 'summoner-slot', style: { marginTop: '4px', borderTop: '1px solid var(--bezel-shadow)', paddingTop: '4px' } }
@@ -252,48 +237,43 @@ export class Window_PartyPanel extends Window_Base {
         this.summonerSlotEl = this.content.querySelector("#summoner-slot");
     }
 
-    updateParty(party, onInspect, context = null) {
+    // Accepts Party View Model containing { slots: [...] }
+    updateParty(partyView, onInspect) {
         this.partyGridEl.innerHTML = "";
-        // Render slots 0-3 (Active Party)
-        party.slots.slice(0, 4).forEach((member, index) => {
-            let evolutionStatus = null;
-            if (member && context) {
-                const statusObj = ProgressionSystem.getEvolutionStatus(member, context.inventory, context.floorDepth, context.gold);
-                if (statusObj.status !== 'NONE') {
-                    evolutionStatus = statusObj.status;
-                }
-            }
 
-            // createPartySlot is still imperative but permitted for now as utility
-            const slot = createPartySlot(member, index, {
+        // Render slots 0-3 (Active Party)
+        partyView.slots.slice(0, 4).forEach((memberView, index) => {
+            const slot = createPartySlot(memberView, index, {
                 onClick: onInspect,
                 testId: `party-slot-${index}`,
-                evolutionStatus: evolutionStatus
+                evolutionStatus: memberView ? memberView.evolutionStatus : undefined
             });
-            if (member) {
+            if (memberView) {
                 const gaugeFill = slot.querySelector('.hp-fill');
                 if (gaugeFill) {
-                    const startHp = this.prevHpMap.has(member) ? this.prevHpMap.get(member) : member.hp;
-                    gaugeFill.style.width = `${Math.max(0, (startHp / member.maxHp) * 100)}%`;
+                    const startHp = this.prevHpMap.has(memberView.source) ? this.prevHpMap.get(memberView.source) : memberView.hp;
+                    gaugeFill.style.width = `${Math.max(0, (startHp / memberView.maxHp) * 100)}%`;
                     this.animateGauge(
                         gaugeFill,
                         startHp,
-                        member.hp,
-                        member.maxHp,
+                        memberView.hp,
+                        memberView.maxHp,
                         500
                     );
                 }
-                this.prevHpMap.set(member, member.hp);
+                if (memberView.source) {
+                    this.prevHpMap.set(memberView.source, memberView.hp);
+                }
             }
             this.partyGridEl.appendChild(slot);
         });
 
         // Render Summoner (Slot 4)
         this.summonerSlotEl.innerHTML = "";
-        const summoner = party.slots[4];
-        if (summoner) {
-             const slot = createCommanderSlot(summoner, {
-                 onClick: () => onInspect(summoner, 'summoner')
+        const summonerView = partyView.slots[4];
+        if (summonerView) {
+             const slot = createCommanderSlot(summonerView, {
+                 onClick: () => onInspect(summonerView.source, 'summoner')
              });
              this.summonerSlotEl.appendChild(slot);
         }
@@ -357,8 +337,6 @@ export class Window_LogPanel extends Window_Base {
 
 /**
  * @class Window_Desktop
- * @description Manages the main static game layout as the root window.
- * @extends Window_Base
  */
 export class Window_Desktop extends Window_Base {
     constructor() {
@@ -471,8 +449,8 @@ export class Window_Desktop extends Window_Base {
         this.stackNav.updateCardList(floors, currentIndex, maxReachedIndex, onSelect);
     }
 
-    updateParty(party, onInspect, context = null) {
-        this.partyPanel.updateParty(party, onInspect, context);
+    updateParty(partyView, onInspect) {
+        this.partyPanel.updateParty(partyView, onInspect);
     }
 
     logMessage(msg, priority = 'normal') {

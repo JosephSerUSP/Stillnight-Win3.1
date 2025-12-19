@@ -1,8 +1,6 @@
 import { Window_Base } from "./base.js";
 import { createBattlerNameLabel, renderElements, createInteractiveLabel, createGauge } from "./utils.js";
 import { UI } from "./builder.js";
-import { evaluateFormula } from "../../core/utils.js";
-import { ProgressionSystem } from "../../managers/progression.js";
 
 /**
  * @class Window_Inspect
@@ -53,28 +51,24 @@ export class Window_Inspect extends Window_Base {
     this.btnOk = this.addButton("OK", () => this.onUserClose());
   }
 
-  setup(member, context, dataManager, callbacks) {
-      this.member = member;
+  // Expects view model
+  setup(memberView, callbacks) {
+      this.member = memberView; // Actually view model
       this.callbacks = callbacks || {};
 
       // Update Sprite
-      const spriteKey = member.spriteKey || 'pixie';
+      const spriteKey = memberView.spriteKey || 'pixie';
       this.spriteEl.style.backgroundImage = `url('assets/portraits/${spriteKey}.png')`;
 
       // Clear fields
       this.fieldsContainer.innerHTML = "";
 
       // 1. Header (Name + Level + Icons)
-      const floorDepth = context.floorDepth || 1;
-      const gold = context.gold || 0;
-      const inventory = context.inventory || [];
-      const evoStatus = ProgressionSystem.getEvolutionStatus(member, inventory, floorDepth, gold);
-
       const headerRow = document.createElement("div");
       headerRow.className = "inspect-header";
       headerRow.style.marginBottom = "8px";
 
-      const nameLabel = createBattlerNameLabel(member, { evolutionStatus: evoStatus.status });
+      const nameLabel = createBattlerNameLabel(memberView, { evolutionStatus: memberView.evolutionStatus });
       nameLabel.style.fontSize = "1.2em";
       headerRow.appendChild(nameLabel);
       this.fieldsContainer.appendChild(headerRow);
@@ -115,33 +109,32 @@ export class Window_Inspect extends Window_Base {
       hpContainer.style.alignItems = "center";
 
       const hpText = document.createElement("span");
-      hpText.textContent = `${member.hp}/${member.maxHp}`;
+      hpText.textContent = `${memberView.hp}/${memberView.maxHp}`;
       hpText.style.marginRight = "6px";
       hpText.style.fontSize = "10px";
       hpText.style.minWidth = "50px";
 
       const hpGauge = createGauge({ height: "8px", color: "var(--gauge-hp)", width: "100%" });
-      hpGauge.fill.style.width = `${Math.max(0, (member.hp / member.maxHp) * 100)}%`;
+      hpGauge.fill.style.width = `${Math.max(0, (memberView.hp / memberView.maxHp) * 100)}%`;
 
       hpContainer.appendChild(hpText);
       hpContainer.appendChild(hpGauge.container);
       addRow("HP", hpContainer);
 
       // XP Bar
-      const xpNeeded = ProgressionSystem.xpNeeded(member.level, member.expGrowth);
       const xpContainer = document.createElement("div");
       xpContainer.style.width = "100%";
       xpContainer.style.display = "flex";
       xpContainer.style.alignItems = "center";
 
       const xpText = document.createElement("span");
-      xpText.textContent = `${member.xp || 0}/${xpNeeded}`;
+      xpText.textContent = `${memberView.xp || 0}/${memberView.xpNeeded}`;
       xpText.style.marginRight = "6px";
       xpText.style.fontSize = "10px";
       xpText.style.minWidth = "50px";
 
       const xpGauge = createGauge({ height: "6px", color: "#60a0ff", bgColor: "#333", width: "100%" });
-      const xpPercent = xpNeeded > 0 ? ((member.xp || 0) / xpNeeded) * 100 : 0;
+      const xpPercent = memberView.xpPercent;
       xpGauge.fill.style.width = `${Math.min(100, Math.max(0, xpPercent))}%`;
 
       xpContainer.appendChild(xpText);
@@ -154,8 +147,8 @@ export class Window_Inspect extends Window_Base {
       elEquipContainer.style.alignItems = "center";
       elEquipContainer.style.gap = "10px";
 
-      if (member.elements && member.elements.length > 0) {
-          elEquipContainer.appendChild(renderElements(member.elements));
+      if (memberView.elements && memberView.elements.length > 0) {
+          elEquipContainer.appendChild(renderElements(memberView.elements));
       } else {
           const elSpan = document.createElement("span");
           elSpan.textContent = "—";
@@ -163,13 +156,21 @@ export class Window_Inspect extends Window_Base {
       }
 
       // Equipment Button
-      const equipText = member.equipmentItem ? member.equipmentItem.name : (member.baseEquipment || "Unequipped");
-      const equipBtn = document.createElement("div");
-      equipBtn.className = "win-btn";
-      equipBtn.textContent = equipText;
-      equipBtn.style.cursor = "pointer";
-      equipBtn.style.padding = "2px 6px";
-      equipBtn.style.fontSize = "0.9em";
+      let equipBtn;
+      if (memberView.equipmentItem) {
+          equipBtn = createInteractiveLabel(memberView.equipmentItem, 'item');
+          equipBtn.classList.add("win-btn");
+          equipBtn.style.padding = "2px 6px";
+          equipBtn.style.cursor = "pointer";
+      } else {
+          equipBtn = document.createElement("div");
+          equipBtn.className = "win-btn";
+          equipBtn.textContent = memberView.baseEquipment || "Unequipped";
+          equipBtn.style.padding = "2px 6px";
+          equipBtn.style.fontSize = "0.9em";
+          equipBtn.style.cursor = "pointer";
+      }
+
       equipBtn.onclick = () => {
           if (this.callbacks.onEquip) this.callbacks.onEquip();
       };
@@ -228,46 +229,17 @@ export class Window_Inspect extends Window_Base {
       };
 
       // Skills Column
-      const skillsCol = createListColumn("Skills", member.skills || [], (sId) => {
-            const skill = dataManager.skills[sId];
-            if (skill) {
-                let effectsText = "";
-                if (skill.effects && skill.effects.length > 0) {
-                    const descriptions = [];
-                    skill.effects.forEach(eff => {
-                         if (eff.type === 'hp_damage') {
-                             const val = Math.round(evaluateFormula(eff.formula, member));
-                             descriptions.push(`Deals ~${val} Damage`);
-                         } else if (eff.type === 'hp_heal') {
-                             const val = Math.round(evaluateFormula(eff.formula, member));
-                             descriptions.push(`Heals ~${val} HP`);
-                         } else if (eff.type === 'add_status') {
-                             const chance = Math.round((eff.chance || 1) * 100);
-                             descriptions.push(`${chance}% chance to add ${eff.status}`);
-                         }
-                    });
-                    if (descriptions.length > 0) {
-                        effectsText = descriptions.join(", ");
-                    }
-                }
-                let tooltipText = skill.description;
-                if (effectsText) {
-                    tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
-                }
-                return createInteractiveLabel(skill, 'skill', { tooltipText });
-            }
-            return sId;
+      const skillsCol = createListColumn("Skills", memberView.skills || [], (skillView) => {
+          // skillView is an object { name, tooltip, ... } prepared by selector
+          // createInteractiveLabel expects data (skill object) and type 'skill'
+          // It uses description or name for display.
+          // Since we passed tooltipText in options, it should use that.
+          return createInteractiveLabel(skillView, 'skill', { tooltipText: skillView.tooltip });
       });
 
       // Passives Column
-      const passivesCol = createListColumn("Passives", member.passives || [], (pData) => {
-           const code = pData.code || pData.id;
-           let def = null;
-           if (dataManager && dataManager.passives) {
-               def = Object.values(dataManager.passives).find(p => p.id === code || p.code === code);
-           }
-           if (!def) def = pData;
-           return createInteractiveLabel(def, 'passive');
+      const passivesCol = createListColumn("Passives", memberView.passives || [], (p) => {
+           return createInteractiveLabel(p, 'passive');
       });
 
       listsContainer.appendChild(skillsCol);
@@ -276,7 +248,7 @@ export class Window_Inspect extends Window_Base {
 
       // Flavor (No label)
       const flavorVal = document.createElement('div');
-      flavorVal.textContent = member.flavor || "—";
+      flavorVal.textContent = memberView.flavor || "—";
       flavorVal.style.fontStyle = "italic";
       flavorVal.style.fontSize = "0.9em";
       flavorVal.className = "text-muted";
@@ -284,17 +256,17 @@ export class Window_Inspect extends Window_Base {
       this.fieldsContainer.appendChild(flavorVal);
 
       // Update Buttons
-      const sacrificeValue = member.level * (member.hp + member.maxHp);
+      const sacrificeValue = memberView.sacrificeValue;
       this.btnSacrifice.textContent = `Sacrifice (${sacrificeValue}G)`;
       this.btnSacrifice.style.display = "block";
       this.btnSacrifice.onclick = () => {
           if (this.callbacks.onSacrifice) this.callbacks.onSacrifice(sacrificeValue);
       };
 
-      if (evoStatus.status === 'AVAILABLE') {
+      if (memberView.evolutionStatus === 'AVAILABLE') {
           this.btnEvolve.style.display = "inline-block";
           this.btnEvolve.onclick = () => {
-              if (this.callbacks.onEvolve) this.callbacks.onEvolve(evoStatus.evolution);
+              if (this.callbacks.onEvolve) this.callbacks.onEvolve(memberView.evolutionData);
           };
       } else {
           this.btnEvolve.style.display = "none";
@@ -332,12 +304,13 @@ export class Window_Evolution extends Window_Base {
     this.btnReturn = this.addButton("Return", () => this.onUserClose());
   }
 
-  setup(current, next, dataManager) {
-      this.renderPane(this.leftPane, current, dataManager);
-      this.renderPane(this.rightPane, next, dataManager);
+  // Accepts view models/objects for display.
+  setup(currentView, nextView) {
+      this.renderPane(this.leftPane, currentView);
+      this.renderPane(this.rightPane, nextView);
   }
 
-  renderPane(container, battler, dataManager) {
+  renderPane(container, battlerView) {
       container.innerHTML = "";
 
       const structure = {
@@ -348,7 +321,7 @@ export class Window_Evolution extends Window_Base {
                   type: 'panel',
                   props: {
                       className: 'inspect-sprite',
-                      style: { backgroundImage: `url('assets/portraits/${battler.spriteKey || "pixie"}.png')` }
+                      style: { backgroundImage: `url('assets/portraits/${battlerView.spriteKey || "pixie"}.png')` }
                   }
               },
               {
@@ -386,25 +359,27 @@ export class Window_Evolution extends Window_Base {
 
       // Name
       const nameVal = document.createElement('span');
-      nameVal.appendChild(createBattlerNameLabel(battler));
+      nameVal.appendChild(createBattlerNameLabel(battlerView));
       addRow('Name', nameVal);
 
       // Level
-      addRow('Level', battler.level);
+      addRow('Level', battlerView.level);
 
       // Role
-      addRow('Role', battler.role || "—");
+      addRow('Role', battlerView.role || "—");
 
       // HP
-      addRow('Max HP', `${battler.maxHp}`);
+      addRow('Max HP', `${battlerView.maxHp}`);
 
-      // Atk
-      addRow('Atk', `${battler.atk}`);
+      // Atk - Note: view model might not have atk unless we added it.
+      if (battlerView.atk !== undefined) {
+         addRow('Atk', `${battlerView.atk}`);
+      }
 
       // Element
       const elementVal = document.createElement('span');
-      if (battler.elements && battler.elements.length > 0) {
-          elementVal.appendChild(renderElements(battler.elements));
+      if (battlerView.elements && battlerView.elements.length > 0) {
+          elementVal.appendChild(renderElements(battlerView.elements));
       } else {
           elementVal.textContent = "—";
       }
@@ -461,41 +436,16 @@ export class Window_Evolution extends Window_Base {
       };
 
       // Skills Column
-      const skillsCol = createListColumn("Skills", battler.skills || [], (sId) => {
-            const skill = dataManager && dataManager.skills ? dataManager.skills[sId] : null;
-            if (skill) {
-                // Calculate dynamic effects
-                let effectsText = "";
-                if (skill.effects && skill.effects.length > 0) {
-                    const descriptions = [];
-                    skill.effects.forEach(eff => {
-                         if (eff.type === 'hp_damage') {
-                             const val = Math.round(evaluateFormula(eff.formula, battler));
-                             descriptions.push(`Deals ~${val} Damage`);
-                         } else if (eff.type === 'hp_heal') {
-                             const val = Math.round(evaluateFormula(eff.formula, battler));
-                             descriptions.push(`Heals ~${val} HP`);
-                         } else if (eff.type === 'add_status') {
-                             const chance = Math.round((eff.chance || 1) * 100);
-                             descriptions.push(`${chance}% chance to add ${eff.status}`);
-                         }
-                    });
-                    if (descriptions.length > 0) {
-                        effectsText = descriptions.join(", ");
-                    }
-                }
-
-                let tooltipText = skill.description;
-                if (effectsText) {
-                    tooltipText += `<br/><span style="color:#478174; font-size: 0.9em;">${effectsText}</span>`;
-                }
-                return createInteractiveLabel(skill, 'skill', { tooltipText });
+      const skillsCol = createListColumn("Skills", battlerView.skills || [], (skillView) => {
+            // skillView is now an object from selectBattlerDetails
+            if (skillView.name) {
+                return createInteractiveLabel(skillView, 'skill', { tooltipText: skillView.tooltip });
             }
-            return sId;
+            return skillView; // Fallback if string
       });
 
       // Passives Column
-      const passivesCol = createListColumn("Passives", battler.passives || [], (p) => {
+      const passivesCol = createListColumn("Passives", battlerView.passives || [], (p) => {
            return createInteractiveLabel(p, 'passive');
       });
 
@@ -505,7 +455,7 @@ export class Window_Evolution extends Window_Base {
 
       // Flavor
       const flavorVal = document.createElement('div');
-      flavorVal.textContent = battler.flavor || "—";
+      flavorVal.textContent = battlerView.flavor || "—";
       flavorVal.style.fontStyle = "italic";
       flavorVal.style.fontSize = "0.9em";
       flavorVal.className = "text-muted";

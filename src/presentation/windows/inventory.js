@@ -11,6 +11,7 @@ export class Window_Inventory extends Window_Selectable {
 
     this.content.style.overflowY = "auto";
     this.currentTab = 'consumable';
+    this.items = []; // List of item view models
 
     // 1. Structure
     const structure = {
@@ -51,27 +52,34 @@ export class Window_Inventory extends Window_Selectable {
 
     this.btnClose2 = this.addButton("Close", () => this.onUserClose());
 
-    this.party = null;
     this.onAction = null;
     this.onDiscard = null;
   }
 
-  setup(party, onAction, onDiscard) {
-    this.party = party;
+  // Accepts list of item view models
+  setup(items, onAction, onDiscard) {
+    this.items = items;
     this.onAction = onAction;
     this.onDiscard = onDiscard;
 
-    this.setHandler('use', (item) => {
-        if (this.onAction) this.onAction(item, 'use');
+    this.setHandler('use', (itemSource) => {
+        if (this.onAction) this.onAction(itemSource, 'use');
     });
-    this.setHandler('equip', (item) => {
-        if (this.onAction) this.onAction(item, 'equip');
+    this.setHandler('equip', (itemSource) => {
+        if (this.onAction) this.onAction(itemSource, 'equip');
     });
-    this.setHandler('discard', (item) => {
-        if (this.onDiscard) this.onDiscard(item);
+    this.setHandler('discard', (itemSource) => {
+        if (this.onDiscard) this.onDiscard(itemSource);
     });
 
     this.updateList();
+  }
+
+  // Called when inventory changes without full setup?
+  // Ideally scene calls setup again. But we can expose updateItems(items).
+  updateItems(items) {
+      this.items = items;
+      this.updateList();
   }
 
   switchTab(tab) {
@@ -82,13 +90,13 @@ export class Window_Inventory extends Window_Selectable {
   }
 
   updateList() {
-    let inventory = this.party.inventory;
+    let filtered = this.items;
     if (this.currentTab === 'consumable') {
-        inventory = inventory.filter(i => i.type !== 'equipment');
+        filtered = filtered.filter(i => i.type !== 'equipment');
     } else {
-        inventory = inventory.filter(i => i.type === 'equipment');
+        filtered = filtered.filter(i => i.type === 'equipment');
     }
-    this.setData(inventory);
+    this.setData(filtered);
   }
 
   refresh() {
@@ -98,32 +106,7 @@ export class Window_Inventory extends Window_Selectable {
       this.emptyMsgEl.textContent = this.currentTab === 'consumable' ? "No consumables." : "No equipment.";
     } else {
       this.emptyMsgEl.style.display = "none";
-      this._data.forEach((item, idx) => {
-
-        let tooltipText = item.description;
-        let effectsText = "";
-        const effects = [];
-        if (item.effects) {
-             item.effects.forEach(e => {
-                 const val = e.formula || e.value;
-                 if (e.type === 'hp') effects.push(`Restores ${val} HP`);
-                 if (e.type === 'maxHp') effects.push(`Max HP +${val}`);
-                 if (e.type === 'xp') effects.push(`Grants ${val} XP`);
-             });
-        }
-        if (item.traits) {
-             item.traits.forEach(t => {
-                 if (t.code === 'PARAM_PLUS') {
-                     if (t.dataId === 'atk') effects.push(`Damage +${t.value}`);
-                     if (t.dataId === 'maxHp') effects.push(`Max HP +${t.value}`);
-                 }
-             });
-        }
-        if (item.damageBonus) effects.push(`Damage +${item.damageBonus}`);
-
-        if (effects.length > 0) effectsText = effects.join(", ");
-        if (effectsText) tooltipText += `<br/><span class="text-functional" style="font-size: 0.9em;">${effectsText}</span>`;
-
+      this._data.forEach((itemView, idx) => {
         const rowStructure = {
             type: 'flex',
             props: {
@@ -168,11 +151,36 @@ export class Window_Inventory extends Window_Selectable {
         const row = UI.build(this.listEl, rowStructure);
         const labelWrapper = row.children[0];
 
-        const label = createInteractiveLabel(item, 'item', { tooltipText });
-        // Ensure the label component is inline-flex to align nicely
+        const label = createInteractiveLabel(itemView, 'item', {
+            tooltipText: itemView.tooltip
+        });
         label.style.display = 'inline-flex';
         labelWrapper.appendChild(label);
+
+        // Wire up buttons
+        const buttons = row.children[1];
+        const btnAction = buttons.children[0];
+        const btnDiscard = buttons.children[1];
+
+        btnAction.onclick = () => {
+            const action = this.currentTab === 'equipment' ? 'equip' : 'use';
+            this.callHandler(action, idx);
+        };
+
+        btnDiscard.onclick = () => {
+            this.callHandler('discard', idx);
+        };
       });
     }
+  }
+
+  callHandler(action, index) {
+      const item = this._data[index];
+      if (!item) return;
+      const handler = this._handlers[action];
+      if (handler) {
+          // Pass source if available, otherwise item (view)
+          handler(item.source || item);
+      }
   }
 }
