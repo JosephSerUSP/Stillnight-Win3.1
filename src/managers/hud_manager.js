@@ -13,7 +13,7 @@ import {
   Window_AudioPlayer,
   Window_Help,
   WindowLayer
-} from "../windows/index.js";
+} from "../presentation/windows/index.js";
 
 /**
  * @class HUDManager
@@ -21,7 +21,7 @@ import {
  */
 export class HUDManager {
     /**
-     * @param {import("../windows/index.js").WindowManager} windowManager
+     * @param {import("../presentation/windows/index.js").WindowManager} windowManager
      * @param {HTMLElement} gameContainer
      */
     constructor(windowManager, gameContainer) {

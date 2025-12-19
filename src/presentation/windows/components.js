@@ -1,5 +1,5 @@
-import { getIconStyle, elementToIconId, getPrimaryElements, generateEffectDescription, generateTraitDescription } from "../core/utils.js";
-import { tooltip } from "../core/tooltip.js";
+import { getIconStyle, elementToIconId, getPrimaryElements, generateEffectDescription, generateTraitDescription } from "../../core/utils.js";
+import { tooltip } from "../../core/tooltip.js";
 
 /**
  * Base helper to apply standard props to an element.

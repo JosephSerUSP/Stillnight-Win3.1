@@ -1,6 +1,6 @@
 import { DataManager, SceneManager, ThemeManager, ConfigManager, SoundManager } from "./managers/index.js";
-import { Scene_Boot, Scene_Map, Scene_Battle, Scene_Shop } from "./scenes/scenes.js";
-import { WindowManager } from "./windows/index.js";
+import { Scene_Boot, Scene_Map, Scene_Battle, Scene_Shop } from "./presentation/scenes/scenes.js";
+import { WindowManager } from "./presentation/windows/index.js";
 import { Game_Interpreter } from "./managers/interpreter.js";
 import { Game_Battler, Game_Party, Game_Map, Game_Event } from "./objects/objects.js";
 

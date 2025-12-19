@@ -1,14 +1,14 @@
 import { Scene_Base } from "./base.js";
 import { Scene_Battle } from "./battle.js";
 import { Scene_Shop } from "./shop.js";
-import { Game_Party, Game_Battler, Game_Action } from "../objects/objects.js";
-import { Game_Interpreter } from "../managers/interpreter.js";
-import { SoundManager, ConfigManager, ThemeManager } from "../managers/index.js";
-import { InputController } from "../managers/input_controller.js";
-import { HUDManager } from "../managers/hud_manager.js";
+import { Game_Party, Game_Battler, Game_Action } from "../../objects/objects.js";
+import { Game_Interpreter } from "../../managers/interpreter.js";
+import { SoundManager, ConfigManager, ThemeManager } from "../../managers/index.js";
+import { InputController } from "../../managers/input_controller.js";
+import { HUDManager } from "../../managers/hud_manager.js";
 import { Window_Desktop } from "../windows/index.js";
-import { ProgressionSystem } from "../managers/progression.js";
-import { ExplorationAdapter } from "../adapters/exploration_adapter.js";
+import { ProgressionSystem } from "../../managers/progression.js";
+import { ExplorationAdapter } from "../../adapters/exploration_adapter.js";
 
 /**
  * @class Scene_Map
@@ -19,8 +19,8 @@ import { ExplorationAdapter } from "../adapters/exploration_adapter.js";
 export class Scene_Map extends Scene_Base {
   /**
    * Creates a new Scene_Map.
-   * @param {import("../managers/index.js").DataManager} dataManager - The data manager.
-   * @param {import("../managers/index.js").SceneManager} sceneManager - The scene manager.
+   * @param {import("../../managers/index.js").DataManager} dataManager - The data manager.
+   * @param {import("../../managers/index.js").SceneManager} sceneManager - The scene manager.
    * @param {import("../windows/index.js").WindowManager} windowManager - The window manager.
    */
   constructor(dataManager, sceneManager, windowManager) {
@@ -501,7 +501,7 @@ export class Scene_Map extends Scene_Base {
   /**
    * Executes a map event.
    * @method executeEvent
-   * @param {import("../objects/objects.js").Game_Event} event - The event to execute.
+   * @param {import("../../objects/objects.js").Game_Event} event - The event to execute.
    */
   executeEvent(event) {
       if (event.type === 'BATTLE' || (event.type === 'enemy' || event.id === 'enemy')) {
@@ -581,7 +581,7 @@ export class Scene_Map extends Scene_Base {
   /**
    * Adds XP to a member and handles level-up logging.
    * @method gainXp
-   * @param {import("../objects/objects.js").Game_Battler} member - The member to give XP to.
+   * @param {import("../../objects/objects.js").Game_Battler} member - The member to give XP to.
    * @param {number} amount - The amount of XP.
    */
   gainXp(member, amount, silent = false) {
@@ -883,7 +883,7 @@ export class Scene_Map extends Scene_Base {
   /**
    * Opens the inspection window for a specific party member.
    * @method openInspect
-   * @param {import("../objects/objects.js").Game_Battler} member - The member to inspect.
+   * @param {import("../../objects/objects.js").Game_Battler} member - The member to inspect.
    * @param {number} index - The member's index.
    */
   openInspect(member, index) {
@@ -922,7 +922,7 @@ export class Scene_Map extends Scene_Base {
   /**
    * Sacrifices a party member for gold.
    * @method sacrificeMember
-   * @param {import("../objects/objects.js").Game_Battler} member - The member to sacrifice.
+   * @param {import("../../objects/objects.js").Game_Battler} member - The member to sacrifice.
    * @param {number} value - The gold value.
    */
   sacrificeMember(member, value) {
@@ -971,7 +971,7 @@ export class Scene_Map extends Scene_Base {
   /**
    * Opens the evolution preview window.
    * @method openEvolution
-   * @param {import("../objects/objects.js").Game_Battler} member - The member to evolve.
+   * @param {import("../../objects/objects.js").Game_Battler} member - The member to evolve.
    * @param {Object} evolutionData - The evolution definition.
    */
   openEvolution(member, evolutionData) {
@@ -996,8 +996,8 @@ export class Scene_Map extends Scene_Base {
   /**
    * Prompts to confirm evolution (and resource consumption).
    * @method confirmEvolution
-   * @param {import("../objects/objects.js").Game_Battler} member - The member to evolve.
-   * @param {import("../objects/objects.js").Game_Battler} nextBattler - The evolved form.
+   * @param {import("../../objects/objects.js").Game_Battler} member - The member to evolve.
+   * @param {import("../../objects/objects.js").Game_Battler} nextBattler - The evolved form.
    * @param {Object} evolutionData - The evolution definition.
    */
   confirmEvolution(member, nextBattler, evolutionData) {
@@ -1029,8 +1029,8 @@ export class Scene_Map extends Scene_Base {
   /**
    * Executes the evolution, updating the party and consuming items.
    * @method executeEvolution
-   * @param {import("../objects/objects.js").Game_Battler} member - The member to evolve.
-   * @param {import("../objects/objects.js").Game_Battler} nextBattler - The evolved form.
+   * @param {import("../../objects/objects.js").Game_Battler} member - The member to evolve.
+   * @param {import("../../objects/objects.js").Game_Battler} nextBattler - The evolved form.
    * @param {Object} evolutionData - The evolution definition.
    */
   executeEvolution(member, nextBattler, evolutionData) {
@@ -1068,7 +1068,7 @@ export class Scene_Map extends Scene_Base {
   /**
    * Equips an item to a member, handling swaps if necessary.
    * @method equipItem
-   * @param {import("../objects/objects.js").Game_Battler} member - The member.
+   * @param {import("../../objects/objects.js").Game_Battler} member - The member.
    * @param {Object} item - The item to equip.
    */
   equipItem(member, item) {

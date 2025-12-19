@@ -1,6 +1,6 @@
 import { Window_Base } from "./base.js";
 import { createPartySlot, createCommanderSlot } from "./utils.js";
-import { ProgressionSystem } from "../managers/progression.js";
+import { ProgressionSystem } from "../../managers/progression.js";
 import { UI } from "./builder.js";
 
 /**

@@ -1,6 +1,6 @@
 import { Scene_Base } from "./base.js";
 import { Scene_Map } from "./map.js";
-import { ThemeManager } from "../managers/index.js";
+import { ThemeManager } from "../../managers/index.js";
 
 /**
  * @class Scene_Boot
@@ -10,8 +10,8 @@ import { ThemeManager } from "../managers/index.js";
 export class Scene_Boot extends Scene_Base {
     /**
      * Creates a new Scene_Boot.
-     * @param {import("../managers/index.js").DataManager} dataManager - The data manager instance.
-     * @param {import("../managers/index.js").SceneManager} sceneManager - The scene manager instance.
+     * @param {import("../../managers/index.js").DataManager} dataManager - The data manager instance.
+     * @param {import("../../managers/index.js").SceneManager} sceneManager - The scene manager instance.
      * @param {import("../windows/index.js").WindowManager} windowManager - The window manager instance.
      */
     constructor(dataManager, sceneManager, windowManager) {

@@ -1,8 +1,7 @@
 import { Window_Base } from "./base.js";
 import { createToggleSwitch, createBattleUnitSlot, formatHpGaugeText } from "./utils.js";
-import { getPrimaryElements, elementToAscii } from "../core/utils.js";
+import { getPrimaryElements, elementToAscii } from "../../core/utils.js";
 import { UI } from "./builder.js";
-import { ProgressionSystem } from "../managers/progression.js";
 
 const GAUGE_LENGTH_STANDARD = 15;
 const GAUGE_LENGTH_SUMMONER = 40;
@@ -14,6 +13,9 @@ export class Window_Battle extends Window_Base {
   constructor() {
     // Increased size to 600x480 to fit the summoner and new layout
     super('center', 'center', 600, 480, { title: "Battle – Stillnight" });
+
+    // Store for context lookups
+    this.screenData = null;
 
     // 1. Content: Terminal with Viewport and Log
     const contentStructure = {
@@ -144,7 +146,8 @@ export class Window_Battle extends Window_Base {
     });
   }
 
-  refresh(battlers, partySlots, partyInstance, battleManager) {
+  refresh(screenData) {
+    this.screenData = screenData;
     this.viewportEl.innerHTML = "";
 
     UI.build(this.viewportEl, {
@@ -155,8 +158,10 @@ export class Window_Battle extends Window_Base {
           }
     });
 
+    const { enemies, party, summoner } = screenData;
+
     const render = (b, idx, type) => {
-        if (!b || b.hidden) return;
+        if (!b) return;
 
         const isEnemy = type === 'enemy';
         const isSummoner = type === 'summoner';
@@ -189,46 +194,27 @@ export class Window_Battle extends Window_Base {
             battlerId = `battler-party-${idx}`;
         }
 
-        let evoStatus = 'NONE';
-        if (!isEnemy && partyInstance) {
-            const status = ProgressionSystem.getEvolutionStatus(b, partyInstance.inventory || [], 1, partyInstance.gold || 0); // floorDepth 1 default
-            evoStatus = status.status;
-        }
-
-        let actionPreview = null;
-        if (!isSummoner && battleManager) {
-            actionPreview = battleManager.getPlannedAction(b);
-            if (actionPreview && actionPreview.target) {
-                // Determine team relationship
-                const isActorEnemy = isEnemy;
-                const isTargetEnemy = battleManager.enemies.includes(actionPreview.target);
-
-                // Opposite team if one is enemy and other is not
-                actionPreview.isOppositeTeam = (isActorEnemy !== isTargetEnemy);
-            }
-        }
-
         const slot = createBattleUnitSlot(b, {
             id: battlerId,
             top,
-            left: isSummoner ? undefined : left, // Let width: 100% handle summoner if centered
+            left: isSummoner ? undefined : left,
             width,
             textAlign,
             nameElementId: battlerId + '-name',
-            evolutionStatus: evoStatus,
+            evolutionStatus: b.evolutionStatus,
             showMp,
             gaugeLength,
-            actionPreview
+            actionPreview: b.actionPreview
         });
 
         this.viewportEl.appendChild(slot);
     };
 
-    battlers.forEach((e, idx) => render(e, idx, 'enemy'));
-    partySlots.forEach((p, idx) => render(p, idx, 'party'));
+    enemies.forEach((e, idx) => render(e, idx, 'enemy'));
+    party.forEach((p, idx) => render(p, idx, 'party'));
 
-    if (partyInstance && partyInstance.slots[4]) {
-        render(partyInstance.slots[4], 4, 'summoner');
+    if (summoner) {
+        render(summoner, 4, 'summoner');
     }
   }
 
@@ -254,27 +240,31 @@ export class Window_Battle extends Window_Base {
       return el.querySelector('.battler-mp');
   }
 
-  _getBattlerContext(battler, enemies, partySlots) {
-      const enemyIndex = enemies.indexOf(battler);
+  _getBattlerContext(battler) {
+      if (!this.screenData) return null;
+      const { enemies, party, summoner } = this.screenData;
+
+      const enemyIndex = enemies.findIndex(e => e && e.source === battler);
       if (enemyIndex !== -1) return { index: enemyIndex, isEnemy: true };
 
-      const partyIndex = partySlots.indexOf(battler);
+      const partyIndex = party.findIndex(p => p && p.source === battler);
       if (partyIndex !== -1) return { index: partyIndex, isEnemy: false };
 
-      if (battler.role === 'Summoner') return { index: 'summoner', isEnemy: false, isSummoner: true };
+      if (summoner && summoner.source === battler) return { index: 'summoner', isEnemy: false, isSummoner: true };
+
       return null;
   }
 
   /**
    * Animates the HP gauge of a battler.
    */
-  animateBattleHpGauge(battler, startHp, endHp, enemies, partySlots) {
+  animateBattleHpGauge(battler, startHp, endHp) {
     return new Promise((resolve) => {
       const duration = 500;
       const interval = 30;
       let elapsed = 0;
 
-      const ctx = this._getBattlerContext(battler, enemies, partySlots);
+      const ctx = this._getBattlerContext(battler);
 
       const interpolator = () => {
         elapsed += interval;
@@ -303,8 +293,8 @@ export class Window_Battle extends Window_Base {
   /**
    * Applies a visual animation class to a battler's DOM element.
    */
-  animateBattler(battler, animationType, enemies, partySlots) {
-    const ctx = this._getBattlerContext(battler, enemies, partySlots);
+  animateBattler(battler, animationType) {
+    const ctx = this._getBattlerContext(battler);
     if (!ctx) return;
 
     const battlerElement = this.getBattlerElement(ctx.index, ctx.isEnemy);
@@ -336,14 +326,14 @@ export class Window_Battle extends Window_Base {
   /**
    * Animates the battler's name (e.g. text scramble effect).
    */
-  animateBattlerName(battler, enemies, partySlots) {
+  animateBattlerName(battler) {
     return new Promise((resolve) => {
       const originalName = battler.name;
       let frame = 0;
       const maxFrames = 15;
       const interval = 50;
 
-      const ctx = this._getBattlerContext(battler, enemies, partySlots);
+      const ctx = this._getBattlerContext(battler);
       const battlerEl = ctx ? this.getBattlerElement(ctx.index, ctx.isEnemy) : null;
 
       let targetEl = null;
@@ -390,7 +380,7 @@ export class Window_Battle extends Window_Base {
   /**
    * Plays a data-driven animation on a target.
    */
-  playAnimation(target, animationId, dataManager, enemies, partySlots) {
+  playAnimation(target, animationId, dataManager) {
        return new Promise((resolve) => {
            if (!dataManager.animations || !dataManager.animations[animationId]) {
                resolve();
@@ -398,7 +388,7 @@ export class Window_Battle extends Window_Base {
            }
 
            const anim = dataManager.animations[animationId];
-           const ctx = this._getBattlerContext(target, enemies, partySlots);
+           const ctx = this._getBattlerContext(target);
            if (!ctx) { resolve(); return; }
 
            const battlerElement = this.getBattlerElement(ctx.index, ctx.isEnemy);
@@ -424,7 +414,7 @@ export class Window_Battle extends Window_Base {
                        }
                    }
                    if (battlerElement) {
-                       this.animateBattler(target, 'flash', enemies, partySlots);
+                       this.animateBattler(target, 'flash');
                        await delay(200);
                        target.hidden = true;
                    }
@@ -516,12 +506,10 @@ export class Window_Battle extends Window_Base {
 
   /**
    * Animates the consumption of the action preview text.
-   * "Firaga -->" becomes "Firag -->", "Fira -->", etc.
-   * Then flashes the target name, then clears the preview.
    */
-  animateActionConsumption(battler, enemies, partySlots) {
+  animateActionConsumption(battler) {
     return new Promise((resolve) => {
-      const ctx = this._getBattlerContext(battler, enemies, partySlots);
+      const ctx = this._getBattlerContext(battler);
       if (!ctx) {
         resolve();
         return;

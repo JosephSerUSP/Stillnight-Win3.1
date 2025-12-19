@@ -1,6 +1,6 @@
 import { Window_Base } from "./base.js";
-import { SoundManager } from "../managers/index.js";
-import { elementToAscii } from "../core/utils.js";
+import { SoundManager } from "../../managers/index.js";
+import { elementToAscii } from "../../core/utils.js";
 import { createGauge } from "./utils.js";
 
 /**

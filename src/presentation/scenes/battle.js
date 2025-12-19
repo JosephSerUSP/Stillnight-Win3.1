@@ -1,11 +1,12 @@
 import { Scene_Base } from "./base.js";
-import { Game_Battler, Game_Action } from "../objects/objects.js";
-import { randInt, pickWeighted, probabilisticRound, random } from "../core/utils.js";
-import { SoundManager, ConfigManager } from "../managers/index.js";
+import { Game_Battler, Game_Action } from "../../objects/objects.js";
+import { randInt, pickWeighted, probabilisticRound, random } from "../../core/utils.js";
+import { SoundManager, ConfigManager } from "../../managers/index.js";
 import { Window_Battle, Window_Victory } from "../windows/index.js";
-import { BattleSystem } from "../engine/systems/battle.js";
-import { BattleAdapter } from "../adapters/battle_adapter.js";
-import { Registry } from "../engine/data/registry.js";
+import { BattleSystem } from "../../engine/systems/battle.js";
+import { BattleAdapter } from "../../adapters/battle_adapter.js";
+import { Registry } from "../../engine/data/registry.js";
+import { selectBattleScreen } from "../selectors/battle.js";
 
 /**
  * @class Scene_Battle
@@ -341,8 +342,8 @@ export class Scene_Battle extends Scene_Base {
    */
   renderBattleAscii() {
     if (!this.battleManager) return;
-    const enemies = this.battleManager.enemies;
-    this.battleWindow.refresh(enemies, this.party.slots.slice(0, 4), this.party, this.battleManager);
+    const screenData = selectBattleScreen(this.party, this.battleManager.enemies, this.battleManager);
+    this.battleWindow.refresh(screenData);
   }
 
   /**
@@ -376,7 +377,7 @@ export class Scene_Battle extends Scene_Base {
 
         if (action) {
              // Animate action preview consumption before execution
-             await this.battleWindow.animateActionConsumption(battlerContext.battler, this.battleManager.enemies, this.party.slots.slice(0,4));
+             await this.battleWindow.animateActionConsumption(battlerContext.battler);
 
              const actionEvents = this.battleManager.executeAction(action);
              await this.animateEvents(actionEvents);
@@ -512,7 +513,7 @@ export class Scene_Battle extends Scene_Base {
             const event = events[i];
 
             if (event.battler && event.battler.name) {
-                await this.battleWindow.animateBattlerName(event.battler, this.battleManager.enemies, this.party.slots.slice(0,4));
+                await this.battleWindow.animateBattlerName(event.battler);
             }
 
             if (event.type === 'use_skill' || event.type === 'use_item') {
@@ -537,12 +538,6 @@ export class Scene_Battle extends Scene_Base {
                      this.battleWindow.appendToLastLog(trimmedMsg, { priority });
                      appendNextResult = false; // Only append the first one
                 } else {
-                     // If it's a dependent result but not appended (e.g. multi-target), use priority 'low'
-                     // Also trim leading spaces for cleaner log if not appending?
-                     // Existing code had leading spaces. If we print on new line, leading spaces provide indentation.
-                     // The user asked for "low priority".
-                     // If we keep leading spaces, it looks indented.
-                     // Let's keep spaces if we don't append.
                      this.battleWindow.appendLog(isDependentResult && priority === 'low' ? trimmedMsg : event.msg, { priority });
                 }
             }
@@ -560,7 +555,7 @@ export class Scene_Battle extends Scene_Base {
             }
 
             if (event.type === 'damage' && event.target) {
-                this.battleWindow.animateBattler(event.target, 'flash', this.battleManager.enemies, this.party.slots.slice(0,4));
+                this.battleWindow.animateBattler(event.target, 'flash');
 
                 if (event.isCritical) {
                     this.battleWindow.logEl.classList.add('flash');
@@ -570,24 +565,24 @@ export class Scene_Battle extends Scene_Base {
                     SoundManager.play('UI_ERROR');
                 }
 
-                await this.battleWindow.animateBattleHpGauge(event.target, targetOldHp, targetNewHp, this.battleManager.enemies, this.party.slots.slice(0,4));
+                await this.battleWindow.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
 
                 if (targetNewHp <= 0) {
-                     await this.battleWindow.playAnimation(event.target, 'death', this.dataManager, this.battleManager.enemies, this.party.slots.slice(0,4));
+                     await this.battleWindow.playAnimation(event.target, 'death', this.dataManager);
                      this.renderBattleAscii();
                 }
 
             } else if (event.type === 'heal' && event.target) {
                 if (event.animation) {
-                     await this.battleWindow.playAnimation(event.target, event.animation, this.dataManager, this.battleManager.enemies, this.party.slots.slice(0,4));
+                     await this.battleWindow.playAnimation(event.target, event.animation, this.dataManager);
                 }
-                await this.battleWindow.animateBattleHpGauge(event.target, targetOldHp, targetNewHp, this.battleManager.enemies, this.party.slots.slice(0,4));
+                await this.battleWindow.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
 
             } else if (event.type === 'passive_drain' || event.type === 'hp_drain') {
-                this.battleWindow.animateBattler(event.target, 'flash', this.battleManager.enemies, this.party.slots.slice(0,4));
-                await this.battleWindow.animateBattleHpGauge(event.target, targetOldHp, targetNewHp, this.battleManager.enemies, this.party.slots.slice(0,4));
+                this.battleWindow.animateBattler(event.target, 'flash');
+                await this.battleWindow.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
                 if (event.source) {
-                    await this.battleWindow.animateBattleHpGauge(event.source, event.hpBeforeSource, event.hpAfterSource, this.battleManager.enemies, this.party.slots.slice(0,4));
+                    await this.battleWindow.animateBattleHpGauge(event.source, event.hpBeforeSource, event.hpAfterSource);
                 }
 
             } else if (event.type === 'end') {

@@ -1,8 +1,8 @@
 import { Window_Base } from "./base.js";
 import { createBattlerNameLabel, renderElements, createInteractiveLabel, createGauge } from "./utils.js";
 import { UI } from "./builder.js";
-import { evaluateFormula } from "../core/utils.js";
-import { ProgressionSystem } from "../managers/progression.js";
+import { evaluateFormula } from "../../core/utils.js";
+import { ProgressionSystem } from "../../managers/progression.js";
 
 /**
  * @class Window_Inspect

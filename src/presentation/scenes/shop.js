@@ -1,6 +1,6 @@
 import { Scene_Base } from "./base.js";
 import { Window_Shop } from "../windows/index.js";
-import { SoundManager } from "../managers/index.js";
+import { SoundManager } from "../../managers/index.js";
 
 /**
  * @class Scene_Shop
@@ -10,10 +10,10 @@ import { SoundManager } from "../managers/index.js";
 export class Scene_Shop extends Scene_Base {
     /**
      * Creates a new Scene_Shop.
-     * @param {import("../managers/index.js").DataManager} dataManager - The data manager.
-     * @param {import("../managers/index.js").SceneManager} sceneManager - The scene manager.
+     * @param {import("../../managers/index.js").DataManager} dataManager - The data manager.
+     * @param {import("../../managers/index.js").SceneManager} sceneManager - The scene manager.
      * @param {import("../windows/index.js").WindowManager} windowManager - The window manager.
-     * @param {import("../objects/objects.js").Game_Party} party - The player's party.
+     * @param {import("../../objects/objects.js").Game_Party} party - The player's party.
      * @param {import("../windows/index.js").WindowLayer} windowLayer - The window layer to attach the shop window to.
      */
     constructor(dataManager, sceneManager, windowManager, party, windowLayer) {

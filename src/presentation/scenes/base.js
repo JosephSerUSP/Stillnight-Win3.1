@@ -6,13 +6,13 @@
 export class Scene_Base {
   /**
    * Creates a new Scene_Base.
-   * @param {import("../managers/index.js").DataManager} dataManager - The data manager instance.
+   * @param {import("../../managers/index.js").DataManager} dataManager - The data manager instance.
    * @param {import("../windows/index.js").WindowManager} windowManager - The window manager instance.
    */
   constructor(dataManager, windowManager) {
     /**
      * The global data manager.
-     * @type {import("../managers/index.js").DataManager}
+     * @type {import("../../managers/index.js").DataManager}
      */
     this.dataManager = dataManager;
 
