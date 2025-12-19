@@ -1,16 +1,16 @@
-import { Game_Battler } from "../objects/objects.js";
-import { randInt, pickWeighted, evaluateFormula, random } from "../core/utils.js";
+import { InterpreterSystem } from "../engine/systems/interpreter.js";
+import { randInt, pickWeighted, random } from "../core/utils.js";
 import { SoundManager } from "../managers/index.js";
 import {
   createInteractiveLabel,
-  createBattlerNameLabel,
-  renderCreatureInfo,
-  renderElements
+  renderCreatureInfo
 } from "../windows/index.js";
+import { Game_Battler } from "../objects/objects.js";
 
 /**
  * @class Game_Interpreter
- * @description Handles event execution logic decoupled from Scene_Map.
+ * @description Adapter that bridges Scene_Map and InterpreterSystem.
+ * Replaces the old Logic-heavy Game_Interpreter.
  */
 export class Game_Interpreter {
     /**
@@ -19,36 +19,8 @@ export class Game_Interpreter {
      */
     constructor(sceneContext) {
         this.scene = sceneContext;
+        this.system = new InterpreterSystem();
         this._onRecruitCallback = null;
-        this._initHandlers();
-    }
-
-    _initHandlers() {
-        this._handlers = {
-            'BATTLE': (action, event) => this.scene.startBattle(event.x, event.y),
-            'SHOP': () => this.scene.startShop(),
-            'SHRINE': () => {
-                this.scene.logMessage("[Shrine] You encounter a shrine.");
-                this.openShrineEvent();
-            },
-            'RECRUIT': () => this.openRecruitEvent(),
-            'NPC_DIALOGUE': (action) => {
-                this.openNpcEvent(action.id);
-                this.scene.updateAll();
-            },
-            'DESCEND': () => {
-                this.descendStairs();
-                SoundManager.play('STAIRS');
-            },
-            'HEAL_PARTY': () => this.healParty(),
-            'MESSAGE': (action) => {
-                if (action.text) this.scene.logMessage(action.text);
-                this.scene.updateAll();
-            },
-            'TREASURE': () => this.openTreasureEvent(),
-            'TRAP_TRIGGER': (action) => this.triggerTrap(action),
-            'BREAKABLE_WALL': (action, event) => this.triggerBreakableWall(action, event)
-        };
     }
 
     get dataManager() { return this.scene.dataManager; }
@@ -58,78 +30,92 @@ export class Game_Interpreter {
     get map() { return this.scene.map; }
 
     /**
-     * Executes a map event action.
+     * Executes a map event action using the system.
      * @param {Object} action - The action object.
      * @param {import("../objects/objects.js").Game_Event} event - The source event.
      */
     execute(action, event) {
-        const handler = this._handlers[action.type];
-        if (handler) {
-            handler(action, event);
-        } else {
-            console.warn(`Game_Interpreter: Unknown action type '${action.type}'`, action);
-        }
-    }
+        // Construct a session object for the system
+        const session = {
+            party: this.party,
+            map: this.map, // Adapter, might need unwrapping or system handles it
+            // Add other needed session state
+        };
 
-    triggerBreakableWall(action, event) {
-        // Initialize HP if not present (stored in the event instance, not the data def)
-        if (event.hp === undefined) {
-             event.hp = action.hp || 3;
-        }
-
-        event.hp--;
-
-        if (event.hp > 0) {
-            this.scene.logMessage(action.hitMessage || "The wall shudders under your touch.");
-            this.scene.setStatus("It seems weak...");
-            SoundManager.play('UI_SELECT'); // or a thud sound
-            this.scene.updateAll();
-        } else {
-            this.scene.logMessage(action.breakMessage || "The wall crumbles away!");
-            this.scene.setStatus("Path opened.");
-            SoundManager.play('DAMAGE'); // Crumble sound
-
-            // Remove the event
-            this.map.removeEvent(this.map.floorIndex, event.x, event.y);
-
-            // Change the tile to floor
-            const floor = this.map.floors[this.map.floorIndex];
-            floor.tiles[event.y][event.x] = '.';
-
-            // Reveal if needed (auto-reveal check handles it on next move, but we can do it here)
-            floor.visited[event.y][event.x] = true;
-
-            // Update grid
-            this.scene.updateGrid();
-            this.scene.updateAll();
-        }
+        const events = this.system.executeAction(action, event, session);
+        this.processSystemEvents(events);
     }
 
     /**
-     * Fully heals the party.
+     * Processes events returned by InterpreterSystem.
+     * @param {Array} events
      */
-    healParty() {
-        this.party.members.forEach((m) => (m.hp = m.maxHp));
-        this.scene.logMessage("[Recover] A soft glow restores your party.");
-        this.party.members.forEach((member) => {
-            const xpBonus = member.getPassiveValue("RECOVERY_XP_BONUS");
-            if (xpBonus > 0) {
-            this.scene.gainXp(member, xpBonus);
-            this.scene.logMessage(
-                `[Passive] ${member.name} gains ${xpBonus} bonus XP.`
-            );
+    processSystemEvents(events) {
+        for (const e of events) {
+            switch (e.type) {
+                case 'LOG':
+                    this.scene.logMessage(e.text);
+                    break;
+                case 'SET_STATUS':
+                    this.scene.setStatus(e.text);
+                    break;
+                case 'PLAY_SOUND':
+                    SoundManager.play(e.name);
+                    break;
+                case 'UPDATE_UI':
+                    this.scene.updateAll();
+                    break;
+                case 'GAIN_XP':
+                    this.scene.gainXp(e.member, e.amount);
+                    break;
+                case 'APPLY_MOVE_PASSIVES':
+                    this.scene.applyMovePassives();
+                    break;
+                case 'BATTLE_START':
+                    this.scene.startBattle(e.x, e.y);
+                    break;
+                case 'SHOP_START':
+                    this.scene.startShop();
+                    break;
+                case 'SHRINE_OPEN':
+                    this._openShrineEvent();
+                    break;
+                case 'RECRUIT_OPEN':
+                    this._openRecruitEvent(e.options);
+                    break;
+                case 'NPC_DIALOGUE_OPEN':
+                    this._openNpcEvent(e.id);
+                    break;
+                case 'DESCEND':
+                    this._descendStairs();
+                    break;
+                case 'TREASURE_OPEN':
+                    this._openTreasureEvent();
+                    break;
+                case 'TRAP_TRIGGER':
+                    this._triggerTrap(e.action);
+                    break;
+                case 'WALL_BROKEN':
+                    this._resolveBrokenWall(e.x, e.y);
+                    break;
+                default:
+                    console.warn(`InterpreterAdapter: Unhandled event type '${e.type}'`);
             }
-        });
-        this.scene.setStatus("Recovered HP.");
-        SoundManager.play('HEAL');
-        this.scene.applyMovePassives();
+        }
+    }
+
+    // --- Legacy Implementation Details (UI stuff) ---
+
+    _resolveBrokenWall(x, y) {
+        this.map.removeEvent(this.map.floorIndex, x, y);
+        const floor = this.map.floors[this.map.floorIndex];
+        floor.tiles[y][x] = '.';
+        floor.visited[y][x] = true;
+        this.scene.updateGrid();
         this.scene.updateAll();
     }
 
-    /**
-     * Handles descending to the next floor.
-     */
-    descendStairs() {
+    _descendStairs() {
         if (this.map.floorIndex + 1 >= this.map.floors.length) {
             this.scene.logMessage("[Floor] You find no further descent. The run ends here.");
             this.scene.runActive = false;
@@ -149,12 +135,11 @@ export class Game_Interpreter {
         this.scene.logMessage(`[Floor] You descend to: ${f.title}`);
         this.scene.logMessage(`[Floor] ${f.intro}`);
         this.scene.setStatus("Descending.");
-        SoundManager.play('STAIRS');
         this.scene.updateAll();
         this.scene.checkMusic();
     }
 
-    openShrineEvent() {
+    _openShrineEvent() {
         const scenarios = this.dataManager.events.filter(e => e.type === 'shrine_scenario');
         if (scenarios.length === 0) {
             this.scene.logMessage(this.dataManager.terms.shrine.silent);
@@ -165,13 +150,12 @@ export class Game_Interpreter {
         const choices = ev.choices.map(ch => ({
             label: ch.label,
             onClick: async () => {
-                // Disable all buttons to prevent spamming
                 const footer = this.scene.hudManager.eventWindow.footer;
                 const buttons = footer.querySelectorAll('button');
                 buttons.forEach(b => b.disabled = true);
 
                 this.scene.hudManager.eventWindow.appendLog(`> ${ch.label}`);
-                this.clearEventTile(); // Consume the shrine immediately
+                this.clearEventTile();
 
                 await this.applyEventEffect(ch.effect);
                 this.scene.hudManager.eventWindow.updateChoices([{
@@ -249,7 +233,7 @@ export class Game_Interpreter {
         this.scene.updateAll();
     }
 
-    triggerTrap(action) {
+    _triggerTrap(action) {
         this.scene.hudManager.eventWindow.show({
             title: "Trap!",
             description: action.message || "You triggered a trap!",
@@ -261,7 +245,6 @@ export class Game_Interpreter {
             }]
         });
 
-        // Ensure closing the window triggers the trap
         this.scene.hudManager.eventWindow.onUserClose = () => {
             this.resolveTrap(action);
         };
@@ -271,9 +254,7 @@ export class Game_Interpreter {
     }
 
     async resolveTrap(action) {
-        // Restore default close behavior to prevent loops
         this.scene.hudManager.eventWindow.onUserClose = this.closeEvent.bind(this);
-
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         try {
             const dmg = action.damage || 5;
@@ -299,7 +280,7 @@ export class Game_Interpreter {
         }
     }
 
-    openTreasureEvent() {
+    _openTreasureEvent() {
         const floor = this.map.floors[this.map.floorIndex];
         let possibleItems = floor.treasures || [];
 
@@ -352,7 +333,7 @@ export class Game_Interpreter {
         this.scene.updateAll();
     }
 
-    openRecruitEvent(options = {}) {
+    _openRecruitEvent(options = {}) {
         const { forcedId, cost: forcedCost, onRecruit } = options;
         this._onRecruitCallback = onRecruit;
 
@@ -362,14 +343,11 @@ export class Game_Interpreter {
         }
 
         if (!recruit) {
-            // Check for floor-specific recruit pool
             const floor = this.map.floors[this.map.floorIndex];
             if (floor && floor.recruits && floor.recruits.length > 0) {
                 const recruitId = floor.recruits[randInt(0, floor.recruits.length - 1)];
                 recruit = this.dataManager.actors.find(a => a.id === recruitId);
             }
-
-            // Fallback to global recruits
             if (!recruit) {
                 const availableCreatures = this.dataManager.actors.filter(creature => creature.isRecruitable);
                 if (availableCreatures.length === 0) {
@@ -425,7 +403,7 @@ export class Game_Interpreter {
         this.scene.setStatus("Exploration");
     }
 
-    openNpcEvent(npcId) {
+    _openNpcEvent(npcId) {
         const npc = this.dataManager.npcs.find(n => n.id === npcId);
         if (!npc) return;
 
