@@ -24,7 +24,7 @@ This document outlines the architectural refactor to create a single source of t
 *   loader + validators
 *   schemas (even lightweight) to fail loudly on broken content
 
-## Phase 0 — Lock behavior and make refactor safe (mandatory)
+## Phase 0 — Lock behavior and make refactor safe (mandatory) (Completed)
 **Goal:** You can change architecture without changing gameplay accidentally.
 
 *   **Deterministic RNG**: One RNG service used everywhere. Replace scattered `randInt` usage with `rng.nextInt()`.
@@ -35,7 +35,7 @@ This document outlines the architectural refactor to create a single source of t
     *   "Run one battle with seed X and assert event log matches snapshot".
     *   Exit criteria: You can run the harness and get identical results twice in a row.
 
-## Phase 1 — Create the New Engine skeleton + import bans
+## Phase 1 — Create the New Engine skeleton + import bans (Completed)
 **Goal:** Lay the new foundation without mixing.
 
 *   Add `src/engine/` with session, events, ports.
