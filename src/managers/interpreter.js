@@ -4,7 +4,7 @@ import { SoundManager } from "../managers/index.js";
 import {
   createInteractiveLabel,
   renderCreatureInfo
-} from "../windows/index.js";
+} from "../presentation/windows/index.js";
 import { Game_Battler } from "../objects/objects.js";
 
 /**

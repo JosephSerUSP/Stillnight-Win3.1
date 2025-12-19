@@ -1,6 +1,6 @@
 
 import { Game_Battler, Game_Party } from '../objects/objects.js';
-import { createBattlerNameLabel } from '../windows/index.js';
+import { createBattlerNameLabel } from '../presentation/windows/index.js';
 
 // Mock Data
 const mockActors = [

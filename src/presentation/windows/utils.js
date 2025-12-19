@@ -1,7 +1,7 @@
-import { getPrimaryElements, elementToAscii, getIconStyle, elementToIconId, evaluateFormula } from "../core/utils.js";
-import { tooltip } from "../core/tooltip.js";
+import { getPrimaryElements, elementToAscii, getIconStyle, elementToIconId, evaluateFormula } from "../../core/utils.js";
+import { tooltip } from "../../core/tooltip.js";
 import { Component_Icon, Component_ElementIcon, Component_Gauge, Component_InteractiveLabel, Component_Label } from "./components.js";
-import { ProgressionSystem } from "../managers/progression.js";
+import { ProgressionSystem } from "../../managers/progression.js";
 
 /**
  * Creates a DOM element representing a standard icon.
@@ -43,7 +43,7 @@ export function renderElements(elements) {
 
 /**
  * Creates a standardized label for a battler's name, including elemental icons and status indicators.
- * @param {import("../objects/objects.js").Game_Battler} battler - The battler.
+ * @param {import("../../objects/objects.js").Game_Battler} battler - The battler.
  * @param {Object} [options] - Configuration options.
  * @param {string} [options.evolutionStatus] - 'AVAILABLE', 'LOCKED', or 'NONE'.
  * @returns {HTMLElement} The container element.
@@ -115,7 +115,7 @@ export function formatHpGaugeText(current, max, length) {
 
 /**
  * Creates a standard battle unit display (Name + ASCII gauges).
- * @param {import("../objects/objects.js").Game_Battler} battler
+ * @param {import("../../objects/objects.js").Game_Battler} battler
  * @param {Object} options
  * @param {string} [options.id] - Element ID.
  * @param {number} [options.top]
@@ -227,7 +227,7 @@ export function createInteractiveLabel(data, type, options = {}) {
 
 /**
  * Draws standard battler gauges (HP, XP) for slot displays.
- * @param {import("../objects/objects.js").Game_Battler} battler
+ * @param {import("../../objects/objects.js").Game_Battler} battler
  */
 export function drawBattlerStats(battler) {
     const container = document.createElement("div");
@@ -264,7 +264,7 @@ export function drawBattlerStats(battler) {
 
 /**
  * Creates a Commander (Summoner) slot.
- * @param {import("../objects/objects.js").Game_Battler} summoner
+ * @param {import("../../objects/objects.js").Game_Battler} summoner
  * @param {Object} options
  */
 export function createCommanderSlot(summoner, options = {}) {
@@ -558,14 +558,14 @@ export function createReserveSlot(battler, index, options = {}) {
 /**
  * Helper to render creature info.
  * @param {HTMLElement} container - Target container.
- * @param {import("../objects/objects.js").Game_Battler} battler - The creature.
+ * @param {import("../../objects/objects.js").Game_Battler} battler - The creature.
  * @param {Object} [options] - Options for what to display.
  * @param {boolean} [options.showSkills=false]
  * @param {boolean} [options.showPassives=false]
  * @param {boolean} [options.showEquipment=false]
  * @param {boolean} [options.showFlavor=false]
  * @param {boolean} [options.showElement=false]
- * @param {import("../managers/index.js").DataManager} [options.dataManager] - Required for skills/passives.
+ * @param {import("../../managers/index.js").DataManager} [options.dataManager] - Required for skills/passives.
  */
 export function renderCreatureInfo(container, battler, options = {}) {
     container.innerHTML = "";

@@ -1,5 +1,5 @@
-import { Graphics } from "../core/utils.js";
-import { ConfigManager } from "../managers/index.js";
+import { Graphics } from "../../core/utils.js";
+import { ConfigManager } from "../../managers/index.js";
 import { UI } from "./builder.js";
 import { makeDraggable } from "./components.js";
 

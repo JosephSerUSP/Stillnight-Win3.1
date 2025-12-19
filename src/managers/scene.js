@@ -17,14 +17,14 @@ export class SceneManager {
 
     /**
      * The stack of active scenes.
-     * @type {import("../scenes/scenes.js").Scene_Base[]}
+     * @type {import("../presentation/scenes/scenes.js").Scene_Base[]}
      * @private
      */
     this._stack = [];
 
     /**
      * The currently active scene.
-     * @type {import("../scenes/scenes.js").Scene_Base|null}
+     * @type {import("../presentation/scenes/scenes.js").Scene_Base|null}
      * @private
      */
     this._currentScene = null;
@@ -57,7 +57,7 @@ export class SceneManager {
    * Pushes a new scene onto the stack and starts it.
    * Pauses the previous scene.
    * @method push
-   * @param {import("../scenes/scenes.js").Scene_Base} scene - The scene to push.
+   * @param {import("../presentation/scenes/scenes.js").Scene_Base} scene - The scene to push.
    */
   push(scene) {
     if (this._currentScene) {
@@ -82,7 +82,7 @@ export class SceneManager {
   /**
    * Gets the currently active scene.
    * @method currentScene
-   * @returns {import("../scenes/scenes.js").Scene_Base|null} The current scene.
+   * @returns {import("../presentation/scenes/scenes.js").Scene_Base|null} The current scene.
    */
   currentScene() {
     return this._currentScene;
@@ -91,7 +91,7 @@ export class SceneManager {
   /**
    * Gets the previous scene in the stack (the one below the current scene).
    * @method previous
-   * @returns {import("../scenes/scenes.js").Scene_Base|undefined} The previous scene.
+   * @returns {import("../presentation/scenes/scenes.js").Scene_Base|undefined} The previous scene.
    */
   previous() {
     return this._stack[this._stack.length - 1];

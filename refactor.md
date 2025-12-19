@@ -68,11 +68,12 @@ This document outlines the architectural refactor to create a single source of t
 *   `InterpreterState` (stack, IP, locals).
 *   `Interpreter.runUntilPause(session)` -> `GameEvent[]`.
 
-## Phase 5 — UI decoupling pass
+## Phase 5 — UI decoupling pass (In Progress)
 **Goal:** UI depends only on view models.
 
 *   Replace simulation imports in Windows with `selectors`.
 *   `selectBattlerDetails`, `selectPartyHUD`.
+*   `selectBattleScreen`.
 
 ## Phase 6 — Save/Load
 **Goal:** Trivial serialization.

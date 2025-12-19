@@ -1,7 +1,7 @@
 import { Window_Base } from "./base.js";
 import { createPartySlot, createReserveSlot, createCommanderSlot } from "./utils.js";
-import { SoundManager } from "../managers/index.js";
-import { ProgressionSystem } from "../managers/progression.js";
+import { SoundManager } from "../../managers/index.js";
+import { ProgressionSystem } from "../../managers/progression.js";
 
 /**
  * @class Window_Formation

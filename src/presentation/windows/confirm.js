@@ -1,8 +1,8 @@
 import { Window_Base } from "./base.js";
 import { renderCreatureInfo, createInteractiveLabel } from "./utils.js";
-import { evaluateFormula } from "../core/utils.js";
-import { TRAIT_DEFINITIONS } from "../../data/traits.js";
-import { EffectManager } from "../managers/effect_manager.js";
+import { evaluateFormula } from "../../core/utils.js";
+import { TRAIT_DEFINITIONS } from "../../../data/traits.js";
+import { EffectManager } from "../../managers/effect_manager.js";
 
 /**
  * @class Window_Confirm
