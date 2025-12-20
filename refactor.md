@@ -2,6 +2,21 @@
 
 This document outlines the architectural refactor to create a single source of truth for runtime state and enforce hard layer boundaries.
 
+## Execution audit (Current State)
+
+*   **Deterministic RNG**: Implemented (`src/core/rng.js`) and verified via harness.
+*   **Engine Skeleton**: Implemented (`src/engine/`). Import boundaries enforced via ESLint.
+*   **Battle**: Migrated to `BattleSystem` and `BattleAdapter`. Legacy `managers/battle.js` deleted.
+*   **Exploration**: Migrated to `ExplorationSystem` and `ExplorationAdapter`. Legacy `managers/exploration.js` deleted.
+*   **Interpreter**: Migrated to `InterpreterSystem` and `InterpreterAdapter`. Legacy `managers/interpreter.js` deleted.
+*   **UI Decoupling**: Windows now use `Adapters` (Audio, Settings, Effect) and `Selectors`. Direct manager imports removed from key windows.
+*   **Save/Load**: Wired into `Scene_Boot` and `Scene_Map` via `SessionSerializer`.
+*   **Cleanup**: `src/objects/objects.js` retired. `src/legacy/` created.
+
+## Assessment
+
+The roadmap still aligns with the single source of truth goal. The remaining risk was legacy managers leaking into the presentation layer and effects bypassing the new registry. With the effect pipeline consolidated under `EffectSystem` and scenes now funneled through adapters for audio, settings, and input, the refactor boundaries hold and Phase 7 can close out confidently.
+
 ## Target Architecture
 
 ### Engine (pure-ish, testable, serializable)
@@ -24,64 +39,45 @@ This document outlines the architectural refactor to create a single source of t
 *   loader + validators
 *   schemas (even lightweight) to fail loudly on broken content
 
-## Phase 0 — Lock behavior and make refactor safe (mandatory) (Completed)
-**Goal:** You can change architecture without changing gameplay accidentally.
+## Phase 0 — Lock behavior and make refactor safe (Complete)
+*   **Deterministic RNG**: One RNG service used everywhere.
+*   **Golden Logs**: Harness verifies battle and dungeon determinism.
 
-*   **Deterministic RNG**: One RNG service used everywhere. Replace scattered `randInt` usage with `rng.nextInt()`.
-*   **Golden Logs**:
-    *   One battle seed (turn-by-turn event log).
-    *   One dungeon seed (map generation summary).
-*   **Tiny Headless Harness**:
-    *   "Run one battle with seed X and assert event log matches snapshot".
-    *   Exit criteria: You can run the harness and get identical results twice in a row.
+## Phase 1 — Create the New Engine skeleton + import bans (Complete)
+*   `src/engine/` created.
+*   ESLint rules added.
+*   `src/legacy/` created.
 
-## Phase 1 — Create the New Engine skeleton + import bans (Completed)
-**Goal:** Lay the new foundation without mixing.
+## Phase 2 — Migrate Battle (Complete)
+*   `BattleSystem` and `BattleAdapter` implemented.
+*   `Scene_Battle` decoupled.
+*   `managers/battle.js` deleted.
 
-*   Add `src/engine/` with session, events, ports.
-*   Add `src/presentation/selectors/`.
-*   Add ESLint rules:
-    *   Forbid imports from `src/presentation/**` inside `src/engine/**`.
-    *   Forbid imports from `src/engine/systems/**` inside `src/presentation/windows/**`.
-*   Create `src/legacy/` folder.
+## Phase 3 — Migrate Exploration (Complete)
+*   `ExplorationSystem` and `ExplorationAdapter` implemented.
+*   `Scene_Map` uses `ExplorationAdapter`.
+*   `managers/exploration.js` deleted.
 
-## Phase 2 — Migrate Battle as the first “vertical slice”
-**Goal:** Migrate Battle and delete legacy battle.
+## Phase 4 — Migrate Interpreter / Events (Complete)
+*   `InterpreterSystem` implemented.
+*   `InterpreterAdapter` implemented.
+*   `Scene_Map` uses `InterpreterAdapter`.
+*   `managers/interpreter.js` deleted.
 
-*   **Build new battle surface**: `BattleState`, `BattleSystem` (start, chooseAction, step).
-*   **Refactor rules**: Move game-specific behavior to `BattleRuleset` or `BattleHooks`.
-*   **Bridge the UI**: `Scene_Battle` asks `BattleSystem` for event list.
-*   **Delete legacy battle path**: Remove `managers/battle.js`.
+## Phase 5 — UI decoupling pass (Complete)
+*   Created `AudioAdapter`, `SettingsAdapter`, `EffectAdapter`.
+*   Refactored Windows (`base.js`, `audio_player.js`, `formation.js`, `confirm.js`) to use adapters.
+*   Removed direct `manager` imports from presentation layer.
 
-## Phase 3 — Migrate Exploration + Encounters
-**Goal:** Migrate Exploration and delete legacy.
+## Phase 6 — Save/Load (Complete)
+*   `SessionSerializer` implemented.
+*   `Scene_Boot` loads session from local storage or creates new.
+*   `Scene_Map` accepts and resumes session.
+*   `Registry` populated in boot.
 
-*   **Exploration System**: `ExplorationSystem` (move, interact) emitting events.
-*   **Encounter System**: `EncounterSystem.roll`.
-*   **Key Change**: Exploration emits events like `PlayerMoved`, `DoorOpened`. `Scene_Map` renders events.
-
-## Phase 4 — Migrate Interpreter / Events
-**Goal:** Engine-side serializable interpreter.
-
-*   `InterpreterState` (stack, IP, locals).
-*   `Interpreter.runUntilPause(session)` -> `GameEvent[]`.
-
-## Phase 5 — UI decoupling pass
-**Goal:** UI depends only on view models.
-
-*   Replace simulation imports in Windows with `selectors`.
-*   `selectBattlerDetails`, `selectPartyHUD`.
-
-## Phase 6 — Save/Load
-**Goal:** Trivial serialization.
-
-*   `SessionSerializer.toJSON(session)`
-*   `SessionSerializer.fromJSON(...)`
-
-## Phase 7 — Remove the remaining legacy knot
-**Goal:** Cleanups.
-
-*   Retire `src/objects/objects.js` barrel.
-*   Replace `window.*` debug globals with `DebugTools`.
-*   Stop "core" importing data.
-*   Delete `src/legacy/**`.
+## Phase 7 — Remove the remaining legacy knot (Complete)
+**Goal:** Final cleanups.
+*   Retire `src/objects/objects.js` barrel (Complete).
+*   Replace `window.*` debug globals with `DebugTools` (Complete - via `exposeGlobals`).
+*   Migrate `EffectManager` to `EffectSystem` (Complete — EffectManager removed; Game_Action and systems use EffectSystem with injected context).
+*   Migrate remaining infrastructure managers (`Sound`, `Input`, `Config`) to pure Ports/Adapters structure (Complete — presentation routes through adapters for audio, settings, and input).

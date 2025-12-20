@@ -1,4 +1,3 @@
-import { EffectManager } from "../managers/effect_manager.js";
 import { Game_Battler } from "./battler.js";
 
 /**

@@ -81,10 +81,10 @@ sequenceDiagram
 *   **Role**: Loads and holds static assets (`actors.json`, `items.json`) and dynamic code modules (`skills.js`).
 *   **Access**: Global singleton used by Game Objects to look up templates.
 
-### 4.4. EffectManager (`src/managers/effect_manager.js`)
-*   **Role**: A static registry of effect handlers.
-*   **Function**: Maps string keys (e.g., `'hp_heal'`, `'add_status'`) to execution logic.
-*   **Decoupling**: `Game_Action` does not know *how* to heal, it asks `EffectManager` to do it.
+### 4.4. EffectSystem (`src/engine/rules/effects.js`)
+*   **Role**: Pure-ish registry of effect handlers used by Game_Action and BattleSystem.
+*   **Function**: Maps string keys (e.g., `'hp_heal'`, `'add_status'`, `'xp'`) to execution logic and previews.
+*   **Decoupling**: `Game_Action` does not know *how* to heal; it asks `EffectSystem` to do it with injected context.
 
 ---
 

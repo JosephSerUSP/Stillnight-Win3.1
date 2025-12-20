@@ -1,1 +1,3 @@
-# Legacy\n\nContains legacy code to be refactored or removed.
+# Legacy Code
+
+This directory contains legacy code that is being phased out or referenced for migration.

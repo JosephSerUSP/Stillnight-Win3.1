@@ -9,7 +9,7 @@ export class EncounterManager {
 
     /**
      * Determines initiative and modifies eventData accordingly.
-     * @param {import("../objects/objects.js").Game_Party} party
+     * @param {import("../objects/party.js").Game_Party} party
      * @param {Object} eventData
      * @param {Array} actors
      */

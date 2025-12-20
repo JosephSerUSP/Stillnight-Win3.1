@@ -1,6 +1,6 @@
 import { randInt, elementToAscii, probabilisticRound, random } from "../core/utils.js";
-import { SoundManager } from "../managers/sound.js";
-import { EffectManager } from "../managers/effect_manager.js";
+import { EffectSystem } from "../engine/rules/effects.js";
+import { ProgressionSystem } from "../engine/systems/progression.js";
 
 /**
  * @class Game_Action
@@ -129,7 +129,6 @@ export class Game_Action {
         // Evasion
         const evasionChance = target.getPassiveValue("EVA");
         if (evasionChance > 0 && random() < evasionChance) {
-            SoundManager.play('UI_CANCEL');
             events.push({
                 type: "miss",
                 battler: battler,
@@ -161,8 +160,6 @@ export class Game_Action {
 
         const hpBefore = target.hp;
         target.hp = Math.max(0, target.hp - dmg);
-
-        SoundManager.play('DAMAGE');
 
         const msg = isCritical
             ? `CRITICAL! ${battler.name} deals ${dmg} damage to ${target.name}!`
@@ -217,12 +214,14 @@ export class Game_Action {
                  effectValue = { id: effect.status, chance: effect.chance };
             }
 
-            const result = EffectManager.apply(effectKey, effectValue, battler, target, context);
+            const result = EffectSystem.apply(effectKey, effectValue, battler, target, {
+                ...context,
+                progressionSystem: ProgressionSystem
+            });
 
             if (!result) return;
 
              if (result.type === 'damage') {
-                 SoundManager.play('DAMAGE');
                  events.push({
                     type: 'damage',
                     battler: battler,
@@ -233,7 +232,6 @@ export class Game_Action {
                     msg: `  ${target.name} takes ${result.value} damage.`
                  });
             } else if (result.type === 'heal') {
-                 SoundManager.play('HEAL');
                  events.push({
                      type: 'heal',
                      battler: battler,
@@ -247,7 +245,6 @@ export class Game_Action {
             } else if (result.type === 'status') {
                  events.push({ type: 'status', target: target, status: result.status, msg: `  ${target.name} is afflicted with ${result.status}.` });
             } else if (result.type === 'hp_drain') {
-                 SoundManager.play('DAMAGE');
                  events.push({
                      type: 'hp_drain',
                      battler: battler,
@@ -285,10 +282,9 @@ export class Game_Action {
             item.effects.forEach(effect => {
                 const key = effect.type;
                 const value = effect.formula || effect.value;
-                // Determine context/boost if needed
-                const context = {};
-                // Pass item as source
-                const result = EffectManager.apply(key, value, item, target, context);
+                const result = EffectSystem.apply(key, value, item, target, {
+                    progressionSystem: ProgressionSystem
+                });
 
                 if (result) {
                     if (!result.battler) result.battler = subject;
@@ -297,10 +293,8 @@ export class Game_Action {
                          if (result.type === 'heal') {
                              result.msg = `  ${target.name} heals ${result.value} HP.`;
                              result.animation = 'healing_sparkle';
-                             SoundManager.play('HEAL'); // ensure sound
                          } else if (result.type === 'damage') {
                              result.msg = `  ${target.name} takes ${result.value} damage.`;
-                             SoundManager.play('DAMAGE');
                          } else if (result.type === 'recruit_egg') {
                              result.msg = `  The egg hatches!`;
                          } else if (result.type === 'maxHp') {
@@ -310,7 +304,6 @@ export class Game_Action {
                          }
                     } else if (result.type === 'heal' && !result.animation) {
                         result.animation = 'healing_sparkle';
-                        SoundManager.play('HEAL');
                     }
 
                     events.push(result);
