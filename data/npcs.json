@@ -210,5 +210,39 @@
         ]
       }
     }
+  },
+  "npc_yukio": {
+    "name": "Yukio",
+    "layout": "visual_novel",
+    "portrait": "assets/portraits/NPC_Yukio.png",
+    "initialState": "default",
+    "states": {
+      "default": {
+        "text": "Efficiency is key. Do not waste my time.",
+        "choices": [
+          {
+            "label": "Leave",
+            "action": "close"
+          }
+        ]
+      }
+    }
+  },
+  "npc_geraldo": {
+    "name": "Geraldo",
+    "layout": "visual_novel",
+    "portrait": "assets/portraits/NPC_Geraldo.png",
+    "initialState": "default",
+    "states": {
+      "default": {
+        "text": "Heh, you look like you've seen a ghost. Want to hear a story?",
+        "choices": [
+          {
+            "label": "Leave",
+            "action": "close"
+          }
+        ]
+      }
+    }
   }
 }

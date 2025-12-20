@@ -512,7 +512,7 @@ export class InterpreterAdapter {
             description: stateData.text,
             layout: npc.layout || 'visual_novel',
             portrait: npc.portrait,
-            style: 'normal',
+            style: npc.style || 'terminal',
             choices: choices
         });
 
