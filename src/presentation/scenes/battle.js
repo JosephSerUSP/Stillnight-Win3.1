@@ -1,6 +1,7 @@
 import { Scene_Base } from "./base.js";
 import { randInt, pickWeighted, probabilisticRound, random } from "../../core/utils.js";
-import { SoundManager, ConfigManager } from "../../managers/index.js";
+import { AudioAdapter } from "../../adapters/audio_adapter.js";
+import { SettingsAdapter } from "../../adapters/settings_adapter.js";
 import { Window_Battle, Window_Victory } from "../windows/index.js";
 import { BattleSystem } from "../../engine/systems/battle.js";
 import { BattleAdapter } from "../../adapters/battle_adapter.js";
@@ -86,7 +87,7 @@ export class Scene_Battle extends Scene_Base {
    * @method start
    */
   start() {
-    this.battleWindow.updateAutoButton(ConfigManager.autoBattle);
+    this.battleWindow.updateAutoButton(SettingsAdapter.autoBattle);
     this.actionTakenThisTurn = false;
 
     const floor = this.map.floors[this.map.floorIndex];
@@ -110,10 +111,10 @@ export class Scene_Battle extends Scene_Base {
     this.battleWindow.logEnemyEmergence(enemies, this.dataManager.terms.battle);
     if (this.isSneakAttack) {
         this.battleWindow.appendLog("Sneak Attack! Enemies have the upper hand.");
-        SoundManager.play('UI_ERROR');
+        AudioAdapter.play('UI_ERROR');
     } else if (this.isPlayerFirstStrike) {
         this.battleWindow.appendLog("First Strike! You have the upper hand.");
-        SoundManager.play('UI_SUCCESS');
+        AudioAdapter.play('UI_SUCCESS');
     }
 
     // Plan the first round immediately so actions are visible
@@ -123,28 +124,25 @@ export class Scene_Battle extends Scene_Base {
     this.renderBattleAscii();
     this.windowManager.push(this.battleWindow);
     document.getElementById("mode-label").textContent = "Battle";
-    SoundManager.play('BATTLE_START');
-    SoundManager.playMusic('battle1');
+    AudioAdapter.play('BATTLE_START');
+    AudioAdapter.playMusic('battle1');
 
     if (this.isPlayerFirstStrike) {
         this.resolveBattleRound(true);
-    } else if (ConfigManager.autoBattle) {
+    } else if (SettingsAdapter.autoBattle) {
         this.resolveBattleRound();
     }
   }
 
   toggleAutoBattle(e) {
       // Logic adjusted to handle both direct boolean and event
-      if (typeof e === 'boolean') {
-          ConfigManager.autoBattle = e;
-      } else {
-          // Fallback if event is passed directly (though handler wrapper handles this)
-          ConfigManager.autoBattle = !ConfigManager.autoBattle;
-      }
-      ConfigManager.save();
-      this.battleWindow.updateAutoButton(ConfigManager.autoBattle);
-      SoundManager.play('UI_SELECT');
-      if (ConfigManager.autoBattle && !this.battleBusy && !this.battleManager.isBattleFinished) {
+      const autoBattleEnabled = (typeof e === 'boolean')
+          ? SettingsAdapter.setAutoBattle(e)
+          : SettingsAdapter.toggleAutoBattle();
+
+      this.battleWindow.updateAutoButton(autoBattleEnabled);
+      AudioAdapter.play('UI_SELECT');
+      if (autoBattleEnabled && !this.battleBusy && !this.battleManager.isBattleFinished) {
           this.resolveBattleRound();
       }
   }
@@ -174,7 +172,7 @@ export class Scene_Battle extends Scene_Base {
                       this.disableActionButtons();
                       this.battleWindow.appendLog("Formation changed.");
                       this.renderBattleAscii();
-                      SoundManager.play('UI_SELECT');
+                      AudioAdapter.play('UI_SELECT');
                   }
               };
               this.confirmWindow.btnCancel.onclick = () => {
@@ -266,7 +264,7 @@ export class Scene_Battle extends Scene_Base {
       this.renderBattleAscii();
       this.actionTakenThisTurn = true;
       this.disableActionButtons();
-      SoundManager.play('EQUIP');
+      AudioAdapter.play('EQUIP');
   }
 
   disableActionButtons() {
@@ -315,7 +313,7 @@ export class Scene_Battle extends Scene_Base {
     // Note: Actions are already planned by planRound() call at start or end of previous round.
 
     const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-    SoundManager.play('UI_SELECT');
+    AudioAdapter.play('UI_SELECT');
 
     while (true) {
         const battlerContext = this.battleManager.getNextBattler();
@@ -364,7 +362,7 @@ export class Scene_Battle extends Scene_Base {
 
       this.battleBusy = false;
 
-      if (ConfigManager.autoBattle) {
+      if (SettingsAdapter.autoBattle) {
           await delay(500);
           this.resolveBattleRound();
       }
@@ -409,7 +407,7 @@ export class Scene_Battle extends Scene_Base {
 
       this.victoryWindow.setup(spoilText, () => this.claimVictoryRewards());
       this.windowManager.push(this.victoryWindow);
-      SoundManager.playMusic('victory1');
+      AudioAdapter.playMusic('victory1');
   }
 
   claimVictoryRewards() {
@@ -434,7 +432,7 @@ export class Scene_Battle extends Scene_Base {
           droppedItems.forEach(item => this.party.inventory.push(item));
           const names = droppedItems.map(i => i.name).join(", ");
           this.sceneManager.previous().logMessage(`[Battle] Found: ${names}`);
-          SoundManager.play('ITEM_GET');
+          AudioAdapter.play('ITEM_GET');
       }
 
       this.sceneManager.previous().updateAll();
@@ -514,7 +512,7 @@ export class Scene_Battle extends Scene_Base {
                     setTimeout(() => {
                         this.battleWindow.logEl.classList.remove('flash');
                     }, 200);
-                    SoundManager.play('UI_ERROR');
+                    AudioAdapter.play('UI_ERROR');
                 }
 
                 await this.battleWindow.animateBattleHpGauge(event.target, targetOldHp, targetNewHp);
@@ -603,14 +601,14 @@ export class Scene_Battle extends Scene_Base {
   attemptFlee() {
     if (random() < this.sceneManager.previous().getFleeChance()) {
       this.sceneManager.previous().logMessage("[Battle] You successfully fled!");
-      SoundManager.play('ESCAPE');
+      AudioAdapter.play('ESCAPE');
       this.sceneManager.pop();
       if (this.sceneManager.currentScene().resumeMusic) {
           this.sceneManager.currentScene().resumeMusic();
       }
     } else {
       this.battleWindow.appendLog("You failed to flee!");
-      SoundManager.play('UI_ERROR');
+      AudioAdapter.play('UI_ERROR');
     }
   }
 

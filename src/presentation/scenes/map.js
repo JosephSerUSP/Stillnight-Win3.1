@@ -8,7 +8,7 @@ import { InterpreterAdapter } from "../../adapters/interpreter_adapter.js";
 import { ThemeManager } from "../../managers/index.js";
 import { AudioAdapter } from "../../adapters/audio_adapter.js";
 import { SettingsAdapter } from "../../adapters/settings_adapter.js";
-import { InputController } from "../../managers/input_controller.js";
+import { InputAdapter } from "../../adapters/input_adapter.js";
 import { HUDManager } from "../../managers/hud_manager.js";
 import { Window_Desktop } from "../windows/index.js";
 import { ProgressionSystem } from "../../engine/systems/progression.js";
@@ -53,7 +53,7 @@ export class Scene_Map extends Scene_Base {
     this.addEventListeners();
 
     this.hudManager = new HUDManager(windowManager, gameContainer);
-    this.inputController = new InputController(this);
+    this.inputController = InputAdapter.create(this);
 
     // Callbacks mapping
     this.hudManager.eventWindow.onUserClose = this.interpreter.closeEvent.bind(this.interpreter);
@@ -887,6 +887,7 @@ export class Scene_Map extends Scene_Base {
 
       if (events.length > 0) {
           events.forEach(e => {
+              this._playEventAudio(e);
               if (e.msg) this.logMessage(e.msg);
 
               if (e.type === 'xp' && e.result && e.result.leveledUp) {
@@ -903,6 +904,20 @@ export class Scene_Map extends Scene_Base {
           this.updateAll();
       } else {
           this.logMessage("No effect.");
+      }
+  }
+
+  _playEventAudio(event) {
+      switch (event.type) {
+          case 'damage':
+          case 'hp_drain':
+              AudioAdapter.play('DAMAGE');
+              break;
+          case 'heal':
+              AudioAdapter.play('HEAL');
+              break;
+          default:
+              break;
       }
   }
 

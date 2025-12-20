@@ -1,5 +1,6 @@
 import { BattleState } from "../session/battle_state.js";
 import { EffectSystem } from "../rules/effects.js";
+import { ProgressionSystem } from "./progression.js";
 import { Registry } from "../data/registry.js";
 import { randInt, random, elementToAscii } from "../../core/utils.js";
 
@@ -295,7 +296,9 @@ export class BattleSystem {
       if (dmg < 1) dmg = 1;
 
       // Apply
-      const result = EffectSystem.apply('hp_damage', dmg, battler, target);
+      const result = EffectSystem.apply('hp_damage', dmg, battler, target, {
+          progressionSystem: ProgressionSystem
+      });
 
       const msg = isCritical
         ? `CRITICAL! ${battler.name} deals ${dmg} damage to ${target.name}!`
@@ -345,7 +348,10 @@ export class BattleSystem {
                effectValue = { id: effect.status, chance: effect.chance };
           }
 
-          const result = EffectSystem.apply(effectKey, effectValue, battler, target, context);
+          const result = EffectSystem.apply(effectKey, effectValue, battler, target, {
+              ...context,
+              progressionSystem: ProgressionSystem
+          });
 
           if (result) {
                if (result.type === 'damage') {
@@ -376,7 +382,9 @@ export class BattleSystem {
 
       if (item.effects) {
           item.effects.forEach(effect => {
-               const result = EffectSystem.apply(effect.type, effect.formula || effect.value, item, target, {});
+               const result = EffectSystem.apply(effect.type, effect.formula || effect.value, item, target, {
+                   progressionSystem: ProgressionSystem
+               });
                if (result) {
                     if (result.type === 'heal') result.msg = `  ${target.name} heals ${result.value} HP.`;
                     events.push(result);

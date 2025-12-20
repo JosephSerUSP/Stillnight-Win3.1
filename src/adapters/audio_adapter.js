@@ -41,6 +41,10 @@ export const AudioAdapter = {
         return SoundManager.isMusicPlaying();
     },
 
+    updateVolumes() {
+        SoundManager.updateVolumes();
+    },
+
     getCurrentMusicKey() {
         return SoundManager._currentMusicKey;
     },
