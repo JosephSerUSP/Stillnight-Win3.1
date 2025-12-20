@@ -176,11 +176,23 @@ EffectSystem.register('hp_drain',
 // For now, let's just return the event and let the Manager handle it, OR inject it.
 // The pure way is to return { type: 'gain_xp', value } and let the system handle it.
 EffectSystem.register('xp',
-    (val, source, target) => {
+    (val, source, target, context = {}) => {
         const value = EffectSystem._evaluate(val, target, source);
-        // We cannot import ProgressionSystem here if it is in managers/
-        // So we return an event describing the intent.
-        return { type: 'gain_xp', value, target };
+
+        const progression = context.progressionSystem;
+        if (progression && typeof progression.gainXp === 'function') {
+            const result = progression.gainXp(target, value);
+            return { type: 'xp', value, result, target };
+        }
+
+        const applyXp = context.applyXp;
+        if (applyXp && typeof applyXp === 'function') {
+            const result = applyXp(target, value);
+            return { type: 'xp', value, result, target };
+        }
+
+        // Fallback: emit intent for a higher layer to process
+        return { type: 'xp', value, target, pending: true };
     },
     (val) => `XP: +${val}`
 );

@@ -13,6 +13,10 @@ This document outlines the architectural refactor to create a single source of t
 *   **Save/Load**: Wired into `Scene_Boot` and `Scene_Map` via `SessionSerializer`.
 *   **Cleanup**: `src/objects/objects.js` retired. `src/legacy/` created.
 
+## Assessment
+
+The roadmap still aligns with the single source of truth goal. The remaining risk was legacy managers leaking into the presentation layer and effects bypassing the new registry. With the effect pipeline consolidated under `EffectSystem` and scenes now funneled through adapters for audio, settings, and input, the refactor boundaries hold and Phase 7 can close out confidently.
+
 ## Target Architecture
 
 ### Engine (pure-ish, testable, serializable)
@@ -71,9 +75,9 @@ This document outlines the architectural refactor to create a single source of t
 *   `Scene_Map` accepts and resumes session.
 *   `Registry` populated in boot.
 
-## Phase 7 — Remove the remaining legacy knot (In Progress)
+## Phase 7 — Remove the remaining legacy knot (Complete)
 **Goal:** Final cleanups.
 *   Retire `src/objects/objects.js` barrel (Complete).
 *   Replace `window.*` debug globals with `DebugTools` (Complete - via `exposeGlobals`).
-*   Migrate `EffectManager` to `EffectSystem` (Partial - Adapter uses System for preview).
-*   Migrate remaining infrastructure managers (`Sound`, `Input`, `Config`) to pure Ports/Adapters structure (Adapters exist, Managers serve as implementation).
+*   Migrate `EffectManager` to `EffectSystem` (Complete — EffectManager removed; Game_Action and systems use EffectSystem with injected context).
+*   Migrate remaining infrastructure managers (`Sound`, `Input`, `Config`) to pure Ports/Adapters structure (Complete — presentation routes through adapters for audio, settings, and input).

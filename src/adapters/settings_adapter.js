@@ -21,6 +21,12 @@ export const SettingsAdapter = {
         return ConfigManager.autoBattle;
     },
 
+    setAutoBattle(val) {
+        ConfigManager.autoBattle = !!val;
+        ConfigManager.save();
+        return ConfigManager.autoBattle;
+    },
+
     save() {
         ConfigManager.save();
     }

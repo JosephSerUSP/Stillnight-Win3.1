@@ -1,6 +1,6 @@
 import { Scene_Base } from "./base.js";
 import { Window_Shop } from "../windows/index.js";
-import { SoundManager } from "../../managers/index.js";
+import { AudioAdapter } from "../../adapters/audio_adapter.js";
 
 /**
  * @class Scene_Shop
@@ -40,7 +40,7 @@ export class Scene_Shop extends Scene_Base {
         this.startBuy();
         this.windowManager.push(this.shopWindow);
         document.getElementById("mode-label").textContent = "Shop";
-        SoundManager.play('UI_SELECT');
+        AudioAdapter.play('UI_SELECT');
     }
 
     startBuy() {
@@ -70,7 +70,7 @@ export class Scene_Shop extends Scene_Base {
             this.startSell();
 
             this.sceneManager.previous().logMessage(`[Shop] Sold ${item.name} for ${price}G.`);
-            SoundManager.play('SHOP_SELL');
+            AudioAdapter.play('SHOP_SELL');
             this.sceneManager.previous().updateAll();
         }
     }
@@ -106,7 +106,7 @@ export class Scene_Shop extends Scene_Base {
 
         if (this.party.gold < item.cost) {
             this.shopWindow.messageEl.textContent = this.dataManager.terms.shop.not_enough_gold;
-            SoundManager.play('UI_CANCEL');
+            AudioAdapter.play('UI_CANCEL');
             return;
         }
 
@@ -123,6 +123,6 @@ export class Scene_Shop extends Scene_Base {
             `[Shop] ${this.dataManager.terms.shop.purchased}${item.name}.`
         );
     this.sceneManager.previous().updateAll();
-        SoundManager.play('SHOP_BUY');
+        AudioAdapter.play('SHOP_BUY');
     }
 }
