@@ -1,0 +1,199 @@
+[
+  {
+    "id": "main_arc",
+    "name": "Chains Beneath Stillnight",
+    "type": "main",
+    "giver": "Keeper Thane",
+    "stages": [
+      {
+        "id": 0,
+        "title": "Arrival",
+        "summary": "You reached Stillnight. The air hums with sealed power.",
+        "hint": "Speak to Keeper Thane in town square."
+      },
+      {
+        "id": 1,
+        "title": "Chain Oath",
+        "summary": "Thane warned that three chains pin the Eternal Warden in place.",
+        "hint": "Break the Ember Chain on Floor 2.",
+        "logOnAdvance": "You swear to shatter the chains beneath Stillnight."
+      },
+      {
+        "id": 2,
+        "title": "Ember Chain Broken",
+        "summary": "The first seal snapped and heat spilled through the halls.",
+        "hint": "Hunt for the Tide Chain on Floor 4.",
+        "logOnAdvance": "The Ember Chain snaps; the dungeon exhales embers."
+      },
+      {
+        "id": 3,
+        "title": "Tide Chain Broken",
+        "summary": "The second seal dissolved into mist.",
+        "hint": "Seek the Veil Chain hidden in Floor 6.",
+        "logOnAdvance": "Water hushes as a chain dissolves. The depths feel nearer."
+      },
+      {
+        "id": 4,
+        "title": "Veil Chain Broken",
+        "summary": "All chains are shattered; the core is exposed.",
+        "hint": "Push to the Stillnight Core and confront the Eternal Warden.",
+        "logOnAdvance": "The last seal fractures; something stirs far below."
+      },
+      {
+        "id": 5,
+        "title": "Eternal Warden Fallen",
+        "summary": "The Warden is beaten, but the town awaits proof.",
+        "hint": "Return to Keeper Thane in town.",
+        "autoKill": ["eternalWarden"],
+        "logOnAdvance": "The Eternal Warden crumbles; the chains are gone."
+      },
+      {
+        "id": 6,
+        "title": "Stillnight Freed",
+        "summary": "Keeper Thane acknowledges the lifted chains.",
+        "hint": "Celebrate with the townsfolk and gear up for endless runs.",
+        "logOnAdvance": "Stillnight exhales. New stories can begin."
+      }
+    ]
+  },
+  {
+    "id": "alicia_arc",
+    "name": "Alicia: Proof of Care",
+    "type": "npc",
+    "giver": "Alicia",
+    "stages": [
+      {
+        "id": 0,
+        "title": "Clipped Courage",
+        "summary": "Alicia wants to confess to Laura but keeps freezing up.",
+        "hint": "Talk to Alicia in town."
+      },
+      {
+        "id": 1,
+        "title": "Steadying Nectar",
+        "summary": "Alicia asked for Luminous Nectar to calm her nerves.",
+        "hint": "Loot the Entry Hall chest and bring the Nectar back."
+      },
+      {
+        "id": 2,
+        "title": "Gleaming Proof",
+        "summary": "She wants an undead keepsake to hand to Laura herself.",
+        "hint": "Find a Gleaming Band from ghouls in the Rusted Choir."
+      },
+      {
+        "id": 3,
+        "title": "Standing Beside",
+        "summary": "Alicia stands with Laura openly, steadied by your support.",
+        "hint": "Check in after forging the vow ring.",
+        "logOnAdvance": "Alicia squares her shoulders and steps beside Laura."
+      }
+    ]
+  },
+  {
+    "id": "laura_arc",
+    "name": "Laura: Hammer & Vow",
+    "type": "npc",
+    "giver": "Laura",
+    "stages": [
+      {
+        "id": 0,
+        "title": "Restless Smith",
+        "summary": "Laura wants a memento from the undead to reforge into something honest.",
+        "hint": "Bring her a Gleaming Band."
+      },
+      {
+        "id": 1,
+        "title": "Etched Promise",
+        "summary": "She can work the band into a protective keepsake.",
+        "hint": "Deliver the band after Alicia steadies herself.",
+        "logOnAdvance": "Laura smiles as metal yields to her hammer."
+      },
+      {
+        "id": 2,
+        "title": "Blood Temper",
+        "summary": "She needs proof you can survive deep blood halls.",
+        "hint": "Fell a Crimson Lord to show her the path is open.",
+        "autoKill": ["crimsonLord"],
+        "logOnAdvance": "The hammer rings brighter after the Crimson Lord falls."
+      },
+      {
+        "id": 3,
+        "title": "Promise Loop",
+        "summary": "With the Warden down, she can forge a final ring.",
+        "hint": "Return after the Eternal Warden falls.",
+        "logOnAdvance": "Laura slides a freshly forged Promise Loop across the anvil."
+      }
+    ]
+  },
+  {
+    "id": "rian_arc",
+    "name": "Rian: Temper the Line",
+    "type": "npc",
+    "giver": "Rian",
+    "stages": [
+      {
+        "id": 0,
+        "title": "Dented Inventory",
+        "summary": "Rian needs funding and a fresh Iron Sword to restart his line.",
+        "hint": "Bring him 50G and an Iron Sword from Floor 2."
+      },
+      {
+        "id": 1,
+        "title": "Ember Edge",
+        "summary": "He tempers a new edge, inspired by the Ember Chain’s heat.",
+        "hint": "Equip or stash the Ember Edge reward.",
+        "logOnAdvance": "Sparks fly as Rian grinds a new edge for you."
+      },
+      {
+        "id": 2,
+        "title": "Demonic Proof",
+        "summary": "He wants to see a Flauros fall before investing rarer stock.",
+        "hint": "Hunt a Flauros in the mid floors.",
+        "autoKill": ["flauros"],
+        "logOnAdvance": "Rian nods, satisfied with the demon’s ashes."
+      },
+      {
+        "id": 3,
+        "title": "Chainbreaker Guard",
+        "summary": "His shield line is ready, buoyed by your victories.",
+        "hint": "Check back after the Warden falls for a sturdier guard.",
+        "logOnAdvance": "A plated guard hits the counter with a reassuring thud."
+      }
+    ]
+  },
+  {
+    "id": "mara_arc",
+    "name": "Mara: Ledger of Whispers",
+    "type": "npc",
+    "giver": "Mara",
+    "stages": [
+      {
+        "id": 0,
+        "title": "Quiet Solicitation",
+        "summary": "Mara wants proof you can handle the depths.",
+        "hint": "Find an Auction Notice near the Ember Chain."
+      },
+      {
+        "id": 1,
+        "title": "Side Hustle",
+        "summary": "She pays out coin for the notice and starts slipping you cuts.",
+        "hint": "Visit after each chain break for extra gold.",
+        "logOnAdvance": "Mara’s ledgers now include your name."
+      },
+      {
+        "id": 2,
+        "title": "Veiled Ledger",
+        "summary": "A hidden ledger could expose deeper buyers.",
+        "hint": "Recover the Veiled Ledger from Blood Chapel chests.",
+        "logOnAdvance": "She smirks and slides a Mirrorwork Cloak your way."
+      },
+      {
+        "id": 3,
+        "title": "Rare Circuit",
+        "summary": "With the Warden gone, Mara can auction openly.",
+        "hint": "Return after the Eternal Warden falls for rare pulls.",
+        "logOnAdvance": "Mara opens a velvet case of rarities just for you."
+      }
+    ]
+  }
+]

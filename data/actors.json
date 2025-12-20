@@ -297,6 +297,9 @@
     "flavor": "An animated statue, slow but incredibly durable.",
     "expGrowth": 8,
     "gold": 40,
+    "drops": [
+      { "itemId": "gleaming_band", "chance": 0.5 }
+    ],
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": true,
@@ -551,6 +554,23 @@
     "spriteKey": "ShadowStalker",
     "gold": 14,
     "expGrowth": 10
+  },
+  {
+    "id": "eternalWarden",
+    "name": "Eternal Warden",
+    "level": 10,
+    "role": "Boss",
+    "maxHp": 80,
+    "spriteKey": "crimsonLord",
+    "passives": ["rearGuard"],
+    "elements": ["Black", "Black"],
+    "skills": ["shadowClaw", "infernalPact"],
+    "flavor": "The chainbound sentinel of Stillnight's core.",
+    "expGrowth": 12,
+    "gold": 200,
+    "drops": [
+      { "itemId": "promise_loop", "chance": 1.0 }
+    ]
   },
   {
     "id": "summoner",

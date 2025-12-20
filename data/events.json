@@ -152,5 +152,78 @@
         "effect": { "type": "gold", "value": 10 }
       }
     ]
+  },
+  {
+    "id": "npc_keeper",
+    "type": "npc",
+    "symbol": "T",
+    "cssClass": "tile-npc",
+    "trigger": "touch",
+    "actions": [{ "type": "NPC_DIALOGUE", "id": "keeper_thane" }]
+  },
+  {
+    "id": "npc_alicia",
+    "type": "npc",
+    "symbol": "A",
+    "cssClass": "tile-npc",
+    "trigger": "touch",
+    "actions": [{ "type": "NPC_DIALOGUE", "id": "alicia" }]
+  },
+  {
+    "id": "npc_laura",
+    "type": "npc",
+    "symbol": "L",
+    "cssClass": "tile-npc",
+    "trigger": "touch",
+    "actions": [{ "type": "NPC_DIALOGUE", "id": "laura" }]
+  },
+  {
+    "id": "npc_rian",
+    "type": "npc",
+    "symbol": "R",
+    "cssClass": "tile-npc",
+    "trigger": "touch",
+    "actions": [{ "type": "NPC_DIALOGUE", "id": "rian" }]
+  },
+  {
+    "id": "npc_mara",
+    "type": "npc",
+    "symbol": "M",
+    "cssClass": "tile-npc",
+    "trigger": "touch",
+    "actions": [{ "type": "NPC_DIALOGUE", "id": "mara" }]
+  },
+  {
+    "id": "altar_ember",
+    "type": "story",
+    "symbol": "✶",
+    "cssClass": "tile-story",
+    "trigger": "touch",
+    "actions": [
+      { "type": "MESSAGE", "text": "The Ember Chain glows, waiting for a hand to break it." },
+      { "type": "QUEST", "questId": "main_arc", "stage": 2, "log": "[Chain] Ember links shatter in a burst of heat." }
+    ]
+  },
+  {
+    "id": "altar_tide",
+    "type": "story",
+    "symbol": "✶",
+    "cssClass": "tile-story",
+    "trigger": "touch",
+    "actions": [
+      { "type": "MESSAGE", "text": "Water ripples around a rusted chain." },
+      { "type": "QUEST", "questId": "main_arc", "stage": 3, "log": "[Chain] Tide-links dissolve into mist." }
+    ]
+  },
+  {
+    "id": "altar_veil",
+    "type": "story",
+    "symbol": "✶",
+    "cssClass": "tile-story",
+    "trigger": "touch",
+    "actions": [
+      { "type": "MESSAGE", "text": "A silken chain drifts above the ground." },
+      { "type": "QUEST", "questId": "main_arc", "stage": 4, "log": "[Chain] The Veil Chain snaps silently." }
+    ]
   }
 ]

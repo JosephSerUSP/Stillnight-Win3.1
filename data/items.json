@@ -361,5 +361,115 @@
         "dataId": "Green"
       }
     ]
+  },
+  {
+    "id": "luminous_nectar",
+    "name": "Luminous Nectar",
+    "type": "quest",
+    "cost": 0,
+    "icon": 64,
+    "description": "A vial that glows faintly. Alicia swears it steadies her hands."
+  },
+  {
+    "id": "auction_notice",
+    "name": "Auction Notice",
+    "type": "quest",
+    "cost": 0,
+    "icon": 65,
+    "description": "A crumpled invite to a secret bid in the depths. Mara wants this."
+  },
+  {
+    "id": "veiled_ledger",
+    "name": "Veiled Ledger",
+    "type": "quest",
+    "cost": 0,
+    "icon": 66,
+    "description": "Ink that refuses to stay still. Mara can read it—if you deliver it."
+  },
+  {
+    "id": "gleaming_band",
+    "name": "Gleaming Band",
+    "type": "quest",
+    "cost": 0,
+    "icon": 67,
+    "description": "An undead keepsake that Laura could reforge into something honest."
+  },
+  {
+    "id": "heartward_pin",
+    "name": "Heartward Pin",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 120,
+    "icon": 174,
+    "description": "Alicia's gift. Helps the bearer stay calm when fear rises.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 2 },
+      { "code": "MDM", "value": 0.9 }
+    ]
+  },
+  {
+    "id": "etched_band",
+    "name": "Etched Band",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 200,
+    "icon": 180,
+    "description": "Laura's first rework of the undead band. Warm to the touch.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 3 },
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 1 }
+    ]
+  },
+  {
+    "id": "promise_loop",
+    "name": "Promise Loop",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 600,
+    "icon": 181,
+    "description": "A vow forged after the chains fell. Its weight steadies the bearer.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 4 },
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 2 }
+    ]
+  },
+  {
+    "id": "ember_edge",
+    "name": "Ember Edge",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 250,
+    "icon": 180,
+    "description": "Rian's reforged blade. Holds a hint of chain-heat.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 2 },
+      { "code": "CRI", "value": 0.1 }
+    ]
+  },
+  {
+    "id": "chainbreaker_guard",
+    "name": "Chainbreaker Guard",
+    "type": "equipment",
+    "equipType": "Armor",
+    "cost": 320,
+    "icon": 172,
+    "description": "Layered plates tuned to deflect the Warden's echo.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "maxHp", "value": 4 },
+      { "code": "PARAM_PLUS", "dataId": "def", "value": 1 }
+    ]
+  },
+  {
+    "id": "mirror_cloak",
+    "name": "Mirrorwork Cloak",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 400,
+    "icon": 83,
+    "description": "Mara's prize. Light dances across its surface, confusing foes.",
+    "traits": [
+      { "code": "EVA", "value": 0.1 },
+      { "code": "MDM", "value": 0.9 }
+    ]
   }
 ]

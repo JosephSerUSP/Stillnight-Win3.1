@@ -1,14 +1,191 @@
 [
   {
-    "id": "old_man",
-    "name": "Old Man",
-    "char": "N",
-    "dialogue": "It's dangerous to go alone! Take care of yourself."
+    "id": "keeper_thane",
+    "name": "Keeper Thane",
+    "char": "T",
+    "questId": "main_arc",
+    "dialogue": [
+      {
+        "stage": 0,
+        "text": "Three chains hold something vast beneath Stillnight. If they fail, the town is done.",
+        "choices": [
+          { "label": "Swear to help", "setStage": 1, "log": "You promise to break the chains before the Warden wakes." },
+          { "label": "Leave", "keepOpen": false }
+        ]
+      },
+      {
+        "stage": 5,
+        "text": "The chains are gone, the Warden is dust. Stillnight lives because you dared.",
+        "choices": [
+          { "label": "Share the news", "setStage": 6, "log": "Thane clasps your arm. \"Stillnight breathes again.\"" }
+        ]
+      },
+      {
+        "stage": 6,
+        "text": "The town owes you quiet nights and bright mornings."
+      }
+    ]
+  },
+  {
+    "id": "alicia",
+    "name": "Alicia",
+    "char": "A",
+    "questId": "alicia_arc",
+    "dialogue": [
+      {
+        "stage": 0,
+        "text": "Laura laughs at danger. I can barely speak to her. Could you bring me something to steady my hands?",
+        "choices": [
+          { "label": "I'll help", "setStage": 1, "log": "Alicia exhales and squeezes your hand." }
+        ]
+      },
+      {
+        "stage": 1,
+        "text": "Did you find that Luminous Nectar? I just need a sip to stop shaking.",
+        "lockedText": "I can't face her empty handed... please find that Nectar.",
+        "requiresItem": "luminous_nectar",
+        "choices": [
+          {
+            "label": "Give Nectar",
+            "consumeItem": "luminous_nectar",
+            "reward": { "item": "heartward_pin", "gold": 15 },
+            "setStage": 2,
+            "log": "Alicia steadies herself and presses the pin into your palm. \"For believing in me.\""
+          }
+        ]
+      },
+      {
+        "stage": 2,
+        "text": "I want to hand Laura something real. The undead wear gleaming bands... could you bring me one?",
+        "lockedText": "Ghouls in the Rusted Choir wear those bands...", 
+        "requiresItem": "gleaming_band",
+        "choices": [
+          {
+            "label": "Give Gleaming Band",
+            "consumeItem": "gleaming_band",
+            "reward": { "gold": 25 },
+            "setStage": 3,
+            "log": "Alicia clutches the band. \"I'll stand by her. No more hiding.\""
+          }
+        ]
+      },
+      {
+        "stage": 3,
+        "text": "I'm done hiding. Thank you for giving me the courage to stand with her."
+      }
+    ]
+  },
+  {
+    "id": "laura",
+    "name": "Laura",
+    "char": "L",
+    "questId": "laura_arc",
+    "dialogue": [
+      {
+        "stage": 0,
+        "text": "Got anything worth hammering? An undead keepsake could make a fine charm.",
+        "choices": [
+          {
+            "label": "Offer Gleaming Band",
+            "requiresItem": "gleaming_band",
+            "requiresQuestStage": { "questId": "alicia_arc", "atLeast": 2 },
+            "consumeItem": "gleaming_band",
+            "reward": { "item": "etched_band" },
+            "setStage": 1,
+            "log": "Laura smirks. \"Tell Alicia this will last longer than fear.\""
+          }
+        ]
+      },
+      {
+        "stage": 1,
+        "text": "Crimson Lords stalk the chapel. Drop one to prove you're ready for what comes next."
+      },
+      {
+        "stage": 2,
+        "text": "You felled the Warden? Then you get the first Promise Loop.",
+        "requiresQuestStage": { "questId": "main_arc", "atLeast": 5 },
+        "choices": [
+          {
+            "label": "Accept Promise Loop",
+            "reward": { "item": "promise_loop" },
+            "log": "Laura slides the finished ring across the anvil.",
+            "keepOpen": false,
+            "setStage": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rian",
+    "name": "Rian",
+    "char": "R",
+    "questId": "rian_arc",
+    "dialogue": [
+      {
+        "stage": 0,
+        "text": "My racks are bare. Bring me 50G and an Iron Sword and I'll make you something sharper.",
+        "choices": [
+          {
+            "label": "Pay and hand over sword",
+            "requiresItem": "iron_sword",
+            "requiresGold": 50,
+            "consumeItem": "iron_sword",
+            "giveGold": -50,
+            "reward": { "item": "ember_edge" },
+            "setStage": 1,
+            "log": "Rian sparks the forge. \"This Ember Edge should last.\""
+          }
+        ]
+      },
+      {
+        "stage": 2,
+        "text": "Demon ash on your boots? Good. I've got shields to finish once the Warden falls."
+      },
+      {
+        "stage": 2,
+        "text": "You've carried us through the Warden. Take this guard—no charge.",
+        "requiresQuestStage": { "questId": "main_arc", "atLeast": 5 },
+        "choices": [
+          { "label": "Take Chainbreaker Guard", "reward": { "item": "chainbreaker_guard" }, "log": "Rian grins as you heft the guard.", "setStage": 3 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mara",
+    "name": "Mara",
+    "char": "M",
+    "questId": "mara_arc",
+    "dialogue": [
+      {
+        "stage": 0,
+        "text": "Keep an eye out for an Auction Notice. Bring it back and I'll cut you in.",
+        "choices": [
+          { "label": "Hand over notice", "requiresItem": "auction_notice", "consumeItem": "auction_notice", "reward": { "gold": 40 }, "setStage": 1, "log": "Mara tucks the notice away and slides you coins." }
+        ]
+      },
+      {
+        "stage": 1,
+        "text": "There's a veiled ledger in the Blood Chapel. With it, I can open the good stock.",
+        "choices": [
+          { "label": "Deliver Veiled Ledger", "requiresItem": "veiled_ledger", "consumeItem": "veiled_ledger", "reward": { "item": "mirror_cloak" }, "setStage": 2, "log": "Mara laughs softly. \"Now we can do real business.\"" }
+        ]
+      },
+      {
+        "stage": 2,
+        "text": "With the Warden gone, the auction floor is yours any time.",
+        "requiresQuestStage": { "questId": "main_arc", "atLeast": 5 },
+        "choices": [
+          { "label": "Check her velvet case", "reward": { "gold": 50 }, "log": "Mara palms you a cut from her latest haul.", "setStage": 3 }
+        ]
+      }
+    ]
   },
   {
     "id": "merchant_gossip",
     "name": "Gossip Merchant",
-    "char": "M",
+    "char": "G",
     "dialogue": "I heard the boss on the bottom floor hates light."
   }
 ]

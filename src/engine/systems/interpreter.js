@@ -20,7 +20,8 @@ export class InterpreterSystem {
             'TREASURE': this._handleTreasure,
             'TRAP_TRIGGER': this._handleTrapTrigger,
             'BREAKABLE_WALL': this._handleBreakableWall,
-            'WAIT': this._handleWait
+            'WAIT': this._handleWait,
+            'QUEST': this._handleQuest
         };
     }
 
@@ -189,6 +190,16 @@ export class InterpreterSystem {
         }
         events.push({ type: 'UPDATE_UI' });
         return events;
+    }
+
+    _handleQuest(state, command, session) {
+        if (!command.questId && !command.id) return null;
+        return [{
+            type: 'QUEST_ADVANCE',
+            questId: command.questId || command.id,
+            stage: command.stage,
+            log: command.log
+        }];
     }
 
     _handleWait(state, command, session) {
