@@ -470,27 +470,86 @@ export class InterpreterAdapter {
     }
 
     _openNpcEvent(npcId) {
-        const npc = this.dataManager.npcs.find(n => n.id === npcId);
-        if (!npc) return;
-
-        let text = "";
-        if (typeof npc.dialogue === 'string') {
-            text = npc.dialogue;
+        const npc = this.dataManager.npcs[npcId];
+        if (!npc) {
+            console.warn(`NPC '${npcId}' not found.`);
+            return;
         }
+
+        // For now, we only show the initial state.
+        // Complex state machine logic should be handled here or in a dedicated NpcInteractionSystem.
+        // We will implement a basic state handler here.
+        this._runNpcState(npc, npc.initialState || 'default');
+    }
+
+    _runNpcState(npc, stateId) {
+        const stateData = npc.states[stateId];
+        if (!stateData) {
+            console.warn(`NPC state '${stateId}' not found for '${npc.name}'`);
+            this.closeEvent();
+            return;
+        }
+
+        // Evaluate condition if present
+        if (stateData.condition) {
+            const result = this._checkCondition(stateData.condition);
+            if (result && stateData.trueState) {
+                this._runNpcState(npc, stateData.trueState);
+                return;
+            } else if (!result && stateData.falseState) {
+                this._runNpcState(npc, stateData.falseState);
+                return;
+            }
+        }
+
+        const choices = (stateData.choices || []).map(ch => ({
+            label: ch.label,
+            onClick: () => this._handleNpcChoice(npc, ch)
+        }));
 
         this.scene.hudManager.eventWindow.show({
             title: npc.name,
-            description: `"${text}"`,
-            style: 'terminal',
-            choices: [{
-                label: "Leave",
-                onClick: () => this.closeEvent()
-            }]
+            description: stateData.text,
+            layout: npc.layout || 'visual_novel',
+            portrait: npc.portrait,
+            style: 'normal',
+            choices: choices
         });
-        this.windowManager.push(this.scene.hudManager.eventWindow);
+
+        if (!this.windowManager.stack.includes(this.scene.hudManager.eventWindow)) {
+            this.windowManager.push(this.scene.hudManager.eventWindow);
+        }
 
         this.scene.setStatus(`Talking to ${npc.name}.`);
         AudioAdapter.play('UI_SELECT');
+    }
+
+    _handleNpcChoice(npc, choice) {
+        if (choice.action === 'close') {
+            this.closeEvent();
+        } else if (choice.nextState) {
+            this._runNpcState(npc, choice.nextState);
+        } else if (choice.action === 'shop') {
+             // Basic shop hook
+             this.closeEvent();
+             // Trigger shop event (todo: map shopId to actual shop data)
+             this.scene.startShop();
+        } else if (choice.action === 'teleport') {
+            this.closeEvent();
+            // TODO: Teleport logic
+            this.scene.logMessage("Teleporting...");
+        } else {
+             this.closeEvent();
+        }
+    }
+
+    _checkCondition(conditionString) {
+        if (!conditionString) return true;
+        const [type, value] = conditionString.split(':');
+        if (type === 'hasItem') {
+            return this.party.inventory.some(i => i.id === value);
+        }
+        return false;
     }
 
     clearEventTile() {
