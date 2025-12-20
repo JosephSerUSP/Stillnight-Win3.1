@@ -1,6 +1,6 @@
 import { Window_Base } from "./base.js";
 import { createPartySlot, createReserveSlot, createCommanderSlot } from "./utils.js";
-import { SoundManager } from "../../managers/index.js";
+import { AudioAdapter } from "../../adapters/audio_adapter.js";
 
 /**
  * @class Window_Formation
@@ -74,7 +74,7 @@ export class Window_Formation extends Window_Base {
       if (index === 4) {
           if (memberView) {
               const cSlot = createCommanderSlot(memberView, {
-                  onClick: () => SoundManager.play('UI_ERROR') // Non-interactible
+                  onClick: () => AudioAdapter.play('UI_ERROR') // Non-interactible
               });
               cSlot.style.cursor = 'default';
               this.commanderSlotContainer.appendChild(cSlot);

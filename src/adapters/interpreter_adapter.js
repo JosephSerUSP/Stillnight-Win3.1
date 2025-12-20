@@ -1,6 +1,6 @@
 import { InterpreterSystem } from "../engine/systems/interpreter.js";
 import { randInt, pickWeighted, random } from "../core/utils.js";
-import { SoundManager } from "../managers/index.js";
+import { AudioAdapter } from "./audio_adapter.js";
 import {
   createInteractiveLabel,
   renderCreatureInfo
@@ -8,13 +8,13 @@ import {
 import { Game_Battler } from "../objects/battler.js";
 
 /**
- * @class Game_Interpreter
+ * @class InterpreterAdapter
  * @description Adapter that bridges Scene_Map and InterpreterSystem.
  * Replaces the old Logic-heavy Game_Interpreter.
  */
-export class Game_Interpreter {
+export class InterpreterAdapter {
     /**
-     * Creates a new Game_Interpreter.
+     * Creates a new InterpreterAdapter.
      * @param {Object} sceneContext - The scene context (Scene_Map interface).
      */
     constructor(sceneContext) {
@@ -47,6 +47,71 @@ export class Game_Interpreter {
     }
 
     /**
+     * Executes a sequence of commands.
+     * @param {Array} sequence
+     * @param {Object} eventContext
+     */
+    async executeSequence(sequence, eventContext) {
+        // Simple shim for now: treating sequence as single action list is not quite right
+        // but Scene_Map calls executeSequence(event.sequence, event)
+        // InterpreterSystem.runUntilPause uses state.
+        // We need to manage state if we want async execution.
+
+        // For now, let's assume direct execution via legacy method or new system
+        // The previous Game_Interpreter didn't show executeSequence implementation in the file I read?
+        // Wait, I missed executeSequence in the read_file output?
+        // Ah, the read_file output was truncated?
+        // "execute(action, event)" was there.
+        // Scene_Map calls "executeSequence".
+        // I need to implement executeSequence.
+
+        // Let's implement it using InterpreterSystem.runUntilPause
+        const session = {
+            party: this.party,
+            map: this.map
+        };
+
+        // Use a throwaway state for this sequence
+        // Note: This doesn't support save/load of interpreter state during sequence yet
+        // unless we store state in this adapter.
+
+        // The legacy manager/interpreter.js I read had "execute(action, event)".
+        // It did NOT show executeSequence. Maybe it was inherited or I missed it.
+        // But Scene_Map calls it.
+        // I will implement it.
+
+        // To properly support async, we loop.
+        const state = new (await import("../engine/session/interpreter_state.js")).InterpreterState();
+        state.start(sequence, eventContext);
+
+        while(state.stack.length > 0) {
+            const events = this.system.runUntilPause(state, session);
+            this.processSystemEvents(events);
+
+            if (state.waitMode === 'time') {
+                await new Promise(r => setTimeout(r, state.waitValue));
+                state.waitMode = null;
+            } else if (state.waitMode === 'input') {
+                // Not supported in this simple loop yet
+                break;
+            }
+            // Yield to event loop to allow UI updates
+            await new Promise(r => setTimeout(r, 0));
+        }
+    }
+
+    // Alias for legacy support if needed
+    executeEvent(event) {
+        // If event object is passed, extract action/sequence
+        if (event.sequence) {
+            this.executeSequence(event.sequence, event);
+        } else {
+            // Treat event properties as action
+            this.execute(event, event);
+        }
+    }
+
+    /**
      * Processes events returned by InterpreterSystem.
      * @param {Array} events
      */
@@ -60,7 +125,7 @@ export class Game_Interpreter {
                     this.scene.setStatus(e.text);
                     break;
                 case 'PLAY_SOUND':
-                    SoundManager.play(e.name);
+                    AudioAdapter.play(e.name);
                     break;
                 case 'UPDATE_UI':
                     this.scene.updateAll();
@@ -175,7 +240,7 @@ export class Game_Interpreter {
         this.windowManager.push(this.scene.hudManager.eventWindow);
 
         this.scene.setStatus("Shrine event.");
-        SoundManager.play('UI_SELECT');
+        AudioAdapter.play('UI_SELECT');
     }
 
     async applyEventEffect(effect) {
@@ -251,7 +316,7 @@ export class Game_Interpreter {
         };
 
         this.windowManager.push(this.scene.hudManager.eventWindow);
-        SoundManager.play('DAMAGE');
+        AudioAdapter.play('DAMAGE');
     }
 
     async resolveTrap(action) {
@@ -268,7 +333,7 @@ export class Game_Interpreter {
 
             this.scene.logMessage(`The party takes ${dmg} damage.`);
             this.scene.checkPermadeath();
-            SoundManager.play('DAMAGE');
+            AudioAdapter.play('DAMAGE');
             this.scene.updateAll();
 
             this.scene.hudManager.eventWindow.updateChoices([{
@@ -325,7 +390,7 @@ export class Game_Interpreter {
             }]
         });
         this.windowManager.push(this.scene.hudManager.eventWindow);
-        SoundManager.play('ITEM_GET');
+        AudioAdapter.play('ITEM_GET');
         this.scene.updateAll();
     }
 
@@ -395,7 +460,7 @@ export class Game_Interpreter {
 
         this.windowManager.push(this.scene.hudManager.recruitWindow);
         this.scene.setStatus("Recruit encountered.");
-        SoundManager.play('UI_SELECT');
+        AudioAdapter.play('UI_SELECT');
     }
 
     closeRecruitEvent() {
@@ -425,7 +490,7 @@ export class Game_Interpreter {
         this.windowManager.push(this.scene.hudManager.eventWindow);
 
         this.scene.setStatus(`Talking to ${npc.name}.`);
-        SoundManager.play('UI_SELECT');
+        AudioAdapter.play('UI_SELECT');
     }
 
     clearEventTile() {

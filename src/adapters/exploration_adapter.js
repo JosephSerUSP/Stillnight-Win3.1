@@ -5,9 +5,13 @@ import { ExplorationSystem } from "../engine/systems/exploration.js";
  * Implements interfaces of both Game_Map and ExplorationEngine.
  */
 export class ExplorationAdapter {
-    constructor(party) {
+    /**
+     * @param {import("../objects/party.js").Game_Party} party
+     * @param {import("../engine/session/exploration_state.js").ExplorationState} [state]
+     */
+    constructor(party, state = null) {
         this.system = new ExplorationSystem();
-        this.state = null;
+        this.state = state;
         this.party = party;
     }
 

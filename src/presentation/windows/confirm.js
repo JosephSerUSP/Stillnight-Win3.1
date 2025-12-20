@@ -2,7 +2,7 @@ import { Window_Base } from "./base.js";
 import { renderCreatureInfo, createInteractiveLabel } from "./utils.js";
 import { evaluateFormula } from "../../core/utils.js";
 import { TRAIT_DEFINITIONS } from "../../../data/traits.js";
-import { EffectManager } from "../../managers/effect_manager.js";
+import { EffectAdapter } from "../../adapters/effect_adapter.js";
 
 /**
  * @class Window_Confirm
@@ -136,7 +136,9 @@ export class Window_ConfirmEffect extends Window_Base {
         item.effects.forEach(effect => {
             const key = effect.type;
             const value = effect.formula || effect.value;
-            const preview = EffectManager.getPreview(key, value, member);
+            // EffectSystem expects (key, value, target, source)
+            // member is target. source is implicit/unknown here (could be null).
+            const preview = EffectAdapter.getPreview(key, value, member, null);
             if (preview) {
                 changes.push(preview);
             }
