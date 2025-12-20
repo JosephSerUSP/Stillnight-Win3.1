@@ -149,6 +149,7 @@ export class Window_Base {
     constructor(x, y, width, height, options = {}) {
         this.embedded = options.embedded || false;
         this.animator = new WindowAnimator();
+        this.isFullyOpen = false;
 
         // Store target dimensions
         this.width = width;
@@ -243,6 +244,7 @@ export class Window_Base {
         if (this.overlay) {
             this.overlay.classList.add("active");
             this.element.style.display = "";
+            this.isFullyOpen = false;
 
             if (SettingsAdapter.windowAnimations) {
                 let targetHeight;
@@ -260,15 +262,20 @@ export class Window_Base {
                 this.animator.open(this.element, targetHeight, () => {
                     this.setChildrenVisibility('visible');
                     if (this.height === 'auto') this.element.style.height = 'auto';
+                    this.isFullyOpen = true;
+                    this.onOpenComplete();
                 });
             } else {
                 this.setChildrenVisibility('visible');
+                this.isFullyOpen = true;
+                this.onOpenComplete();
             }
         }
     }
 
     close() {
         if (this.overlay) {
+            this.isFullyOpen = false;
             if (SettingsAdapter.windowAnimations && this.overlay.classList.contains("active")) {
                 this.setChildrenVisibility('hidden');
 
@@ -295,6 +302,7 @@ export class Window_Base {
     onEscape() { this.onUserClose(); }
     onUserClose() { this.close(); }
     refresh() {}
+    onOpenComplete() {}
 
     /**
      * Updates the window title.

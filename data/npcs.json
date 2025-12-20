@@ -2,7 +2,7 @@
   "npc_alicia": {
     "name": "Alicia",
     "layout": "visual_novel",
-    "portrait": "assets/portraits/NPC_Alicia.png",
+    "portrait": "NPC_Alicia",
     "initialState": "default",
     "states": {
       "default": {
@@ -54,7 +54,7 @@
   "npc_laura": {
     "name": "Laura",
     "layout": "visual_novel",
-    "portrait": "assets/portraits/NPC_Laura.png",
+    "portrait": "NPC_Laura",
     "initialState": "default",
     "states": {
       "default": {
@@ -197,7 +197,7 @@
   "npc_daphne": {
     "name": "Daphne",
     "layout": "visual_novel",
-    "portrait": "assets/portraits/NPC_Daphne.png",
+    "portrait": "NPC_Daphne",
     "initialState": "default",
     "states": {
       "default": {
@@ -214,7 +214,7 @@
   "npc_yukio": {
     "name": "Yukio",
     "layout": "visual_novel",
-    "portrait": "assets/portraits/NPC_Yukio.png",
+    "portrait": "NPC_Yukio",
     "initialState": "default",
     "states": {
       "default": {
@@ -231,7 +231,7 @@
   "npc_geraldo": {
     "name": "Geraldo",
     "layout": "visual_novel",
-    "portrait": "assets/portraits/NPC_Geraldo.png",
+    "portrait": "NPC_Geraldo",
     "initialState": "default",
     "states": {
       "default": {

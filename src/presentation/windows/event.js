@@ -48,7 +48,7 @@ export class Window_Event extends Window_Base {
     this.vnContainer.className = "vn-container";
     this.vnContainer.style.display = "none";
     this.vnContainer.style.flexDirection = "row";
-    this.vnContainer.style.alignItems = "flex-start"; // Align top
+    this.vnContainer.style.alignItems = "stretch";
     this.vnContainer.style.gap = "10px";
     this.vnContainer.style.minHeight = "200px";
 
@@ -78,13 +78,27 @@ export class Window_Event extends Window_Base {
     this.standardBody.appendChild(this.descriptionEl);
 
     // Add click listener to skip typing
-    this.element.addEventListener('click', () => {
+    this.element.addEventListener('click', (e) => {
+        // Only skip if not clicking a button
+        if (e.target.closest('button')) return;
+
         if (this._isTyping) {
             this.finishTyping();
         }
     });
 
     this.choicesEl = this.footer;
+  }
+
+  onOpenComplete() {
+      if (this._pendingTypewriter) {
+          this.startTypewriter(
+              this._pendingTypewriter.textContent,
+              this._pendingTypewriter.targetTextEl,
+              this._pendingTypewriter.onComplete
+          );
+          this._pendingTypewriter = null;
+      }
   }
 
   setPortrait(spriteKey, emotion = 'neutral') {
@@ -179,10 +193,27 @@ export class Window_Event extends Window_Base {
           textContent = data.description || "";
       }
 
-      // Start Typewriter
-      this.typewriterEffect(textContent, this.targetTextEl, () => {
+      // Start Typewriter Logic
+      const onComplete = () => {
           this.updateChoices(data.choices);
-      });
+      };
+
+      if (this.isFullyOpen) {
+          this.startTypewriter(textContent, this.targetTextEl, onComplete);
+      } else {
+          this._pendingTypewriter = {
+              textContent,
+              targetTextEl: this.targetTextEl,
+              onComplete
+          };
+      }
+  }
+
+  startTypewriter(text, container, onComplete) {
+      if (this._isTyping) {
+          this.finishTyping();
+      }
+      this.typewriterEffect(text, container, onComplete);
   }
 
   typewriterEffect(text, container, onComplete) {
@@ -285,7 +316,10 @@ export class Window_Event extends Window_Base {
       this.footer.innerHTML = "";
       if (choices) {
           choices.forEach(ch => {
-              this.addButton(ch.label, ch.onClick);
+              this.addButton(ch.label, (e) => {
+                  e.stopPropagation();
+                  if (ch.onClick) ch.onClick(e);
+              });
           });
       }
   }
