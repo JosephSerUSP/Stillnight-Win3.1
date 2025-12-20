@@ -295,6 +295,70 @@ export class InterpreterAdapter {
                 await this.applyEventEffect(e);
             }
             break;
+        case "setFlag":
+            this.party.setFlag(effect.flag, effect.value !== undefined ? effect.value : true);
+            if (effect.onSuccess) await this.applyEventEffect(effect.onSuccess);
+            break;
+        case "giveItem":
+            {
+                const item = this.dataManager.items.find(i => i.id === effect.itemId);
+                if (item) {
+                    this.party.inventory.push(item);
+                    log(`Received ${item.name}.`);
+                    AudioAdapter.play('ITEM_GET');
+                }
+            }
+            break;
+        case "takeItem":
+            {
+                const idx = this.party.inventory.findIndex(i => i.id === effect.itemId);
+                if (idx > -1) {
+                    const item = this.party.inventory[idx];
+                    this.party.inventory.splice(idx, 1);
+                    log(`Handed over ${item.name}.`);
+                }
+            }
+            break;
+        case "ending":
+             this.scene.hudManager.eventWindow.show({
+                 title: "The Fate of Alencar",
+                 description: "You hold the Core Anchor. The void pulses around you.",
+                 style: 'terminal',
+                 choices: [
+                     {
+                         label: "Restore Alencar (Sacrifice Self)",
+                         onClick: () => {
+                             this.scene.logMessage("You merge with the Anchor. The town is saved.");
+                             this.scene.hudManager.eventWindow.show({
+                                 title: "The End",
+                                 description: "Alencar lives on.",
+                                 choices: [{ label: "Close", onClick: () => {
+                                     this.scene.runActive = false;
+                                     this.scene.setStatus("The End.");
+                                     this.closeEvent();
+                                 }}]
+                             });
+                         }
+                     },
+                     {
+                         label: "Save Yourself (Flee)",
+                         onClick: () => {
+                             this.scene.logMessage("You flee. Alencar is forgotten.");
+                             this.scene.hudManager.eventWindow.show({
+                                 title: "The End",
+                                 description: "You survive. But at what cost?",
+                                 choices: [{ label: "Close", onClick: () => {
+                                     this.scene.runActive = false;
+                                     this.scene.setStatus("The End.");
+                                     this.closeEvent();
+                                 }}]
+                             });
+                         }
+                     }
+                 ]
+             });
+             this.windowManager.push(this.scene.hudManager.eventWindow);
+             break;
         }
         this.scene.updateAll();
     }
@@ -474,18 +538,75 @@ export class InterpreterAdapter {
         if (!npc) return;
 
         let text = "";
-        if (typeof npc.dialogue === 'string') {
+        let choices = [];
+
+        if (Array.isArray(npc.dialogue)) {
+            // Find first matching condition
+            const entry = npc.dialogue.find(d => {
+                if (!d.condition) return true;
+                // Support simple AND logic with comma, e.g. "flag1,!flag2"
+                const conditions = d.condition.split(',');
+                return conditions.every(c => {
+                    let cond = c.trim();
+                    let expected = true;
+                    if (cond.startsWith('!')) {
+                        cond = cond.substring(1);
+                        expected = false;
+                    }
+                    // Check for "hasItem:itemId"
+                    if (cond.startsWith('hasItem:')) {
+                        const itemId = cond.split(':')[1];
+                        const has = this.party.inventory.some(i => i.id === itemId);
+                        return has === expected;
+                    }
+                    return this.party.getFlag(cond) === expected;
+                });
+            });
+
+            if (entry) {
+                text = entry.text;
+                if (entry.choices) {
+                    choices = entry.choices.map(ch => ({
+                        label: ch.label,
+                        onClick: async () => {
+                            // Disable buttons
+                            const footer = this.scene.hudManager.eventWindow.footer;
+                            const buttons = footer.querySelectorAll('button');
+                            buttons.forEach(b => b.disabled = true);
+
+                            if (ch.effect) {
+                                await this.applyEventEffect(ch.effect);
+                            }
+
+                            // If effect didn't close window, refresh or close?
+                            // For simplicity, we close unless effect opens another window (which it might).
+                            // But usually dialogues are one-off.
+                            // If we want multi-stage, we'd need to re-call _openNpcEvent, but that requires state update.
+                            // Since applyEventEffect is async, we can check state.
+                            // For now, close after effect.
+                            this.closeEvent();
+                        }
+                    }));
+                }
+            } else {
+                text = "...";
+            }
+        } else if (typeof npc.dialogue === 'string') {
             text = npc.dialogue;
+        }
+
+        if (choices.length === 0) {
+            choices = [{
+                label: "Leave",
+                onClick: () => this.closeEvent()
+            }];
         }
 
         this.scene.hudManager.eventWindow.show({
             title: npc.name,
             description: `"${text}"`,
             style: 'terminal',
-            choices: [{
-                label: "Leave",
-                onClick: () => this.closeEvent()
-            }]
+            choices: choices
         });
         this.windowManager.push(this.scene.hudManager.eventWindow);
 

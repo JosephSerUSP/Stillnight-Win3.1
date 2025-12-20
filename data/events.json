@@ -56,6 +56,38 @@
     "actions": [{ "type": "NPC_DIALOGUE" }]
   },
   {
+    "id": "npc_alicia",
+    "type": "npc",
+    "symbol": "A",
+    "cssClass": "tile-npc",
+    "trigger": "touch",
+    "actions": [{ "type": "NPC_DIALOGUE", "id": "alicia" }]
+  },
+  {
+    "id": "npc_laura",
+    "type": "npc",
+    "symbol": "L",
+    "cssClass": "tile-npc",
+    "trigger": "touch",
+    "actions": [{ "type": "NPC_DIALOGUE", "id": "laura" }]
+  },
+  {
+    "id": "npc_kael",
+    "type": "npc",
+    "symbol": "K",
+    "cssClass": "tile-npc",
+    "trigger": "touch",
+    "actions": [{ "type": "NPC_DIALOGUE", "id": "kael" }]
+  },
+  {
+    "id": "npc_vex",
+    "type": "npc",
+    "symbol": "V",
+    "cssClass": "tile-npc",
+    "trigger": "touch",
+    "actions": [{ "type": "NPC_DIALOGUE", "id": "vex" }]
+  },
+  {
     "id": "trap",
     "type": "trap",
     "symbol": "T",
