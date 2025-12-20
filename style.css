@@ -2,6 +2,9 @@
 :root {
     /* Desktop */
     --desktop-bg: #008080;
+    --desktop-pattern-light: rgba(255, 255, 255, 0.2);
+    --desktop-pattern-dark: rgba(0, 0, 0, 0.1);
+    --desktop-glow: rgba(255, 255, 255, 0.08);
 
     /* Window Frame */
     --window-bg: #c0c0c0;
@@ -47,6 +50,7 @@
     --bezel-light: #ffffff;
     --bezel-shadow: #808080;
     --bezel-dark: #404040;
+    --window-shadow: rgba(0, 0, 0, 0.35);
     --tooltip-bg: #ffffe1;
     --tooltip-text: #000000;
 }
@@ -67,11 +71,14 @@ html, body {
 .desktop {
     width: 100%;
     height: 100%;
+    background-color: var(--desktop-bg);
     background-image:
-        linear-gradient(45deg, rgba(255,255,255,0.2) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.2) 75%, rgba(255,255,255,0.2)),
-        linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.1) 75%, rgba(0,0,0,0.1));
-    background-size: 16px 16px;
-    background-position: 0 0, 8px 8px;
+        radial-gradient(circle at 18% 20%, var(--desktop-glow), transparent 45%),
+        radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.05), transparent 40%),
+        linear-gradient(45deg, var(--desktop-pattern-light) 25%, transparent 25%, transparent 75%, var(--desktop-pattern-light) 75%, var(--desktop-pattern-light)),
+        linear-gradient(45deg, var(--desktop-pattern-dark) 25%, transparent 25%, transparent 75%, var(--desktop-pattern-dark) 75%, var(--desktop-pattern-dark));
+    background-size: 100% 100%, 100% 100%, 16px 16px, 16px 16px;
+    background-position: center;
     position: relative;
     display: flex;
     align-items: center;
@@ -87,7 +94,10 @@ html, body {
     box-shadow:
         0 0 0 1px var(--bezel-light) inset,
         0 0 0 2px var(--bezel-shadow) inset,
-        0 0 0 3px var(--bezel-dark) inset;
+        0 0 0 3px var(--bezel-dark) inset,
+        2px 2px 0 var(--bezel-shadow),
+        8px 8px 18px var(--window-shadow);
+    border-radius: 3px;
 }
 
 /* Generic Window Header (Replaces .title-bar and .dialog-titlebar) */
@@ -100,6 +110,8 @@ html, body {
     justify-content: space-between;
     padding: 2px 4px;
     box-sizing: border-box;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 1px 0 var(--bezel-dark);
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.35);
 }
 
 /* Legacy support until JS is fully updated */
@@ -113,6 +125,8 @@ html, body {
     padding: 2px 4px;
     box-sizing: border-box;
     font-size: 11px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 1px 0 var(--bezel-dark);
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.35);
 }
 
 .title-group {
@@ -185,11 +199,21 @@ html, body {
     box-sizing: border-box;
     cursor: pointer;
     color: var(--window-text);
+    transition: transform 80ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+.win-btn:hover {
+    background-color: var(--bezel-light);
+    box-shadow: 0 0 0 1px var(--selection-bg) inset;
 }
 .win-btn:active {
     border-color: var(--bezel-dark) var(--bezel-light) var(--bezel-light) var(--bezel-dark);
     padding-top: 1px;
     padding-left: 5px;
+    transform: translate(0px, 1px);
+}
+.win-btn:focus-visible {
+    outline: 1px dashed var(--selection-bg);
+    outline-offset: 1px;
 }
 
 .window-content {
@@ -201,12 +225,16 @@ html, body {
 }
 
 .panel {
-    background-color: var(--window-bg);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.04)),
+        var(--window-bg);
     border: 2px solid var(--bezel-shadow);
     box-shadow:
         1px 1px 0 var(--bezel-light) inset,
-        -1px -1px 0 var(--bezel-dark) inset;
+        -1px -1px 0 var(--bezel-dark) inset,
+        2px 2px 0 var(--bezel-shadow);
     box-sizing: border-box;
+    border-radius: 3px;
 }
 
 /* ===== Left panel: Stack / Run controls ========================= */
@@ -231,6 +259,10 @@ html, body {
     box-shadow:
         1px 1px 0 var(--bezel-light) inset,
         -1px -1px 0 var(--bezel-dark) inset;
+    border-radius: 2px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.03)),
+        var(--window-bg);
 }
 .group-box legend {
     position: absolute;
@@ -267,6 +299,7 @@ html, body {
     cursor: pointer;
     white-space: nowrap;
     color: var(--window-text);
+    transition: background-color 120ms ease, color 120ms ease;
 }
 .card-item:hover {
     background-color: var(--bezel-shadow);
@@ -303,7 +336,7 @@ html, body {
     font-family: "Fixedsys", "Lucida Console", "Courier New", monospace;
     font-size: 11px;
     border: 1px solid var(--bezel-shadow);
-    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset, 2px 2px 8px var(--window-shadow);
     padding: 4px;
     flex-grow: 1;
     display: flex;
@@ -435,9 +468,15 @@ html, body {
     height: 20px;
     width: 20px;
     line-height: 20px;
+    transition: transform 80ms ease, background-color 120ms ease, box-shadow 120ms ease;
 }
 .tile:hover {
     background-color: var(--bezel-light);
+    box-shadow:
+        1px 1px 0 var(--bezel-light) inset,
+        -1px -1px 0 var(--bezel-dark) inset,
+        0 0 0 1px var(--selection-bg);
+    transform: translateY(-1px);
 }
 .tile-fog {
     background-color: var(--tile-fog-bg);
