@@ -1,6 +1,9 @@
 import { Scene_Base } from "./base.js";
 import { Scene_Map } from "./map.js";
 import { ThemeManager } from "../../managers/index.js";
+import { Registry } from "../../engine/data/registry.js";
+import { SessionSerializer } from "../../engine/session/serializer.js";
+import { Game_Party } from "../../objects/party.js";
 
 /**
  * @class Scene_Boot
@@ -26,7 +29,43 @@ export class Scene_Boot extends Scene_Base {
      */
     async start() {
         await this.dataManager.loadData();
+
+        // Populate Registry
+        Registry.set('items', this.dataManager.items);
+        Registry.set('skills', this.dataManager.skills);
+        Registry.set('actors', this.dataManager.actors);
+        if (this.dataManager.states) Registry.set('states', this.dataManager.states);
+        if (this.dataManager.enemies) Registry.set('enemies', this.dataManager.enemies);
+
         ThemeManager.init(this.dataManager.themes);
-        this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager));
+
+        // Load Session
+        let session;
+        // In a real implementation, we might check for a 'continue' flag or show a Title Screen first.
+        // For now, we auto-load if save exists, else new game.
+        // Or better: Scene_Map handles the "New Game" logic if session is fresh.
+        const savedData = localStorage.getItem('stillnight_save');
+        if (savedData) {
+            try {
+                session = SessionSerializer.fromJSON(JSON.parse(savedData));
+                console.log("Session loaded successfully.");
+            } catch (e) {
+                console.error("Failed to load save:", e);
+                session = this._createNewSession();
+            }
+        } else {
+            session = this._createNewSession();
+        }
+
+        this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager, session));
+    }
+
+    _createNewSession() {
+        return {
+            party: new Game_Party(),
+            exploration: null,
+            battle: null,
+            interpreter: null
+        };
     }
 }

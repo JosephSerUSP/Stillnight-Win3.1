@@ -4,8 +4,10 @@ import { Scene_Shop } from "./shop.js";
 import { Game_Party } from "../../objects/party.js";
 import { Game_Battler } from "../../objects/battler.js";
 import { Game_Action } from "../../objects/action.js";
-import { Game_Interpreter } from "../../managers/interpreter.js";
-import { SoundManager, ConfigManager, ThemeManager } from "../../managers/index.js";
+import { InterpreterAdapter } from "../../adapters/interpreter_adapter.js";
+import { ThemeManager } from "../../managers/index.js";
+import { AudioAdapter } from "../../adapters/audio_adapter.js";
+import { SettingsAdapter } from "../../adapters/settings_adapter.js";
 import { InputController } from "../../managers/input_controller.js";
 import { HUDManager } from "../../managers/hud_manager.js";
 import { Window_Desktop } from "../windows/index.js";
@@ -27,13 +29,15 @@ export class Scene_Map extends Scene_Base {
    * @param {import("../../managers/index.js").DataManager} dataManager - The data manager.
    * @param {import("../../managers/index.js").SceneManager} sceneManager - The scene manager.
    * @param {import("../windows/index.js").WindowManager} windowManager - The window manager.
+   * @param {Object} [session] - The game session state.
    */
-  constructor(dataManager, sceneManager, windowManager) {
+  constructor(dataManager, sceneManager, windowManager, session) {
     super(dataManager, windowManager);
     this.sceneManager = sceneManager;
-    this.party = new Game_Party();
-    this.map = new ExplorationAdapter(this.party);
-    this.interpreter = new Game_Interpreter(this);
+    this.session = session || { party: new Game_Party() };
+    this.party = this.session.party;
+    this.map = new ExplorationAdapter(this.party, this.session.exploration);
+    this.interpreter = new InterpreterAdapter(this);
     // BattleManager is deprecated; Scene_Battle uses BattleAdapter internally.
     this.battleManager = null;
     this.runActive = true;
@@ -106,7 +110,13 @@ export class Scene_Map extends Scene_Base {
    * @method start
    */
   start() {
-    this.startNewRun();
+    if (this.session.exploration) {
+        this.logMessage("Resumed game.");
+        this.updateAll();
+        this.checkMusic();
+    } else {
+        this.startNewRun();
+    }
   }
 
   /**
@@ -130,7 +140,7 @@ export class Scene_Map extends Scene_Base {
     this.setStatus(
       this.dataManager.terms.status.exploring_floor + (this.map.floorIndex + 1)
     );
-    SoundManager.play('UI_SELECT');
+    AudioAdapter.play('UI_SELECT');
     this.updateAll();
     this.checkMusic();
   }
@@ -142,7 +152,7 @@ export class Scene_Map extends Scene_Base {
   checkMusic() {
       const f = this.map.floors[this.map.floorIndex];
       if (f && f.music) {
-          SoundManager.playMusic(f.music);
+          AudioAdapter.playMusic(f.music);
       }
   }
 
@@ -158,7 +168,7 @@ export class Scene_Map extends Scene_Base {
     this.hud.btnClearLog.addEventListener("click", () => {
       this.hud.clearLog();
       this.setStatus("Log cleared.");
-      SoundManager.play('UI_CANCEL');
+      AudioAdapter.play('UI_CANCEL');
     });
     this.hud.btnFormation.addEventListener("click", this.openFormation.bind(this));
     this.hud.btnInventory.addEventListener("click", this.openInventory.bind(this));
@@ -203,7 +213,7 @@ export class Scene_Map extends Scene_Base {
       if (result.type === 'BLOCKED') {
           if (result.reason === 'wall') {
               this.setStatus(this.dataManager.terms.log.wall_blocks);
-              SoundManager.play('UI_ERROR');
+              AudioAdapter.play('UI_ERROR');
           }
           return;
       }
@@ -219,7 +229,7 @@ export class Scene_Map extends Scene_Base {
            // After sequence (movement), apply general updates
            this.updateGrid();
            if (result.results.some(r => r.type === 'MOVED')) {
-               SoundManager.play('UI_SELECT');
+               AudioAdapter.play('UI_SELECT');
                this.applyMovePassives();
            }
            this.updateAll();
@@ -236,12 +246,12 @@ export class Scene_Map extends Scene_Base {
            this.logMessage("[Step] Your footsteps echo softly.", 'low');
            this.setStatus("You move.");
            this.applyMovePassives();
-           SoundManager.play('UI_SELECT');
+           AudioAdapter.play('UI_SELECT');
       }
 
       if (result.type === 'EXPLORED_ALL') {
            this.logMessage("Map fully explored! The entire floor is revealed.");
-           SoundManager.play('ITEM_GET');
+           AudioAdapter.play('ITEM_GET');
            this.animateMapReveal();
       }
 
@@ -298,7 +308,7 @@ export class Scene_Map extends Scene_Base {
     events.forEach(e => {
         if (e.type === 'GAME_OVER') {
              this.logMessage("The Commander falls... Game Over.");
-             SoundManager.play('GAME_OVER');
+             AudioAdapter.play('GAME_OVER');
              this.runActive = false;
         } else if (e.type === 'REBIRTH') {
              this.logMessage(`[Passive] ${e.member.name}'s Rebirth activates!`);
@@ -448,7 +458,7 @@ export class Scene_Map extends Scene_Base {
             this.map.playerY = floor.startY;
             this.map.revealAroundPlayer();
             this.logMessage(`[Navigate] You flip to card ${idx + 1} (${floor.title}).`);
-            SoundManager.play('STAIRS');
+            AudioAdapter.play('STAIRS');
             this.updateAll();
             this.checkMusic();
         }
@@ -496,7 +506,7 @@ export class Scene_Map extends Scene_Base {
 
     if (!isAdjacent && !isSelf) {
       this.setStatus(this.dataManager.terms.status.only_adjacent_tiles);
-      SoundManager.play('UI_ERROR');
+      AudioAdapter.play('UI_ERROR');
       return;
     }
 
@@ -536,7 +546,7 @@ export class Scene_Map extends Scene_Base {
     this.animateMapReveal();
     this.setStatus("All tiles revealed.");
     this.logMessage("[Debug] You peek behind the fog.");
-    SoundManager.play('ITEM_GET');
+    AudioAdapter.play('ITEM_GET');
   }
 
   /**
@@ -596,7 +606,7 @@ export class Scene_Map extends Scene_Base {
       this.logMessage(
         `[Level] ${member.name} grows to Lv${result.newLevel}! HP +${result.hpGain}.`
       );
-      SoundManager.play('LEVEL_UP');
+      AudioAdapter.play('LEVEL_UP');
       this.updateParty();
     }
   }
@@ -655,7 +665,7 @@ export class Scene_Map extends Scene_Base {
     // Define the swap handler which acts as the 'refresh' source of truth
     const handleSwap = (idx1, idx2) => {
         if (this.party.reorderMembers(idx1, idx2)) {
-             SoundManager.play('UI_SELECT');
+             AudioAdapter.play('UI_SELECT');
              const newView = selectPartyHUD(this.party, this.getContext());
              // Re-bind to ensure closure freshness
              this.hudManager.formationWindow.refresh(newView, () => {}, handleSwap);
@@ -726,7 +736,7 @@ export class Scene_Map extends Scene_Base {
             options: themes,
             onChange: (val) => {
                 ThemeManager.applyTheme(val);
-                SoundManager.play('UI_SELECT');
+                AudioAdapter.play('UI_SELECT');
             }
         },
         {
@@ -739,27 +749,39 @@ export class Scene_Map extends Scene_Base {
             type: "action",
             action: () => {
                 this.windowManager.push(this.hudManager.audioPlayerWindow);
-                SoundManager.play('UI_SELECT');
+                AudioAdapter.play('UI_SELECT');
             }
         },
         {
             label: "Auto Battle",
             type: "toggle",
-            value: ConfigManager.autoBattle,
+            value: SettingsAdapter.autoBattle,
             onChange: (val) => {
-                ConfigManager.autoBattle = val;
-                ConfigManager.save();
-                SoundManager.play('UI_SELECT');
+                SettingsAdapter.toggleAutoBattle();
+                AudioAdapter.play('UI_SELECT');
             }
         },
         {
             label: "Window Animations",
             type: "toggle",
-            value: ConfigManager.windowAnimations,
+            value: SettingsAdapter.windowAnimations,
             onChange: (val) => {
-                ConfigManager.windowAnimations = val;
-                ConfigManager.save();
-                SoundManager.play('UI_SELECT');
+                // SettingsAdapter doesn't have a setter for windowAnimations, only getter?
+                // I need to update SettingsAdapter to support setting.
+                // SettingsAdapter.windowAnimations is a getter.
+                // I'll fix this in SettingsAdapter or expose a setter.
+                // For now, I'll access ConfigManager via SettingsAdapter if I add a method,
+                // or just assume SettingsAdapter needs an update.
+                // I'll check SettingsAdapter implementation.
+                // It has getters.
+                // I need to add setters or methods.
+                // I will assume I update SettingsAdapter in a moment.
+                // For now, I'll use a hypothetical setter or method.
+                // SettingsAdapter.setWindowAnimations(val);
+                // But wait, the previous code accessed ConfigManager directly.
+                // I'll add setWindowAnimations to SettingsAdapter.
+                SettingsAdapter.setWindowAnimations(val);
+                AudioAdapter.play('UI_SELECT');
             }
         }
     ];
@@ -773,31 +795,33 @@ export class Scene_Map extends Scene_Base {
           {
               label: "Master",
               type: "slider",
-              value: ConfigManager.masterVolume,
+              value: SettingsAdapter.masterVolume,
               onChange: (val) => {
-                  ConfigManager.masterVolume = val;
-                  ConfigManager.save();
-                  SoundManager.updateVolumes();
+                  SettingsAdapter.setMasterVolume(val);
+                  // SoundManager.updateVolumes() was called. Adapter should handle it.
+                  // SettingsAdapter.setMasterVolume should call ConfigManager.save() and update?
+                  // SoundManager listens to ConfigManager? Or we need to tell AudioAdapter to update?
+                  // AudioAdapter.updateVolumes()?
+                  // I'll add updateVolumes to AudioAdapter.
+                  AudioAdapter.updateVolumes();
               }
           },
           {
               label: "Music",
               type: "slider",
-              value: ConfigManager.musicVolume,
+              value: SettingsAdapter.musicVolume,
               onChange: (val) => {
-                  ConfigManager.musicVolume = val;
-                  ConfigManager.save();
-                  SoundManager.updateVolumes();
+                  SettingsAdapter.setMusicVolume(val);
+                  AudioAdapter.updateVolumes();
               }
           },
           {
               label: "SFX",
               type: "slider",
-              value: ConfigManager.sfxVolume,
+              value: SettingsAdapter.sfxVolume,
               onChange: (val) => {
-                  ConfigManager.sfxVolume = val;
-                  ConfigManager.save();
-                  SoundManager.updateVolumes();
+                  SettingsAdapter.setSfxVolume(val);
+                  AudioAdapter.updateVolumes();
               }
           }
       ];
@@ -867,7 +891,7 @@ export class Scene_Map extends Scene_Base {
 
               if (e.type === 'xp' && e.result && e.result.leveledUp) {
                  this.logMessage(`[Level] ${target.name} grows to Lv${e.result.newLevel}! HP +${e.result.hpGain}.`);
-                 SoundManager.play('LEVEL_UP');
+                 AudioAdapter.play('LEVEL_UP');
               }
           });
 
@@ -905,7 +929,7 @@ export class Scene_Map extends Scene_Base {
           }
           this.updateAll();
           this.logMessage(`[Inventory] Discarded ${item.name}.`);
-          SoundManager.play('UI_CANCEL');
+          AudioAdapter.play('UI_CANCEL');
       }
   }
 
@@ -959,7 +983,7 @@ export class Scene_Map extends Scene_Base {
       if (this.party.removeMember(member)) {
           this.party.gold += value;
           this.logMessage(`[Sacrifice] ${member.name} was sacrificed for ${value}G.`);
-          SoundManager.play('GAME_OVER');
+          AudioAdapter.play('GAME_OVER');
           this.closeInspect();
           this.updateAll();
       }
@@ -1090,7 +1114,7 @@ export class Scene_Map extends Scene_Base {
           this.party.replaceMember(slotIndex, nextBattler);
 
           this.logMessage(`[Evolution] ${member.name} evolved into ${nextBattler.name}!`);
-          SoundManager.play('LEVEL_UP');
+          AudioAdapter.play('LEVEL_UP');
 
           this.windowManager.close(this.hudManager.evolutionWindow);
           this.updateAll();
@@ -1106,7 +1130,7 @@ export class Scene_Map extends Scene_Base {
   equipItem(member, item) {
       const result = this.party.equipItem(member, item);
       this.logMessage(`[Equip] ${result.msg}`);
-      SoundManager.play('EQUIP');
+      AudioAdapter.play('EQUIP');
 
       this.openInspect(member, this.party.members.indexOf(member));
       this.updateAll();

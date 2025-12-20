@@ -1,0 +1,65 @@
+import { SoundManager } from "../managers/sound.js";
+
+/**
+ * Adapter for audio operations.
+ * Wraps the legacy SoundManager to prevent direct imports from presentation layer.
+ */
+export const AudioAdapter = {
+    /**
+     * Plays a sound effect.
+     * @param {string} key
+     * @param {Object} [options]
+     */
+    play(key, options) {
+        SoundManager.play(key, options);
+    },
+
+    /**
+     * Plays background music.
+     * @param {string} key
+     */
+    playMusic(key) {
+        SoundManager.playMusic(key);
+    },
+
+    /**
+     * Stops background music.
+     */
+    stopMusic() {
+        SoundManager.stopMusic();
+    },
+
+    pauseMusic() {
+        SoundManager.pauseMusic();
+    },
+
+    resumeMusic() {
+        SoundManager.resumeMusic();
+    },
+
+    isMusicPlaying() {
+        return SoundManager.isMusicPlaying();
+    },
+
+    getCurrentMusicKey() {
+        return SoundManager._currentMusicKey;
+    },
+
+    /**
+     * Legacy beep.
+     * @param {number} freq
+     * @param {number} duration
+     */
+    beep(freq, duration) {
+        SoundManager.beep(freq, duration);
+    },
+
+    getMusicKeys() {
+        // Accessing internal state of SoundManager for debug/list purposes
+        return SoundManager._midiData ? Array.from(SoundManager._midiData.keys()).sort() : [];
+    },
+
+    getSfxKeys() {
+        return SoundManager._soundMap ? Object.keys(SoundManager._soundMap).sort() : [];
+    }
+};

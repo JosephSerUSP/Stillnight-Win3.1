@@ -7,7 +7,7 @@ import { Game_Action } from "./objects/action.js";
 import { ThemeManager } from "./managers/theme.js";
 import { ConfigManager } from "./managers/config.js";
 import { SoundManager } from "./managers/sound.js";
-import { Game_Interpreter } from "./managers/interpreter.js";
+import { InterpreterAdapter } from "./adapters/interpreter_adapter.js";
 import { Scene_Boot, Scene_Map as Scene_Map_Class, Scene_Battle, Scene_Shop } from "./presentation/scenes/scenes.js";
 
 /**
@@ -31,7 +31,7 @@ export function exposeGlobals(instances = {}) {
     window.Game_Event = Game_Event;
     window.Game_Base = Game_Base;
     window.Game_Action = Game_Action;
-    window.Game_Interpreter = Game_Interpreter;
+    window.InterpreterAdapter = InterpreterAdapter;
 
     // Scenes
     window.Scene_Boot = Scene_Boot;

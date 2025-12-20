@@ -1,6 +1,6 @@
 import { Graphics } from "../../core/utils.js";
-import { ConfigManager } from "../../managers/index.js";
 import { UI } from "./builder.js";
+import { SettingsAdapter } from "../../adapters/settings_adapter.js";
 import { makeDraggable } from "./components.js";
 
 /**
@@ -244,7 +244,7 @@ export class Window_Base {
             this.overlay.classList.add("active");
             this.element.style.display = "";
 
-            if (ConfigManager.windowAnimations) {
+            if (SettingsAdapter.windowAnimations) {
                 let targetHeight;
                 if (this.height === 'auto') {
                     const savedHeight = this.element.style.height;
@@ -269,7 +269,7 @@ export class Window_Base {
 
     close() {
         if (this.overlay) {
-            if (ConfigManager.windowAnimations && this.overlay.classList.contains("active")) {
+            if (SettingsAdapter.windowAnimations && this.overlay.classList.contains("active")) {
                 this.setChildrenVisibility('hidden');
 
                 this.animator.close(this.element, () => {
