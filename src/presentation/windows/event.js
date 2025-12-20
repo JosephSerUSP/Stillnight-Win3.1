@@ -1,5 +1,5 @@
 import { Window_Base } from "./base.js";
-import { setPortrait } from "./utils.js";
+import { setPortrait, createIcon } from "./utils.js";
 
 /**
  * @class Window_Recruit
@@ -55,6 +55,8 @@ export class Window_Event extends Window_Base {
     this.portraitContainer = document.createElement("div");
     this.portraitContainer.className = "inspect-sprite"; // Use shared class
     this.portraitContainer.style.flexShrink = "0"; // Ensure it doesn't shrink
+    this.portraitContainer.style.width = "128px";
+    this.portraitContainer.style.height = "192px";
     // Background image and position set dynamically via setPortrait
 
     this.vnTextContainer = document.createElement("div");
@@ -94,7 +96,22 @@ export class Window_Event extends Window_Base {
   }
 
   show(data) {
-      this.setTitle(data.title || "Event");
+      // Custom Title Handling with Icon
+      this.titleEl.innerHTML = ""; // Clear existing
+      const titleText = data.title || "Event";
+
+      // Add Icon 113 for NPCs (Visual Novel layout)
+      if (data.layout === 'visual_novel') {
+           const icon = createIcon(113);
+           icon.style.marginRight = "6px";
+           icon.style.verticalAlign = "middle";
+           this.titleEl.appendChild(icon);
+      }
+
+      const textSpan = document.createElement("span");
+      textSpan.textContent = titleText;
+      textSpan.style.verticalAlign = "middle";
+      this.titleEl.appendChild(textSpan);
 
       const layout = data.layout || 'standard';
       this.currentData = data; // Store data for re-rendering if needed
@@ -213,7 +230,7 @@ export class Window_Event extends Window_Base {
 
           container.scrollTop = container.scrollHeight;
 
-      }, 20);
+      }, 5);
   }
 
   tokenize(text) {
