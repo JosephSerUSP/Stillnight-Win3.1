@@ -1,0 +1,35 @@
+{
+  "consumables_basic": [
+    { "id": "hp_tonic" },
+    { "id": "sigil_ink", "condition": "level:3" },
+    { "id": "whispered_lessons", "condition": "level:5" },
+    { "id": "mystic_egg", "condition": "flag:found_nest" }
+  ],
+  "accessories_special": [
+    { "id": "wind_charm" },
+    { "id": "light_amulet" },
+    { "id": "hp_boost1" },
+    { "id": "hp_boost2", "condition": "level:10" },
+    { "id": "hp_boost3", "condition": "level:20" },
+    { "id": "alert_charm", "condition": "level:5" },
+    { "id": "rear_mirror", "condition": "level:8" },
+    { "id": "mars_emblem", "condition": "flag:met_mars" },
+    { "id": "mercury_crest", "condition": "flag:met_mercury" }
+  ],
+  "weapons_basic": [
+    { "id": "silver_blade" },
+    { "id": "bone_plate" },
+    { "id": "radiant_blade_flavio", "condition": "level:5" },
+    { "id": "wind_dancer", "condition": "level:5" },
+    { "id": "water_scepter", "condition": "level:5" },
+    { "id": "holy_sword_gram", "condition": "flag:angel_blessing" }
+  ],
+  "auction_house": [
+    { "id": "exp_boost" },
+    { "id": "hermes_boots" },
+    { "id": "dark_scepter_lucille" }
+  ],
+  "default": [
+    { "id": "hp_tonic" }
+  ]
+}
