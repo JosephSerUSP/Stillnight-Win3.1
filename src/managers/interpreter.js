@@ -5,7 +5,7 @@ import {
   createInteractiveLabel,
   renderCreatureInfo
 } from "../presentation/windows/index.js";
-import { Game_Battler } from "../objects/objects.js";
+import { Game_Battler } from "../objects/battler.js";
 
 /**
  * @class Game_Interpreter
