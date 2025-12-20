@@ -1,4 +1,5 @@
 import { Window_Base } from "./base.js";
+import { setPortrait } from "./utils.js";
 
 /**
  * @class Window_Recruit
@@ -49,36 +50,21 @@ export class Window_Event extends Window_Base {
     this.vnContainer.style.flexDirection = "row";
     this.vnContainer.style.alignItems = "flex-start"; // Align top
     this.vnContainer.style.gap = "10px";
-    this.vnContainer.style.minHeight = "300px";
+    this.vnContainer.style.minHeight = "200px";
 
     this.portraitContainer = document.createElement("div");
-    this.portraitContainer.className = "vn-portrait";
-    this.portraitContainer.style.flex = "0 0 120px"; // Fixed width for portrait
-
-    this.portraitEl = document.createElement("img");
-    this.portraitEl.style.width = "100%";
-    this.portraitEl.style.height = "auto";
-    this.portraitEl.style.border = "1px solid var(--window-border)";
-    this.portraitEl.style.imageRendering = "pixelated";
-    this.portraitContainer.appendChild(this.portraitEl);
+    this.portraitContainer.className = "inspect-sprite"; // Use shared class
+    this.portraitContainer.style.flexShrink = "0"; // Ensure it doesn't shrink
+    // Background image and position set dynamically via setPortrait
 
     this.vnTextContainer = document.createElement("div");
     this.vnTextContainer.className = "vn-text";
-    this.vnTextContainer.style.flex = "1";
-    this.vnTextContainer.style.display = "flex";
-    this.vnTextContainer.style.flexDirection = "column";
 
     this.vnContainer.appendChild(this.portraitContainer);
     this.vnContainer.appendChild(this.vnTextContainer);
     this.content.appendChild(this.vnContainer);
 
-
-    // Use a panel for the text/body (Shared / Standard)
-    // In standard mode, this is appended to this.content directly (after image).
-    // In VN mode, we might move this or duplicate logic.
-    // For simplicity, let's keep descriptionEl separate or reparent it.
-
-    // Actually, let's have a dedicated text area for standard mode
+    // --- Standard Body (Text Area) ---
     this.standardBody = this.createPanel();
     this.standardBody.style.flexGrow = "1";
     this.standardBody.style.display = "flex";
@@ -89,33 +75,29 @@ export class Window_Event extends Window_Base {
     this.descriptionEl.style.marginBottom = "10px";
     this.standardBody.appendChild(this.descriptionEl);
 
-    // Initial State: Standard
-    // this.content.appendChild(this.standardBody) is handled by createPanel() usage?
-    // Wait, createPanel() creates a div but doesn't append it to content automatically unless we do.
-    // Window_Base doesn't automatically append return of createPanel().
-    // So I need to append it.
-
-    // In the previous code:
-    // const eventBody = this.createPanel();
-    // eventBody...
-    // this.descriptionEl...
-    // Wait, where was eventBody appended?
-    // The previous code:
-    // "const eventBody = this.createPanel(); ... eventBody.appendChild(this.descriptionEl);"
-    // It NEVER appended eventBody to this.content!
-    // Ah, `createPanel` usually appends to `this.content`. Let's check `Window_Base`.
-
-    // Assuming createPanel appends to content:
-    // I will use `this.descriptionEl` as the primary text target.
-    // I will move `this.descriptionEl` depending on layout.
+    // Add click listener to skip typing
+    this.element.addEventListener('click', () => {
+        if (this._isTyping) {
+            this.finishTyping();
+        }
+    });
 
     this.choicesEl = this.footer;
+  }
+
+  setPortrait(spriteKey, emotion = 'neutral') {
+      // Direct update if currently showing VN layout
+      if (this.vnContainer.style.display !== 'none') {
+          setPortrait(this.portraitContainer, spriteKey, emotion);
+          this.portraitContainer.style.display = "block";
+      }
   }
 
   show(data) {
       this.setTitle(data.title || "Event");
 
       const layout = data.layout || 'standard';
+      this.currentData = data; // Store data for re-rendering if needed
 
       if (layout === 'visual_novel') {
           // Switch to VN layout
@@ -125,88 +107,158 @@ export class Window_Event extends Window_Base {
 
           // Setup Portrait
           if (data.portrait) {
-              this.portraitEl.src = data.portrait;
+              const spriteKey = data.portrait;
+              const emotion = data.emotion || 'neutral';
+              setPortrait(this.portraitContainer, spriteKey, emotion);
               this.portraitContainer.style.display = "block";
           } else {
               this.portraitContainer.style.display = "none";
           }
 
-          // Move descriptionEl to VN text container
-          this.vnTextContainer.innerHTML = ""; // Clear wrapper
-          this.vnTextContainer.appendChild(this.descriptionEl);
-
-          // Reset styles for VN
-          this.descriptionEl.className = "event-description vn-style";
-          this.descriptionEl.style.height = "100%";
-          this.descriptionEl.style.overflowY = "auto";
+          // Target Element for Text
+          this.targetTextEl = this.vnTextContainer;
 
       } else {
           // Standard Layout
           this.vnContainer.style.display = "none";
-          this.standardBody.style.display = "flex"; // If I append standardBody to content
+          this.standardBody.style.display = "flex";
 
           const imgName = data.image || "default.png";
           this.imageEl.src = `assets/eventArt/${imgName}`;
           this.imageContainer.style.display = "block";
 
-          // Move descriptionEl to standard body
-          this.standardBody.innerHTML = "";
-          this.standardBody.appendChild(this.descriptionEl);
-
-          // Ensure standardBody is visible in content
+          // Ensure standardBody is visible
           if (!this.standardBody.parentNode) {
                this.content.appendChild(this.standardBody);
           }
+
+          this.targetTextEl = this.descriptionEl;
       }
 
-      // Populate Text
+      // Clear target
+      this.targetTextEl.innerHTML = "";
+      this.targetTextEl.className = layout === 'visual_novel' ? 'vn-text' : 'event-description';
+
       if (data.style === 'terminal') {
-          this.descriptionEl.className = "event-description terminal-style";
-          this.descriptionEl.removeAttribute("style");
-          this.descriptionEl.textContent = "";
-          if (data.description) {
-              if (Array.isArray(data.description)) {
-                  data.description.forEach(line => this.appendLog(line));
-              } else {
-                  this.appendLog(data.description);
-              }
-          }
-      } else {
-          this.descriptionEl.className = "event-description";
-          this.descriptionEl.removeAttribute("style");
-          this.descriptionEl.style.marginBottom = "10px";
-          this.descriptionEl.innerHTML = "";
-          if (data.description) {
-              if (Array.isArray(data.description)) {
-                  data.description.forEach(line => {
-                      if (line instanceof Node) {
-                          this.descriptionEl.appendChild(line);
-                      } else {
-                          const p = document.createElement("div");
-                          p.textContent = line;
-                          this.descriptionEl.appendChild(p);
-                      }
-                  });
-              } else if (data.description instanceof Node) {
-                  this.descriptionEl.appendChild(data.description);
-              } else {
-                  this.descriptionEl.textContent = data.description;
-              }
-          }
+          this.targetTextEl.classList.add('terminal-style');
       }
 
-      this.updateChoices(data.choices);
+      // Handle Text (Typewriter or Instant)
+      let textContent = "";
+      if (Array.isArray(data.description)) {
+          // Check for DOM nodes
+          const hasNodes = data.description.some(l => l instanceof Node);
+          if (hasNodes) {
+               // Render instantly
+               data.description.forEach(line => this.appendLog(line, this.targetTextEl));
+               this.updateChoices(data.choices);
+               return;
+          }
+          textContent = data.description.join('\n');
+      } else if (data.description instanceof Node) {
+          this.targetTextEl.appendChild(data.description);
+          this.updateChoices(data.choices);
+          return;
+      } else {
+          textContent = data.description || "";
+      }
+
+      // Start Typewriter
+      this.typewriterEffect(textContent, this.targetTextEl, () => {
+          this.updateChoices(data.choices);
+      });
   }
 
-  appendLog(msg) {
+  typewriterEffect(text, container, onComplete) {
+      // Clear previous interval
+      if (this._typewriterInterval) clearInterval(this._typewriterInterval);
+
+      container.innerHTML = '';
+
+      // Add cursor
+      const cursor = document.createElement('span');
+      cursor.className = 'blinking-cursor';
+      container.appendChild(cursor);
+
+      this._isTyping = true;
+      this._fullText = text;
+      this._targetContainer = container;
+      this._onComplete = onComplete;
+
+      const tokens = this.tokenize(text);
+      let tokenIndex = 0;
+      let charIndex = 0;
+
+      // Delay: 20ms
+      this._typewriterInterval = setInterval(() => {
+          if (tokenIndex >= tokens.length) {
+              this.finishTyping();
+              return;
+          }
+
+          const token = tokens[tokenIndex];
+
+          if (token.isTag) {
+              cursor.insertAdjacentHTML('beforebegin', token.text);
+              tokenIndex++;
+          } else {
+              const char = token.text[charIndex];
+              cursor.insertAdjacentText('beforebegin', char);
+              charIndex++;
+              if (charIndex >= token.text.length) {
+                  charIndex = 0;
+                  tokenIndex++;
+              }
+          }
+
+          container.scrollTop = container.scrollHeight;
+
+      }, 20);
+  }
+
+  tokenize(text) {
+      // Split by HTML tags
+      const parts = text.split(/(<[^>]+>)/g);
+      return parts.map(p => {
+          if (!p) return null;
+          return {
+              isTag: p.startsWith('<') && p.endsWith('>'),
+              text: p
+          };
+      }).filter(p => p !== null && p.text !== '');
+  }
+
+  finishTyping() {
+      if (this._typewriterInterval) clearInterval(this._typewriterInterval);
+      this._typewriterInterval = null;
+      this._isTyping = false;
+
+      if (this._targetContainer) {
+           this._targetContainer.innerHTML = this._fullText;
+
+           // Re-add cursor
+           const cursor = document.createElement('span');
+           cursor.className = 'blinking-cursor';
+           this._targetContainer.appendChild(cursor);
+           this._targetContainer.scrollTop = this._targetContainer.scrollHeight;
+      }
+
+      if (this._onComplete) {
+          this._onComplete();
+          this._onComplete = null;
+      }
+  }
+
+  appendLog(msg, container) {
+      const target = container || this.descriptionEl;
       const p = document.createElement('div');
       if (msg instanceof Node) {
           p.appendChild(msg);
       } else {
           p.textContent = msg;
       }
-      this.descriptionEl.appendChild(p);
-      this.descriptionEl.scrollTop = this.descriptionEl.scrollHeight;
+      target.appendChild(p);
+      target.scrollTop = target.scrollHeight;
   }
 
   updateImage(imageName) {
@@ -214,7 +266,7 @@ export class Window_Event extends Window_Base {
   }
 
   updateChoices(choices) {
-      this.footer.innerHTML = ""; // Clear footer
+      this.footer.innerHTML = "";
       if (choices) {
           choices.forEach(ch => {
               this.addButton(ch.label, ch.onClick);
