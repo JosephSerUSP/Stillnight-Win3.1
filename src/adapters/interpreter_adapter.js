@@ -531,7 +531,6 @@ export class InterpreterAdapter {
             this._runNpcState(npc, choice.nextState);
         } else if (choice.action === 'shop') {
              // Basic shop hook
-             this.closeEvent();
              // Trigger shop event (todo: map shopId to actual shop data)
              this.scene.startShop();
         } else if (choice.action === 'teleport') {

@@ -210,6 +210,9 @@ export class Window_Event extends Window_Base {
   }
 
   startTypewriter(text, container, onComplete) {
+      if (this._isTyping) {
+          this.finishTyping();
+      }
       this.typewriterEffect(text, container, onComplete);
   }
 
