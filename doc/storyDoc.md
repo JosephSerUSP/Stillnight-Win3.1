@@ -17,5 +17,6 @@ CPTSD.
 ????: Runs the Weapons and Armor shop. A stub.
 
 Geraldo: Runs the Auction house, where one can buy rare, unidentified items.
+Yoshio: Another summoner. At some point during the game, the both of you fight. 
 
 Daphne: Found on the 4th floor of the dungeon. ????
