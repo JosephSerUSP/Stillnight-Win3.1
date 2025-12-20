@@ -20,3 +20,6 @@ Geraldo: Runs the Auction house, where one can buy rare, unidentified items.
 Yoshio: Another summoner. At some point during the game, the both of you fight. 
 
 Daphne: Found on the 4th floor of the dungeon. ????
+
+
+TRUE ENDING: The player needs to "beat the game" several times in order to see the game's true ending - This slowly opens up layers of meta progression which eventually allows the game's "true" ending to be beaten. "Beating the game" means getting the normal ending, where they suffer a gruesome, terrifying fate at the hands of the final boss, and watch the epilogue unfold, with some slightly different sub-scenes depending on what they did on that run and the meta progression. 
