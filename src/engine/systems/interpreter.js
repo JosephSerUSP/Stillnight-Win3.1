@@ -93,7 +93,7 @@ export class InterpreterSystem {
     }
 
     _handleShop(state, command, session) {
-        return [{ type: 'SHOP_START' }];
+        return [{ type: 'SHOP_START', shopId: command.shopId }];
     }
 
     _handleShrine(state, command, session) {
