@@ -33,6 +33,19 @@ export class Game_Party {
      */
     this.inventory = [];
 
+    /**
+     * Story flags for quest tracking.
+     * @type {Object}
+     */
+    this.storyFlags = {};
+  }
+
+  setFlag(flag, value = true) {
+      this.storyFlags[flag] = value;
+  }
+
+  getFlag(flag) {
+      return !!this.storyFlags[flag];
   }
 
   /**

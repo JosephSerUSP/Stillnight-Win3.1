@@ -70,17 +70,25 @@ export class DungeonGenerator {
                     count = randInt(config.min, config.max);
                 else if (config.chance !== undefined && random() < config.chance)
                     count = 1;
+                else if (config.x !== undefined && config.y !== undefined)
+                    count = 1;
 
                 for (let i = 0; i < count; i++) {
-                    const pos = pickCell(used);
+                    let pos;
+                    if (config.x !== undefined && config.y !== undefined) {
+                        pos = [config.x, config.y];
+                    } else {
+                        pos = pickCell(used);
+                    }
+
                     if (pos) {
                         const eventData = { ...def };
 
                         // Apply overrides from config (like behavior, symbol)
                         Object.assign(eventData, config);
 
-                        // Special handling for NPC dynamic data
-                        if (def.type === "npc" && npcData.length > 0) {
+                        // Special handling for NPC dynamic data (only for generic random NPCs)
+                        if (def.id === "npc" && npcData.length > 0) {
                             const npcDef = npcData[randInt(0, npcData.length - 1)];
                             eventData.symbol = npcDef.char || "N";
                             eventData.actions = [{ type: "NPC_DIALOGUE", id: npcDef.id }];
@@ -118,6 +126,10 @@ export class DungeonGenerator {
  */
 export class RandomWalkGenerator extends DungeonGenerator {
     generate(meta, index, eventDefs, npcData, party, actors) {
+        if (meta.layout) {
+            return this.generateStatic(meta, index, eventDefs, npcData, party, actors);
+        }
+
         const tiles = this._initTiles();
         const visited = this._initVisited();
 
@@ -184,6 +196,51 @@ export class RandomWalkGenerator extends DungeonGenerator {
             visited,
             startX: startPos[0],
             startY: startPos[1],
+            discovered: false,
+        };
+    }
+
+    generateStatic(meta, index, eventDefs, npcData, party, actors) {
+        const tiles = this._initTiles();
+        const visited = this._initVisited();
+        const floorCells = [];
+        let startX = 9;
+        let startY = 17;
+
+        for (let y = 0; y < Math.min(this.MAX_H, meta.layout.length); y++) {
+            const row = meta.layout[y];
+            for (let x = 0; x < Math.min(this.MAX_W, row.length); x++) {
+                tiles[y][x] = row[x] === '.' ? '.' : '#';
+                if (row[x] === '.') {
+                    floorCells.push([x, y]);
+                }
+                if (row[x] === 'S') {
+                    tiles[y][x] = '.';
+                    startX = x;
+                    startY = y;
+                    floorCells.push([x, y]);
+                }
+            }
+        }
+
+        const events = this._populateEvents(meta, eventDefs, floorCells, npcData, party, actors);
+
+        // Ensure visited marks start
+        visited[startY][startX] = true;
+
+        return {
+            id: "F" + (index + 1),
+            title: meta.title,
+            depth: meta.depth,
+            intro: meta.intro,
+            music: meta.music,
+            encounters: meta.encounters,
+            treasures: meta.treasures,
+            tiles,
+            events,
+            visited,
+            startX: startX,
+            startY: startY,
             discovered: false,
         };
     }

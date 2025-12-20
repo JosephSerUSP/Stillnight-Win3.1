@@ -1,14 +1,183 @@
 [
   {
-    "id": "old_man",
-    "name": "Old Man",
-    "char": "N",
-    "dialogue": "It's dangerous to go alone! Take care of yourself."
+    "id": "alicia",
+    "name": "Alicia",
+    "dialogue": [
+      {
+        "condition": "alicia_quest_done",
+        "text": "Thanks again for the moss! You really brightened my day! Now if only Laura would notice..."
+      },
+      {
+        "condition": "hasItem:glow_moss",
+        "text": "Oh! You found it! That glow... it's perfect!",
+        "choices": [
+          {
+            "label": "Give Glow-Moss",
+            "effect": {
+              "type": "multi",
+              "effects": [
+                { "type": "takeItem", "itemId": "glow_moss" },
+                { "type": "setFlag", "flag": "alicia_quest_done" },
+                { "type": "xp", "target": "all", "value": 50 },
+                { "type": "message", "value": "Alicia beams at you. 'Take these Hi-Potions!'" },
+                { "type": "giveItem", "itemId": "hi_potion" },
+                { "type": "giveItem", "itemId": "hi_potion" }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "condition": "alicia_quest_started",
+        "text": "Please keep an eye out for Glow-Moss on Floor 2. It grows near the chasms."
+      },
+      {
+        "text": "Hi there! Welcome to my shop. Um, say... could you do me a favor? I'm trying to make a special potion for Laura. I need Glow-Moss from the dungeon.",
+        "choices": [
+          {
+            "label": "I'll look for it.",
+            "effect": { "type": "setFlag", "flag": "alicia_quest_started" }
+          },
+          {
+            "label": "Not right now."
+          }
+        ]
+      }
+    ]
   },
   {
-    "id": "merchant_gossip",
-    "name": "Gossip Merchant",
-    "char": "M",
-    "dialogue": "I heard the boss on the bottom floor hates light."
+    "id": "laura",
+    "name": "Laura",
+    "dialogue": [
+      {
+        "condition": "laura_quest_done",
+        "text": "Raphael... I'll never forget him. Thank you for bringing this back to me."
+      },
+      {
+        "condition": "hasItem:raphael_ring",
+        "text": "That ring... where did you get that? Is that... Raphael's?",
+        "choices": [
+          {
+            "label": "Give Ring (Tell the truth)",
+            "effect": {
+              "type": "multi",
+              "effects": [
+                { "type": "takeItem", "itemId": "raphael_ring" },
+                { "type": "setFlag", "flag": "laura_quest_done" },
+                { "type": "xp", "target": "all", "value": 100 },
+                { "type": "message", "value": "Laura weeps silently. She hands you a shield. 'He would want you to have this.'" },
+                { "type": "giveItem", "itemId": "raphael_shield" }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "condition": "laura_quest_started",
+        "text": "If you see a Crimson Lord... be careful. But please, check if they have anything... silver."
+      },
+      {
+        "text": "Hey. Keeping safe? Listen, my fiance Raphael... he went down there weeks ago. He wore silver armor and a signet ring. I know the odds, but... if you find anything...",
+        "choices": [
+          {
+            "label": "I'll keep an eye out.",
+            "effect": { "type": "setFlag", "flag": "laura_quest_started" }
+          },
+          {
+            "label": "Sorry to hear that."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "kael",
+    "name": "Kael",
+    "dialogue": [
+      {
+        "condition": "kael_quest_done",
+        "text": "This metal sings. I'll make something worthy of it."
+      },
+      {
+        "condition": "hasItem:iron_ore",
+        "text": "Ah, that weight. That's good ore. I can work with this.",
+        "choices": [
+          {
+            "label": "Give Iron Ore",
+            "effect": {
+              "type": "multi",
+              "effects": [
+                { "type": "takeItem", "itemId": "iron_ore" },
+                { "type": "setFlag", "flag": "kael_quest_done" },
+                { "type": "xp", "target": "all", "value": 75 },
+                { "type": "message", "value": "Kael nods. 'Here. Fresh from the forge.'" },
+                { "type": "giveItem", "itemId": "silver_blade" }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "condition": "kael_quest_started",
+        "text": "Iron Ore. Floor 3. Bring it to me."
+      },
+      {
+        "text": "Hmph. This rusted scrap isn't enough. I need real iron. The Golems on Floor 3 guard veins of it. Bring me some, and I'll forge you something useful.",
+        "choices": [
+          {
+            "label": "Accepted.",
+            "effect": { "type": "setFlag", "flag": "kael_quest_started" }
+          },
+          {
+            "label": "Pass."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vex",
+    "name": "Vex",
+    "dialogue": [
+      {
+        "condition": "vex_quest_done",
+        "text": "Another memory cataloged. Excellent."
+      },
+      {
+        "condition": "hasItem:memory_jar",
+        "text": "Yesss... the mist swirls. A life, captured.",
+        "choices": [
+          {
+            "label": "Give Memory Jar",
+            "effect": {
+              "type": "multi",
+              "effects": [
+                { "type": "takeItem", "itemId": "memory_jar" },
+                { "type": "setFlag", "flag": "vex_quest_done" },
+                { "type": "xp", "target": "all", "value": 150 },
+                { "type": "message", "value": "Vex hands you a pulsating egg. 'A new life for an old one.'" },
+                { "type": "giveItem", "itemId": "mystic_egg" }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "condition": "vex_quest_started",
+        "text": "Memory Jars. Floor 5. Do not break them."
+      },
+      {
+        "text": "I deal in... intangible assets. Memories. The Void eats them, but some are trapped in jars down deep. Floor 5. Bring them to me.",
+        "choices": [
+          {
+            "label": "I'll find them.",
+            "effect": { "type": "setFlag", "flag": "vex_quest_started" }
+          },
+          {
+            "label": "Creepy."
+          }
+        ]
+      }
+    ]
   }
 ]

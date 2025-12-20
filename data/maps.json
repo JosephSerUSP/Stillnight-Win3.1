@@ -1,14 +1,38 @@
 [
   {
-    "title": "Town of Stillnight",
-    "intro": "A quiet settlement on the edge of the void.",
+    "title": "Town of Alencar",
+    "intro": "The last bastion against the void.",
     "depth": 0,
     "music": "town1",
+    "layout": [
+      "###################",
+      "#.................#",
+      "#.................#",
+      "#.................#",
+      "#.................#",
+      "#.................#",
+      "#.................#",
+      "#.................#",
+      "#.................#",
+      "#.................#",
+      "#.................#",
+      "#.................#",
+      "#.................#",
+      "#.................#",
+      "#.................#",
+      "#........S........#",
+      "#.................#",
+      "#.................#",
+      "###################"
+    ],
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "count": 1 },
-      { "id": "shop", "count": 1 },
-      { "id": "npc", "count": 2 }
+      { "id": "stairs", "x": 9, "y": 15 },
+      { "id": "recovery", "x": 8, "y": 14 },
+      { "id": "shop", "x": 10, "y": 14 },
+      { "id": "npc_alicia", "x": 4, "y": 4 },
+      { "id": "npc_laura", "x": 8, "y": 4 },
+      { "id": "npc_kael", "x": 12, "y": 4 },
+      { "id": "npc_vex", "x": 16, "y": 4 }
     ],
     "treasures": [],
     "encounters": [],
@@ -32,7 +56,7 @@
           "symbol": "!",
           "cssClass": "text-danger",
           "encounters": [
-              { "id": "imp", "weight": 10 }
+              { "id": "voidWisp", "weight": 10 }
           ]
       }
     ],
@@ -46,7 +70,7 @@
   },
   {
     "title": "Floor 2: Chasm Crossing",
-    "intro": "Wind howls across a broken bridge.",
+    "intro": "Wind howls across a broken bridge. Glow-Moss grows here.",
     "depth": 2,
     "music": "dungeon1",
     "events": [
@@ -59,18 +83,18 @@
       { "id": "trap", "min": 1, "max": 2 },
       { "id": "treasure", "chance": 0.5 }
     ],
-    "treasures": ["hi_potion", "iron_sword"],
+    "treasures": ["hi_potion", "iron_sword", "glow_moss"],
     "encounters": [
       { "id": "skeleton", "weight": 8 },
       { "id": "imp", "weight": 5 },
       { "id": "wisp", "weight": 4 },
-      { "id": "ooze", "weight": 3 }
+      { "id": "windElemental", "weight": 3 }
     ],
     "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
   },
   {
     "title": "Floor 3: Rusted Choir",
-    "intro": "Broken bells sway above a dry pit.",
+    "intro": "Broken bells sway above a dry pit. Iron Ore is hidden here.",
     "depth": 3,
     "music": "dungeon1",
     "events": [
@@ -80,6 +104,7 @@
       { "id": "shrine", "chance": 0.5 },
       { "id": "recruit", "chance": 0.7 }
     ],
+    "treasures": ["iron_ore", "iron_ore", "silver_blade"],
     "encounters": [
       { "id": "golem", "weight": 6 },
       { "id": "demon", "weight": 4 },
@@ -89,7 +114,7 @@
   },
   {
     "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
+    "intro": "Relic pedestals gleam. A Crimson Lord stalks this hall.",
     "depth": 4,
     "music": "dungeon1",
     "events": [
@@ -98,7 +123,17 @@
       { "id": "enemy", "min": 5, "max": 7 },
       { "id": "shrine", "chance": 0.5 },
       { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 }
+      { "id": "recruit", "chance": 0.5 },
+      {
+          "id": "enemy",
+          "count": 1,
+          "behavior": "chase",
+          "symbol": "!",
+          "cssClass": "text-danger",
+          "encounters": [
+              { "id": "crimsonLord", "weight": 10 }
+          ]
+      }
     ],
     "encounters": [
       { "id": "demon", "weight": 8 },
@@ -109,7 +144,7 @@
   },
   {
     "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
+    "intro": "Walls whisper of ancient oaths. Memory Jars are scattered.",
     "depth": 5,
     "music": "dungeon1",
     "events": [
@@ -119,25 +154,81 @@
       { "id": "shrine", "chance": 0.4 },
       { "id": "recruit", "chance": 0.4 }
     ],
+    "treasures": ["memory_jar", "memory_jar", "hp_boost1"],
     "encounters": [
       { "id": "crimsonLord", "weight": 2 },
       { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
+      { "id": "highPixie", "weight": 5 },
+      { "id": "shadowStalker", "weight": 2 }
     ],
     "recruits": ["demon", "angel"]
   },
   {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
+    "title": "Floor 6: Deep Archives",
+    "intro": "Lost knowledge rots here.",
     "depth": 6,
     "music": "dungeon1",
     "events": [
-      { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.2 },
+      { "id": "enemy", "min": 5, "max": 8 }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
+      { "id": "shadowStalker", "weight": 5 },
+      { "id": "incubus", "weight": 5 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Floor 7: Void Sanctum - Outer",
+    "intro": "Reality begins to fray.",
+    "depth": 7,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "enemy", "min": 6, "max": 9 }
+    ],
+    "encounters": [
+      { "id": "voidWisp", "weight": 8 },
+      { "id": "shadowStalker", "weight": 5 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Floor 8: Void Sanctum - Inner",
+    "intro": "The silence is deafening.",
+    "depth": 8,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "enemy", "min": 7, "max": 10 }
+    ],
+    "encounters": [
+      { "id": "crimsonLord", "weight": 5 },
+      { "id": "voidWisp", "weight": 5 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Floor 9: The Erasure",
+    "intro": "The end of all things.",
+    "depth": 9,
+    "music": "dungeon1",
+    "events": [
+      { "id": "recovery", "count": 1 },
+      {
+          "id": "enemy",
+          "count": 1,
+          "behavior": "chase",
+          "symbol": "Ω",
+          "cssClass": "text-danger",
+          "encounters": [
+              { "id": "erasure", "weight": 10 }
+          ]
+      }
+    ],
+    "encounters": [
+      { "id": "erasure", "weight": 10 }
     ],
     "recruits": []
   }

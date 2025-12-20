@@ -14,6 +14,20 @@
     ]
   },
   {
+    "id": "hi_potion",
+    "name": "Hi-Potion",
+    "type": "consumable",
+    "cost": 50,
+    "description": "Heals 50 HP. Crafted with Glow-Moss.",
+    "icon": 53,
+    "effects": [
+      {
+        "type": "hp",
+        "value": 50
+      }
+    ]
+  },
+  {
     "id": "sigil_ink",
     "name": "Sigil Ink",
     "type": "consumable",
@@ -40,6 +54,51 @@
         "value": 6
       }
     ]
+  },
+  {
+    "id": "glow_moss",
+    "name": "Glow-Moss",
+    "type": "key_item",
+    "cost": 0,
+    "description": "Luminescent moss used in alchemy. Alicia needs this.",
+    "icon": 60,
+    "effects": []
+  },
+  {
+    "id": "iron_ore",
+    "name": "Iron Ore",
+    "type": "key_item",
+    "cost": 0,
+    "description": "Raw iron suitable for forging. Kael needs this.",
+    "icon": 61,
+    "effects": []
+  },
+  {
+    "id": "raphael_ring",
+    "name": "Raphael's Ring",
+    "type": "key_item",
+    "cost": 0,
+    "description": "A signet ring bearing the crest of a fallen knight. Laura needs this.",
+    "icon": 62,
+    "effects": []
+  },
+  {
+    "id": "memory_jar",
+    "name": "Memory Jar",
+    "type": "key_item",
+    "cost": 0,
+    "description": "A jar containing a swirling mist of memories. Vex collects these.",
+    "icon": 63,
+    "effects": []
+  },
+  {
+    "id": "eternal_rose",
+    "name": "Eternal Rose",
+    "type": "key_item",
+    "cost": 0,
+    "description": "A crystal rose that never wilts. A symbol of undying love.",
+    "icon": 64,
+    "effects": []
   },
   {
     "id": "silver_blade",
@@ -74,6 +133,26 @@
         "code": "PARAM_PLUS",
         "dataId": "maxHp",
         "value": 3
+      }
+    ]
+  },
+  {
+    "id": "raphael_shield",
+    "name": "Raphael's Shield",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 0,
+    "icon": 170,
+    "description": "A heavy shield that protects the whole party.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "def",
+        "value": 2
+      },
+      {
+        "code": "REAR_GUARD",
+        "value": 1
       }
     ]
   },
@@ -360,6 +439,17 @@
         "code": "ELEMENT_CHANGE",
         "dataId": "Green"
       }
+    ]
+  },
+  {
+    "id": "core_anchor",
+    "name": "Core Anchor",
+    "type": "consumable",
+    "cost": 0,
+    "icon": 185,
+    "description": "The stabilizer of reality. Use to decide the fate of Alencar.",
+    "effects": [
+      { "type": "ending" }
     ]
   }
 ]
