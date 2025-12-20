@@ -57,7 +57,7 @@
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 3, "max": 4 },
       { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
+      { "id": "npc_dungeon_merchant", "chance": 0.5 },
       { "id": "recruit", "chance": 0.6 },
       { "id": "trap", "min": 1, "max": 2 },
       { "id": "treasure", "chance": 0.5 }
@@ -100,7 +100,7 @@
       { "id": "recovery", "chance": 0.2 },
       { "id": "enemy", "min": 5, "max": 7 },
       { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
+      { "id": "npc_dungeon_merchant", "chance": 0.5 },
       { "id": "recruit", "chance": 0.5 },
       { "id": "npc_daphne", "count": 1 }
     ],

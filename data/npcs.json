@@ -152,6 +152,27 @@
       }
     }
   },
+  "npc_dungeon_merchant": {
+    "name": "Wandering Merchant",
+    "layout": "visual_novel",
+    "initialState": "default",
+    "states": {
+      "default": {
+        "text": "A friendly face in the dark! Care for some supplies? It's dangerous ahead.",
+        "choices": [
+          {
+            "label": "Show me what you have",
+            "action": "shop",
+            "shopId": "dungeon_merchant"
+          },
+          {
+            "label": "No thanks",
+            "action": "close"
+          }
+        ]
+      }
+    }
+  },
   "npc_weapon_shop": {
     "name": "Weaponsmith",
     "layout": "visual_novel",

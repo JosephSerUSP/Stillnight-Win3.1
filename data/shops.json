@@ -36,5 +36,14 @@
       { "id": "exp_boost", "condition": "gold:5000" },
       { "id": "hermes_boots", "condition": "level:10" }
     ]
+  },
+  "dungeon_merchant": {
+    "items": [
+      { "id": "hp_tonic" },
+      { "id": "sigil_ink" },
+      { "id": "bone_plate" },
+      { "id": "hp_boost1" },
+      { "id": "mystic_egg", "condition": "level:10" }
+    ]
   }
 }
