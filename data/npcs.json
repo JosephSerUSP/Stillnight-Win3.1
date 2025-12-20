@@ -1,14 +1,53 @@
 [
   {
-    "id": "old_man",
-    "name": "Old Man",
-    "char": "N",
-    "dialogue": "It's dangerous to go alone! Take care of yourself."
+    "id": "alicia",
+    "name": "Alicia",
+    "char": "A",
+    "storylineId": "alicia_arc",
+    "dialogues": [
+      { "stage": 0, "text": "Oh! You're back. If you find any luminous petals, Laura might finally smile at something I made." },
+      { "stage": 1, "text": "Petals that glow pink in the dark... they're real, right?" },
+      { "stage": 2, "text": "They smell like sunrise! Laura will have to notice this brew." },
+      { "stage": 3, "text": "That orchid? It'll taste bitter, but it might give me courage." },
+      { "stage": 4, "text": "When you return from the Sanctum, I'll stop hinting and just tell Laura everything." }
+    ]
   },
   {
-    "id": "merchant_gossip",
-    "name": "Gossip Merchant",
+    "id": "laura",
+    "name": "Laura",
+    "char": "L",
+    "storylineId": "laura_arc",
+    "dialogues": [
+      { "stage": 0, "text": "If you see a radiant band down there... I dropped it during a fight with Raphael." },
+      { "stage": 1, "text": "The band belonged to me, not to the wedding. Find it and maybe I'll remember who I am." },
+      { "stage": 2, "text": "Thanks for the band. I'll talk to Raphael once you're safe." },
+      { "stage": 3, "text": "That sigil is gorgeous. Let me etch a promise into it—come home." }
+    ]
+  },
+  {
+    "id": "bram",
+    "name": "Bram",
+    "char": "B",
+    "storylineId": "bram_arc",
+    "dialogues": [
+      { "stage": 0, "text": "Steel keeps my hands busy. Bring me something rarer than iron, and I'll make it sing." },
+      { "stage": 1, "text": "Chasm ore takes an edge better than anything. Got any?" },
+      { "stage": 2, "text": "The balance on this blade is thanks to you. There's hotter metal deeper in." },
+      { "stage": 3, "text": "That embered alloy should fix my reputation." },
+      { "stage": 4, "text": "Whatever waits in the Sanctum, this forge is ready when you get back." }
+    ]
+  },
+  {
+    "id": "mara",
+    "name": "Mara",
     "char": "M",
-    "dialogue": "I heard the boss on the bottom floor hates light."
+    "storylineId": "mara_arc",
+    "dialogues": [
+      { "stage": 0, "text": "If you stumble on an antique emblem, don't tell anyone. I pawned mine when debts came due." },
+      { "stage": 1, "text": "Those emblems used to mean something. Now they're just leverage." },
+      { "stage": 2, "text": "With the emblem back, I can tear up a few IOUs. Got room for more secrets?" },
+      { "stage": 3, "text": "Somewhere down there is a sealed ledger of who profited from the Sanctum." },
+      { "stage": 4, "text": "Ledger's ash, promises kept. Thanks for letting me choose." }
+    ]
   }
 ]

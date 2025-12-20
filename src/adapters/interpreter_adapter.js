@@ -6,6 +6,7 @@ import {
   renderCreatureInfo
 } from "../presentation/windows/index.js";
 import { Game_Battler } from "../objects/battler.js";
+import { StorySystem } from "../engine/systems/story.js";
 
 /**
  * @class InterpreterAdapter
@@ -160,13 +161,28 @@ export class InterpreterAdapter {
                 case 'TRAP_TRIGGER':
                     this._triggerTrap(e.action);
                     break;
-                case 'WALL_BROKEN':
-                    this._resolveBrokenWall(e.x, e.y);
-                    break;
-                default:
-                    console.warn(`InterpreterAdapter: Unhandled event type '${e.type}'`);
-            }
+            case 'WALL_BROKEN':
+                this._resolveBrokenWall(e.x, e.y);
+                break;
+            case 'ADD_ITEM':
+                this._applyItemReward(e);
+                break;
+            case 'ADD_GOLD':
+                this.party.gold += e.amount || 0;
+                if (e.amount) this.scene.logMessage(`[Gold] +${e.amount}G.`);
+                this.scene.updateAll();
+                break;
+            case 'STORY_TRIGGER':
+                if (e.trigger) this.scene.handleStoryTrigger({ type: 'action', id: e.trigger });
+                break;
+            case 'CLEAR_EVENT':
+                this.clearEventTile();
+                this.scene.updateGrid();
+                break;
+            default:
+                console.warn(`InterpreterAdapter: Unhandled event type '${e.type}'`);
         }
+    }
     }
 
     // --- Legacy Implementation Details (UI stuff) ---
@@ -200,6 +216,7 @@ export class InterpreterAdapter {
         this.scene.logMessage(`[Floor] You descend to: ${f.title}`);
         this.scene.logMessage(`[Floor] ${f.intro}`);
         this.scene.setStatus("Descending.");
+        this.scene.handleStoryTrigger({ type: 'reach_floor', depth: f.depth });
         this.scene.updateAll();
         this.scene.checkMusic();
     }
@@ -370,6 +387,7 @@ export class InterpreterAdapter {
         const item = this.dataManager.items.find(i => i.id === itemId) || this.dataManager.items[0];
 
         this.party.inventory.push(item);
+        this.scene.handleStoryTrigger({ type: 'item', itemId: item.id });
         this.clearEventTile();
 
         const itemLabel = createInteractiveLabel(item, 'item');
@@ -474,9 +492,17 @@ export class InterpreterAdapter {
         if (!npc) return;
 
         let text = "";
-        if (typeof npc.dialogue === 'string') {
+        const storyline = npc.storylineId ? StorySystem.getState(this.party, npc.storylineId) : null;
+        if (Array.isArray(npc.dialogues) && storyline) {
+            const entry = npc.dialogues.find(d => d.stage === storyline.stage) || npc.dialogues.find(d => d.stage === 'any');
+            if (entry) text = entry.text;
+        } else if (typeof npc.dialogue === 'string') {
             text = npc.dialogue;
+        } else if (Array.isArray(npc.dialogue)) {
+            text = npc.dialogue.join("\n");
         }
+
+        this.scene.handleStoryTrigger({ type: 'npc', id: npc.id });
 
         this.scene.hudManager.eventWindow.show({
             title: npc.name,
@@ -499,6 +525,19 @@ export class InterpreterAdapter {
             this.scene.currentInteractionEvent = null;
         }
         this.scene.updateGrid();
+    }
+
+    _applyItemReward(event) {
+        const item = this.dataManager.items.find((i) => i.id === event.itemId);
+        if (!item) return;
+        const count = event.count || 1;
+        for (let i = 0; i < count; i++) {
+            this.party.addItem(item);
+        }
+        const label = count > 1 ? `${count}x ${item.name}` : item.name;
+        this.scene.logMessage(`[Item] Obtained ${label}.`);
+        this.scene.handleStoryTrigger({ type: 'item', itemId: item.id });
+        this.scene.updateAll();
     }
 
     attemptRecruit(recruit) {

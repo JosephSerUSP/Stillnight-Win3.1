@@ -26,6 +26,7 @@ export class Window_StackNav extends Window_Base {
                             children: [
                                 { type: 'button', props: { id: 'btn-new-run', className: 'win-btn', label: 'New Run' } },
                                 { type: 'button', props: { id: 'btn-reveal-all', className: 'win-btn', label: 'Reveal' } },
+                                { type: 'button', props: { id: 'btn-journal', className: 'win-btn', label: 'Journal' } },
                                 { type: 'button', props: { id: 'btn-help', className: 'win-btn', label: '?', style: { width: '24px', minWidth: '24px', padding: '0' } } }
                             ]
                         },
@@ -82,6 +83,7 @@ export class Window_StackNav extends Window_Base {
 
         this.btnNewRun = root.querySelector("#btn-new-run");
         this.btnRevealAll = root.querySelector("#btn-reveal-all");
+        this.btnJournal = root.querySelector("#btn-journal");
         this.btnSettings = root.querySelector("#btn-settings");
         this.btnHelp = root.querySelector("#btn-help");
         this.cardIndexLabelEl = root.querySelector("#card-index-label");

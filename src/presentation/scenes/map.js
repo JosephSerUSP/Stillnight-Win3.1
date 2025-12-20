@@ -12,6 +12,7 @@ import { InputAdapter } from "../../adapters/input_adapter.js";
 import { HUDManager } from "../../managers/hud_manager.js";
 import { Window_Desktop } from "../windows/index.js";
 import { ProgressionSystem } from "../../engine/systems/progression.js";
+import { StorySystem } from "../../engine/systems/story.js";
 import { ExplorationAdapter } from "../../adapters/exploration_adapter.js";
 import { selectPartyHUD } from "../selectors/party.js";
 import { selectInventory } from "../selectors/inventory.js";
@@ -36,6 +37,7 @@ export class Scene_Map extends Scene_Base {
     this.sceneManager = sceneManager;
     this.session = session || { party: new Game_Party() };
     this.party = this.session.party;
+    StorySystem.ensureFlags(this.party);
     this.map = new ExplorationAdapter(this.party, this.session.exploration);
     this.interpreter = new InterpreterAdapter(this);
     // BattleManager is deprecated; Scene_Battle uses BattleAdapter internally.
@@ -126,6 +128,7 @@ export class Scene_Map extends Scene_Base {
   startNewRun() {
     if (this.sceneManager.currentScene() !== this) return;
     this.party.createInitialMembers(this.dataManager);
+    StorySystem.ensureFlags(this.party);
     this.map.initFloors(this.dataManager.maps, this.dataManager.events, this.dataManager.npcs, this.party);
     this.runActive = true;
     this.map.floorIndex = 0;
@@ -141,6 +144,7 @@ export class Scene_Map extends Scene_Base {
       this.dataManager.terms.status.exploring_floor + (this.map.floorIndex + 1)
     );
     AudioAdapter.play('UI_SELECT');
+    this.handleStoryTrigger({ type: 'run_started' });
     this.updateAll();
     this.checkMusic();
   }
@@ -163,6 +167,7 @@ export class Scene_Map extends Scene_Base {
   addEventListeners() {
     this.hud.btnNewRun.addEventListener("click", this.startNewRun.bind(this));
     this.hud.btnRevealAll.addEventListener("click", this.revealAllFloors.bind(this));
+    this.hud.btnJournal.addEventListener("click", this.openJournal.bind(this));
     this.hud.btnSettings.addEventListener("click", this.openSettings.bind(this));
     this.hud.btnHelp.addEventListener("click", this.openHelp.bind(this));
     this.hud.btnClearLog.addEventListener("click", () => {
@@ -286,6 +291,59 @@ export class Scene_Map extends Scene_Base {
     if (this.windowManager.stack.includes(this.hudManager.eventWindow)) {
         this.hudManager.eventWindow.appendLog(msg);
     }
+  }
+
+  openJournal() {
+      const entries = StorySystem.getJournalEntries(this.party);
+      this.hudManager.journalWindow.renderEntries(entries);
+      this.windowManager.push(this.hudManager.journalWindow);
+      this.setStatus("Reviewing journal.");
+  }
+
+  handleStoryTrigger(trigger) {
+      const updates = StorySystem.notify(this.party, trigger);
+      if (!updates || updates.length === 0) return;
+
+      updates.forEach((update) => {
+          const { storyline, step, consumeItems } = update;
+          this.logMessage(`[Story] ${storyline.title}: ${step.title}`);
+          if (step.log) this.logMessage(step.log);
+          if (consumeItems && consumeItems.length > 0) {
+              consumeItems.forEach((id) => {
+                  const item = this.dataManager.items.find((i) => i.id === id);
+                  this.party.removeItem(id, 1);
+                  if (item) this.logMessage(`[Item] Used ${item.name}.`);
+              });
+          }
+          if (step.reward) {
+              this.applyStoryReward(step.reward, storyline.title);
+          }
+      });
+
+      this.updateAll();
+  }
+
+  applyStoryReward(reward, sourceTitle = 'Story') {
+      if (!reward) return;
+      if (reward.gold) {
+          this.party.gold += reward.gold;
+          this.logMessage(`[${sourceTitle}] +${reward.gold}G.`);
+      }
+      if (reward.items) {
+          reward.items.forEach((entry) => {
+              const itemId = typeof entry === 'string' ? entry : entry.id;
+              const count = typeof entry === 'string' ? 1 : entry.count || 1;
+              const item = this.dataManager.items.find((i) => i.id === itemId);
+              if (!item) return;
+              for (let i = 0; i < count; i++) this.party.addItem(item);
+              const label = count > 1 ? `${count}x ${item.name}` : item.name;
+              this.logMessage(`[${sourceTitle}] Gained ${label}.`);
+          });
+      }
+      if (reward.xp) {
+          this.party.members.forEach((m) => this.gainXp(m, reward.xp, true));
+          this.logMessage(`[${sourceTitle}] Each companion reflects on what you've learned (+${reward.xp} XP).`);
+      }
   }
 
   /**

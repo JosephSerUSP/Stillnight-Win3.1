@@ -230,9 +230,19 @@
     "icon": 71,
     "description": "Lucent blade carrying the blessings of the sun.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
-      { "code": "ELEMENT_CHANGE", "dataId": "Red" },
-      { "code": "CRI", "value": 0.20 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 3
+      },
+      {
+        "code": "ELEMENT_CHANGE",
+        "dataId": "Red"
+      },
+      {
+        "code": "CRI",
+        "value": 0.2
+      }
     ]
   },
   {
@@ -244,9 +254,19 @@
     "icon": 72,
     "description": "Leaf-shaped daggers that strike with the speed of wind.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
-      { "code": "ELEMENT_CHANGE", "dataId": "Green" },
-      { "code": "CRI", "value": 0.15 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 3
+      },
+      {
+        "code": "ELEMENT_CHANGE",
+        "dataId": "Green"
+      },
+      {
+        "code": "CRI",
+        "value": 0.15
+      }
     ]
   },
   {
@@ -258,9 +278,19 @@
     "icon": 73,
     "description": "Leaf-shaped daggers that strike with the speed of wind.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
-      { "code": "ELEMENT_CHANGE", "dataId": "Blue" },
-      { "code": "CRI", "value": 0.15 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 3
+      },
+      {
+        "code": "ELEMENT_CHANGE",
+        "dataId": "Blue"
+      },
+      {
+        "code": "CRI",
+        "value": 0.15
+      }
     ]
   },
   {
@@ -320,7 +350,10 @@
     "icon": 81,
     "description": "Its magicked properties imbue the wearer with elemental energy.",
     "traits": [
-      { "code": "ELEMENT_CHANGE", "dataId": "Red" }
+      {
+        "code": "ELEMENT_CHANGE",
+        "dataId": "Red"
+      }
     ]
   },
   {
@@ -361,5 +394,82 @@
         "dataId": "Green"
       }
     ]
+  },
+  {
+    "id": "luminous_petal",
+    "name": "Luminous Petal",
+    "type": "key",
+    "cost": 0,
+    "description": "A petal that keeps its blush even in darkness."
+  },
+  {
+    "id": "nightglass_shard",
+    "name": "Nightglass Shard",
+    "type": "key",
+    "cost": 0,
+    "description": "Fossilized night that hums with dormant light."
+  },
+  {
+    "id": "chasm_ore",
+    "name": "Chasm Ore",
+    "type": "key",
+    "cost": 0,
+    "description": "Ore that crackles with trapped lightning."
+  },
+  {
+    "id": "antique_emblem",
+    "name": "Antique Emblem",
+    "type": "key",
+    "cost": 0,
+    "description": "An emblem stamped with a forgotten auction house crest."
+  },
+  {
+    "id": "radiant_band",
+    "name": "Radiant Band",
+    "type": "key",
+    "cost": 0,
+    "description": "A sun-gold ring that still remembers vows."
+  },
+  {
+    "id": "sunless_orchid",
+    "name": "Sunless Orchid",
+    "type": "key",
+    "cost": 0,
+    "description": "An orchid that blooms where no sun reaches."
+  },
+  {
+    "id": "warded_mold",
+    "name": "Warded Mold",
+    "type": "key",
+    "cost": 0,
+    "description": "Bram's tempered mold for shaping impossible metals."
+  },
+  {
+    "id": "gleaming_setting",
+    "name": "Gleaming Setting",
+    "type": "key",
+    "cost": 0,
+    "description": "Laura's work, ready to cradle something priceless."
+  },
+  {
+    "id": "warden_sigil",
+    "name": "Warden Sigil",
+    "type": "key",
+    "cost": 0,
+    "description": "The only seal the Sanctum's gate will respect."
+  },
+  {
+    "id": "embered_alloy",
+    "name": "Embered Alloy",
+    "type": "key",
+    "cost": 0,
+    "description": "Metal that stays hot long after the forge cools."
+  },
+  {
+    "id": "sealed_ledger",
+    "name": "Sealed Ledger",
+    "type": "key",
+    "cost": 0,
+    "description": "A ledger of names bound shut with crimson wax."
   }
 ]
