@@ -48,7 +48,7 @@ export class Window_Event extends Window_Base {
     this.vnContainer.className = "vn-container";
     this.vnContainer.style.display = "none";
     this.vnContainer.style.flexDirection = "row";
-    this.vnContainer.style.alignItems = "flex-start"; // Align top
+    this.vnContainer.style.alignItems = "stretch"; // Match height
     this.vnContainer.style.gap = "10px";
     this.vnContainer.style.height = "192px";
 
@@ -62,6 +62,8 @@ export class Window_Event extends Window_Base {
     this.vnTextContainer = document.createElement("div");
     this.vnTextContainer.className = "vn-text";
     this.vnTextContainer.style.padding = "12px";
+    this.vnTextContainer.style.flex = "1"; // Fill remaining width and stretch height
+    this.vnTextContainer.style.overflowY = "auto"; // Scroll if text is too long
 
     this.vnContainer.appendChild(this.portraitContainer);
     this.vnContainer.appendChild(this.vnTextContainer);
@@ -185,6 +187,9 @@ export class Window_Event extends Window_Base {
       this.typewriterEffect(textContent, this.targetTextEl, () => {
           this.updateChoices(data.choices);
       });
+
+      // Ensure window is visible
+      this.open();
   }
 
   typewriterEffect(text, container, onComplete) {
