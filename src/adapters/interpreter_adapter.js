@@ -140,7 +140,7 @@ export class InterpreterAdapter {
                     this.scene.startBattle(e.x, e.y);
                     break;
                 case 'SHOP_START':
-                    this.scene.startShop();
+                    this.scene.startShop(e.shopId);
                     break;
                 case 'SHRINE_OPEN':
                     this._openShrineEvent();
@@ -530,9 +530,8 @@ export class InterpreterAdapter {
         } else if (choice.nextState) {
             this._runNpcState(npc, choice.nextState);
         } else if (choice.action === 'shop') {
-             // Basic shop hook
-             // Trigger shop event (todo: map shopId to actual shop data)
-             this.scene.startShop();
+             // Trigger shop event with optional specific shop ID
+             this.scene.startShop(choice.shopId);
         } else if (choice.action === 'teleport') {
             this.closeEvent();
             // TODO: Teleport logic
