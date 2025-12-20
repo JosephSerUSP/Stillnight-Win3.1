@@ -17,3 +17,5 @@ CPTSD.
 ????: Runs the Weapons and Armor shop. A stub.
 
 ????: Runs the Auction house, where one can buy rare, unidentified items. A stub. 
+
+Daphne: Found on the 4th floor of the dungeon. ????
