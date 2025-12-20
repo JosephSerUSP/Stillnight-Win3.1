@@ -19,6 +19,17 @@ export default [
         ignores: ["tests/**"]
     },
     {
+        files: ["src/engine/**"],
+        rules: {
+            "no-restricted-imports": ["error", {
+                "patterns": [{
+                    "group": ["../presentation/**", "../../presentation/**"],
+                    "message": "Engine must remain presentation-agnostic."
+                }]
+            }]
+        }
+    },
+    {
         files: ["src/presentation/windows/**"],
         rules: {
             "no-restricted-imports": ["error", {
