@@ -110,6 +110,7 @@ export class DataManager {
       terms: "data/terms.json",
       themes: "data/themes.json",
       sounds: "data/sounds.json",
+      shops: "data/shops.json",
     };
 
     try {
