@@ -152,5 +152,109 @@
         "effect": { "type": "gold", "value": 10 }
       }
     ]
+  },
+  {
+    "id": "story_luminous_cache",
+    "type": "story",
+    "symbol": "★",
+    "cssClass": "tile-story",
+    "trigger": "touch",
+    "actions": [
+      { "type": "MESSAGE", "text": "Moonlit petals spill from a collapsed crate." },
+      { "type": "GIVE_ITEM", "itemId": "luminous_petal" },
+      { "type": "STORY_TRIGGER", "storyTrigger": "luminous_cache" },
+      { "type": "CLEAR_EVENT" }
+    ]
+  },
+  {
+    "id": "story_nightglass_cache",
+    "type": "story",
+    "symbol": "★",
+    "cssClass": "tile-story",
+    "trigger": "touch",
+    "actions": [
+      { "type": "MESSAGE", "text": "A fossilized shard of night sits in a ritual circle." },
+      { "type": "GIVE_ITEM", "itemId": "nightglass_shard" },
+      { "type": "STORY_TRIGGER", "storyTrigger": "nightglass_cache" },
+      { "type": "CLEAR_EVENT" }
+    ]
+  },
+  {
+    "id": "story_chasm_ore_cache",
+    "type": "story",
+    "symbol": "★",
+    "cssClass": "tile-story",
+    "trigger": "touch",
+    "actions": [
+      { "type": "MESSAGE", "text": "Ore veins glitter with trapped lightning." },
+      { "type": "GIVE_ITEM", "itemId": "chasm_ore" },
+      { "type": "STORY_TRIGGER", "storyTrigger": "chasm_ore_cache" },
+      { "type": "CLEAR_EVENT" }
+    ]
+  },
+  {
+    "id": "story_antique_emblem_cache",
+    "type": "story",
+    "symbol": "★",
+    "cssClass": "tile-story",
+    "trigger": "touch",
+    "actions": [
+      { "type": "MESSAGE", "text": "An emblem rests atop auction scrip left to rot." },
+      { "type": "GIVE_ITEM", "itemId": "antique_emblem" },
+      { "type": "STORY_TRIGGER", "storyTrigger": "antique_emblem_cache" },
+      { "type": "CLEAR_EVENT" }
+    ]
+  },
+  {
+    "id": "story_radiant_band_cache",
+    "type": "story",
+    "symbol": "★",
+    "cssClass": "tile-story",
+    "trigger": "touch",
+    "actions": [
+      { "type": "MESSAGE", "text": "A golden band glows faintly beneath dust." },
+      { "type": "GIVE_ITEM", "itemId": "radiant_band" },
+      { "type": "STORY_TRIGGER", "storyTrigger": "radiant_band_cache" },
+      { "type": "CLEAR_EVENT" }
+    ]
+  },
+  {
+    "id": "story_sunless_orchid_cache",
+    "type": "story",
+    "symbol": "★",
+    "cssClass": "tile-story",
+    "trigger": "touch",
+    "actions": [
+      { "type": "MESSAGE", "text": "A sunless orchid blooms in blood-warm air." },
+      { "type": "GIVE_ITEM", "itemId": "sunless_orchid" },
+      { "type": "STORY_TRIGGER", "storyTrigger": "sunless_orchid_cache" },
+      { "type": "CLEAR_EVENT" }
+    ]
+  },
+  {
+    "id": "story_embered_alloy_cache",
+    "type": "story",
+    "symbol": "★",
+    "cssClass": "tile-story",
+    "trigger": "touch",
+    "actions": [
+      { "type": "MESSAGE", "text": "Alloy chunks smoke as you lift them." },
+      { "type": "GIVE_ITEM", "itemId": "embered_alloy" },
+      { "type": "STORY_TRIGGER", "storyTrigger": "embered_alloy_cache" },
+      { "type": "CLEAR_EVENT" }
+    ]
+  },
+  {
+    "id": "story_sealed_ledger_cache",
+    "type": "story",
+    "symbol": "★",
+    "cssClass": "tile-story",
+    "trigger": "touch",
+    "actions": [
+      { "type": "MESSAGE", "text": "A wax-sealed ledger waits under a bone-plated altar." },
+      { "type": "GIVE_ITEM", "itemId": "sealed_ledger" },
+      { "type": "STORY_TRIGGER", "storyTrigger": "sealed_ledger_cache" },
+      { "type": "CLEAR_EVENT" }
+    ]
   }
 ]

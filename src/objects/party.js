@@ -33,6 +33,12 @@ export class Game_Party {
      */
     this.inventory = [];
 
+    /**
+     * Story and quest-related flags tracked for the StorySystem.
+     * @type {Object}
+     */
+    this.storyFlags = {};
+
   }
 
   /**
@@ -114,6 +120,7 @@ export class Game_Party {
 
     this.gold = startingParty.getGold();
     this.inventory = startingParty.getInventory(items);
+    this.storyFlags = {};
 
     const memberConfigs = startingParty.getMembers(actors);
     const initialMembers = memberConfigs.map(config => {
@@ -263,6 +270,51 @@ export class Game_Party {
       this.slots[fromIndex] = this.slots[toIndex];
       this.slots[toIndex] = temp;
       return true;
+  }
+
+  /**
+   * Counts how many copies of an item the party holds.
+   * @param {string} itemId
+   * @returns {number}
+   */
+  countItem(itemId) {
+      return this.inventory.filter((i) => i.id === itemId).length;
+  }
+
+  /**
+   * Adds an item object to the party inventory.
+   * @param {Object} item
+   */
+  addItem(item) {
+      if (item) this.inventory.push(item);
+  }
+
+  /**
+   * Removes a given number of matching items from the inventory.
+   * @param {string} itemId
+   * @param {number} count
+   * @returns {boolean} True if all requested items were removed.
+   */
+  removeItem(itemId, count = 1) {
+      let remaining = count;
+      this.inventory = this.inventory.filter((i) => {
+          if (i.id === itemId && remaining > 0) {
+              remaining--;
+              return false;
+          }
+          return true;
+      });
+      return remaining === 0;
+  }
+
+  /**
+   * Checks whether the party has at least the requested quantity of an item.
+   * @param {string} itemId
+   * @param {number} count
+   * @returns {boolean}
+   */
+  hasItem(itemId, count = 1) {
+      return this.countItem(itemId) >= count;
   }
 
 

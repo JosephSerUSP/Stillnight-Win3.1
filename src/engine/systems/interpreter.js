@@ -20,7 +20,11 @@ export class InterpreterSystem {
             'TREASURE': this._handleTreasure,
             'TRAP_TRIGGER': this._handleTrapTrigger,
             'BREAKABLE_WALL': this._handleBreakableWall,
-            'WAIT': this._handleWait
+            'WAIT': this._handleWait,
+            'GIVE_ITEM': this._handleGiveItem,
+            'ADD_GOLD': this._handleAddGold,
+            'STORY_TRIGGER': this._handleStoryTrigger,
+            'CLEAR_EVENT': this._handleClearEvent
         };
     }
 
@@ -164,6 +168,22 @@ export class InterpreterSystem {
 
     _handleTrapTrigger(state, command, session) {
         return [{ type: 'TRAP_TRIGGER', action: command }];
+    }
+
+    _handleGiveItem(state, command, session) {
+        return [{ type: 'ADD_ITEM', itemId: command.itemId, count: command.count || 1, log: command.log }];
+    }
+
+    _handleAddGold(state, command, session) {
+        return [{ type: 'ADD_GOLD', amount: command.amount || 0, log: command.log }];
+    }
+
+    _handleStoryTrigger(state, command, session) {
+        return [{ type: 'STORY_TRIGGER', trigger: command.storyTrigger || command.id }];
+    }
+
+    _handleClearEvent() {
+        return [{ type: 'CLEAR_EVENT' }];
     }
 
     _handleBreakableWall(state, command, session) {

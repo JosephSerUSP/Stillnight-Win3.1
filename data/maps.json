@@ -5,10 +5,22 @@
     "depth": 0,
     "music": "town1",
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "count": 1 },
-      { "id": "shop", "count": 1 },
-      { "id": "npc", "count": 2 }
+      {
+        "id": "stairs",
+        "count": 1
+      },
+      {
+        "id": "recovery",
+        "count": 1
+      },
+      {
+        "id": "shop",
+        "count": 1
+      },
+      {
+        "id": "npc",
+        "count": 4
+      }
     ],
     "treasures": [],
     "encounters": [],
@@ -20,29 +32,71 @@
     "depth": 1,
     "music": "dungeon1",
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 2, "max": 3 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "treasure", "count": 1 },
       {
-          "id": "enemy",
-          "count": 1,
-          "behavior": "chase",
-          "symbol": "!",
-          "cssClass": "text-danger",
-          "encounters": [
-              { "id": "imp", "weight": 10 }
-          ]
+        "id": "stairs",
+        "count": 1
+      },
+      {
+        "id": "recovery",
+        "chance": 0.3
+      },
+      {
+        "id": "enemy",
+        "min": 2,
+        "max": 3
+      },
+      {
+        "id": "recruit",
+        "chance": 0.5
+      },
+      {
+        "id": "treasure",
+        "count": 1
+      },
+      {
+        "id": "enemy",
+        "count": 1,
+        "behavior": "chase",
+        "symbol": "!",
+        "cssClass": "text-danger",
+        "encounters": [
+          {
+            "id": "imp",
+            "weight": 10
+          }
+        ]
+      },
+      {
+        "id": "story_luminous_cache",
+        "count": 1
       }
     ],
-    "treasures": ["potion", "antidote"],
-    "encounters": [
-      { "id": "pixie", "weight": 5 },
-      { "id": "skeleton", "weight": 5 },
-      { "id": "imp", "weight": 3 }
+    "treasures": [
+      "potion",
+      "antidote"
     ],
-    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat","candle"]
+    "encounters": [
+      {
+        "id": "pixie",
+        "weight": 5
+      },
+      {
+        "id": "skeleton",
+        "weight": 5
+      },
+      {
+        "id": "imp",
+        "weight": 3
+      }
+    ],
+    "recruits": [
+      "pixie",
+      "skeleton",
+      "imp",
+      "wisp",
+      "bat",
+      "candle"
+    ]
   },
   {
     "title": "Floor 2: Chasm Crossing",
@@ -50,23 +104,79 @@
     "depth": 2,
     "music": "dungeon1",
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 3, "max": 4 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.6 },
-      { "id": "trap", "min": 1, "max": 2 },
-      { "id": "treasure", "chance": 0.5 }
+      {
+        "id": "stairs",
+        "count": 1
+      },
+      {
+        "id": "recovery",
+        "chance": 0.3
+      },
+      {
+        "id": "enemy",
+        "min": 3,
+        "max": 4
+      },
+      {
+        "id": "shrine",
+        "chance": 0.5
+      },
+      {
+        "id": "shop",
+        "chance": 0.5
+      },
+      {
+        "id": "recruit",
+        "chance": 0.6
+      },
+      {
+        "id": "trap",
+        "min": 1,
+        "max": 2
+      },
+      {
+        "id": "treasure",
+        "chance": 0.5
+      },
+      {
+        "id": "story_nightglass_cache",
+        "count": 1
+      },
+      {
+        "id": "story_chasm_ore_cache",
+        "count": 1
+      }
     ],
-    "treasures": ["hi_potion", "iron_sword"],
+    "treasures": [
+      "hi_potion",
+      "iron_sword"
+    ],
     "encounters": [
-      { "id": "skeleton", "weight": 8 },
-      { "id": "imp", "weight": 5 },
-      { "id": "wisp", "weight": 4 },
-      { "id": "ooze", "weight": 3 }
+      {
+        "id": "skeleton",
+        "weight": 8
+      },
+      {
+        "id": "imp",
+        "weight": 5
+      },
+      {
+        "id": "wisp",
+        "weight": 4
+      },
+      {
+        "id": "ooze",
+        "weight": 3
+      }
     ],
-    "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
+    "recruits": [
+      "skeleton",
+      "imp",
+      "ooze",
+      "golem",
+      "candle",
+      "flauros"
+    ]
   },
   {
     "title": "Floor 3: Rusted Choir",
@@ -74,18 +184,53 @@
     "depth": 3,
     "music": "dungeon1",
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
+      {
+        "id": "stairs",
+        "count": 1
+      },
+      {
+        "id": "recovery",
+        "chance": 0.3
+      },
+      {
+        "id": "enemy",
+        "min": 4,
+        "max": 6
+      },
+      {
+        "id": "shrine",
+        "chance": 0.5
+      },
+      {
+        "id": "recruit",
+        "chance": 0.7
+      },
+      {
+        "id": "story_antique_emblem_cache",
+        "count": 1
+      }
     ],
     "encounters": [
-      { "id": "golem", "weight": 6 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 3 }
+      {
+        "id": "golem",
+        "weight": 6
+      },
+      {
+        "id": "demon",
+        "weight": 4
+      },
+      {
+        "id": "angel",
+        "weight": 3
+      }
     ],
-    "recruits": ["golem", "demon", "angel", "larva","flauros"]
+    "recruits": [
+      "golem",
+      "demon",
+      "angel",
+      "larva",
+      "flauros"
+    ]
   },
   {
     "title": "Floor 4: Cryptic Vault",
@@ -93,19 +238,56 @@
     "depth": 4,
     "music": "dungeon1",
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 7 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 }
+      {
+        "id": "stairs",
+        "count": 1
+      },
+      {
+        "id": "recovery",
+        "chance": 0.2
+      },
+      {
+        "id": "enemy",
+        "min": 5,
+        "max": 7
+      },
+      {
+        "id": "shrine",
+        "chance": 0.5
+      },
+      {
+        "id": "shop",
+        "chance": 0.5
+      },
+      {
+        "id": "recruit",
+        "chance": 0.5
+      },
+      {
+        "id": "story_radiant_band_cache",
+        "count": 1
+      }
     ],
     "encounters": [
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 4 },
-      { "id": "ghoul", "weight": 4 }
+      {
+        "id": "demon",
+        "weight": 8
+      },
+      {
+        "id": "highPixie",
+        "weight": 4
+      },
+      {
+        "id": "ghoul",
+        "weight": 4
+      }
     ],
-    "recruits": ["demon", "angel", "golem","flauros"]
+    "recruits": [
+      "demon",
+      "angel",
+      "golem",
+      "flauros"
+    ]
   },
   {
     "title": "Floor 5: Blood Chapel",
@@ -113,18 +295,50 @@
     "depth": 5,
     "music": "dungeon1",
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 8 },
-      { "id": "shrine", "chance": 0.4 },
-      { "id": "recruit", "chance": 0.4 }
+      {
+        "id": "stairs",
+        "count": 1
+      },
+      {
+        "id": "recovery",
+        "chance": 0.2
+      },
+      {
+        "id": "enemy",
+        "min": 5,
+        "max": 8
+      },
+      {
+        "id": "shrine",
+        "chance": 0.4
+      },
+      {
+        "id": "recruit",
+        "chance": 0.4
+      },
+      {
+        "id": "story_sunless_orchid_cache",
+        "count": 1
+      }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 2 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
+      {
+        "id": "crimsonLord",
+        "weight": 2
+      },
+      {
+        "id": "demon",
+        "weight": 8
+      },
+      {
+        "id": "highPixie",
+        "weight": 5
+      }
     ],
-    "recruits": ["demon", "angel"]
+    "recruits": [
+      "demon",
+      "angel"
+    ]
   },
   {
     "title": "Floor 6: Stillnight Sanctum",
@@ -132,13 +346,73 @@
     "depth": 6,
     "music": "dungeon1",
     "events": [
-      { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
+      {
+        "id": "recovery",
+        "count": 1
+      },
+      {
+        "id": "enemy",
+        "min": 1,
+        "max": 1
+      },
+      {
+        "id": "story_embered_alloy_cache",
+        "count": 1
+      }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
+      {
+        "id": "crimsonLord",
+        "weight": 10
+      },
+      {
+        "id": "demon",
+        "weight": 5
+      }
     ],
     "recruits": []
+  },
+  {
+    "title": "Floor 7: Veiled Heart",
+    "intro": "The Sanctum walls breathe with the Eternal Warden's pulse.",
+    "depth": 7,
+    "music": "dungeon1",
+    "events": [
+      {
+        "id": "recovery",
+        "chance": 0.2
+      },
+      {
+        "id": "enemy",
+        "min": 5,
+        "max": 8
+      },
+      {
+        "id": "shrine",
+        "chance": 0.4
+      },
+      {
+        "id": "story_sealed_ledger_cache",
+        "count": 1
+      }
+    ],
+    "encounters": [
+      {
+        "id": "crimsonLord",
+        "weight": 6
+      },
+      {
+        "id": "demon",
+        "weight": 8
+      },
+      {
+        "id": "highPixie",
+        "weight": 5
+      }
+    ],
+    "recruits": [
+      "demon",
+      "angel"
+    ]
   }
 ]

@@ -12,6 +12,7 @@ import {
   Window_Options,
   Window_AudioPlayer,
   Window_Help,
+  Window_Journal,
   WindowLayer
 } from "../presentation/windows/index.js";
 
@@ -24,7 +25,7 @@ export class HUDManager {
      * @param {import("../presentation/windows/index.js").WindowManager} windowManager
      * @param {HTMLElement} gameContainer
      */
-    constructor(windowManager, gameContainer) {
+  constructor(windowManager, gameContainer) {
         this.windowManager = windowManager;
         this.windowLayer = new WindowLayer();
         this.windowLayer.appendTo(gameContainer);
@@ -71,6 +72,9 @@ export class HUDManager {
         this.helpWindow = new Window_Help();
         this.windowLayer.addChild(this.helpWindow);
 
+        this.journalWindow = new Window_Journal();
+        this.windowLayer.addChild(this.journalWindow);
+
         this.setupDefaultCloseHandlers();
     }
 
@@ -85,6 +89,7 @@ export class HUDManager {
         this.audioWindow.onUserClose = () => close(this.audioWindow);
         this.audioPlayerWindow.onUserClose = () => close(this.audioPlayerWindow);
         this.helpWindow.onUserClose = () => close(this.helpWindow);
+        this.journalWindow.onUserClose = () => close(this.journalWindow);
     }
 
     getSharedWindows() {
