@@ -162,6 +162,12 @@ export class Window_Inventory extends Window_Selectable {
         const btnAction = buttons.children[0];
         const btnDiscard = buttons.children[1];
 
+        if (itemView.type === 'quest') {
+            btnAction.textContent = 'Story';
+            btnAction.disabled = true;
+            btnDiscard.disabled = true;
+        }
+
         btnAction.onclick = () => {
             const action = this.currentTab === 'equipment' ? 'equip' : 'use';
             this.callHandler(action, idx);

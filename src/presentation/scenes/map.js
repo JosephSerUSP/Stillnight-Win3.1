@@ -16,6 +16,7 @@ import { ExplorationAdapter } from "../../adapters/exploration_adapter.js";
 import { selectPartyHUD } from "../selectors/party.js";
 import { selectInventory } from "../selectors/inventory.js";
 import { selectBattlerDetails } from "../selectors/details.js";
+import { QuestSystem } from "../../engine/systems/quest.js";
 
 /**
  * @class Scene_Map
@@ -36,6 +37,7 @@ export class Scene_Map extends Scene_Base {
     this.sceneManager = sceneManager;
     this.session = session || { party: new Game_Party() };
     this.party = this.session.party;
+    QuestSystem.ensureState(this.party);
     this.map = new ExplorationAdapter(this.party, this.session.exploration);
     this.interpreter = new InterpreterAdapter(this);
     // BattleManager is deprecated; Scene_Battle uses BattleAdapter internally.
@@ -164,6 +166,7 @@ export class Scene_Map extends Scene_Base {
     this.hud.btnNewRun.addEventListener("click", this.startNewRun.bind(this));
     this.hud.btnRevealAll.addEventListener("click", this.revealAllFloors.bind(this));
     this.hud.btnSettings.addEventListener("click", this.openSettings.bind(this));
+    this.hud.btnJournal.addEventListener("click", this.openJournal.bind(this));
     this.hud.btnHelp.addEventListener("click", this.openHelp.bind(this));
     this.hud.btnClearLog.addEventListener("click", () => {
       this.hud.clearLog();
@@ -611,6 +614,45 @@ export class Scene_Map extends Scene_Base {
     }
   }
 
+  handleQuestFloorMilestones() {
+    const quests = this.dataManager.quests || [];
+    if (!quests || quests.length === 0) return;
+    const floor = this.map.floors[this.map.floorIndex];
+    const depth = floor && floor.depth ? floor.depth : this.map.floorIndex + 1;
+    const updates = QuestSystem.handleFloorReached(this.party, quests, depth);
+    updates.forEach((u) => {
+      const quest = quests.find((q) => q.id === u.questId);
+      if (u.log) {
+        this.logMessage(u.log);
+      } else if (quest) {
+        this.logMessage(`[Quest] ${quest.name}: Stage ${u.stage}`);
+      }
+    });
+    if (updates.length > 0) {
+      this.updateAll();
+    }
+  }
+
+  handleQuestDefeats(enemies = []) {
+    const quests = this.dataManager.quests || [];
+    if (!quests || quests.length === 0) return;
+    const defeatedIds = enemies
+      .map((e) => (e.actorData && e.actorData.id ? e.actorData.id : e.id))
+      .filter(Boolean);
+    const updates = QuestSystem.handleEnemiesDefeated(this.party, quests, defeatedIds);
+    updates.forEach((u) => {
+      const quest = quests.find((q) => q.id === u.questId);
+      if (u.log) {
+        this.logMessage(u.log);
+      } else if (quest) {
+        this.logMessage(`[Quest] ${quest.name}: Stage ${u.stage}`);
+      }
+    });
+    if (updates.length > 0) {
+      this.updateAll();
+    }
+  }
+
   /**
    * Applies passive effects triggered by movement (e.g., regeneration).
    * @method applyMovePassives
@@ -718,6 +760,14 @@ export class Scene_Map extends Scene_Base {
   openHelp() {
     if (this.sceneManager.currentScene() !== this) return;
     this.windowManager.push(this.hudManager.helpWindow);
+  }
+
+  openJournal() {
+    if (this.sceneManager.currentScene() !== this) return;
+    const entries = QuestSystem.buildJournalEntries(this.dataManager.quests || [], this.party);
+    this.hudManager.journalWindow.refresh(entries);
+    this.windowManager.push(this.hudManager.journalWindow);
+    this.setStatus("Reviewing quests.");
   }
 
   openSettings() {

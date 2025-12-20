@@ -93,6 +93,12 @@ export class DataManager {
      * @type {Array|null}
      */
     this.themes = null;
+
+    /**
+     * Quest definitions loaded from quests.json.
+     * @type {Array|null}
+     */
+    this.quests = null;
   }
 
   /**
@@ -109,6 +115,7 @@ export class DataManager {
       npcs: "data/npcs.json",
       terms: "data/terms.json",
       themes: "data/themes.json",
+      quests: "data/quests.json",
       sounds: "data/sounds.json",
     };
 

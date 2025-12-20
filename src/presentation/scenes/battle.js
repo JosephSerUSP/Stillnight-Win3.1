@@ -438,6 +438,9 @@ export class Scene_Battle extends Scene_Base {
       this.sceneManager.previous().updateAll();
       this.applyPostBattlePassives();
       this.sceneManager.previous().checkPermadeath();
+      if (this.sceneManager.previous() && this.sceneManager.previous().handleQuestDefeats) {
+          this.sceneManager.previous().handleQuestDefeats(this.battleManager.enemies);
+      }
       this.clearEnemyTileAfterBattle();
 
       this.battleManager.isVictoryPending = false;

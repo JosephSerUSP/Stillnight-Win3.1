@@ -457,6 +457,7 @@ html, body {
 .tile-shop    { color: var(--text-warning); }
 .tile-recruit { color: var(--text-special); }
 .tile-npc     { color: var(--text-info); }
+.tile-story   { color: var(--text-highlight); }
 .tile-breakable-wall { border: 2px dashed var(--text-warning); }
 
 /* Functional Utility Classes */
@@ -677,6 +678,13 @@ html, body {
     overflow-y: auto;
     white-space: pre-wrap;
     border: 1px inset #444;
+}
+
+.journal-card {
+    border: 1px solid var(--bezel-shadow);
+    padding: 6px;
+    border-radius: 4px;
+    background-color: var(--panel-bg);
 }
 
 /* ===== Tooltip ================================================== */

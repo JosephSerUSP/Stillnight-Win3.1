@@ -33,6 +33,18 @@ export class Game_Party {
      */
     this.inventory = [];
 
+    /**
+     * Narrative and discovery flags, including quest progress.
+     * @type {Object}
+     */
+    this.storyFlags = { quests: {}, milestones: {} };
+
+    /**
+     * Known words or discoveries (reserved for future dialogue systems).
+     * @type {Array<string>}
+     */
+    this.knownWords = [];
+
   }
 
   /**
@@ -114,6 +126,10 @@ export class Game_Party {
 
     this.gold = startingParty.getGold();
     this.inventory = startingParty.getInventory(items);
+    if (!this.storyFlags) this.storyFlags = { quests: {}, milestones: {} };
+    if (!this.storyFlags.quests) this.storyFlags.quests = {};
+    if (!this.storyFlags.milestones) this.storyFlags.milestones = {};
+    if (!this.knownWords) this.knownWords = [];
 
     const memberConfigs = startingParty.getMembers(actors);
     const initialMembers = memberConfigs.map(config => {
@@ -262,6 +278,18 @@ export class Game_Party {
       const temp = this.slots[fromIndex];
       this.slots[fromIndex] = this.slots[toIndex];
       this.slots[toIndex] = temp;
+      return true;
+  }
+
+  /**
+   * Removes a single instance of an item by ID from the inventory.
+   * @param {string} itemId
+   * @returns {boolean} True if removed.
+   */
+  removeItemById(itemId) {
+      const index = this.inventory.findIndex((i) => i.id === itemId);
+      if (index === -1) return false;
+      this.inventory.splice(index, 1);
       return true;
   }
 

@@ -36,6 +36,7 @@ export class Scene_Boot extends Scene_Base {
         Registry.set('actors', this.dataManager.actors);
         if (this.dataManager.states) Registry.set('states', this.dataManager.states);
         if (this.dataManager.enemies) Registry.set('enemies', this.dataManager.enemies);
+        if (this.dataManager.quests) Registry.set('quests', this.dataManager.quests);
 
         ThemeManager.init(this.dataManager.themes);
 

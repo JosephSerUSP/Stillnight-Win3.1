@@ -96,9 +96,15 @@ export class EncounterAdapter {
      * Creates a specific Boss instance (e.g. Eternal Warden).
      */
     static createBoss(depth, dataManager) {
-        // Hardcoded boss for now as per Scene_Battle legacy
+        const actors = Registry.get('actors') || (dataManager ? dataManager.actors : []);
+        const template = actors.find((a) => a.id === 'eternalWarden' || a.role === 'Boss');
+        if (template) {
+            return new Game_Battler(template, depth, true);
+        }
+
         const bossHp = 40 + (depth - 3) * 5;
         return new Game_Battler({
+            id: 'eternalWarden',
             name: "🌑 Eternal Warden",
             role: "Boss",
             maxHp: bossHp,

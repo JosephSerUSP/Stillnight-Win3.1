@@ -8,7 +8,11 @@
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "count": 1 },
       { "id": "shop", "count": 1 },
-      { "id": "npc", "count": 2 }
+      { "id": "npc_keeper", "count": 1 },
+      { "id": "npc_alicia", "count": 1 },
+      { "id": "npc_laura", "count": 1 },
+      { "id": "npc_rian", "count": 1 },
+      { "id": "npc_mara", "count": 1 }
     ],
     "treasures": [],
     "encounters": [],
@@ -36,7 +40,7 @@
           ]
       }
     ],
-    "treasures": ["potion", "antidote"],
+    "treasures": ["luminous_nectar", "potion", "antidote"],
     "encounters": [
       { "id": "pixie", "weight": 5 },
       { "id": "skeleton", "weight": 5 },
@@ -57,9 +61,10 @@
       { "id": "shop", "chance": 0.5 },
       { "id": "recruit", "chance": 0.6 },
       { "id": "trap", "min": 1, "max": 2 },
-      { "id": "treasure", "chance": 0.5 }
+      { "id": "treasure", "chance": 0.5 },
+      { "id": "altar_ember", "count": 1 }
     ],
-    "treasures": ["hi_potion", "iron_sword"],
+    "treasures": ["hi_potion", "iron_sword", "auction_notice"],
     "encounters": [
       { "id": "skeleton", "weight": 8 },
       { "id": "imp", "weight": 5 },
@@ -78,11 +83,13 @@
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 4, "max": 6 },
       { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
+      { "id": "recruit", "chance": 0.7 },
+      { "id": "treasure", "chance": 0.5 }
     ],
     "encounters": [
       { "id": "golem", "weight": 6 },
       { "id": "demon", "weight": 4 },
+      { "id": "ghoul", "weight": 5 },
       { "id": "angel", "weight": 3 }
     ],
     "recruits": ["golem", "demon", "angel", "larva","flauros"]
@@ -98,7 +105,8 @@
       { "id": "enemy", "min": 5, "max": 7 },
       { "id": "shrine", "chance": 0.5 },
       { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 }
+      { "id": "recruit", "chance": 0.5 },
+      { "id": "altar_tide", "count": 1 }
     ],
     "encounters": [
       { "id": "demon", "weight": 8 },
@@ -117,8 +125,10 @@
       { "id": "recovery", "chance": 0.2 },
       { "id": "enemy", "min": 5, "max": 8 },
       { "id": "shrine", "chance": 0.4 },
-      { "id": "recruit", "chance": 0.4 }
+      { "id": "recruit", "chance": 0.4 },
+      { "id": "treasure", "chance": 0.6 }
     ],
+    "treasures": ["veiled_ledger", "light_amulet"],
     "encounters": [
       { "id": "crimsonLord", "weight": 2 },
       { "id": "demon", "weight": 8 },
@@ -127,17 +137,57 @@
     "recruits": ["demon", "angel"]
   },
   {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
+    "title": "Floor 6: Veiled Archives",
+    "intro": "Stacks of sealed tomes hum with stolen light.",
     "depth": 6,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.2 },
+      { "id": "enemy", "min": 6, "max": 8 },
+      { "id": "shrine", "chance": 0.4 },
+      { "id": "altar_veil", "count": 1 }
+    ],
+    "encounters": [
+      { "id": "crimsonLord", "weight": 3 },
+      { "id": "demon", "weight": 6 },
+      { "id": "angel", "weight": 4 },
+      { "id": "highPixie", "weight": 4 }
+    ],
+    "recruits": ["demon", "angel"]
+  },
+  {
+    "title": "Floor 7: Shattered Span",
+    "intro": "Bridges hang broken over a fathomless drop.",
+    "depth": 7,
+    "music": "dungeon1",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.2 },
+      { "id": "enemy", "min": 6, "max": 9 },
+      { "id": "shop", "chance": 0.4 },
+      { "id": "shrine", "chance": 0.4 }
+    ],
+    "encounters": [
+      { "id": "crimsonLord", "weight": 3 },
+      { "id": "demon", "weight": 6 },
+      { "id": "highPixie", "weight": 4 },
+      { "id": "angel", "weight": 3 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Floor 8: Stillnight Core",
+    "intro": "A presence fills the air. The Eternal Warden awaits.",
+    "depth": 8,
     "music": "dungeon1",
     "events": [
       { "id": "recovery", "count": 1 },
       { "id": "enemy", "min": 1, "max": 1 }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
+      { "id": "eternalWarden", "weight": 10 },
+      { "id": "crimsonLord", "weight": 5 }
     ],
     "recruits": []
   }

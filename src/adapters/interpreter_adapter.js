@@ -6,6 +6,7 @@ import {
   renderCreatureInfo
 } from "../presentation/windows/index.js";
 import { Game_Battler } from "../objects/battler.js";
+import { QuestSystem } from "../engine/systems/quest.js";
 
 /**
  * @class InterpreterAdapter
@@ -163,6 +164,9 @@ export class InterpreterAdapter {
                 case 'WALL_BROKEN':
                     this._resolveBrokenWall(e.x, e.y);
                     break;
+                case 'QUEST_ADVANCE':
+                    this._applyQuestProgress(e);
+                    break;
                 default:
                     console.warn(`InterpreterAdapter: Unhandled event type '${e.type}'`);
             }
@@ -201,6 +205,7 @@ export class InterpreterAdapter {
         this.scene.logMessage(`[Floor] ${f.intro}`);
         this.scene.setStatus("Descending.");
         this.scene.updateAll();
+        this.scene.handleQuestFloorMilestones();
         this.scene.checkMusic();
     }
 
@@ -399,6 +404,108 @@ export class InterpreterAdapter {
         this.scene.updateAll();
     }
 
+    _applyQuestProgress({ questId, stage, log }) {
+        if (!questId || stage === undefined) return;
+        const quests = this.dataManager.quests || [];
+        QuestSystem.ensureState(this.party);
+        const quest = quests.find((q) => q.id === questId);
+        const newStage = QuestSystem.advanceTo(this.party, questId, stage);
+
+        if (log && newStage) {
+            this.scene.logMessage(log);
+        } else if (quest && newStage) {
+            this.scene.logMessage(`[Quest] ${quest.name}: ${newStage.title}`);
+        }
+        this.scene.updateAll();
+    }
+
+    _selectDialogueEntry(dialogues, stage) {
+        const exact = dialogues.find((d) => d.stage === stage);
+        if (exact) return exact;
+        const sorted = [...dialogues]
+            .filter((d) => typeof d.stage === 'number')
+            .sort((a, b) => b.stage - a.stage);
+        return sorted.find((d) => d.stage < stage) || dialogues[0];
+    }
+
+    _dialogueRequirementsMet(entry) {
+        if (!entry) return true;
+        if (entry.requiresItem && !this.party.inventory.some((i) => i.id === entry.requiresItem)) return false;
+        if (entry.requiresGold && this.party.gold < entry.requiresGold) return false;
+        if (entry.requiresQuestStage) {
+            const current = QuestSystem.getStage(this.party, entry.requiresQuestStage.questId);
+            if (current < entry.requiresQuestStage.atLeast) return false;
+        }
+        return true;
+    }
+
+    _resolveNpcDialogue(npc) {
+        if (Array.isArray(npc.dialogue)) {
+            const questStage = npc.questId ? QuestSystem.getStage(this.party, npc.questId) : 0;
+            const entry = this._selectDialogueEntry(npc.dialogue, questStage);
+            const requirementsMet = this._dialogueRequirementsMet(entry);
+            const description = requirementsMet ? (entry.text || '') : (entry.lockedText || npc.dialogue[0].text || '...');
+            const choices = [];
+
+            if (requirementsMet && entry.choices) {
+                entry.choices.forEach((choice) => {
+                    choices.push({
+                        label: choice.label,
+                        onClick: () => this._applyNpcChoice(npc, entry, choice)
+                    });
+                });
+            }
+            return { text: description, choices };
+        }
+
+        const fallback = typeof npc.dialogue === 'string' ? npc.dialogue : '';
+        return { text: fallback, choices: [] };
+    }
+
+    _applyNpcChoice(npc, entry, choice) {
+        if (choice.requiresItem && !this.party.inventory.some((i) => i.id === choice.requiresItem)) {
+            this.scene.logMessage(`[${npc.name}] You are missing ${choice.requiresItem}.`);
+            return;
+        }
+        if (choice.requiresGold && this.party.gold < choice.requiresGold) {
+            this.scene.logMessage(`[${npc.name}] You need more gold.`);
+            return;
+        }
+
+        if (choice.consumeItem) {
+            this.party.removeItemById(choice.consumeItem);
+        }
+
+        if (choice.reward && choice.reward.item) {
+            const item = this.dataManager.items.find((i) => i.id === choice.reward.item);
+            if (item) this.party.inventory.push(item);
+        }
+        if (choice.reward && choice.reward.gold) {
+            this.party.gold += choice.reward.gold;
+        }
+        if (choice.giveGold) {
+            this.party.gold += choice.giveGold;
+        }
+        if (choice.setStage !== undefined && npc.questId) {
+            const quests = this.dataManager.quests || [];
+            const quest = quests.find((q) => q.id === npc.questId);
+            const newStage = QuestSystem.advanceTo(this.party, npc.questId, choice.setStage);
+            if (newStage && quest) {
+                this.scene.logMessage(`[Quest] ${quest.name}: ${newStage.title}`);
+                if (newStage.logOnAdvance) this.scene.logMessage(newStage.logOnAdvance);
+            }
+        }
+
+        if (choice.log) {
+            this.scene.logMessage(choice.log);
+        }
+
+        this.scene.updateAll();
+        if (!choice.keepOpen) {
+            this.closeEvent();
+        }
+    }
+
     _openRecruitEvent(options = {}) {
         const { forcedId, cost: forcedCost, onRecruit } = options;
         this._onRecruitCallback = onRecruit;
@@ -473,19 +580,13 @@ export class InterpreterAdapter {
         const npc = this.dataManager.npcs.find(n => n.id === npcId);
         if (!npc) return;
 
-        let text = "";
-        if (typeof npc.dialogue === 'string') {
-            text = npc.dialogue;
-        }
+        const { text, choices } = this._resolveNpcDialogue(npc);
 
         this.scene.hudManager.eventWindow.show({
             title: npc.name,
-            description: `"${text}"`,
+            description: Array.isArray(text) ? text : `"${text}"`,
             style: 'terminal',
-            choices: [{
-                label: "Leave",
-                onClick: () => this.closeEvent()
-            }]
+            choices: choices.length > 0 ? choices : [{ label: "Leave", onClick: () => this.closeEvent() }]
         });
         this.windowManager.push(this.scene.hudManager.eventWindow);
 
