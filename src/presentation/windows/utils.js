@@ -583,6 +583,42 @@ export function createReserveSlot(battlerView, index, options = {}) {
  * @param {Object} battler - The creature (Can be View or Game Object, as long as props exist).
  * @param {Object} [options] - Options for what to display.
  */
+/**
+ * Sets the portrait on a target element, handling spritesheets vs single images.
+ * @param {HTMLElement} element - The portrait container/element.
+ * @param {string} spriteKey - The sprite key (e.g., 'NPC_Alicia', 'pixie').
+ * @param {string} [emotion='neutral'] - Emotion for NPCs (neutral, approval, disapproval, laughter, shock).
+ */
+export function setPortrait(element, spriteKey, emotion = 'neutral') {
+    if (!element) return;
+
+    // Reset background
+    element.style.backgroundImage = `url('assets/portraits/${spriteKey}.png')`;
+    element.style.backgroundRepeat = 'no-repeat';
+
+    // Determine type based on key convention
+    const isNPC = spriteKey.startsWith('NPC_');
+
+    if (isNPC) {
+        // NPC Sheet: 5 Columns (640x192), each 128x192.
+        const emotionMap = {
+            'neutral': 0,
+            'approval': 1,
+            'disapproval': 2,
+            'laughter': 3,
+            'shock': 4
+        };
+        const colIndex = emotionMap[emotion] || 0;
+
+        element.style.backgroundSize = 'auto';
+        element.style.backgroundPosition = `-${colIndex * 128}px 0px`;
+    } else {
+        // Single Image: Use contain to ensure fit
+        element.style.backgroundSize = 'contain';
+        element.style.backgroundPosition = 'center';
+    }
+}
+
 export function renderCreatureInfo(container, battler, options = {}) {
     container.innerHTML = "";
     const layout = document.createElement('div');
@@ -591,7 +627,7 @@ export function renderCreatureInfo(container, battler, options = {}) {
 
     const sprite = document.createElement('div');
     sprite.className = 'inspect-sprite';
-    sprite.style.backgroundImage = `url('assets/portraits/${battler.spriteKey || "pixie"}.png')`;
+    setPortrait(sprite, battler.spriteKey || "pixie");
     layout.appendChild(sprite);
 
     const fields = document.createElement('div');

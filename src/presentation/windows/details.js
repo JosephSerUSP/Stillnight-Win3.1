@@ -1,5 +1,5 @@
 import { Window_Base } from "./base.js";
-import { createBattlerNameLabel, renderElements, createInteractiveLabel, createGauge } from "./utils.js";
+import { createBattlerNameLabel, renderElements, createInteractiveLabel, createGauge, setPortrait } from "./utils.js";
 import { UI } from "./builder.js";
 
 /**
@@ -58,7 +58,7 @@ export class Window_Inspect extends Window_Base {
 
       // Update Sprite
       const spriteKey = memberView.spriteKey || 'pixie';
-      this.spriteEl.style.backgroundImage = `url('assets/portraits/${spriteKey}.png')`;
+      setPortrait(this.spriteEl, spriteKey);
 
       // Clear fields
       this.fieldsContainer.innerHTML = "";
@@ -320,8 +320,7 @@ export class Window_Evolution extends Window_Base {
               {
                   type: 'panel',
                   props: {
-                      className: 'inspect-sprite',
-                      style: { backgroundImage: `url('assets/portraits/${battlerView.spriteKey || "pixie"}.png')` }
+                      className: 'inspect-sprite'
                   }
               },
               {
@@ -335,6 +334,9 @@ export class Window_Evolution extends Window_Base {
       };
 
       const layout = UI.build(container, structure);
+      const spriteEl = layout.children[0];
+      setPortrait(spriteEl, battlerView.spriteKey || "pixie");
+
       const fieldsContainer = layout.children[1];
 
       // Helper to add rows
