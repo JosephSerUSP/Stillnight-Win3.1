@@ -47,6 +47,12 @@ export class DataManager {
     this.npcs = null;
 
     /**
+     * The shop data loaded from shops.json.
+     * @type {Object|null}
+     */
+    this.shops = null;
+
+    /**
      * The terms/strings data loaded from terms.json.
      * @type {Object|null}
      */
@@ -107,6 +113,7 @@ export class DataManager {
       maps: "data/maps.json",
       items: "data/items.json",
       npcs: "data/npcs.json",
+      shops: "data/shops.json",
       terms: "data/terms.json",
       themes: "data/themes.json",
       sounds: "data/sounds.json",

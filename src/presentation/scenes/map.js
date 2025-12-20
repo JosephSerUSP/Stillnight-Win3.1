@@ -100,9 +100,10 @@ export class Scene_Map extends Scene_Base {
   /**
    * Transitions to the shop scene.
    * @method startShop
+   * @param {string} [shopId] - The ID of the specific shop to load.
    */
-  startShop() {
-      this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.windowManager, this.party, this.windowLayer));
+  startShop(shopId) {
+      this.sceneManager.push(new Scene_Shop(this.dataManager, this.sceneManager, this.windowManager, this.party, this.windowLayer, shopId));
   }
 
   /**

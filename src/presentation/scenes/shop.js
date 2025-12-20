@@ -15,12 +15,14 @@ export class Scene_Shop extends Scene_Base {
      * @param {import("../windows/index.js").WindowManager} windowManager - The window manager.
      * @param {import("../../objects/party.js").Game_Party} party - The player's party.
      * @param {import("../windows/index.js").WindowLayer} windowLayer - The window layer to attach the shop window to.
+     * @param {string} [shopId] - Optional shop ID to load specific inventory.
      */
-    constructor(dataManager, sceneManager, windowManager, party, windowLayer) {
+    constructor(dataManager, sceneManager, windowManager, party, windowLayer, shopId = null) {
         super(dataManager, windowManager);
         this.sceneManager = sceneManager;
         this.party = party;
         this.windowLayer = windowLayer;
+        this.shopId = shopId;
 
         this.shopWindow = new Window_Shop();
         this.windowLayer.addChild(this.shopWindow);
@@ -44,12 +46,50 @@ export class Scene_Shop extends Scene_Base {
     }
 
     startBuy() {
+        let items = [];
+
+        if (this.shopId && this.dataManager.shops && this.dataManager.shops[this.shopId]) {
+            const shopData = this.dataManager.shops[this.shopId];
+            items = shopData.items
+                .filter(entry => this.checkCondition(entry.condition))
+                .map(entry => this.dataManager.items.find(i => i.id === entry.id))
+                .filter(i => i); // Remove nulls if item ID not found
+        } else {
+            // Fallback: all non-key items if no shopId (legacy behavior or failsafe)
+            items = this.dataManager.items.filter(i => i.type !== 'key');
+        }
+
         this.shopWindow.setupBuy(
             this.party.gold,
             this.dataManager.terms.shop.vendor_message,
-            this.dataManager.items,
+            items,
             (itemId) => this.buyItem(itemId)
         );
+    }
+
+    checkCondition(conditionString) {
+        if (!conditionString) return true;
+        const [type, value] = conditionString.split(':');
+
+        if (type === 'level') {
+            // Check if any party member meets level requirement
+            // Or typically check if highest level member meets it
+            const reqLevel = parseInt(value, 10);
+            return this.party.members.some(m => m.level >= reqLevel);
+        }
+
+        if (type === 'hasItem') {
+            return this.party.inventory.some(i => i.id === value);
+        }
+
+        if (type === 'gold') {
+             return this.party.gold >= parseInt(value, 10);
+        }
+
+        // Future: Story flags
+        // if (type === 'storyFlags') return this.party.getFlag(value);
+
+        return true;
     }
 
     startSell() {
