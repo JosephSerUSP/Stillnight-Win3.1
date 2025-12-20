@@ -1,14 +1,214 @@
-[
-  {
-    "id": "old_man",
-    "name": "Old Man",
-    "char": "N",
-    "dialogue": "It's dangerous to go alone! Take care of yourself."
+{
+  "npc_alicia": {
+    "name": "Alicia",
+    "layout": "visual_novel",
+    "portrait": "assets/portraits/NPC_Alicia.png",
+    "initialState": "default",
+    "states": {
+      "default": {
+        "text": "Oh! H-hello there! I... I didn't see you coming! I'm Alicia... welcome to my shop! Uhm... please look around!",
+        "choices": [
+          {
+            "label": "Buy Consumables",
+            "action": "shop",
+            "shopId": "consumables_basic"
+          },
+          {
+            "label": "Talk about Laura",
+            "nextState": "talk_laura"
+          },
+          {
+            "label": "Leave",
+            "action": "close"
+          }
+        ]
+      },
+      "talk_laura": {
+        "text": "Have you seen Laura around? She's... she's so amazing, isn't she? *sigh* Sometimes I wonder if... oh! Nevermind! People say weird things about us, but she's just teasing! She's been with Raphael for 7 years... I just want her to be happy.",
+        "choices": [
+          {
+            "label": "Ask about Quest",
+            "nextState": "quest_offer"
+          },
+          {
+            "label": "Back",
+            "nextState": "default"
+          }
+        ]
+      },
+      "quest_offer": {
+        "text": "Actually... could you help me find something for her? She loves sparkly things. Maybe if I gave her something special...",
+        "choices": [
+          {
+            "label": "I'll look for it",
+            "action": "close"
+          },
+          {
+            "label": "Maybe later",
+            "nextState": "default"
+          }
+        ]
+      }
+    }
   },
-  {
-    "id": "merchant_gossip",
-    "name": "Gossip Merchant",
-    "char": "M",
-    "dialogue": "I heard the boss on the bottom floor hates light."
+  "npc_laura": {
+    "name": "Laura",
+    "layout": "visual_novel",
+    "portrait": "assets/portraits/NPC_Laura.png",
+    "initialState": "default",
+    "states": {
+      "default": {
+        "text": "Well, hello there, darling. Looking for something shiny, or just admiring the view? I'm Laura, the best goldsmith you'll ever meet.",
+        "choices": [
+          {
+            "label": "Browse Accessories",
+            "action": "shop",
+            "shopId": "accessories_special"
+          },
+          {
+            "label": "Talk",
+            "nextState": "talk_intro"
+          },
+          {
+            "label": "Leave",
+            "action": "close"
+          }
+        ]
+      },
+      "talk_intro": {
+        "text": "Alicia? Oh, she's a sweet little thing, isn't she? A bit clumsy, but she means well. Don't let her fragility fool you though, she's tougher than she looks.",
+        "choices": [
+          {
+            "label": "About Raphael",
+            "nextState": "talk_raphael"
+          },
+          {
+            "label": "Back",
+            "nextState": "default"
+          }
+        ]
+      },
+      "talk_raphael": {
+        "text": "Raphael? We've been engaged for seven years. He's... steady. Reliable. Not exactly thrilling, but a girl needs stability in these dark times, doesn't she?",
+        "choices": [
+          {
+            "label": "Ask about Quest",
+            "nextState": "quest_ring"
+          },
+          {
+            "label": "Back",
+            "nextState": "default"
+          }
+        ]
+      },
+      "quest_ring": {
+        "text": "Actually, I need a favor. There's a rare undead prowling the lower floors... rumor has it, it wears a pure gold band. Bring it to me. I need raw material for... a project.",
+        "choices": [
+          {
+            "label": "I'll do it",
+            "action": "close"
+          },
+          {
+            "label": "Too dangerous",
+            "nextState": "default"
+          }
+        ]
+      }
+    }
+  },
+  "npc_gate_guard": {
+    "name": "Gate Guard",
+    "initialState": "default",
+    "layout": "visual_novel",
+    "states": {
+      "default": {
+        "text": "Halt! The dungeon below is dangerous. Only authorized Summoners may pass.",
+        "condition": "hasItem:guild_pass",
+        "trueState": "allow_pass",
+        "falseState": "deny_pass"
+      },
+      "allow_pass": {
+        "text": "I see you have a Guild Pass. Very well, proceed with caution.",
+        "choices": [
+          {
+            "label": "Enter Dungeon",
+            "action": "teleport",
+            "target": "dungeon_floor_1"
+          },
+          {
+            "label": "Leave",
+            "action": "close"
+          }
+        ]
+      },
+      "deny_pass": {
+        "text": "You don't have a Guild Pass. Speak to the Guildmaster in town.",
+        "choices": [
+          {
+            "label": "Leave",
+            "action": "close"
+          }
+        ]
+      }
+    }
+  },
+  "npc_weapon_shop": {
+    "name": "Weaponsmith",
+    "layout": "visual_novel",
+    "initialState": "default",
+    "states": {
+      "default": {
+        "text": "Blades, hammers, axes. If it kills, I sell it.",
+        "choices": [
+          {
+            "label": "Buy Weapons",
+            "action": "shop",
+            "shopId": "weapons_basic"
+          },
+          {
+            "label": "Leave",
+            "action": "close"
+          }
+        ]
+      }
+    }
+  },
+  "npc_auction": {
+    "name": "Auctioneer",
+    "layout": "visual_novel",
+    "initialState": "default",
+    "states": {
+      "default": {
+        "text": "Rare finds! Highest bidder takes all! ...Well, actually, we just sell fixed price for now.",
+        "choices": [
+          {
+            "label": "Browse",
+            "action": "shop",
+            "shopId": "auction_house"
+          },
+          {
+            "label": "Leave",
+            "action": "close"
+          }
+        ]
+      }
+    }
+  },
+  "npc_daphne": {
+    "name": "Daphne",
+    "layout": "visual_novel",
+    "portrait": "assets/portraits/NPC_Daphne.png",
+    "initialState": "default",
+    "states": {
+      "default": {
+        "text": "...",
+        "choices": [
+          {
+            "label": "...",
+            "action": "close"
+          }
+        ]
+      }
+    }
   }
-]
+}

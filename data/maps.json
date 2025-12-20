@@ -7,8 +7,11 @@
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "count": 1 },
-      { "id": "shop", "count": 1 },
-      { "id": "npc", "count": 2 }
+      { "id": "npc_alicia", "count": 1 },
+      { "id": "npc_laura", "count": 1 },
+      { "id": "npc_weapon_shop", "count": 1 },
+      { "id": "npc_auction", "count": 1 },
+      { "id": "npc_gate_guard", "count": 1 }
     ],
     "treasures": [],
     "encounters": [],
@@ -98,7 +101,8 @@
       { "id": "enemy", "min": 5, "max": 7 },
       { "id": "shrine", "chance": 0.5 },
       { "id": "shop", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 }
+      { "id": "recruit", "chance": 0.5 },
+      { "id": "npc_daphne", "count": 1 }
     ],
     "encounters": [
       { "id": "demon", "weight": 8 },
