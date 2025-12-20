@@ -1,4 +1,4 @@
-import { TraitManager } from "../managers/trait_manager.js";
+import { TraitSystem } from "../engine/rules/traits.js";
 import { ProgressionSystem } from "../engine/systems/progression.js";
 import { passives as passivesData } from "../../data/passives.js";
 import { states as statesData } from "../../data/states.js";
@@ -121,7 +121,7 @@ export class Game_Battler extends Game_Base {
    * @returns {number}
    */
   getParam(paramId, baseValue) {
-      return TraitManager.getParam(this, paramId, baseValue);
+      return TraitSystem.getParam(this, paramId, baseValue);
   }
 
   get maxHp() {
@@ -202,7 +202,7 @@ export class Game_Battler extends Game_Base {
    * @returns {number} The aggregated value.
    */
   getPassiveValue(code) {
-    return TraitManager.getXParam(this, code);
+    return TraitSystem.getXParam(this, code);
   }
 
   /**
@@ -211,7 +211,7 @@ export class Game_Battler extends Game_Base {
    * @returns {number}
    */
   getSParam(code) {
-      return TraitManager.getSParam(this, code);
+      return TraitSystem.getSParam(this, code);
   }
 
   // ========================================================================
@@ -271,8 +271,8 @@ export class Game_Battler extends Game_Base {
           events.push({ type: 'state_remove', target: this, msg: `${this.name}'s ${state ? state.name : sId} wore off.` });
       });
 
-      // Delegate trait effects to TraitManager
-      const traitEvents = TraitManager.processTrigger('turnStart', this, { allies, enemies, dataManager });
+      // Delegate trait effects to TraitSystem
+      const traitEvents = TraitSystem.processTrigger('turnStart', this, { allies, enemies, dataManager });
       events.push(...traitEvents);
 
       return events;

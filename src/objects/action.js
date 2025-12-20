@@ -1,6 +1,7 @@
 import { randInt, elementToAscii, probabilisticRound, random } from "../core/utils.js";
 import { SoundManager } from "../managers/sound.js";
-import { EffectManager } from "../managers/effect_manager.js";
+import { EffectSystem } from "../engine/rules/effects.js";
+import { ProgressionSystem } from "../engine/systems/progression.js";
 
 /**
  * @class Game_Action
@@ -217,9 +218,15 @@ export class Game_Action {
                  effectValue = { id: effect.status, chance: effect.chance };
             }
 
-            const result = EffectManager.apply(effectKey, effectValue, battler, target, context);
+            const result = EffectSystem.apply(effectKey, effectValue, battler, target, context);
 
             if (!result) return;
+
+             if (result.type === 'gain_xp') {
+                 const xpResult = ProgressionSystem.gainXp(target, result.value);
+                 result.type = 'xp';
+                 result.result = xpResult;
+             }
 
              if (result.type === 'damage') {
                  SoundManager.play('DAMAGE');
@@ -288,10 +295,16 @@ export class Game_Action {
                 // Determine context/boost if needed
                 const context = {};
                 // Pass item as source
-                const result = EffectManager.apply(key, value, item, target, context);
+                const result = EffectSystem.apply(key, value, item, target, context);
 
                 if (result) {
                     if (!result.battler) result.battler = subject;
+
+                    if (result.type === 'gain_xp') {
+                         const xpResult = ProgressionSystem.gainXp(target, result.value);
+                         result.type = 'xp';
+                         result.result = xpResult;
+                    }
 
                     if (!result.msg) {
                          if (result.type === 'heal') {

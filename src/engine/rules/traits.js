@@ -1,11 +1,11 @@
-import { TRAIT_DEFINITIONS } from "../../data/traits.js";
+import { TRAIT_DEFINITIONS } from "../../../data/traits.js";
 
 /**
- * @class TraitManager
+ * @class TraitSystem
  * @description Central manager for handling trait aggregation, parameter calculation, and trait triggers.
  * It unifies the logic for how traits modify battlers.
  */
-export class TraitManager {
+export class TraitSystem {
 
     /**
      * Calculates the final value of a parameter for a battler based on their traits.

@@ -91,3 +91,5 @@ This document outlines the architectural refactor to create a single source of t
 *   Stop "core" importing data. (Completed)
 *   Delete `src/legacy/**` (Completed).
 *   Migrated `ProgressionSystem` to `src/engine/systems/progression.js`. (Completed)
+*   Migrated `TraitManager` to `src/engine/rules/traits.js`. (Completed)
+*   Migrated `EffectManager` to `src/engine/rules/effects.js`. (Completed)
