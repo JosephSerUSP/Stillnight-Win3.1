@@ -100,9 +100,8 @@ export class Window_Event extends Window_Base {
       this.titleEl.innerHTML = ""; // Clear existing
       const titleText = data.title || "Event";
 
-      // Add Icon 113 for NPCs (Visual Novel layout)
       if (data.layout === 'visual_novel') {
-           const icon = createIcon(113);
+           const icon = createIcon(103);
            icon.style.marginRight = "6px";
            icon.style.verticalAlign = "middle";
            this.titleEl.appendChild(icon);
