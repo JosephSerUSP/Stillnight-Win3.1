@@ -1,11 +1,10 @@
 import { Scene_Base } from "./base.js";
-import { Game_Battler } from "../../objects/battler.js";
-import { Game_Action } from "../../objects/action.js";
 import { randInt, pickWeighted, probabilisticRound, random } from "../../core/utils.js";
 import { SoundManager, ConfigManager } from "../../managers/index.js";
 import { Window_Battle, Window_Victory } from "../windows/index.js";
 import { BattleSystem } from "../../engine/systems/battle.js";
 import { BattleAdapter } from "../../adapters/battle_adapter.js";
+import { EncounterAdapter } from "../../adapters/encounter_adapter.js";
 import { Registry } from "../../engine/data/registry.js";
 import { selectBattleScreen } from "../selectors/battle.js";
 import { selectInventory } from "../selectors/inventory.js";
@@ -94,66 +93,12 @@ export class Scene_Battle extends Scene_Base {
     const depth = floor.depth;
 
     let enemies = [];
-    const actorTemplates = this.dataManager.actors;
 
+    // Check for Boss Floor
     if (this.map.floorIndex === this.map.floors.length - 1) {
-      const bossHp = 40 + (depth - 3) * 5;
-      enemies.push(new Game_Battler({
-        name: "🌑 Eternal Warden",
-        role: "Boss",
-        maxHp: bossHp,
-        elements: ["Black"],
-        skills: ["shadowClaw", "infernalPact"],
-        gold: 100,
-        expGrowth: 10,
-      }, depth, true));
+        enemies.push(EncounterAdapter.createBoss(depth, this.dataManager));
     } else {
-        // Use provided encounter data if available
-        if (this.encounterData) {
-            let encId = typeof this.encounterData === 'string' ? this.encounterData : this.encounterData.id;
-
-            if (encId) {
-                 const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
-                 const enemyCount = randInt(1, maxEnemies);
-                 for (let i = 0; i < enemyCount; i++) {
-                     const tpl = actorTemplates.find(a => a.id === encId);
-                     if (tpl) enemies.push(new Game_Battler(tpl, depth, true));
-                 }
-            } else if (Array.isArray(this.encounterData)) {
-                this.encounterData.forEach(eConfig => {
-                     const tpl = actorTemplates.find(a => a.id === eConfig.id);
-                     if (tpl) enemies.push(new Game_Battler(tpl, depth, true));
-                });
-            }
-        }
-
-        if (enemies.length === 0) {
-              // Use encounter table if available
-              if (floor.encounters && floor.encounters.length > 0) {
-                const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
-                const enemyCount = randInt(1, maxEnemies);
-                for (let i = 0; i < enemyCount; i++) {
-                    const encounter = pickWeighted(floor.encounters);
-                    if (encounter) {
-                        const tpl = actorTemplates.find(a => a.id === encounter.id);
-                        if (tpl) {
-                            enemies.push(new Game_Battler(tpl, depth, true));
-                        } else {
-                            console.warn(`Encounter ID ${encounter.id} not found in actors.`);
-                            const randomTpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
-                            enemies.push(new Game_Battler(randomTpl, depth, true));
-                        }
-                    }
-                }
-              } else {
-                const maxEnemies = this.map.floorIndex === 0 ? 2 : 3;
-                const enemyCount = randInt(1, maxEnemies);
-                for (let i = 0; i < enemyCount; i++) {
-                  const tpl = actorTemplates[randInt(0, actorTemplates.length - 1)];
-                  enemies.push(new Game_Battler(tpl, depth, true));
-                }
-              }
-        }
+        enemies = EncounterAdapter.generateEnemies(floor, this.encounterData, depth, this.dataManager);
     }
 
     this.battleManager.setup(enemies, this.tileX, this.tileY, this.isSneakAttack);
@@ -256,9 +201,12 @@ export class Scene_Battle extends Scene_Base {
   async processItemAction(item, target) {
       // Use Summoner as subject if available, otherwise fallback to generic party context
       const subject = this.party.summoner || this.party;
-      const action = new Game_Action(subject);
-      action.setItem(item.id, this.dataManager);
-      action.target = target;
+
+      const action = {
+          subject,
+          itemId: item.id,
+          target
+      };
 
       const events = this.battleManager.executeAction(action);
 

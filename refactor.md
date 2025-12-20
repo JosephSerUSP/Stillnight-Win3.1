@@ -6,7 +6,7 @@ This document outlines the architectural refactor to create a single source of t
 
 *   Deterministic RNG is available through `src/core/rng.js` and is wired into the battle/dungeon harness at `tests/harness.js`, but several UI helpers (e.g., window wobble) still call `Math.random()` directly.
 *   Engine skeletons exist (`src/engine/**` and `src/presentation/selectors/**`), yet import bans are only partially enforced and the runtime still boots through legacy managers in `src/main.js`.
-*   Battle refactor is only halfway: `Scene_Battle` still orchestrates `Game_Battler`/`Game_Action` instances and legacy windows, and the old managers/objects folders remain.
+*   Battle refactor: `Scene_Battle` now uses `EncounterAdapter` and plain actions, decoupling it from `Game_Battler` and `Game_Action` instantiation. Windows are still legacy.
 *   Exploration, interpreter, and UI decoupling phases have starter files, but scenes and windows still depend on legacy managers instead of the new systems and selectors.
 *   Save/load work has not been verified end-to-end; serializer helpers exist but are not wired into the boot sequence.
 
@@ -58,7 +58,7 @@ This document outlines the architectural refactor to create a single source of t
 
 *   **Build new battle surface**: `BattleState`, `BattleSystem` (start, chooseAction, step).
 *   **Refactor rules**: Move game-specific behavior to `BattleRuleset` or `BattleHooks`.
-*   **Bridge the UI**: `Scene_Battle` asks `BattleSystem` for event list.
+*   **Bridge the UI**: `Scene_Battle` asks `BattleSystem` for event list. `Scene_Battle` decoupled from legacy objects via `EncounterAdapter`.
 *   **Delete legacy battle path**: Remove `managers/battle.js`.
 
 ## Phase 3 — Migrate Exploration + Encounters (In progress)
