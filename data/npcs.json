@@ -176,6 +176,7 @@
   "npc_auction": {
     "name": "Auctioneer",
     "layout": "visual_novel",
+    "portrait": "assets/portraits/NPC_Geraldo.png",
     "initialState": "default",
     "states": {
       "default": {

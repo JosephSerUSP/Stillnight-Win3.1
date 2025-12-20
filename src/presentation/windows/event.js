@@ -50,7 +50,7 @@ export class Window_Event extends Window_Base {
     this.vnContainer.style.flexDirection = "row";
     this.vnContainer.style.alignItems = "flex-start"; // Align top
     this.vnContainer.style.gap = "10px";
-    this.vnContainer.style.minHeight = "200px";
+    this.vnContainer.style.height = "192px";
 
     this.portraitContainer = document.createElement("div");
     this.portraitContainer.className = "inspect-sprite"; // Use shared class
@@ -61,6 +61,7 @@ export class Window_Event extends Window_Base {
 
     this.vnTextContainer = document.createElement("div");
     this.vnTextContainer.className = "vn-text";
+    this.vnTextContainer.style.padding = "12px";
 
     this.vnContainer.appendChild(this.portraitContainer);
     this.vnContainer.appendChild(this.vnTextContainer);
