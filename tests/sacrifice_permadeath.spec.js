@@ -1,11 +1,16 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Sacrifice and Permadeath', () => {
+  const startNewRun = async (page) => {
+    await page.getByRole('button', { name: 'Run' }).click();
+    await page.click('#menu-item-new-run');
+  };
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/?test=true');
     await page.waitForFunction(() => window.dataManager && window.dataManager.actors);
     await page.waitForFunction(() => window.Scene_Battle);
-    await page.click('#btn-new-run');
+    await startNewRun(page);
     // Disable animations
     await page.evaluate(() => {
       window.ConfigManager.windowAnimations = false;

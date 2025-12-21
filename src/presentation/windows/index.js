@@ -5,7 +5,7 @@ import { Window_Inventory } from "./inventory.js";
 import { Window_Confirm, Window_ConfirmEffect } from "./confirm.js";
 import { Window_PartySelect } from "./party_select.js";
 import { Window_EquipItemSelect } from "./equip_select.js";
-import { Window_Help, Window_Options } from "./misc.js";
+import { Window_Help, Window_Options, Window_Info } from "./misc.js";
 import { Window_Desktop } from "./desktop.js";
 
 export * from "./utils.js";
@@ -32,6 +32,7 @@ if (typeof window !== 'undefined' && window.location.search.includes("test=true"
     window.Window_Inventory = Window_Inventory;
     window.Window_Shop = Window_Shop;
     window.Window_Help = Window_Help;
+    window.Window_Info = Window_Info;
     window.Window_Desktop = Window_Desktop;
     window.Window_Confirm = Window_Confirm;
     window.Window_ConfirmEffect = Window_ConfirmEffect;

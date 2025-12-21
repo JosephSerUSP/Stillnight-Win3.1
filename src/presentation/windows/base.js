@@ -148,6 +148,7 @@ export class Window_Base {
      */
     constructor(x, y, width, height, options = {}) {
         this.embedded = options.embedded || false;
+        this.options = options;
         this.animator = new WindowAnimator();
         this.isFullyOpen = false;
 
@@ -159,15 +160,15 @@ export class Window_Base {
 
         // Main Element Construction
         const elementProps = {
-            className: "window-frame",
+            className: ["window-frame", this.embedded ? "window-embedded" : "window-floating"],
             id: options.id || undefined,
             style: {}
         };
 
         if (this.embedded) {
             elementProps.style.position = "relative";
-            if (width !== 'auto') elementProps.style.width = `${width}px`;
-            if (height !== 'auto') elementProps.style.height = `${height}px`;
+            if (width !== 'auto') elementProps.style.width = typeof width === 'number' ? `${width}px` : width;
+            if (height !== 'auto') elementProps.style.height = typeof height === 'number' ? `${height}px` : height;
         } else {
             elementProps.style.position = "absolute";
             const finalX = x === 'center' ? (Graphics.width - width) / 2 : x;
