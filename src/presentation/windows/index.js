@@ -15,6 +15,7 @@ export * from "./selectable.js";
 export * from "./battle.js";
 export * from "./desktop.js";
 export * from "./shop.js";
+export * from "./quest.js";
 export * from "./formation.js";
 export * from "./inventory.js";
 export * from "./event.js";

@@ -3,7 +3,8 @@ import { randInt, pickWeighted, random } from "../core/utils.js";
 import { AudioAdapter } from "./audio_adapter.js";
 import {
   createInteractiveLabel,
-  renderCreatureInfo
+  renderCreatureInfo,
+  Window_Quest
 } from "../presentation/windows/index.js";
 import { Game_Battler } from "../objects/battler.js";
 
