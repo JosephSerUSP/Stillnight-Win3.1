@@ -13,6 +13,7 @@ import {
   Window_AudioPlayer,
   Window_Quest,
   Window_Help,
+  Window_FloorSelect,
   WindowLayer
 } from "../presentation/windows/index.js";
 
@@ -75,6 +76,9 @@ export class HUDManager {
         this.helpWindow = new Window_Help();
         this.windowLayer.addChild(this.helpWindow);
 
+        this.floorSelectWindow = new Window_FloorSelect();
+        this.windowLayer.addChild(this.floorSelectWindow);
+
         this.setupDefaultCloseHandlers();
     }
 
@@ -90,6 +94,7 @@ export class HUDManager {
         this.audioPlayerWindow.onUserClose = () => close(this.audioPlayerWindow);
         this.helpWindow.onUserClose = () => close(this.helpWindow);
         this.questWindow.onUserClose = () => close(this.questWindow);
+        this.floorSelectWindow.onUserClose = () => close(this.floorSelectWindow);
     }
 
     getSharedWindows() {

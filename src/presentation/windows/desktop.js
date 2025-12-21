@@ -7,8 +7,9 @@ import { UI } from "./builder.js";
  */
 export class Window_StackNav extends Window_Base {
     constructor() {
-        super(0, 0, 210, '100%', { title: "Stillnight Stack", embedded: true });
+        super(0, 0, 210, '100%', { title: "Stillnight Stack", embedded: true, showTitleBar: false });
         this.element.classList.add("stack-nav");
+        this.content.style.flexDirection = "column";
 
         const structure = {
             type: 'panel',
@@ -20,22 +21,6 @@ export class Window_StackNav extends Window_Base {
                     props: { className: 'group-box' },
                     children: [
                         { type: 'label', props: { tag: 'legend', text: 'Run' } },
-                        {
-                            type: 'panel',
-                            props: { className: 'stack-nav-buttons' },
-                            children: [
-                                { type: 'button', props: { id: 'btn-new-run', className: 'win-btn', label: 'New Run' } },
-                                { type: 'button', props: { id: 'btn-reveal-all', className: 'win-btn', label: 'Reveal' } },
-                                { type: 'button', props: { id: 'btn-help', className: 'win-btn', label: '?', style: { width: '24px', minWidth: '24px', padding: '0' } } }
-                            ]
-                        },
-                        {
-                            type: 'panel',
-                            props: { style: { marginTop: '2px' } },
-                            children: [
-                                { type: 'button', props: { id: 'btn-settings', className: 'win-btn', label: 'Settings', style: { width: '100%' } } }
-                            ]
-                        },
                         {
                             type: 'panel',
                             props: { style: { marginTop: '4px' } },
@@ -80,10 +65,6 @@ export class Window_StackNav extends Window_Base {
 
         const root = UI.build(this.content, structure);
 
-        this.btnNewRun = root.querySelector("#btn-new-run");
-        this.btnRevealAll = root.querySelector("#btn-reveal-all");
-        this.btnSettings = root.querySelector("#btn-settings");
-        this.btnHelp = root.querySelector("#btn-help");
         this.cardIndexLabelEl = root.querySelector("#card-index-label");
         this.cardDepthLabelEl = root.querySelector("#card-depth-label");
         this.locationArtEl = root.querySelector("#location-art");
@@ -121,18 +102,28 @@ export class Window_StackNav extends Window_Base {
  */
 export class Window_Exploration extends Window_Base {
     constructor() {
-        super(0, 0, 'auto', 'auto', { title: "Floor 1", embedded: true });
+        super(0, 0, 'auto', 'auto', { title: "Floor 1", embedded: true, showTitleBar: false });
         this.element.classList.add("card-main");
+        this.content.style.flexDirection = "column";
 
-        UI.build(this.header, {
+        const infoBar = UI.build(this.content, {
             type: 'panel',
+            props: { className: 'window-section-header exploration-header' },
             children: [
-                 { type: 'label', props: { text: 'Mode:', className: 'label' } },
-                 { type: 'label', props: { text: 'Exploration', id: 'mode-label' } }
+                { type: 'label', props: { id: 'card-title', className: 'exploration-title', text: 'Floor 1' } },
+                {
+                    type: 'panel',
+                    props: { className: 'mode-badge' },
+                    children: [
+                        { type: 'label', props: { text: 'Mode:' } },
+                        { type: 'label', props: { id: 'mode-label', text: 'Exploration' } }
+                    ]
+                }
             ]
         });
 
-        this.titleEl.id = "card-title";
+        this.titleEl = infoBar.querySelector("#card-title");
+        this.modeLabelEl = infoBar.querySelector("#mode-label");
 
         const root = UI.build(this.content, {
             type: 'panel',
@@ -149,8 +140,7 @@ export class Window_Exploration extends Window_Base {
     }
 
     setMode(mode) {
-        const el = this.header.querySelector("#mode-label");
-        if (el) el.textContent = mode;
+        if (this.modeLabelEl) this.modeLabelEl.textContent = mode;
     }
 
     renderGrid(gridData, onTileClick) {
@@ -207,22 +197,19 @@ export class Window_Exploration extends Window_Base {
  */
 export class Window_PartyPanel extends Window_Base {
     constructor() {
-        super(0, 0, '100%', 'auto', { title: "Party Status", embedded: true });
+        super(0, 0, '100%', 'auto', { title: "Party Status", embedded: true, showTitleBar: false });
         this.element.classList.add("party-panel");
+        this.content.style.flexDirection = "column";
 
         this.prevHpMap = new WeakMap();
 
-        UI.build(this.header, {
-            type: 'flex',
-            props: { gap: '2px' },
+        UI.build(this.content, {
+            type: 'panel',
+            props: { className: 'window-section-header' },
             children: [
-                { type: 'button', props: { id: 'btn-formation', className: 'win-btn', label: 'Formation...', style: { fontSize: '10px', padding: '0 6px' } } },
-                { type: 'button', props: { id: 'btn-inventory', className: 'win-btn', label: 'Inventory...', testId: 'btn-inventory', style: { fontSize: '10px', padding: '0 6px' } } }
+                { type: 'label', props: { text: 'Party Status' } }
             ]
         });
-
-        this.btnFormation = this.header.querySelector("#btn-formation");
-        this.btnInventory = this.header.querySelector("#btn-inventory");
 
         this.partyGridEl = UI.build(this.content, {
             type: 'panel',
@@ -303,10 +290,19 @@ export class Window_PartyPanel extends Window_Base {
  */
 export class Window_LogPanel extends Window_Base {
     constructor() {
-        super(0, 0, '100%', '230', { title: "Event Log", embedded: true });
+        super(0, 0, '100%', '230', { title: "Event Log", embedded: true, showTitleBar: false });
         this.element.classList.add("log-panel");
+        this.content.style.flexDirection = "column";
 
-        this.btnClear = UI.build(this.header, {
+        const header = UI.build(this.content, {
+            type: 'panel',
+            props: { className: 'window-section-header log-header' },
+            children: [
+                { type: 'label', props: { text: 'Event Log' } }
+            ]
+        });
+
+        this.btnClear = UI.build(header, {
             type: 'button',
             props: { id: 'btn-clear-log', className: 'win-btn', label: 'Clear', style: { fontSize: '10px', padding: '0 6px' } }
         });
@@ -340,7 +336,7 @@ export class Window_LogPanel extends Window_Base {
  */
 export class Window_Desktop extends Window_Base {
     constructor() {
-        super(0, 0, 960, 560, { title: "Desktop", embedded: true, id: "desktop-window" });
+        super(0, 0, 960, 560, { title: "Desktop", embedded: true, id: "desktop-window", showTitleBar: false });
 
         this.element.style.display = "flex";
         this.element.style.flexDirection = "row";
@@ -349,12 +345,15 @@ export class Window_Desktop extends Window_Base {
         this.element.style.boxShadow = "none";
         this.element.style.backgroundColor = "transparent";
 
-        this.header.style.display = "none";
         this.footer.style.display = "none";
 
+        this.menuItems = {};
+        this.openMenu = null;
+
         this.content.style.padding = "0";
-        this.content.style.flexDirection = "row";
+        this.content.style.flexDirection = "column";
         this.content.style.border = "none";
+        this.content.style.gap = "4px";
 
         this.createUI();
     }
@@ -366,14 +365,15 @@ export class Window_Desktop extends Window_Base {
         this.element.style.setProperty('--grid-cols', '19');
         this.element.style.setProperty('--grid-rows', '19');
 
+        const menuBar = this.createMenuBar();
         this.stackNav = new Window_StackNav();
         this.explorationWindow = new Window_Exploration();
         this.partyPanel = new Window_PartyPanel();
         this.logPanel = new Window_LogPanel();
 
-        const layout = UI.build(container, {
+        const layout = UI.build(null, {
             type: 'panel',
-            props: { style: { display: 'flex', flexDirection: 'row', width: '100%', height: '100%' } },
+            props: { style: { display: 'flex', flexDirection: 'row', width: '100%', height: '100%', flex: '1 1 auto', minHeight: 0, minWidth: 0 } },
             children: [
                  { type: 'panel', props: { id: 'left-col' } },
                  {
@@ -417,6 +417,8 @@ export class Window_Desktop extends Window_Base {
             ]
         });
 
+        container.appendChild(menuBar);
+        container.appendChild(layout);
         layout.querySelector("#left-col").replaceWith(this.stackNav.element);
         layout.querySelector("#exploration-slot").replaceWith(this.explorationWindow.element);
         layout.querySelector("#party-slot").replaceWith(this.partyPanel.element);
@@ -430,13 +432,119 @@ export class Window_Desktop extends Window_Base {
         this.statusItemsEl = layout.querySelector("#status-items");
     }
 
-    get btnSettings() { return this.stackNav.btnSettings; }
-    get btnHelp() { return this.stackNav.btnHelp; }
-    get btnNewRun() { return this.stackNav.btnNewRun; }
-    get btnRevealAll() { return this.stackNav.btnRevealAll; }
-    get btnFormation() { return this.partyPanel.btnFormation; }
-    get btnInventory() { return this.partyPanel.btnInventory; }
     get btnClearLog() { return this.logPanel.btnClear; }
+
+    setMenuHandler(action, handler) {
+        const btn = this.menuItems[action];
+        if (!btn) return;
+
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            this.closeMenus();
+            handler();
+        });
+    }
+
+    closeMenus() {
+        if (this.openMenu) {
+            this.openMenu.classList.remove("open");
+            this.openMenu = null;
+        }
+    }
+
+    createMenuBar() {
+        const menuBar = UI.build(null, {
+            type: 'panel',
+            props: { className: 'menu-bar' }
+        });
+
+        const menus = [
+            {
+                label: 'Game',
+                items: [
+                    { label: 'New Game', action: 'game.new' },
+                    { label: 'Save Game', action: 'game.save' },
+                    { label: 'Load Game', action: 'game.load' },
+                    { label: 'About', action: 'game.about' }
+                ]
+            },
+            {
+                label: 'Run',
+                items: [
+                    { label: 'New Run', action: 'run.new' },
+                    { label: 'Reveal All', action: 'run.reveal' },
+                    { label: 'Teleport', action: 'run.teleport' }
+                ]
+            },
+            {
+                label: 'Party',
+                items: [
+                    { label: 'Inventory (I)', action: 'party.inventory' },
+                    { label: 'Formation (F)', action: 'party.formation' },
+                    { label: 'Quests (Q)', action: 'party.quests' }
+                ]
+            },
+            {
+                label: 'Settings',
+                items: [
+                    { label: 'General', action: 'settings.general' },
+                    { label: 'Audio', action: 'settings.audio' }
+                ]
+            },
+            {
+                label: 'Help',
+                items: [
+                    { label: 'General', action: 'help.general' }
+                ]
+            }
+        ];
+
+        const closeMenus = () => this.closeMenus();
+        document.addEventListener('click', closeMenus);
+
+        menus.forEach(menu => {
+            const menuEl = UI.build(menuBar, {
+                type: 'panel',
+                props: { className: 'menu' }
+            });
+
+            const btn = UI.build(menuEl, {
+                type: 'button',
+                props: { className: 'menu-btn', label: menu.label }
+            });
+
+            const list = UI.build(menuEl, {
+                type: 'panel',
+                props: { className: 'menu-list' }
+            });
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = this.openMenu === menuEl;
+                this.closeMenus();
+                if (!isOpen) {
+                    menuEl.classList.add('open');
+                    this.openMenu = menuEl;
+                }
+            });
+
+            menu.items.forEach((item) => {
+                if (item.separator) {
+                    UI.build(list, { type: 'panel', props: { className: 'menu-separator' } });
+                    return;
+                }
+
+                const itemBtn = UI.build(list, {
+                    type: 'button',
+                    props: { className: 'menu-item', label: item.label }
+                });
+
+                this.menuItems[item.action] = itemBtn;
+            });
+        });
+
+        return menuBar;
+    }
 
     updateCardHeader(floor, index, total) {
         this.stackNav.updateCardHeader(floor, index, total);
