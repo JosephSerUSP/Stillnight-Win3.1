@@ -543,22 +543,36 @@ export class InterpreterAdapter {
     }
 
     _handleNpcChoice(npc, choice) {
+        // Explicit Close
         if (choice.action === 'close') {
             this.closeEvent();
-        } else if (choice.nextState) {
-            this._runNpcState(npc, choice.nextState);
-        } else if (choice.action === 'shop') {
-             // Trigger shop event with optional specific shop ID
+            return;
+        }
+
+        // Actions that can coexist with state changes or other flows
+        if (choice.action === 'shop') {
              this.scene.startShop(choice.shopId);
         } else if (choice.action === 'teleport') {
             this.closeEvent();
             // TODO: Teleport logic
             this.scene.logMessage("Teleporting...");
-        } else if (choice.action === 'quest') {
+            return;
+        }
+
+        // Quest actions override standard flow as they invoke sub-windows with their own callbacks
+        if (choice.action === 'quest') {
             this._openQuestOffer(choice.questId, choice);
+            return;
         } else if (choice.action === 'questComplete') {
             this._completeQuest(choice.questId, choice);
-        } else {
+            return;
+        }
+
+        // State Transition
+        if (choice.nextState) {
+            this._runNpcState(npc, choice.nextState);
+        } else if (choice.action !== 'shop') {
+             // If no next state and not a persisting action (like shop), close by default.
              this.closeEvent();
         }
     }
