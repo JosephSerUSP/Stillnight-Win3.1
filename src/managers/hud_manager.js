@@ -13,6 +13,7 @@ import {
   Window_AudioPlayer,
   Window_Quest,
   Window_Help,
+  Window_CardNavigator,
   WindowLayer
 } from "../presentation/windows/index.js";
 
@@ -75,6 +76,9 @@ export class HUDManager {
         this.helpWindow = new Window_Help();
         this.windowLayer.addChild(this.helpWindow);
 
+        this.cardNavigatorWindow = new Window_CardNavigator();
+        this.windowLayer.addChild(this.cardNavigatorWindow);
+
         this.setupDefaultCloseHandlers();
     }
 
@@ -90,6 +94,7 @@ export class HUDManager {
         this.audioPlayerWindow.onUserClose = () => close(this.audioPlayerWindow);
         this.helpWindow.onUserClose = () => close(this.helpWindow);
         this.questWindow.onUserClose = () => close(this.questWindow);
+        this.cardNavigatorWindow.onUserClose = () => close(this.cardNavigatorWindow);
     }
 
     getSharedWindows() {

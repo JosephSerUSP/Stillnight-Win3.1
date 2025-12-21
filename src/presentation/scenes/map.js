@@ -124,6 +124,20 @@ export class Scene_Map extends Scene_Base {
     }
   }
 
+  confirmNewGame() {
+    if (this.sceneManager.currentScene() !== this) return;
+
+    const confirmWindow = this.hudManager.confirmWindow;
+    confirmWindow.setTitle("Start New Game");
+    confirmWindow.messageEl.textContent = "Start a new game? This will reset your current run.";
+    confirmWindow.btnOk.onclick = () => {
+        this.windowManager.close(confirmWindow);
+        this.startNewRun();
+    };
+    confirmWindow.btnCancel.onclick = () => this.windowManager.close(confirmWindow);
+    this.windowManager.push(confirmWindow);
+  }
+
   /**
    * Resets game state and starts a fresh dungeon run.
    * @method startNewRun
@@ -168,17 +182,29 @@ export class Scene_Map extends Scene_Base {
    * @method addEventListeners
    */
   addEventListeners() {
-    this.hud.btnNewRun.addEventListener("click", this.startNewRun.bind(this));
-    this.hud.btnRevealAll.addEventListener("click", this.revealAllFloors.bind(this));
-    this.hud.btnSettings.addEventListener("click", this.openSettings.bind(this));
-    this.hud.btnHelp.addEventListener("click", this.openHelp.bind(this));
+    this.hud.bindMenuAction('game-new', () => this.confirmNewGame());
+    this.hud.bindMenuAction('game-save', () => this.showStubMessage('Save Game'));
+    this.hud.bindMenuAction('game-load', () => this.showStubMessage('Load Game'));
+    this.hud.bindMenuAction('game-about', () => this.showStubMessage('About Stillnight'));
+
+    this.hud.bindMenuAction('run-new', () => this.confirmNewGame());
+    this.hud.bindMenuAction('run-reveal', () => this.revealAllFloors());
+    this.hud.bindMenuAction('run-teleport', () => this.openTeleportDialog());
+
+    this.hud.bindMenuAction('party-inventory', () => this.openInventory());
+    this.hud.bindMenuAction('party-formation', () => this.openFormation());
+    this.hud.bindMenuAction('party-quests', () => this.showStubMessage('Quest Log'));
+
+    this.hud.bindMenuAction('settings-general', () => this.openSettings());
+    this.hud.bindMenuAction('settings-audio', () => this.openAudioSettings());
+
+    this.hud.bindMenuAction('help-general', () => this.openHelp());
+
     this.hud.btnClearLog.addEventListener("click", () => {
       this.hud.clearLog();
       this.setStatus("Log cleared.");
       AudioAdapter.play('UI_CANCEL');
     });
-    this.hud.btnFormation.addEventListener("click", this.openFormation.bind(this));
-    this.hud.btnInventory.addEventListener("click", this.openInventory.bind(this));
   }
 
   /**
@@ -458,18 +484,36 @@ export class Scene_Map extends Scene_Base {
         this.map.floors,
         this.map.floorIndex,
         this.map.maxReachedFloorIndex,
+        (idx) => this.goToFloor(idx)
+    );
+  }
+
+  goToFloor(idx) {
+    if (idx < 0 || idx >= this.map.floors.length) return;
+    this.map.floorIndex = idx;
+    const floor = this.map.floors[this.map.floorIndex];
+    this.map.playerX = floor.startX;
+    this.map.playerY = floor.startY;
+    this.map.revealAroundPlayer();
+    this.logMessage(`[Navigate] You flip to card ${idx + 1} (${floor.title}).`);
+    AudioAdapter.play('STAIRS');
+    this.updateAll();
+    this.checkMusic();
+  }
+
+  openTeleportDialog() {
+    if (this.sceneManager.currentScene() !== this) return;
+    const navigator = this.hudManager.cardNavigatorWindow;
+    navigator.setFloors(
+        this.map.floors,
+        this.map.floorIndex,
+        this.map.maxReachedFloorIndex,
         (idx) => {
-            this.map.floorIndex = idx;
-            const floor = this.map.floors[this.map.floorIndex];
-            this.map.playerX = floor.startX;
-            this.map.playerY = floor.startY;
-            this.map.revealAroundPlayer();
-            this.logMessage(`[Navigate] You flip to card ${idx + 1} (${floor.title}).`);
-            AudioAdapter.play('STAIRS');
-            this.updateAll();
-            this.checkMusic();
+            this.windowManager.close(navigator);
+            this.goToFloor(idx);
         }
     );
+    this.windowManager.push(navigator);
   }
 
   /**
@@ -725,6 +769,12 @@ export class Scene_Map extends Scene_Base {
   openHelp() {
     if (this.sceneManager.currentScene() !== this) return;
     this.windowManager.push(this.hudManager.helpWindow);
+  }
+
+  showStubMessage(label) {
+    this.setStatus(`${label} is not available yet.`);
+    this.logMessage(`[Stub] ${label} is not implemented yet.`, 'low');
+    AudioAdapter.play('UI_ERROR');
   }
 
   openSettings() {
