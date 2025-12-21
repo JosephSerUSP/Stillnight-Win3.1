@@ -28,7 +28,7 @@
         "choices": [
           {
             "label": "Ask about Quest",
-            "nextState": "quest_offer"
+            "nextState": "quest_router"
           },
           {
             "label": "Back",
@@ -36,15 +36,68 @@
           }
         ]
       },
+      "quest_router": {
+        "condition": "questStatus:sparkling_gift:completed",
+        "trueState": "quest_complete",
+        "falseState": "quest_offer_router"
+      },
+      "quest_offer_router": {
+        "condition": "questStatus:sparkling_gift:active",
+        "trueState": "quest_active",
+        "falseState": "quest_offer"
+      },
       "quest_offer": {
         "text": "Actually... could you help me find something for her? She loves sparkly things. Maybe if I gave her something special...",
         "choices": [
           {
-            "label": "I'll look for it",
-            "action": "close"
+            "label": "Hear the request",
+            "action": "quest",
+            "questId": "sparkling_gift",
+            "acceptState": "quest_active",
+            "declineState": "talk_laura"
           },
           {
             "label": "Maybe later",
+            "nextState": "default"
+          }
+        ]
+      },
+      "quest_active": {
+        "text": "You'll know it when you see it — a Glittering Teardrop. Merchants whisper about them; please bring one back for me.",
+        "condition": "hasItem:glittering_teardrop",
+        "trueState": "quest_turnin",
+        "choices": [
+          {
+            "label": "Review quest details",
+            "action": "quest",
+            "questId": "sparkling_gift"
+          },
+          {
+            "label": "Back",
+            "nextState": "default"
+          }
+        ]
+      },
+      "quest_turnin": {
+        "text": "Oh! Is that for Laura? It's perfect. May I have it?",
+        "choices": [
+          {
+            "label": "Hand over the teardrop",
+            "action": "questComplete",
+            "questId": "sparkling_gift",
+            "completeState": "quest_complete"
+          },
+          {
+            "label": "Not yet",
+            "nextState": "quest_active"
+          }
+        ]
+      },
+      "quest_complete": {
+        "text": "Thank you! Laura will love this. I owe you so much... here, take this as thanks.",
+        "choices": [
+          {
+            "label": "Back",
             "nextState": "default"
           }
         ]
@@ -93,7 +146,7 @@
         "choices": [
           {
             "label": "Ask about Quest",
-            "nextState": "quest_ring"
+            "nextState": "quest_router"
           },
           {
             "label": "Back",
@@ -101,15 +154,68 @@
           }
         ]
       },
-      "quest_ring": {
+      "quest_router": {
+        "condition": "questStatus:golden_promise:completed",
+        "trueState": "quest_complete",
+        "falseState": "quest_offer_router"
+      },
+      "quest_offer_router": {
+        "condition": "questStatus:golden_promise:active",
+        "trueState": "quest_active",
+        "falseState": "quest_offer"
+      },
+      "quest_offer": {
         "text": "Actually, I need a favor. There's a rare undead prowling the lower floors... rumor has it, it wears a pure gold band. Bring it to me. I need raw material for... a project.",
         "choices": [
           {
             "label": "I'll do it",
-            "action": "close"
+            "action": "quest",
+            "questId": "golden_promise",
+            "acceptState": "quest_active",
+            "declineState": "default"
           },
           {
             "label": "Too dangerous",
+            "nextState": "default"
+          }
+        ]
+      },
+      "quest_active": {
+        "text": "The signet I'm after is pristine gold. If you find an Untarnished Signet, bring it straight to me.",
+        "condition": "hasItem:untarnished_signet",
+        "trueState": "quest_turnin",
+        "choices": [
+          {
+            "label": "Remind me",
+            "action": "quest",
+            "questId": "golden_promise"
+          },
+          {
+            "label": "Back",
+            "nextState": "default"
+          }
+        ]
+      },
+      "quest_turnin": {
+        "text": "You found the signet? Hand it here — I'll make it shine.",
+        "choices": [
+          {
+            "label": "Give the signet",
+            "action": "questComplete",
+            "questId": "golden_promise",
+            "completeState": "quest_complete"
+          },
+          {
+            "label": "Not yet",
+            "nextState": "quest_active"
+          }
+        ]
+      },
+      "quest_complete": {
+        "text": "This will do nicely. Here's your payment — and my respect. Few bring back what they promise.",
+        "choices": [
+          {
+            "label": "Back",
             "nextState": "default"
           }
         ]

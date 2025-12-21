@@ -186,6 +186,9 @@ html, body {
     cursor: pointer;
     color: var(--window-text);
 }
+.win-btn.secondary {
+    background-color: #dfe8ff;
+}
 .win-btn:active {
     border-color: var(--bezel-dark) var(--bezel-light) var(--bezel-light) var(--bezel-dark);
     padding-top: 1px;
@@ -1071,6 +1074,87 @@ input:checked + .toggle-slider:before {
     font-family: inherit;
     position: relative;
     padding: 4px;
+}
+
+/* Quest Window */
+.quest-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.quest-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.quest-title {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.quest-subtitle {
+    color: var(--text-dim);
+    font-size: 13px;
+}
+
+.quest-status {
+    align-self: flex-start;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0d0d0d;
+}
+
+.quest-status[data-status="inactive"] {
+    background: #ffd966;
+}
+
+.quest-status[data-status="active"] {
+    background: #8fd5ff;
+}
+
+.quest-status[data-status="completed"] {
+    background: #8be69d;
+}
+
+.quest-summary {
+    margin: 0;
+    font-size: 14px;
+}
+
+.quest-objectives,
+.quest-rewards {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.quest-objectives li,
+.quest-rewards li {
+    margin: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.quest-objectives li::before {
+    content: "•";
+    color: var(--text-functional);
+    margin-right: 6px;
+}
+
+.quest-rewards-header {
+    font-weight: 700;
+    margin-top: 6px;
+}
+
+.quest-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
 }
 
 @keyframes cursor-blink {

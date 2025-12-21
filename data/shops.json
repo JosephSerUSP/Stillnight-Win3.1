@@ -33,6 +33,7 @@
   "auction_house": {
     "items": [
       { "id": "mystic_egg" },
+      { "id": "untarnished_signet" },
       { "id": "exp_boost", "condition": "gold:5000" },
       { "id": "hermes_boots", "condition": "level:10" }
     ]
@@ -42,6 +43,7 @@
       { "id": "hp_tonic" },
       { "id": "sigil_ink" },
       { "id": "bone_plate" },
+      { "id": "glittering_teardrop" },
       { "id": "hp_boost1" },
       { "id": "mystic_egg", "condition": "level:10" }
     ]

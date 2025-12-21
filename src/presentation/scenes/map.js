@@ -16,6 +16,7 @@ import { ExplorationAdapter } from "../../adapters/exploration_adapter.js";
 import { selectPartyHUD } from "../selectors/party.js";
 import { selectInventory } from "../selectors/inventory.js";
 import { selectBattlerDetails } from "../selectors/details.js";
+import { QuestLogState } from "../../engine/session/quest_state.js";
 
 /**
  * @class Scene_Map
@@ -35,6 +36,9 @@ export class Scene_Map extends Scene_Base {
     super(dataManager, windowManager);
     this.sceneManager = sceneManager;
     this.session = session || { party: new Game_Party() };
+    if (!this.session.quests) {
+        this.session.quests = new QuestLogState();
+    }
     this.party = this.session.party;
     this.map = new ExplorationAdapter(this.party, this.session.exploration);
     this.interpreter = new InterpreterAdapter(this);
@@ -126,8 +130,10 @@ export class Scene_Map extends Scene_Base {
    */
   startNewRun() {
     if (this.sceneManager.currentScene() !== this) return;
+    this.session.quests = new QuestLogState();
     this.party.createInitialMembers(this.dataManager);
     this.map.initFloors(this.dataManager.maps, this.dataManager.events, this.dataManager.npcs, this.party);
+    this.session.exploration = this.map.state;
     this.runActive = true;
     this.map.floorIndex = 0;
     const f = this.map.floors[this.map.floorIndex];

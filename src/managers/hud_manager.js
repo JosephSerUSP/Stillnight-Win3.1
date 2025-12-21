@@ -11,6 +11,7 @@ import {
   Window_EquipItemSelect,
   Window_Options,
   Window_AudioPlayer,
+  Window_Quest,
   Window_Help,
   WindowLayer
 } from "../presentation/windows/index.js";
@@ -37,6 +38,9 @@ export class HUDManager {
 
         this.recruitWindow = new Window_Recruit();
         this.windowLayer.addChild(this.recruitWindow);
+
+        this.questWindow = new Window_Quest();
+        this.windowLayer.addChild(this.questWindow);
 
         this.formationWindow = new Window_Formation();
         this.windowLayer.addChild(this.formationWindow);
@@ -85,6 +89,7 @@ export class HUDManager {
         this.audioWindow.onUserClose = () => close(this.audioWindow);
         this.audioPlayerWindow.onUserClose = () => close(this.audioPlayerWindow);
         this.helpWindow.onUserClose = () => close(this.helpWindow);
+        this.questWindow.onUserClose = () => close(this.questWindow);
     }
 
     getSharedWindows() {
