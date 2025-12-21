@@ -217,12 +217,14 @@ export class Window_PartyPanel extends Window_Base {
             props: { gap: '2px' },
             children: [
                 { type: 'button', props: { id: 'btn-formation', className: 'win-btn', label: 'Formation...', style: { fontSize: '10px', padding: '0 6px' } } },
-                { type: 'button', props: { id: 'btn-inventory', className: 'win-btn', label: 'Inventory...', testId: 'btn-inventory', style: { fontSize: '10px', padding: '0 6px' } } }
+                { type: 'button', props: { id: 'btn-inventory', className: 'win-btn', label: 'Inventory...', testId: 'btn-inventory', style: { fontSize: '10px', padding: '0 6px' } } },
+                { type: 'button', props: { id: 'btn-quests', className: 'win-btn', label: 'Quests...', style: { fontSize: '10px', padding: '0 6px' } } }
             ]
         });
 
         this.btnFormation = this.header.querySelector("#btn-formation");
         this.btnInventory = this.header.querySelector("#btn-inventory");
+        this.btnQuests = this.header.querySelector("#btn-quests");
 
         this.partyGridEl = UI.build(this.content, {
             type: 'panel',
@@ -408,6 +410,7 @@ export class Window_Desktop extends Window_Base {
                                          { type: 'label', props: { text: ' | Cards: ' } }, { type: 'label', props: { id: 'status-cards', text: '1' } },
                                          { type: 'label', props: { text: ' | Run: ' } }, { type: 'label', props: { id: 'status-run', text: 'Active' } },
                                          { type: 'label', props: { text: ' | Items: ' } }, { type: 'label', props: { id: 'status-items', text: '0' } },
+                                        { type: 'label', props: { text: ' | Quests: ' } }, { type: 'label', props: { id: 'status-quests', text: '0' } },
                                      ]
                                  }
                              ]
@@ -428,6 +431,7 @@ export class Window_Desktop extends Window_Base {
         this.statusCardsEl = layout.querySelector("#status-cards");
         this.statusRunEl = layout.querySelector("#status-run");
         this.statusItemsEl = layout.querySelector("#status-items");
+        this.statusQuestsEl = layout.querySelector("#status-quests");
     }
 
     get btnSettings() { return this.stackNav.btnSettings; }
@@ -436,6 +440,7 @@ export class Window_Desktop extends Window_Base {
     get btnRevealAll() { return this.stackNav.btnRevealAll; }
     get btnFormation() { return this.partyPanel.btnFormation; }
     get btnInventory() { return this.partyPanel.btnInventory; }
+    get btnQuests() { return this.partyPanel.btnQuests; }
     get btnClearLog() { return this.logPanel.btnClear; }
 
     updateCardHeader(floor, index, total) {
@@ -471,6 +476,7 @@ export class Window_Desktop extends Window_Base {
         if (state.cards !== undefined) this.statusCardsEl.textContent = state.cards;
         if (state.runActive !== undefined) this.statusRunEl.textContent = state.runActive ? "Active" : "Over";
         if (state.items !== undefined) this.statusItemsEl.textContent = state.items;
+        if (state.quests !== undefined) this.statusQuestsEl.textContent = state.quests;
     }
 
     setMode(mode) {

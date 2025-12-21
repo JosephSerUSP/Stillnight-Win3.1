@@ -529,6 +529,41 @@ export class InterpreterAdapter {
             this.closeEvent();
         } else if (choice.nextState) {
             this._runNpcState(npc, choice.nextState);
+        } else if (choice.action === 'quest') {
+            this.scene.showQuestOffer(choice.questId, {
+                onAccept: () => {
+                    if (choice.onAcceptState) {
+                        this._runNpcState(npc, choice.onAcceptState);
+                    } else {
+                        this.closeEvent();
+                    }
+                },
+                onDecline: () => {
+                    if (choice.onDeclineState) {
+                        this._runNpcState(npc, choice.onDeclineState);
+                    } else {
+                        this.closeEvent();
+                    }
+                }
+            });
+        } else if (choice.action === 'questComplete') {
+            const view = this.scene.questAdapter.getQuestView(choice.questId);
+            const result = this.scene.questAdapter.completeQuest(choice.questId);
+            if (result.status === 'completed') {
+                if (view) {
+                    this.scene.logMessage(`[Quest] Completed: ${view.title}.`);
+                }
+                const rewards = this._formatQuestRewards(result.quest?.rewards);
+                if (rewards) this.scene.logMessage(rewards);
+                this.scene.updateAll();
+                if (choice.onCompleteState) {
+                    this._runNpcState(npc, choice.onCompleteState);
+                    return;
+                }
+            } else {
+                this.scene.logMessage(`[Quest] ${view ? view.title : 'Quest'} is not ready to turn in.`);
+            }
+            this.closeEvent();
         } else if (choice.action === 'shop') {
              // Trigger shop event with optional specific shop ID
              this.scene.startShop(choice.shopId);
@@ -547,7 +582,26 @@ export class InterpreterAdapter {
         if (type === 'hasItem') {
             return this.party.inventory.some(i => i.id === value);
         }
+        if (type === 'questAccepted') {
+            return this.scene.questAdapter.getStatus(value) === 'active';
+        }
+        if (type === 'questCompleted') {
+            return this.scene.questAdapter.getStatus(value) === 'completed';
+        }
+        if (type === 'questAvailable') {
+            return this.scene.questAdapter.getStatus(value) === 'available';
+        }
         return false;
+    }
+
+    _formatQuestRewards(rewards) {
+        if (!rewards) return "";
+        const parts = [];
+        if (rewards.gold) parts.push(`${rewards.gold}G`);
+        if (Array.isArray(rewards.items)) {
+            parts.push(...rewards.items.map(i => i.name || i.id));
+        }
+        return parts.length > 0 ? `[Quest] Rewards: ${parts.join(', ')}` : "";
     }
 
     clearEventTile() {
