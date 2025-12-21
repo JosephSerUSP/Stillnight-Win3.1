@@ -230,9 +230,19 @@
     "icon": 71,
     "description": "Lucent blade carrying the blessings of the sun.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
-      { "code": "ELEMENT_CHANGE", "dataId": "Red" },
-      { "code": "CRI", "value": 0.20 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 3
+      },
+      {
+        "code": "ELEMENT_CHANGE",
+        "dataId": "Red"
+      },
+      {
+        "code": "CRI",
+        "value": 0.2
+      }
     ]
   },
   {
@@ -244,9 +254,19 @@
     "icon": 72,
     "description": "Leaf-shaped daggers that strike with the speed of wind.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
-      { "code": "ELEMENT_CHANGE", "dataId": "Green" },
-      { "code": "CRI", "value": 0.15 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 3
+      },
+      {
+        "code": "ELEMENT_CHANGE",
+        "dataId": "Green"
+      },
+      {
+        "code": "CRI",
+        "value": 0.15
+      }
     ]
   },
   {
@@ -258,9 +278,19 @@
     "icon": 73,
     "description": "Leaf-shaped daggers that strike with the speed of wind.",
     "traits": [
-      { "code": "PARAM_PLUS", "dataId": "atk", "value": 3 },
-      { "code": "ELEMENT_CHANGE", "dataId": "Blue" },
-      { "code": "CRI", "value": 0.15 }
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 3
+      },
+      {
+        "code": "ELEMENT_CHANGE",
+        "dataId": "Blue"
+      },
+      {
+        "code": "CRI",
+        "value": 0.15
+      }
     ]
   },
   {
@@ -320,7 +350,10 @@
     "icon": 81,
     "description": "Its magicked properties imbue the wearer with elemental energy.",
     "traits": [
-      { "code": "ELEMENT_CHANGE", "dataId": "Red" }
+      {
+        "code": "ELEMENT_CHANGE",
+        "dataId": "Red"
+      }
     ]
   },
   {
@@ -361,5 +394,21 @@
         "dataId": "Green"
       }
     ]
+  },
+  {
+    "id": "glittering_teardrop",
+    "name": "Glittering Teardrop",
+    "type": "quest",
+    "cost": 0,
+    "icon": 228,
+    "description": "A flawless crystal that catches the faintest light. Alicia believes Laura will love it."
+  },
+  {
+    "id": "untarnished_signet",
+    "name": "Untarnished Signet",
+    "type": "quest",
+    "cost": 0,
+    "icon": 218,
+    "description": "A heavy golden ring, unmarked and waiting for a new story. Laura can reshape it into something precious."
   }
 ]

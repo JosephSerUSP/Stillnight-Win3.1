@@ -4,6 +4,7 @@ import { Registry } from "../data/registry.js";
 import { ExplorationState } from "./exploration_state.js";
 import { BattleState } from "./battle_state.js";
 import { InterpreterState } from "./interpreter_state.js";
+import { QuestLogState } from "./quest_state.js";
 
 export class SessionSerializer {
     /**
@@ -18,7 +19,8 @@ export class SessionSerializer {
             party: this.serializeParty(session.party),
             exploration: session.exploration ? this.serializeExploration(session.exploration) : null,
             battle: session.battle ? this.serializeBattle(session.battle) : null,
-            interpreter: session.interpreter ? this.serializeInterpreter(session.interpreter) : null
+            interpreter: session.interpreter ? this.serializeInterpreter(session.interpreter) : null,
+            quests: session.quests ? this.serializeQuestLog(session.quests) : null
         };
     }
 
@@ -43,6 +45,14 @@ export class SessionSerializer {
 
         if (json.interpreter) {
             session.interpreter = this.deserializeInterpreter(json.interpreter);
+        }
+
+        if (json.quests) {
+            session.quests = this.deserializeQuestLog(json.quests);
+        }
+
+        if (!session.quests) {
+            session.quests = new QuestLogState();
         }
 
         return session;
@@ -168,6 +178,18 @@ export class SessionSerializer {
 
     static deserializeInterpreter(data) {
         const state = new InterpreterState();
+        Object.assign(state, data);
+        return state;
+    }
+
+    // --- Quest Log ---
+
+    static serializeQuestLog(log) {
+        return JSON.parse(JSON.stringify(log));
+    }
+
+    static deserializeQuestLog(data) {
+        const state = new QuestLogState();
         Object.assign(state, data);
         return state;
     }

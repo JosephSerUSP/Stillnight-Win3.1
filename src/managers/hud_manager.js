@@ -11,7 +11,10 @@ import {
   Window_EquipItemSelect,
   Window_Options,
   Window_AudioPlayer,
+  Window_Quest,
   Window_Help,
+  Window_Info,
+  Window_StackNav,
   WindowLayer
 } from "../presentation/windows/index.js";
 
@@ -37,6 +40,9 @@ export class HUDManager {
 
         this.recruitWindow = new Window_Recruit();
         this.windowLayer.addChild(this.recruitWindow);
+
+        this.questWindow = new Window_Quest();
+        this.windowLayer.addChild(this.questWindow);
 
         this.formationWindow = new Window_Formation();
         this.windowLayer.addChild(this.formationWindow);
@@ -71,6 +77,12 @@ export class HUDManager {
         this.helpWindow = new Window_Help();
         this.windowLayer.addChild(this.helpWindow);
 
+        this.infoWindow = new Window_Info();
+        this.windowLayer.addChild(this.infoWindow);
+
+        this.cardListWindow = new Window_StackNav({ embedded: false, title: "Cards (Floors)", width: 320, height: 460 });
+        this.windowLayer.addChild(this.cardListWindow);
+
         this.setupDefaultCloseHandlers();
     }
 
@@ -85,6 +97,9 @@ export class HUDManager {
         this.audioWindow.onUserClose = () => close(this.audioWindow);
         this.audioPlayerWindow.onUserClose = () => close(this.audioPlayerWindow);
         this.helpWindow.onUserClose = () => close(this.helpWindow);
+        this.infoWindow.onUserClose = () => close(this.infoWindow);
+        this.questWindow.onUserClose = () => close(this.questWindow);
+        this.cardListWindow.onUserClose = () => close(this.cardListWindow);
     }
 
     getSharedWindows() {

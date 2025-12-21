@@ -6,6 +6,7 @@ import {
   renderCreatureInfo
 } from "../presentation/windows/index.js";
 import { Game_Battler } from "../objects/battler.js";
+import { QuestSystem } from "../engine/systems/quest.js";
 
 /**
  * @class InterpreterAdapter
@@ -21,6 +22,7 @@ export class InterpreterAdapter {
         this.scene = sceneContext;
         this.system = new InterpreterSystem();
         this._onRecruitCallback = null;
+        this._activeNpc = null;
     }
 
     get dataManager() { return this.scene.dataManager; }
@@ -28,6 +30,7 @@ export class InterpreterAdapter {
     get sceneManager() { return this.scene.sceneManager; }
     get party() { return this.scene.party; }
     get map() { return this.scene.map; }
+    get session() { return this.scene.session; }
 
     /**
      * Executes a map event action using the system.
@@ -396,6 +399,10 @@ export class InterpreterAdapter {
 
     closeEvent() {
         this.windowManager.close(this.scene.hudManager.eventWindow);
+        if (this.scene.hudManager.questWindow) {
+            this.windowManager.close(this.scene.hudManager.questWindow);
+        }
+        this._activeNpc = null;
         this.scene.updateAll();
     }
 
@@ -476,6 +483,7 @@ export class InterpreterAdapter {
             return;
         }
 
+        this._activeNpc = { id: npcId, data: npc };
         // For now, we only show the initial state.
         // Complex state machine logic should be handled here or in a dedicated NpcInteractionSystem.
         // We will implement a basic state handler here.
@@ -489,6 +497,8 @@ export class InterpreterAdapter {
             this.closeEvent();
             return;
         }
+
+        this._activeNpc = { id: this._activeNpc?.id || npc.name, data: npc };
 
         // Evaluate condition if present
         if (stateData.condition) {
@@ -524,30 +534,170 @@ export class InterpreterAdapter {
         AudioAdapter.play('UI_SELECT');
     }
 
+    _transitionNpcState(nextStateId) {
+        if (this._activeNpc && nextStateId) {
+            this._runNpcState(this._activeNpc.data, nextStateId);
+        } else {
+            this.closeEvent();
+        }
+    }
+
     _handleNpcChoice(npc, choice) {
+        // Explicit Close
         if (choice.action === 'close') {
             this.closeEvent();
-        } else if (choice.nextState) {
-            this._runNpcState(npc, choice.nextState);
-        } else if (choice.action === 'shop') {
-             // Trigger shop event with optional specific shop ID
+            return;
+        }
+
+        // Actions that can coexist with state changes or other flows
+        if (choice.action === 'shop') {
              this.scene.startShop(choice.shopId);
         } else if (choice.action === 'teleport') {
             this.closeEvent();
             // TODO: Teleport logic
             this.scene.logMessage("Teleporting...");
-        } else {
+            return;
+        }
+
+        // Quest actions override standard flow as they invoke sub-windows with their own callbacks
+        if (choice.action === 'quest') {
+            this._openQuestOffer(choice.questId, choice);
+            return;
+        } else if (choice.action === 'questComplete') {
+            this._completeQuest(choice.questId, choice);
+            return;
+        }
+
+        // State Transition
+        if (choice.nextState) {
+            this._runNpcState(npc, choice.nextState);
+        } else if (choice.action !== 'shop') {
+             // If no next state and not a persisting action (like shop), close by default.
              this.closeEvent();
+        }
+    }
+
+    _getQuestDefinition(questId) {
+        if (!questId || !this.dataManager.quests) return null;
+        const quests = this.dataManager.quests;
+        const quest = quests[questId] || (Array.isArray(quests) ? quests.find(q => q.id === questId) : null);
+        if (!quest) return null;
+        return { id: questId, ...quest };
+    }
+
+    _enrichQuestRewards(questDef) {
+        if (!questDef.rewards || !Array.isArray(questDef.rewards.items)) return questDef;
+
+        const items = (this.dataManager.items || []);
+        const enriched = questDef.rewards.items.map(r => {
+            const itemDef = items.find(i => i.id === r.id);
+            return {
+                ...r,
+                name: r.name || itemDef?.name,
+                icon: r.icon || itemDef?.icon,
+            };
+        });
+
+        return {
+            ...questDef,
+            rewards: {
+                ...questDef.rewards,
+                items: enriched
+            }
+        };
+    }
+
+    _openQuestOffer(questId, choice = {}) {
+        const quest = this._getQuestDefinition(questId);
+        if (!quest) {
+            console.warn(`Quest '${questId}' not found.`);
+            return;
+        }
+
+        const status = QuestSystem.getStatus(this.session.quests, questId);
+        const questData = this._enrichQuestRewards(quest);
+
+        const onAccept = () => {
+            const result = QuestSystem.acceptQuest(this.session.quests, questId);
+            if (result.ok) {
+                this.scene.logMessage(`[Quest] Accepted: ${quest.name}.`);
+                this.scene.setStatus(`Quest accepted: ${quest.name}`);
+                AudioAdapter.play('UI_SELECT');
+                this.windowManager.close(this.scene.hudManager.questWindow);
+                if (choice.acceptState || choice.nextState) {
+                    this._transitionNpcState(choice.acceptState || choice.nextState);
+                }
+            } else {
+                this.scene.logMessage(`[Quest] ${quest.name} is already ${result.reason}.`);
+            }
+        };
+
+        const onDecline = () => {
+            this.windowManager.close(this.scene.hudManager.questWindow);
+            if (choice.declineState) {
+                this._transitionNpcState(choice.declineState);
+            }
+        };
+
+        this.scene.hudManager.questWindow.show({
+            quest: questData,
+            npcName: this._activeNpc?.data?.name,
+            status,
+            onAccept,
+            onDecline,
+        });
+        if (!this.windowManager.stack.includes(this.scene.hudManager.questWindow)) {
+            this.windowManager.push(this.scene.hudManager.questWindow);
+        }
+    }
+
+    _completeQuest(questId, choice = {}) {
+        const quest = this._getQuestDefinition(questId);
+        if (!quest) {
+            console.warn(`Quest '${questId}' not found.`);
+            return;
+        }
+
+        const result = QuestSystem.completeQuest(this.session.quests, quest, this.party, this.dataManager);
+        if (result.ok) {
+            this.scene.logMessage(`[Quest] Completed: ${quest.name}.`);
+            this.scene.setStatus(`${quest.name} completed.`);
+            AudioAdapter.play('ITEM_GET');
+            if (choice.completeState || choice.nextState) {
+                this._transitionNpcState(choice.completeState || choice.nextState);
+            }
+            this.scene.updateAll();
+            return;
+        }
+
+        if (result.reason === 'requirements') {
+            this.scene.logMessage(`[Quest] You still need to bring the requested item.`);
+        } else if (result.reason === 'completed') {
+            this.scene.logMessage(`[Quest] ${quest.name} is already complete.`);
+        } else {
+            this.scene.logMessage(`[Quest] ${quest.name} is not active.`);
         }
     }
 
     _checkCondition(conditionString) {
         if (!conditionString) return true;
-        const [type, value] = conditionString.split(':');
-        if (type === 'hasItem') {
-            return this.party.inventory.some(i => i.id === value);
+        const [type, ...rest] = conditionString.split(':');
+
+        switch (type) {
+            case 'hasItem':
+                return this.party.hasItem(rest[0]);
+            case 'questStatus': {
+                const questId = rest[0];
+                const desired = rest[1] || 'active';
+                return QuestSystem.getStatus(this.session.quests, questId) === desired;
+            }
+            case 'questActive':
+                return QuestSystem.getStatus(this.session.quests, rest[0]) === 'active';
+            case 'questCompleted':
+                return QuestSystem.getStatus(this.session.quests, rest[0]) === 'completed';
+            default:
+                return false;
         }
-        return false;
     }
 
     clearEventTile() {

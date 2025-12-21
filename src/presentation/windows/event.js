@@ -110,6 +110,9 @@ export class Window_Event extends Window_Base {
   }
 
   show(data) {
+      // Clear lingering choices immediately to prevent layout jumps/stale interactions
+      this.footer.innerHTML = "";
+
       // Custom Title Handling with Icon
       this.titleEl.innerHTML = ""; // Clear existing
       const titleText = data.title || "Event";
@@ -195,7 +198,13 @@ export class Window_Event extends Window_Base {
 
       // Start Typewriter Logic
       const onComplete = () => {
-          this.updateChoices(data.choices);
+          // Add a small delay before showing choices to prevent accidental double-clicks
+          // from skipping text directly into a choice selection.
+          setTimeout(() => {
+              if (this.element.parentNode) { // Ensure window is still active
+                  this.updateChoices(data.choices);
+              }
+          }, 150);
       };
 
       if (this.isFullyOpen) {

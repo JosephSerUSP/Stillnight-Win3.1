@@ -33,6 +33,18 @@ export class Game_Party {
      */
     this.inventory = [];
 
+    /**
+     * Narrative flags for quests and events.
+     * @type {Object}
+     */
+    this.storyFlags = {};
+
+    /**
+     * Learned codex words.
+     * @type {Array<string>}
+     */
+    this.knownWords = [];
+
   }
 
   /**
@@ -244,6 +256,50 @@ export class Game_Party {
    */
   hasEmptySlot() {
       return this.slots.includes(null);
+  }
+
+  /**
+   * Checks whether the inventory contains a given item id.
+   * @param {string} itemId
+   * @param {number} [qty=1]
+   * @returns {boolean}
+   */
+  hasItem(itemId, qty = 1) {
+      let remaining = qty;
+      for (const item of this.inventory) {
+          if (item.id === itemId) {
+              remaining--;
+              if (remaining <= 0) return true;
+          }
+      }
+      return false;
+  }
+
+  /**
+   * Removes instances of an item by id.
+   * @param {string} itemId
+   * @param {number} [qty=1]
+   */
+  removeItemById(itemId, qty = 1) {
+      let remaining = qty;
+      this.inventory = this.inventory.filter(item => {
+          if (item.id === itemId && remaining > 0) {
+              remaining--;
+              return false;
+          }
+          return true;
+      });
+  }
+
+  /**
+   * Adds an item definition to the inventory.
+   * @param {Object} itemDef
+   * @param {number} [qty=1]
+   */
+  addItem(itemDef, qty = 1) {
+      for (let i = 0; i < qty; i++) {
+          this.inventory.push(itemDef);
+      }
   }
 
   /**

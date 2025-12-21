@@ -2,6 +2,11 @@
 import { test, expect } from '@playwright/test';
 
 test('Log messages have priority', async ({ page }) => {
+  const startNewRun = async () => {
+    await page.getByRole('button', { name: 'Run' }).click();
+    await page.click('#menu-item-new-run');
+  };
+
   // Go to the game page with test mode enabled
   await page.goto('http://localhost:8000/?test=true');
 
@@ -9,7 +14,7 @@ test('Log messages have priority', async ({ page }) => {
   await page.waitForSelector('#game-container');
 
   // Start a new run to ensure we are in map scene
-  await page.click('#btn-new-run');
+  await startNewRun();
 
   // Verify normal message
   // "New run started." should be normal priority (opacity 1.0)

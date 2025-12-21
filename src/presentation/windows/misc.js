@@ -175,3 +175,35 @@ export class Window_Options extends Window_Base {
     });
   }
 }
+
+export class Window_Info extends Window_Base {
+  constructor() {
+    super('center', 'center', 360, 260, { title: "Stillnight Info", id: "info-window" });
+
+    this.bodyEl = this.createPanel();
+    this.bodyEl.style.flexGrow = "1";
+    this.bodyEl.classList.add("info-body");
+
+    this.headingEl = document.createElement("h2");
+    this.headingEl.className = "info-heading";
+    this.bodyEl.appendChild(this.headingEl);
+
+    this.messageEl = document.createElement("div");
+    this.messageEl.className = "info-message";
+    this.bodyEl.appendChild(this.messageEl);
+
+    this.btnOk = this.addButton("Close", () => this.onUserClose());
+
+    this.setInfo("game");
+  }
+
+  setInfo(mode = "game") {
+    const isRun = mode === "run";
+    this.headingEl.textContent = isRun ? "Run Info" : "Game Info";
+    this.messageEl.innerHTML = `
+      <p><strong>Version:</strong> 0.1 (work in progress)</p>
+      <p>${isRun ? "Review your current delve status and upcoming features." : "Learn about the world and meta progression planned for Stillnight."}</p>
+      <p>More detailed ${isRun ? "run" : "game"} insights will appear here soon.</p>
+    `;
+  }
+}
