@@ -42,3 +42,8 @@ TRUE ENDING: The player needs to "beat the game" several times in order to see t
 -----
 out of order:
 At some point, one quest will involve the player choosing a Dancer. They can pick one out of several dancers. 
+
+
+-----
+Summons: 
+Creatures can be found in the dungeon and recruited. They are NOT recruited randomly through battle like SMT; rahter, they usually present as unique 'U' tile NPCs that require unique demands - the simplest is Gold or Items, some may even offer to join for free. Others may demand the player to complete a quest, or more complex, obscure requirements.
