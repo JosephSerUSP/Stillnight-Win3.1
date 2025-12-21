@@ -10,7 +10,7 @@ import { AudioAdapter } from "../../adapters/audio_adapter.js";
 import { SettingsAdapter } from "../../adapters/settings_adapter.js";
 import { InputAdapter } from "../../adapters/input_adapter.js";
 import { HUDManager } from "../../managers/hud_manager.js";
-import { Window_Desktop } from "../windows/index.js";
+import { Window_Desktop, Window_FloorSelect } from "../windows/index.js";
 import { ProgressionSystem } from "../../engine/systems/progression.js";
 import { ExplorationAdapter } from "../../adapters/exploration_adapter.js";
 import { selectPartyHUD } from "../selectors/party.js";
@@ -73,6 +73,17 @@ export class Scene_Map extends Scene_Base {
     this.hudManager.audioPlayerWindow.onUserClose = () => this.windowManager.close(this.hudManager.audioPlayerWindow);
     this.hudManager.helpWindow.onUserClose = () => this.windowManager.close(this.hudManager.helpWindow);
     this.hudManager.inventoryWindow.onUserClose = this.closeInventory.bind(this);
+
+    // Wire up Desktop Menu Bar Actions
+    this.hud.onNewRun = () => this.startNewRun();
+    this.hud.onRevealAll = () => this.revealAllFloors();
+    this.hud.onTeleport = () => this.openTeleport();
+    this.hud.onInventory = () => this.openInventory();
+    this.hud.onFormation = () => this.openFormation();
+    this.hud.onQuests = () => this.openQuests();
+    this.hud.onSettings = () => this.openSettings();
+    this.hud.onAudioSettings = () => this.openAudioSettings();
+    this.hud.onHelp = () => this.openHelp();
   }
 
   get windowLayer() {
@@ -168,17 +179,40 @@ export class Scene_Map extends Scene_Base {
    * @method addEventListeners
    */
   addEventListeners() {
-    this.hud.btnNewRun.addEventListener("click", this.startNewRun.bind(this));
-    this.hud.btnRevealAll.addEventListener("click", this.revealAllFloors.bind(this));
-    this.hud.btnSettings.addEventListener("click", this.openSettings.bind(this));
-    this.hud.btnHelp.addEventListener("click", this.openHelp.bind(this));
-    this.hud.btnClearLog.addEventListener("click", () => {
-      this.hud.clearLog();
-      this.setStatus("Log cleared.");
-      AudioAdapter.play('UI_CANCEL');
-    });
-    this.hud.btnFormation.addEventListener("click", this.openFormation.bind(this));
-    this.hud.btnInventory.addEventListener("click", this.openInventory.bind(this));
+    // Legacy buttons removed or managed by Menu Bar.
+    // We only need to handle keyboard shortcuts for now.
+    document.addEventListener("keydown", this.onGlobalKeyDown.bind(this));
+  }
+
+  onGlobalKeyDown(e) {
+      if (this.sceneManager.currentScene() !== this) return;
+      if (this.inputLocked) return;
+
+      // Shortcuts I, F, Q
+      // Ensure we are not in a text field (not applicable usually but good practice)
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+      switch(e.key.toLowerCase()) {
+          case 'i':
+              this.openInventory();
+              break;
+          case 'f':
+              this.openFormation();
+              break;
+          case 'q':
+              this.openQuests();
+              break;
+      }
+  }
+
+  /**
+   * Opens the Quest Log.
+   * @method openQuests
+   */
+  openQuests() {
+      if (this.sceneManager.currentScene() !== this) return;
+      this.windowManager.push(this.hudManager.questLogWindow);
+      this.hudManager.questLogWindow.setup(this.session.quests.quests);
   }
 
   /**
@@ -534,6 +568,47 @@ export class Scene_Map extends Scene_Base {
       }
   }
 
+
+  /**
+   * Opens the Teleport (Floor Select) popup.
+   * @method openTeleport
+   */
+  openTeleport() {
+      if (this.sceneManager.currentScene() !== this) return;
+
+      const floorWin = new Window_FloorSelect(this.map.floors, (idx) => {
+          this.map.floorIndex = idx;
+          const floor = this.map.floors[this.map.floorIndex];
+          this.map.playerX = floor.startX;
+          this.map.playerY = floor.startY;
+          this.map.revealAroundPlayer();
+          this.logMessage(`[Teleport] Warped to ${floor.title}.`);
+          AudioAdapter.play('STAIRS');
+          this.updateAll();
+          this.checkMusic();
+      });
+
+      // Ensure the window is attached to the DOM
+      this.hudManager.windowLayer.addChild(floorWin);
+
+      // Cleanup on close
+      const originalClose = floorWin.onUserClose.bind(floorWin);
+      floorWin.onUserClose = () => {
+          originalClose();
+          // We rely on WindowManager to close it, but we might want to remove it from DOM
+          // to prevent leaks if it's created every time.
+          // However, WindowLayer doesn't have removeChild easily exposed for both elements?
+          // WindowLayer.addChild appends.
+          // Let's just push it. WindowManager handles close() which hides it.
+          // But since we create a NEW instance every time, we will leak DOM elements if we don't remove.
+          // We should remove it from DOM after closing.
+          this.windowManager.close(floorWin);
+          if (floorWin.element.parentNode) floorWin.element.parentNode.removeChild(floorWin.element);
+          if (floorWin.overlay && floorWin.overlay.parentNode) floorWin.overlay.parentNode.removeChild(floorWin.overlay);
+      };
+
+      this.windowManager.push(floorWin);
+  }
 
   /**
    * Debug command to reveal the entire map.

@@ -1,4 +1,6 @@
 import { Window_Base } from "./base.js";
+import { Window_MenuBar } from "./menubar.js";
+import { Window_Confirm } from "./confirm.js";
 import { createPartySlot, createCommanderSlot } from "./utils.js";
 import { UI } from "./builder.js";
 
@@ -7,7 +9,7 @@ import { UI } from "./builder.js";
  */
 export class Window_StackNav extends Window_Base {
     constructor() {
-        super(0, 0, 210, '100%', { title: "Stillnight Stack", embedded: true });
+        super(0, 0, 210, '100%', { header: false, embedded: true });
         this.element.classList.add("stack-nav");
 
         const structure = {
@@ -20,22 +22,6 @@ export class Window_StackNav extends Window_Base {
                     props: { className: 'group-box' },
                     children: [
                         { type: 'label', props: { tag: 'legend', text: 'Run' } },
-                        {
-                            type: 'panel',
-                            props: { className: 'stack-nav-buttons' },
-                            children: [
-                                { type: 'button', props: { id: 'btn-new-run', className: 'win-btn', label: 'New Run' } },
-                                { type: 'button', props: { id: 'btn-reveal-all', className: 'win-btn', label: 'Reveal' } },
-                                { type: 'button', props: { id: 'btn-help', className: 'win-btn', label: '?', style: { width: '24px', minWidth: '24px', padding: '0' } } }
-                            ]
-                        },
-                        {
-                            type: 'panel',
-                            props: { style: { marginTop: '2px' } },
-                            children: [
-                                { type: 'button', props: { id: 'btn-settings', className: 'win-btn', label: 'Settings', style: { width: '100%' } } }
-                            ]
-                        },
                         {
                             type: 'panel',
                             props: { style: { marginTop: '4px' } },
@@ -80,10 +66,6 @@ export class Window_StackNav extends Window_Base {
 
         const root = UI.build(this.content, structure);
 
-        this.btnNewRun = root.querySelector("#btn-new-run");
-        this.btnRevealAll = root.querySelector("#btn-reveal-all");
-        this.btnSettings = root.querySelector("#btn-settings");
-        this.btnHelp = root.querySelector("#btn-help");
         this.cardIndexLabelEl = root.querySelector("#card-index-label");
         this.cardDepthLabelEl = root.querySelector("#card-depth-label");
         this.locationArtEl = root.querySelector("#location-art");
@@ -121,18 +103,8 @@ export class Window_StackNav extends Window_Base {
  */
 export class Window_Exploration extends Window_Base {
     constructor() {
-        super(0, 0, 'auto', 'auto', { title: "Floor 1", embedded: true });
+        super(0, 0, 'auto', 'auto', { header: false, embedded: true });
         this.element.classList.add("card-main");
-
-        UI.build(this.header, {
-            type: 'panel',
-            children: [
-                 { type: 'label', props: { text: 'Mode:', className: 'label' } },
-                 { type: 'label', props: { text: 'Exploration', id: 'mode-label' } }
-            ]
-        });
-
-        this.titleEl.id = "card-title";
 
         const root = UI.build(this.content, {
             type: 'panel',
@@ -145,12 +117,11 @@ export class Window_Exploration extends Window_Base {
     }
 
     updateTitle(title) {
-        this.setTitle(title);
+        // No title to update in headerless mode
     }
 
     setMode(mode) {
-        const el = this.header.querySelector("#mode-label");
-        if (el) el.textContent = mode;
+        // Mode display removed with header
     }
 
     renderGrid(gridData, onTileClick) {
@@ -207,22 +178,10 @@ export class Window_Exploration extends Window_Base {
  */
 export class Window_PartyPanel extends Window_Base {
     constructor() {
-        super(0, 0, '100%', 'auto', { title: "Party Status", embedded: true });
+        super(0, 0, '100%', 'auto', { header: false, embedded: true });
         this.element.classList.add("party-panel");
 
         this.prevHpMap = new WeakMap();
-
-        UI.build(this.header, {
-            type: 'flex',
-            props: { gap: '2px' },
-            children: [
-                { type: 'button', props: { id: 'btn-formation', className: 'win-btn', label: 'Formation...', style: { fontSize: '10px', padding: '0 6px' } } },
-                { type: 'button', props: { id: 'btn-inventory', className: 'win-btn', label: 'Inventory...', testId: 'btn-inventory', style: { fontSize: '10px', padding: '0 6px' } } }
-            ]
-        });
-
-        this.btnFormation = this.header.querySelector("#btn-formation");
-        this.btnInventory = this.header.querySelector("#btn-inventory");
 
         this.partyGridEl = UI.build(this.content, {
             type: 'panel',
@@ -303,13 +262,8 @@ export class Window_PartyPanel extends Window_Base {
  */
 export class Window_LogPanel extends Window_Base {
     constructor() {
-        super(0, 0, '100%', '230', { title: "Event Log", embedded: true });
+        super(0, 0, '100%', '230', { header: false, embedded: true });
         this.element.classList.add("log-panel");
-
-        this.btnClear = UI.build(this.header, {
-            type: 'button',
-            props: { id: 'btn-clear-log', className: 'win-btn', label: 'Clear', style: { fontSize: '10px', padding: '0 6px' } }
-        });
 
         this.logEl = UI.build(this.content, {
             type: 'panel',
@@ -371,72 +325,119 @@ export class Window_Desktop extends Window_Base {
         this.partyPanel = new Window_PartyPanel();
         this.logPanel = new Window_LogPanel();
 
-        const layout = UI.build(container, {
+        // Pass callbacks to MenuBar to handle buttons that were previously in sub-windows
+        this.menuBar = new Window_MenuBar({
+            onNewGame: () => this.confirmNewGame(),
+            onRevealAll: () => this.onRevealAll(),
+            onTeleport: () => this.onTeleport(),
+            onInventory: () => this.onInventory(),
+            onFormation: () => this.onFormation(),
+            onQuests: () => this.onQuests(),
+            onSettings: () => this.onSettings(),
+            onAudioSettings: () => this.onAudioSettings(),
+            onHelp: () => this.onHelp()
+        });
+
+        const mainLayout = UI.build(container, {
             type: 'panel',
-            props: { style: { display: 'flex', flexDirection: 'row', width: '100%', height: '100%' } },
+            props: { style: { display: 'flex', flexDirection: 'column', width: '100%', height: '100%' } },
             children: [
-                 { type: 'panel', props: { id: 'left-col' } },
-                 {
-                     type: 'panel',
-                     props: { className: 'right-side' },
-                     children: [
+                { type: 'panel', props: { id: 'menu-slot', style: { flexShrink: 0 } } },
+                {
+                    type: 'panel',
+                    props: { style: { display: 'flex', flexDirection: 'row', flex: 1, overflow: 'hidden' } },
+                    children: [
+                         { type: 'panel', props: { id: 'left-col' } },
                          {
                              type: 'panel',
-                             props: { className: 'card-area' },
+                             props: { className: 'right-side' },
                              children: [
-                                 { type: 'panel', props: { id: 'exploration-slot' } },
                                  {
                                      type: 'panel',
-                                     props: { className: 'card-side-panels' },
+                                     props: { className: 'card-area' },
                                      children: [
-                                         { type: 'panel', props: { id: 'party-slot' } },
-                                         { type: 'panel', props: { id: 'log-slot' } }
+                                         { type: 'panel', props: { id: 'exploration-slot' } },
+                                         {
+                                             type: 'panel',
+                                             props: { className: 'card-side-panels' },
+                                             children: [
+                                                 { type: 'panel', props: { id: 'party-slot' } },
+                                                 { type: 'panel', props: { id: 'log-slot' } }
+                                             ]
+                                         }
                                      ]
-                                 }
-                             ]
-                         },
-                         {
-                             type: 'panel',
-                             props: { className: 'status-bar' },
-                             children: [
-                                 { type: 'panel', children: [{ type: 'label', props: { id: 'status-message', text: 'Ready.' } }] },
+                                 },
                                  {
                                      type: 'panel',
+                                     props: { className: 'status-bar' },
                                      children: [
-                                         { type: 'label', props: { text: 'Gold: ' } }, { type: 'label', props: { id: 'status-gold', text: '0' } },
-                                         { type: 'label', props: { text: ' | Floor: ' } }, { type: 'label', props: { id: 'status-floor', text: '1' } },
-                                         { type: 'label', props: { text: ' | Cards: ' } }, { type: 'label', props: { id: 'status-cards', text: '1' } },
-                                         { type: 'label', props: { text: ' | Run: ' } }, { type: 'label', props: { id: 'status-run', text: 'Active' } },
-                                         { type: 'label', props: { text: ' | Items: ' } }, { type: 'label', props: { id: 'status-items', text: '0' } },
+                                         { type: 'panel', children: [{ type: 'label', props: { id: 'status-message', text: 'Ready.' } }] },
+                                         {
+                                             type: 'panel',
+                                             children: [
+                                                 { type: 'label', props: { text: 'Gold: ' } }, { type: 'label', props: { id: 'status-gold', text: '0' } },
+                                                 { type: 'label', props: { text: ' | Floor: ' } }, { type: 'label', props: { id: 'status-floor', text: '1' } },
+                                                 { type: 'label', props: { text: ' | Cards: ' } }, { type: 'label', props: { id: 'status-cards', text: '1' } },
+                                                 { type: 'label', props: { text: ' | Run: ' } }, { type: 'label', props: { id: 'status-run', text: 'Active' } },
+                                                 { type: 'label', props: { text: ' | Items: ' } }, { type: 'label', props: { id: 'status-items', text: '0' } },
+                                             ]
+                                         }
                                      ]
                                  }
                              ]
                          }
-                     ]
-                 }
+                    ]
+                }
             ]
         });
 
-        layout.querySelector("#left-col").replaceWith(this.stackNav.element);
-        layout.querySelector("#exploration-slot").replaceWith(this.explorationWindow.element);
-        layout.querySelector("#party-slot").replaceWith(this.partyPanel.element);
-        layout.querySelector("#log-slot").replaceWith(this.logPanel.element);
+        mainLayout.querySelector("#menu-slot").replaceWith(this.menuBar.element);
+        mainLayout.querySelector("#left-col").replaceWith(this.stackNav.element);
+        mainLayout.querySelector("#exploration-slot").replaceWith(this.explorationWindow.element);
+        mainLayout.querySelector("#party-slot").replaceWith(this.partyPanel.element);
+        mainLayout.querySelector("#log-slot").replaceWith(this.logPanel.element);
 
-        this.statusMessageEl = layout.querySelector("#status-message");
-        this.statusGoldEl = layout.querySelector("#status-gold");
-        this.statusFloorEl = layout.querySelector("#status-floor");
-        this.statusCardsEl = layout.querySelector("#status-cards");
-        this.statusRunEl = layout.querySelector("#status-run");
-        this.statusItemsEl = layout.querySelector("#status-items");
+        this.statusMessageEl = mainLayout.querySelector("#status-message");
+        this.statusGoldEl = mainLayout.querySelector("#status-gold");
+        this.statusFloorEl = mainLayout.querySelector("#status-floor");
+        this.statusCardsEl = mainLayout.querySelector("#status-cards");
+        this.statusRunEl = mainLayout.querySelector("#status-run");
+        this.statusItemsEl = mainLayout.querySelector("#status-items");
     }
 
-    get btnSettings() { return this.stackNav.btnSettings; }
-    get btnHelp() { return this.stackNav.btnHelp; }
-    get btnNewRun() { return this.stackNav.btnNewRun; }
-    get btnRevealAll() { return this.stackNav.btnRevealAll; }
-    get btnFormation() { return this.partyPanel.btnFormation; }
-    get btnInventory() { return this.partyPanel.btnInventory; }
-    get btnClearLog() { return this.logPanel.btnClear; }
+    confirmNewGame() {
+        const confirmWin = new Window_Confirm(
+            "Start New Game?",
+            "Unsaved progress will be lost.",
+            () => {
+                 window.location.reload();
+            },
+            () => {} // On cancel
+        );
+        document.body.appendChild(confirmWin.element);
+        confirmWin.open();
+    }
+
+    // Placeholder hooks to be overwritten by Scene_Map or Scene_Desktop
+    onNewRun() { console.log("New Run"); }
+    onRevealAll() { console.log("Reveal All"); }
+    onTeleport() { console.log("Teleport"); }
+    onInventory() { console.log("Inventory"); }
+    onFormation() { console.log("Formation"); }
+    onQuests() { console.log("Quests"); }
+    onSettings() { console.log("Settings"); }
+    onAudioSettings() { console.log("Audio Settings"); }
+    onHelp() { console.log("Help"); }
+
+    // Legacy getters for backward compatibility if any external code relies on them
+    // (Though they should now hook into callbacks)
+    get btnSettings() { return { addEventListener: () => {} }; }
+    get btnHelp() { return { addEventListener: () => {} }; }
+    get btnNewRun() { return { addEventListener: () => {} }; }
+    get btnRevealAll() { return { addEventListener: () => {} }; }
+    get btnFormation() { return { addEventListener: () => {} }; }
+    get btnInventory() { return { addEventListener: () => {} }; }
+    get btnClearLog() { return { addEventListener: () => {} }; }
 
     updateCardHeader(floor, index, total) {
         this.stackNav.updateCardHeader(floor, index, total);

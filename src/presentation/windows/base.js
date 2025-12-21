@@ -202,29 +202,35 @@ export class Window_Base {
         }
 
         // 1. Header Construction
-        const headerChildren = [
-            { type: 'label', props: { text: options.title || "" } }
-        ];
+        if (options.header !== false) {
+            const headerChildren = [
+                { type: 'label', props: { text: options.title || "" } }
+            ];
 
-        if (options.closeButton !== false && !this.embedded) {
-            headerChildren.push({
-                type: 'close-button',
-                props: {
-                    onClick: () => this.onUserClose()
-                }
-            });
-        }
+            if (options.closeButton !== false && !this.embedded) {
+                headerChildren.push({
+                    type: 'close-button',
+                    props: {
+                        onClick: () => this.onUserClose()
+                    }
+                });
+            }
 
-        const headerStruct = {
-            type: 'panel',
-            props: { className: 'window-header' },
-            children: headerChildren
-        };
-        this.header = UI.build(this.element, headerStruct);
-        this.titleEl = this.header.querySelector("span");
+            const headerStruct = {
+                type: 'panel',
+                props: { className: 'window-header' },
+                children: headerChildren
+            };
+            this.header = UI.build(this.element, headerStruct);
+            this.titleEl = this.header.querySelector("span");
 
-        if (!this.embedded) {
-            makeDraggable(this.element, this.header);
+            if (!this.embedded) {
+                makeDraggable(this.element, this.header);
+            }
+        } else {
+            // Stub header properties for safety if child classes try to access them
+            this.header = UI.build(this.element, { type: 'panel', props: { style: { display: 'none' } } });
+            this.titleEl = { textContent: '' };
         }
 
         // 2. Content Construction
