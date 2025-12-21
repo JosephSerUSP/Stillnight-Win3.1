@@ -119,6 +119,71 @@ html, body {
     display: flex;
     align-items: center;
 }
+
+.menu-bar {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--window-bg);
+    border-bottom: 2px solid var(--window-border);
+    box-shadow: inset 0 -1px 0 var(--bezel-shadow);
+}
+
+.menu {
+    position: relative;
+}
+
+.menu-trigger {
+    height: 20px;
+    padding: 0 8px;
+    border: 1px solid var(--bezel-shadow);
+    background: var(--button-bg);
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+    color: var(--window-text);
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.menu-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 160px;
+    background: var(--window-bg);
+    border: 2px solid var(--window-border);
+    box-shadow: 2px 2px 0 var(--bezel-shadow);
+    display: none;
+    flex-direction: column;
+    z-index: 20;
+}
+
+.menu.open .menu-dropdown {
+    display: flex;
+}
+
+.menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    background: transparent;
+    border: none;
+    color: var(--window-text);
+    font-size: 12px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.menu-item:hover {
+    background: var(--selection-bg);
+    color: var(--selection-text);
+}
+
+.menu-shortcut {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-left: 12px;
+}
 .title-icon {
     width: 14px;
     height: 14px;
@@ -264,6 +329,11 @@ html, body {
     box-shadow:
         1px 1px 0 var(--bezel-light) inset,
         -1px -1px 0 var(--bezel-dark) inset;
+}
+
+.modal-card-list {
+    height: auto;
+    max-height: 320px;
 }
 .card-item {
     padding: 2px 4px;
@@ -842,6 +912,29 @@ html, body {
     overflow: hidden;
 }
 
+.window-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    background: var(--content-bg);
+    border: 1px solid var(--bezel-shadow);
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+    margin-bottom: 4px;
+}
+
+.toolbar-title {
+    font-weight: bold;
+}
+
+.toolbar-label {
+    color: var(--text-dim);
+}
+
+.toolbar-strong {
+    font-weight: bold;
+}
+
 .window-footer {
     padding: 0 4px 4px 4px;
     display: flex;
@@ -861,6 +954,24 @@ html, body {
     color: var(--window-text);
     display: flex;
     flex-direction: column;
+}
+
+.stack-run-info {
+    padding: 6px;
+    background: var(--content-bg);
+    border: 1px solid var(--bezel-shadow);
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
+    gap: 4px;
+}
+
+.stack-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
+
+.stack-value {
+    font-weight: bold;
 }
 
 .window-row {

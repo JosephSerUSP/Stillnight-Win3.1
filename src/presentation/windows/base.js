@@ -145,11 +145,13 @@ export class Window_Base {
      * @param {boolean} [options.closeButton=true]
      * @param {string} [options.id]
      * @param {boolean} [options.embedded]
+     * @param {boolean} [options.showHeader=true]
      */
     constructor(x, y, width, height, options = {}) {
         this.embedded = options.embedded || false;
         this.animator = new WindowAnimator();
         this.isFullyOpen = false;
+        this.showHeader = options.showHeader !== false;
 
         // Store target dimensions
         this.width = width;
@@ -202,29 +204,37 @@ export class Window_Base {
         }
 
         // 1. Header Construction
-        const headerChildren = [
-            { type: 'label', props: { text: options.title || "" } }
-        ];
+        if (this.showHeader) {
+            const headerChildren = [
+                { type: 'label', props: { text: options.title || "" } }
+            ];
 
-        if (options.closeButton !== false && !this.embedded) {
-            headerChildren.push({
-                type: 'close-button',
-                props: {
-                    onClick: () => this.onUserClose()
-                }
+            if (options.closeButton !== false && !this.embedded) {
+                headerChildren.push({
+                    type: 'close-button',
+                    props: {
+                        onClick: () => this.onUserClose()
+                    }
+                });
+            }
+
+            const headerStruct = {
+                type: 'panel',
+                props: { className: 'window-header' },
+                children: headerChildren
+            };
+            this.header = UI.build(this.element, headerStruct);
+            this.titleEl = this.header.querySelector("span");
+
+            if (!this.embedded) {
+                makeDraggable(this.element, this.header);
+            }
+        } else {
+            this.header = UI.build(this.element, {
+                type: 'panel',
+                props: { className: 'window-header', style: { display: 'none' } }
             });
-        }
-
-        const headerStruct = {
-            type: 'panel',
-            props: { className: 'window-header' },
-            children: headerChildren
-        };
-        this.header = UI.build(this.element, headerStruct);
-        this.titleEl = this.header.querySelector("span");
-
-        if (!this.embedded) {
-            makeDraggable(this.element, this.header);
+            this.titleEl = null;
         }
 
         // 2. Content Construction
@@ -294,7 +304,7 @@ export class Window_Base {
 
     setChildrenVisibility(visibility) {
         const val = visibility === 'hidden' ? '0' : '1';
-        this.header.style.opacity = val;
+        if (this.header) this.header.style.opacity = val;
         this.content.style.opacity = val;
         this.footer.style.opacity = val;
     }
@@ -309,7 +319,7 @@ export class Window_Base {
      * @param {string} text
      */
     setTitle(text) {
-        this.titleEl.textContent = text;
+        if (this.titleEl) this.titleEl.textContent = text;
     }
 
     /**
