@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Game Logic', () => {
+  const startNewRun = async (page) => {
+    await page.getByRole('button', { name: 'Run' }).click();
+    await page.click('#menu-item-new-run');
+  };
+
   test.beforeEach(async ({ page }) => {
     // Start the local server before running tests if not already running
     // In this environment, we assume the server is running on port 8080
@@ -18,7 +23,7 @@ test.describe('Game Logic', () => {
     await page.waitForSelector('#game-container');
 
     // Start a new run
-    await page.click('#btn-new-run');
+    await startNewRun(page);
 
     // Inject a battle scene directly via console
     await page.evaluate(() => {
@@ -61,7 +66,7 @@ test.describe('Game Logic', () => {
 
     test('Equipment switch keeps window open', async ({ page }) => {
         await page.waitForSelector('#game-container');
-        await page.click('#btn-new-run');
+        await startNewRun(page);
 
         // Add a dummy item to inventory
         await page.evaluate(() => {
@@ -98,7 +103,7 @@ test.describe('Game Logic', () => {
 
     test('Map interaction blocked during battle', async ({ page }) => {
         await page.waitForSelector('#game-container');
-        await page.click('#btn-new-run');
+        await startNewRun(page);
 
         // Inject battle
         await page.evaluate(() => {

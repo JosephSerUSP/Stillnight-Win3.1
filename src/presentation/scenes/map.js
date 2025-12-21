@@ -152,6 +152,29 @@ export class Scene_Map extends Scene_Base {
     this.checkMusic();
   }
 
+  confirmNewGame() {
+    this.promptNewRun("Start a new game? This will reset your current run.", "Confirm New Game");
+  }
+
+  confirmNewRun() {
+    this.promptNewRun("Start a new run? Current progress will be reset.", "Confirm New Run");
+  }
+
+  promptNewRun(message, title = "Confirm New Run") {
+    if (this.sceneManager.currentScene() !== this) return;
+    this.hud.closeMenus();
+    this.hudManager.confirmWindow.titleEl.textContent = title;
+    this.hudManager.confirmWindow.messageEl.textContent = message;
+    this.windowManager.push(this.hudManager.confirmWindow);
+    this.hudManager.confirmWindow.btnOk.onclick = () => {
+        this.windowManager.close(this.hudManager.confirmWindow);
+        this.startNewRun();
+    };
+    this.hudManager.confirmWindow.btnCancel.onclick = () => {
+        this.windowManager.close(this.hudManager.confirmWindow);
+    };
+  }
+
   resumeMusic() {
       this.checkMusic();
   }
@@ -168,17 +191,28 @@ export class Scene_Map extends Scene_Base {
    * @method addEventListeners
    */
   addEventListeners() {
-    this.hud.btnNewRun.addEventListener("click", this.startNewRun.bind(this));
-    this.hud.btnRevealAll.addEventListener("click", this.revealAllFloors.bind(this));
-    this.hud.btnSettings.addEventListener("click", this.openSettings.bind(this));
-    this.hud.btnHelp.addEventListener("click", this.openHelp.bind(this));
+    this.hud.menuNewGame?.addEventListener("click", () => this.confirmNewGame());
+    this.hud.menuNewRun?.addEventListener("click", () => this.confirmNewRun());
+    this.hud.menuSaveGame?.addEventListener("click", () => this.showStubMessage("Save Game coming soon."));
+    this.hud.menuLoadGame?.addEventListener("click", () => this.showStubMessage("Load Game coming soon."));
+    this.hud.menuAbout?.addEventListener("click", () => this.showStubMessage("About screen coming soon."));
+
+    this.hud.menuRevealAll?.addEventListener("click", this.revealAllFloors.bind(this));
+    this.hud.menuTeleport?.addEventListener("click", this.openTeleportPopup.bind(this));
+
+    this.hud.menuInventory?.addEventListener("click", this.openInventory.bind(this));
+    this.hud.menuFormation?.addEventListener("click", this.openFormation.bind(this));
+    this.hud.menuQuests?.addEventListener("click", () => this.openQuests());
+
+    this.hud.menuSettingsGeneral?.addEventListener("click", this.openSettings.bind(this));
+    this.hud.menuSettingsAudio?.addEventListener("click", this.openAudioSettings.bind(this));
+    this.hud.menuHelpGeneral?.addEventListener("click", this.openHelp.bind(this));
+
     this.hud.btnClearLog.addEventListener("click", () => {
       this.hud.clearLog();
       this.setStatus("Log cleared.");
       AudioAdapter.play('UI_CANCEL');
     });
-    this.hud.btnFormation.addEventListener("click", this.openFormation.bind(this));
-    this.hud.btnInventory.addEventListener("click", this.openInventory.bind(this));
   }
 
   /**
@@ -188,7 +222,30 @@ export class Scene_Map extends Scene_Base {
    */
   onKeyDown(e) {
     if (this.inputLocked) return;
+    if (this.handleMenuShortcut(e)) return;
     this.inputController.onKeyDown(e);
+  }
+
+  handleMenuShortcut(e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return false;
+    if (this.windowManager.stack.length > 0) return false;
+    const key = e.key.toLowerCase();
+    if (key === 'i') {
+        e.preventDefault();
+        this.openInventory();
+        return true;
+    }
+    if (key === 'f') {
+        e.preventDefault();
+        this.openFormation();
+        return true;
+    }
+    if (key === 'q') {
+        e.preventDefault();
+        this.openQuests();
+        return true;
+    }
+    return false;
   }
 
   /**
@@ -447,6 +504,9 @@ export class Scene_Map extends Scene_Base {
   updateCardHeader() {
     const floor = this.map.floors[this.map.floorIndex];
     this.hud.updateCardHeader(floor, this.map.floorIndex, this.map.floors.length);
+    if (this.hudManager.cardListWindow) {
+        this.hudManager.cardListWindow.updateCardHeader(floor, this.map.floorIndex, this.map.floors.length);
+    }
   }
 
   /**
@@ -454,22 +514,36 @@ export class Scene_Map extends Scene_Base {
    * @method updateCardList
    */
   updateCardList() {
+    const onSelect = (idx) => {
+        this.map.floorIndex = idx;
+        const floor = this.map.floors[this.map.floorIndex];
+        this.map.playerX = floor.startX;
+        this.map.playerY = floor.startY;
+        this.map.revealAroundPlayer();
+        this.logMessage(`[Navigate] You flip to card ${idx + 1} (${floor.title}).`);
+        AudioAdapter.play('STAIRS');
+        this.updateAll();
+        this.checkMusic();
+        if (this.hudManager.cardListWindow) {
+            this.windowManager.close(this.hudManager.cardListWindow);
+        }
+    };
+
     this.hud.updateCardList(
         this.map.floors,
         this.map.floorIndex,
         this.map.maxReachedFloorIndex,
-        (idx) => {
-            this.map.floorIndex = idx;
-            const floor = this.map.floors[this.map.floorIndex];
-            this.map.playerX = floor.startX;
-            this.map.playerY = floor.startY;
-            this.map.revealAroundPlayer();
-            this.logMessage(`[Navigate] You flip to card ${idx + 1} (${floor.title}).`);
-            AudioAdapter.play('STAIRS');
-            this.updateAll();
-            this.checkMusic();
-        }
+        onSelect
     );
+
+    if (this.hudManager.cardListWindow) {
+        this.hudManager.cardListWindow.updateCardList(
+            this.map.floors,
+            this.map.floorIndex,
+            this.map.maxReachedFloorIndex,
+            onSelect
+        );
+    }
   }
 
   /**
@@ -722,6 +796,21 @@ export class Scene_Map extends Scene_Base {
     this.windowManager.close(this.hudManager.inventoryWindow);
   }
 
+  openTeleportPopup() {
+    if (this.sceneManager.currentScene() !== this) return;
+    this.hud.closeMenus();
+    this.updateCardHeader();
+    this.updateCardList();
+    if (this.hudManager.cardListWindow) {
+        this.windowManager.push(this.hudManager.cardListWindow);
+    }
+  }
+
+  openQuests() {
+    this.hud.closeMenus();
+    this.showStubMessage("Quest log coming soon.");
+  }
+
   openHelp() {
     if (this.sceneManager.currentScene() !== this) return;
     this.windowManager.push(this.hudManager.helpWindow);
@@ -834,6 +923,11 @@ export class Scene_Map extends Scene_Base {
       ];
       this.hudManager.audioWindow.setup(options);
       this.windowManager.push(this.hudManager.audioWindow);
+  }
+
+  showStubMessage(message) {
+      this.setStatus(message);
+      this.logMessage(`[UI] ${message}`, 'low');
   }
 
   onInventoryAction(item, action) {
