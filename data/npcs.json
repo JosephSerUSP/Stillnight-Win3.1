@@ -3,8 +3,18 @@
     "name": "Alicia",
     "layout": "visual_novel",
     "portrait": "NPC_Alicia",
-    "initialState": "default",
+    "initialState": "quest_router",
     "states": {
+      "quest_router": {
+        "condition": "questCompleted:sparkling_gift",
+        "trueState": "quest_complete",
+        "falseState": "quest_gate"
+      },
+      "quest_gate": {
+        "condition": "questAccepted:sparkling_gift",
+        "trueState": "quest_active",
+        "falseState": "default"
+      },
       "default": {
         "text": "Oh! H-hello there! I... I didn't see you coming! I'm Alicia... welcome to my shop! Uhm... please look around!",
         "choices": [
@@ -41,11 +51,42 @@
         "choices": [
           {
             "label": "I'll look for it",
-            "action": "close"
+            "action": "quest",
+            "questId": "sparkling_gift",
+            "onAcceptState": "quest_active",
+            "onDeclineState": "default"
           },
           {
             "label": "Maybe later",
             "nextState": "default"
+          }
+        ]
+      },
+      "quest_active": {
+        "text": "Thank you for helping me find something for Laura. Anything shimmering should catch her eye.",
+        "choices": [
+          {
+            "label": "I brought something shiny",
+            "action": "questComplete",
+            "questId": "sparkling_gift",
+            "onCompleteState": "quest_complete"
+          },
+          {
+            "label": "Ask about Laura",
+            "nextState": "talk_laura"
+          },
+          {
+            "label": "Leave",
+            "action": "close"
+          }
+        ]
+      },
+      "quest_complete": {
+        "text": "You already helped me make Laura smile. I owe you so much!",
+        "choices": [
+          {
+            "label": "Leave",
+            "action": "close"
           }
         ]
       }
@@ -55,8 +96,18 @@
     "name": "Laura",
     "layout": "visual_novel",
     "portrait": "NPC_Laura",
-    "initialState": "default",
+    "initialState": "quest_router",
     "states": {
+      "quest_router": {
+        "condition": "questCompleted:gilded_band",
+        "trueState": "quest_complete",
+        "falseState": "quest_gate"
+      },
+      "quest_gate": {
+        "condition": "questAccepted:gilded_band",
+        "trueState": "quest_active",
+        "falseState": "default"
+      },
       "default": {
         "text": "Well, hello there, darling. Looking for something shiny, or just admiring the view? I'm Laura, the best goldsmith you'll ever meet.",
         "choices": [
@@ -106,11 +157,42 @@
         "choices": [
           {
             "label": "I'll do it",
-            "action": "close"
+            "action": "quest",
+            "questId": "gilded_band",
+            "onAcceptState": "quest_active",
+            "onDeclineState": "default"
           },
           {
             "label": "Too dangerous",
             "nextState": "default"
+          }
+        ]
+      },
+      "quest_active": {
+        "text": "That gold band will be perfect. Return as soon as you have it.",
+        "choices": [
+          {
+            "label": "Offer a gold band",
+            "action": "questComplete",
+            "questId": "gilded_band",
+            "onCompleteState": "quest_complete"
+          },
+          {
+            "label": "About Raphael",
+            "nextState": "talk_raphael"
+          },
+          {
+            "label": "Leave",
+            "action": "close"
+          }
+        ]
+      },
+      "quest_complete": {
+        "text": "Your help with the gold band meant everything. My craft will sing because of you.",
+        "choices": [
+          {
+            "label": "Leave",
+            "action": "close"
           }
         ]
       }

@@ -16,6 +16,8 @@ import { ExplorationAdapter } from "../../adapters/exploration_adapter.js";
 import { selectPartyHUD } from "../selectors/party.js";
 import { selectInventory } from "../selectors/inventory.js";
 import { selectBattlerDetails } from "../selectors/details.js";
+import { QuestAdapter } from "../../adapters/quest_adapter.js";
+import { selectQuestLog } from "../selectors/quest.js";
 
 /**
  * @class Scene_Map
@@ -37,6 +39,7 @@ export class Scene_Map extends Scene_Base {
     this.session = session || { party: new Game_Party() };
     this.party = this.session.party;
     this.map = new ExplorationAdapter(this.party, this.session.exploration);
+    this.questAdapter = new QuestAdapter(this.session, this.dataManager);
     this.interpreter = new InterpreterAdapter(this);
     // BattleManager is deprecated; Scene_Battle uses BattleAdapter internally.
     this.battleManager = null;
@@ -127,6 +130,8 @@ export class Scene_Map extends Scene_Base {
   startNewRun() {
     if (this.sceneManager.currentScene() !== this) return;
     this.party.createInitialMembers(this.dataManager);
+    this.questAdapter.reset();
+    this.session.quests = this.questAdapter.state;
     this.map.initFloors(this.dataManager.maps, this.dataManager.events, this.dataManager.npcs, this.party);
     this.runActive = true;
     this.map.floorIndex = 0;
@@ -173,6 +178,7 @@ export class Scene_Map extends Scene_Base {
     });
     this.hud.btnFormation.addEventListener("click", this.openFormation.bind(this));
     this.hud.btnInventory.addEventListener("click", this.openInventory.bind(this));
+    this.hud.btnQuests.addEventListener("click", this.openQuests.bind(this));
   }
 
   /**
@@ -338,9 +344,58 @@ export class Scene_Map extends Scene_Base {
     this.hud.updateStatus({
         gold: this.party.gold,
         items: this.party.inventory.length,
-        runActive: this.runActive
+        runActive: this.runActive,
+        quests: this.questAdapter.state.active.length
     });
     this.hud.setMode("Exploration");
+    this.updateQuestLogWindow();
+  }
+
+  updateQuestLogWindow() {
+    if (this.windowManager.stack.includes(this.hudManager.questLogWindow)) {
+        const view = selectQuestLog(this.questAdapter.listLog(), this.dataManager.quests);
+        this.hudManager.questLogWindow.setLog(view, (entry) => this.hudManager.questLogWindow.showQuest(entry));
+    }
+  }
+
+  showQuestOffer(questId, { onAccept, onDecline } = {}) {
+    const questView = this.questAdapter.getQuestView(questId);
+    if (!questView) {
+        this.logMessage(`[Quest] Unknown quest '${questId}'.`);
+        return;
+    }
+
+    const status = this.questAdapter.getStatus(questId);
+
+    const handleAccept = () => {
+        const result = this.questAdapter.acceptQuest(questId);
+        if (result.status === 'accepted') {
+            this.logMessage(`[Quest] Accepted: ${questView.title}.`);
+            this.setStatus(`Quest accepted: ${questView.title}`);
+        } else if (result.status === 'active') {
+            this.logMessage(`[Quest] ${questView.title} is already active.`);
+        } else if (result.status === 'completed') {
+            this.logMessage(`[Quest] ${questView.title} is already complete.`);
+        }
+        this.windowManager.close(this.hudManager.questOfferWindow);
+        this.updateAll();
+        if (onAccept) onAccept(result);
+    };
+
+    const handleDecline = () => {
+        if (status === 'available') {
+            this.logMessage(`[Quest] Declined: ${questView.title}.`);
+        } else {
+            this.logMessage(`[Quest] ${questView.title} noted.`);
+        }
+        this.windowManager.close(this.hudManager.questOfferWindow);
+        if (onDecline) onDecline();
+    };
+
+    this.hudManager.questOfferWindow.showOffer(questView, status, handleAccept, handleDecline);
+    if (!this.windowManager.stack.includes(this.hudManager.questOfferWindow)) {
+        this.windowManager.push(this.hudManager.questOfferWindow);
+    }
   }
 
   /**
@@ -706,6 +761,16 @@ export class Scene_Map extends Scene_Base {
         (item, action) => this.onInventoryAction(item, action),
         (item) => this.confirmDiscard(item)
     );
+  }
+
+  openQuests() {
+    if (this.sceneManager.currentScene() !== this) return;
+    const view = selectQuestLog(this.questAdapter.listLog(), this.dataManager.quests);
+    this.hudManager.questLogWindow.setLog(view, (entry) => this.hudManager.questLogWindow.showQuest(entry));
+    if (!this.windowManager.stack.includes(this.hudManager.questLogWindow)) {
+        this.windowManager.push(this.hudManager.questLogWindow);
+    }
+    AudioAdapter.play('UI_SELECT');
   }
 
   /**

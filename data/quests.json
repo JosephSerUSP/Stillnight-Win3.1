@@ -1,0 +1,42 @@
+{
+  "sparkling_gift": {
+    "id": "sparkling_gift",
+    "title": "Sparkling Gesture",
+    "giver": "Alicia",
+    "summary": "Find something dazzling that Laura would love.",
+    "description": "Alicia wants to surprise Laura with a glittering gift that will catch her eye.",
+    "objectives": [
+      {
+        "id": "find_gift",
+        "description": "Search the dungeon for a shimmering trinket.",
+        "required": 1
+      }
+    ],
+    "rewards": {
+      "gold": 75,
+      "items": [
+        { "id": "light_amulet", "name": "Light Amulet" }
+      ]
+    }
+  },
+  "gilded_band": {
+    "id": "gilded_band",
+    "title": "Gilded Band",
+    "giver": "Laura",
+    "summary": "Recover a rare gold band from a powerful undead.",
+    "description": "Laura needs pristine gold for her craft. Rumor speaks of an undead below wearing an untouched band of gold.",
+    "objectives": [
+      {
+        "id": "slay_undead",
+        "description": "Hunt the rare undead that guards a gold band.",
+        "required": 1
+      }
+    ],
+    "rewards": {
+      "gold": 120,
+      "items": [
+        { "id": "silver_blade", "name": "Silver Blade" }
+      ]
+    }
+  }
+}

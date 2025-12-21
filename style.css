@@ -1091,3 +1091,97 @@ input:checked + .toggle-slider:before {
 .event-description.typewriter-active {
     user-select: none;
 }
+
+/* Quest UI */
+.quest-log-window .content,
+.quest-offer-window .content {
+  gap: 8px;
+}
+
+.quest-log-layout {
+  display: flex;
+  gap: 8px;
+  height: 100%;
+}
+
+.quest-log-list {
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quest-log-detail {
+  flex: 1;
+  background: var(--window-bg-dark);
+  border: 1px solid var(--bezel-shadow);
+  padding: 8px;
+  overflow: auto;
+}
+
+.quest-section-header {
+  font-weight: bold;
+  color: var(--text-active);
+  margin: 6px 0 2px 0;
+}
+
+.quest-list-item {
+  justify-content: flex-start;
+}
+
+.quest-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  padding-left: 4px;
+}
+
+.quest-detail-header {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.quest-detail-summary {
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.quest-detail-description {
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.quest-objective-list {
+  list-style: none;
+  padding-left: 8px;
+  margin: 0 0 8px 0;
+}
+
+.quest-objective {
+  margin-bottom: 4px;
+}
+
+.quest-objective.complete {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.quest-rewards-body {
+  padding: 4px;
+  background: var(--window-bg-light);
+  border: 1px dashed var(--bezel-shadow);
+}
+
+.quest-offer-title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.quest-offer-meta {
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.quest-offer-summary {
+  line-height: 1.4;
+  margin-bottom: 8px;
+}

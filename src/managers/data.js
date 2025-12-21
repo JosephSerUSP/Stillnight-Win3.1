@@ -53,6 +53,12 @@ export class DataManager {
     this.shops = null;
 
     /**
+     * The quest data loaded from quests.json.
+     * @type {Object|null}
+     */
+    this.quests = null;
+
+    /**
      * The terms/strings data loaded from terms.json.
      * @type {Object|null}
      */
@@ -114,6 +120,7 @@ export class DataManager {
       items: "data/items.json",
       npcs: "data/npcs.json",
       shops: "data/shops.json",
+      quests: "data/quests.json",
       terms: "data/terms.json",
       themes: "data/themes.json",
       sounds: "data/sounds.json",
