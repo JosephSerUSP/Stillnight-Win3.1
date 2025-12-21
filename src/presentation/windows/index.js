@@ -7,6 +7,7 @@ import { Window_PartySelect } from "./party_select.js";
 import { Window_EquipItemSelect } from "./equip_select.js";
 import { Window_Help, Window_Options } from "./misc.js";
 import { Window_Desktop } from "./desktop.js";
+export { Window_Quest } from "./quest.js";
 
 export * from "./utils.js";
 export * from "./base.js";

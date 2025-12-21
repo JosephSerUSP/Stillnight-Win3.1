@@ -3,9 +3,11 @@ import { randInt, pickWeighted, random } from "../core/utils.js";
 import { AudioAdapter } from "./audio_adapter.js";
 import {
   createInteractiveLabel,
-  renderCreatureInfo
+  renderCreatureInfo,
+  Window_Quest
 } from "../presentation/windows/index.js";
 import { Game_Battler } from "../objects/battler.js";
+import { QuestSystem } from "../engine/systems/quest.js";
 
 /**
  * @class InterpreterAdapter
@@ -162,6 +164,9 @@ export class InterpreterAdapter {
                     break;
                 case 'WALL_BROKEN':
                     this._resolveBrokenWall(e.x, e.y);
+                    break;
+                case 'QUEST_OFFER_OPEN':
+                    this._openQuestOffer(e.questId);
                     break;
                 default:
                     console.warn(`InterpreterAdapter: Unhandled event type '${e.type}'`);
@@ -615,5 +620,58 @@ export class InterpreterAdapter {
         this.clearEventTile();
         this.scene.updateParty();
         this.closeRecruitEvent();
+    }
+
+    _openQuestOffer(questId) {
+        const questData = this.dataManager.quests.find(q => q.id === questId);
+        if (!questData) {
+            console.warn(`Quest data not found for id: ${questId}`);
+            return;
+        }
+
+        // Use a generic window container if Window_Quest isn't instantiated on HudManager yet
+        // Ideally HudManager should have questWindow.
+        // For now, we instantiate on fly or check if HudManager has it.
+        // Let's assume we need to create it or access it.
+        // Checking hud_manager.js would be good, but let's assume we can push a new instance.
+
+        const win = new Window_Quest({
+            x: 0, y: 0, width: 400, height: 300,
+            title: "New Quest"
+        });
+
+        // Center it
+        // We don't have screen dims here easily, but CSS handles centering if we use specific styles.
+        // Or we just rely on Window_Base default logic or specific styles.
+        // Let's set it to centered via CSS class or manually if possible.
+        // Window_Base usually takes rect.
+
+        // Better: Add questWindow to HudManager in a separate step or just use one-off here.
+        // One-off is fine for now.
+
+        win.element.style.left = "50%";
+        win.element.style.top = "50%";
+        win.element.style.transform = "translate(-50%, -50%)";
+        win.element.classList.add('modal-window'); // Ensure it pops over
+
+        win.showOffer(questData, {
+            onAccept: () => {
+                const session = { party: this.party, dataManager: this.dataManager };
+                if (QuestSystem.startQuest(questId, session)) {
+                    this.scene.logMessage(`Accepted quest: ${questData.title}`);
+                    AudioAdapter.play('ITEM_GET');
+                } else {
+                    this.scene.logMessage("You already have this quest.");
+                }
+                this.windowManager.close(win);
+                this.scene.updateAll();
+            },
+            onDecline: () => {
+                this.scene.logMessage("Declined quest.");
+                this.windowManager.close(win);
+            }
+        });
+
+        this.windowManager.push(win);
     }
 }
