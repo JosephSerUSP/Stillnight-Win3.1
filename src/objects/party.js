@@ -33,6 +33,18 @@ export class Game_Party {
      */
     this.inventory = [];
 
+    /**
+     * Story flags for narrative state.
+     * @type {Object}
+     */
+    this.storyFlags = {};
+
+    /**
+     * Active and completed quests.
+     * Key: questId, Value: { status: 'active'|'completed'|'failed', stage: number }
+     * @type {Object}
+     */
+    this.quests = {};
   }
 
   /**

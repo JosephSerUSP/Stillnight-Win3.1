@@ -469,17 +469,30 @@ export class InterpreterAdapter {
         this.scene.setStatus("Exploration");
     }
 
-    _openNpcEvent(npcId) {
+    _openNpcEvent(npcId, startState = null) {
         const npc = this.dataManager.npcs[npcId];
         if (!npc) {
             console.warn(`NPC '${npcId}' not found.`);
             return;
         }
 
-        // For now, we only show the initial state.
-        // Complex state machine logic should be handled here or in a dedicated NpcInteractionSystem.
-        // We will implement a basic state handler here.
-        this._runNpcState(npc, npc.initialState || 'default');
+        let stateToRun = startState;
+        if (!stateToRun) {
+            const metFlag = `met_npc_${npcId}`;
+            // Ensure storyFlags is initialized
+            this.party.storyFlags = this.party.storyFlags || {};
+            const hasMet = this.party.storyFlags[metFlag];
+
+            if (hasMet && npc.states['hub']) {
+                stateToRun = 'hub';
+            } else {
+                stateToRun = npc.initialState || 'default';
+                this.party.storyFlags[metFlag] = true;
+            }
+        }
+
+        this._currentNpcId = npcId; // Track current NPC for quest callbacks
+        this._runNpcState(npc, stateToRun);
     }
 
     _runNpcState(npc, stateId) {
@@ -536,6 +549,8 @@ export class InterpreterAdapter {
             this.closeEvent();
             // TODO: Teleport logic
             this.scene.logMessage("Teleporting...");
+        } else if (choice.action === 'quest_offer') {
+             this._openQuestOffer(choice.questId, choice.successState, choice.failState);
         } else {
              this.closeEvent();
         }
@@ -615,5 +630,46 @@ export class InterpreterAdapter {
         this.clearEventTile();
         this.scene.updateParty();
         this.closeRecruitEvent();
+    }
+
+    _openQuestOffer(questId, successState, failState) {
+        // Fetch quest data from DataManager (loaded via registry or direct prop)
+        const quest = this.dataManager.quests ? this.dataManager.quests[questId] : null;
+
+        if (!quest) {
+            console.error("Quest not found: " + questId);
+            return;
+        }
+
+        if (!this.questWindow) {
+            this.questWindow = new Window_Quest();
+        }
+
+        this.questWindow.showOffer(quest, () => {
+            // On Accept
+            if (this.system.questSystem) {
+                 this.system.questSystem.startQuest({ party: this.party }, questId);
+            } else {
+                 if (!this.party.quests[questId]) {
+                    this.party.quests[questId] = { status: 'active', stage: 0 };
+                    this.scene.logMessage(`[Quest] Started: ${quest.title}`);
+                 }
+            }
+
+            this.windowManager.close(this.questWindow);
+            if (successState && this._currentNpcId) {
+                const npc = this.dataManager.npcs[this._currentNpcId];
+                this._runNpcState(npc, successState);
+            }
+        }, () => {
+            // On Decline
+            this.windowManager.close(this.questWindow);
+            if (failState && this._currentNpcId) {
+                const npc = this.dataManager.npcs[this._currentNpcId];
+                this._runNpcState(npc, failState);
+            }
+        });
+
+        this.windowManager.push(this.questWindow);
     }
 }

@@ -23,29 +23,55 @@
           }
         ]
       },
+      "hub": {
+        "text": "W-welcome back! Is there... anything else you need?",
+        "choices": [
+          {
+            "label": "Buy Consumables",
+            "action": "shop",
+            "shopId": "consumables_basic"
+          },
+          {
+            "label": "Talk about Laura",
+            "nextState": "talk_laura"
+          },
+          {
+            "label": "Leave",
+            "action": "close"
+          }
+        ]
+      },
       "talk_laura": {
         "text": "Have you seen Laura around? She's... she's so amazing, isn't she? *sigh* Sometimes I wonder if... oh! Nevermind! People say weird things about us, but she's just teasing! She's been with Raphael for 7 years... I just want her to be happy.",
         "choices": [
           {
             "label": "Ask about Quest",
-            "nextState": "quest_offer"
+            "action": "quest_offer",
+            "questId": "quest_alicia_gift",
+            "successState": "quest_accepted",
+            "failState": "quest_declined"
           },
           {
             "label": "Back",
-            "nextState": "default"
+            "nextState": "hub"
           }
         ]
       },
-      "quest_offer": {
-        "text": "Actually... could you help me find something for her? She loves sparkly things. Maybe if I gave her something special...",
+      "quest_accepted": {
+        "text": "Really? You'll help? Oh, thank you! Thank you so much! Please find something... sparkly!",
         "choices": [
           {
-            "label": "I'll look for it",
+            "label": "Leave",
             "action": "close"
-          },
+          }
+        ]
+      },
+      "quest_declined": {
+        "text": "Oh... okay. I understand. Maybe some other time.",
+        "choices": [
           {
-            "label": "Maybe later",
-            "nextState": "default"
+            "label": "Back",
+            "nextState": "hub"
           }
         ]
       }
@@ -75,6 +101,24 @@
           }
         ]
       },
+      "hub": {
+        "text": "Back for more? My creations are addictive, I know.",
+        "choices": [
+          {
+            "label": "Browse Accessories",
+            "action": "shop",
+            "shopId": "accessories_special"
+          },
+          {
+            "label": "Talk",
+            "nextState": "talk_intro"
+          },
+          {
+            "label": "Leave",
+            "action": "close"
+          }
+        ]
+      },
       "talk_intro": {
         "text": "Alicia? Oh, she's a sweet little thing, isn't she? A bit clumsy, but she means well. Don't let her fragility fool you though, she's tougher than she looks.",
         "choices": [
@@ -84,7 +128,7 @@
           },
           {
             "label": "Back",
-            "nextState": "default"
+            "nextState": "hub"
           }
         ]
       },
@@ -93,24 +137,32 @@
         "choices": [
           {
             "label": "Ask about Quest",
-            "nextState": "quest_ring"
+            "action": "quest_offer",
+            "questId": "quest_laura_ring",
+            "successState": "quest_accepted",
+            "failState": "quest_declined"
           },
           {
             "label": "Back",
-            "nextState": "default"
+            "nextState": "hub"
           }
         ]
       },
-      "quest_ring": {
-        "text": "Actually, I need a favor. There's a rare undead prowling the lower floors... rumor has it, it wears a pure gold band. Bring it to me. I need raw material for... a project.",
+      "quest_accepted": {
+        "text": "Good. Bring me that ring. I don't care how you get it.",
         "choices": [
           {
-            "label": "I'll do it",
+            "label": "Leave",
             "action": "close"
-          },
+          }
+        ]
+      },
+      "quest_declined": {
+        "text": "Pity. I thought you had potential.",
+        "choices": [
           {
-            "label": "Too dangerous",
-            "nextState": "default"
+            "label": "Back",
+            "nextState": "hub"
           }
         ]
       }
