@@ -11,6 +11,7 @@ Underneath the remote town of Alencar,
 
 The player controls a summoner - humans capable of interfacing with otherworldly creatures. 
 Summoners are the few capable of delving safely into the dungeon, as they can recruit such creatures' aid. 
+Summoned creatures slowly drain the summoner's MP - running out of MP is a death sentence, gravely crippling the creatures and draining their HP. Knowing when to return to town is essential.
 
 NPCS:
 
