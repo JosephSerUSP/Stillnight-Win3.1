@@ -1,0 +1,19 @@
+[
+  {
+    "id": "quest_rats",
+    "title": "Rat Problem",
+    "description": "The village cellar is overrun with giant rats. Please clear them out for us. We will reward you well.",
+    "rewards": [
+      { "type": "gold", "value": 100 },
+      { "type": "item", "id": "potion", "amount": 2 }
+    ]
+  },
+  {
+    "id": "quest_delivery",
+    "title": "Special Delivery",
+    "description": "Take this sealed letter to the Mayor in the next town. Do not open it.",
+    "rewards": [
+      { "type": "gold", "value": 50 }
+    ]
+  }
+]

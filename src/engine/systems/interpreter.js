@@ -20,7 +20,8 @@ export class InterpreterSystem {
             'TREASURE': this._handleTreasure,
             'TRAP_TRIGGER': this._handleTrapTrigger,
             'BREAKABLE_WALL': this._handleBreakableWall,
-            'WAIT': this._handleWait
+            'WAIT': this._handleWait,
+            'QUEST_OFFER': this._handleQuestOffer
         };
     }
 
@@ -195,5 +196,13 @@ export class InterpreterSystem {
         state.waitMode = 'time';
         state.waitValue = command.duration || 1000;
         return null;
+    }
+
+    _handleQuestOffer(state, command, session) {
+        // command.questId
+        return [{
+            type: 'QUEST_OFFER_OPEN',
+            questId: command.questId
+        }];
     }
 }
