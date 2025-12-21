@@ -195,10 +195,12 @@ export class Scene_Map extends Scene_Base {
     this.hud.menuNewRun?.addEventListener("click", () => this.confirmNewRun());
     this.hud.menuSaveGame?.addEventListener("click", () => this.showStubMessage("Save Game coming soon."));
     this.hud.menuLoadGame?.addEventListener("click", () => this.showStubMessage("Load Game coming soon."));
+    this.hud.menuGameInfo?.addEventListener("click", () => this.openInfo("game"));
     this.hud.menuAbout?.addEventListener("click", () => this.showStubMessage("About screen coming soon."));
 
     this.hud.menuRevealAll?.addEventListener("click", this.revealAllFloors.bind(this));
     this.hud.menuTeleport?.addEventListener("click", this.openTeleportPopup.bind(this));
+    this.hud.menuRunInfo?.addEventListener("click", () => this.openInfo("run"));
 
     this.hud.menuInventory?.addEventListener("click", this.openInventory.bind(this));
     this.hud.menuFormation?.addEventListener("click", this.openFormation.bind(this));
@@ -207,12 +209,6 @@ export class Scene_Map extends Scene_Base {
     this.hud.menuSettingsGeneral?.addEventListener("click", this.openSettings.bind(this));
     this.hud.menuSettingsAudio?.addEventListener("click", this.openAudioSettings.bind(this));
     this.hud.menuHelpGeneral?.addEventListener("click", this.openHelp.bind(this));
-
-    this.hud.btnClearLog.addEventListener("click", () => {
-      this.hud.clearLog();
-      this.setStatus("Log cleared.");
-      AudioAdapter.play('UI_CANCEL');
-    });
   }
 
   /**
@@ -814,6 +810,12 @@ export class Scene_Map extends Scene_Base {
   openHelp() {
     if (this.sceneManager.currentScene() !== this) return;
     this.windowManager.push(this.hudManager.helpWindow);
+  }
+
+  openInfo(mode = "game") {
+    if (this.sceneManager.currentScene() !== this) return;
+    this.hudManager.infoWindow.setInfo(mode);
+    this.windowManager.push(this.hudManager.infoWindow);
   }
 
   openSettings() {

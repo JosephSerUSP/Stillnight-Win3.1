@@ -123,12 +123,12 @@ html, body {
 /* Menu Bar */
 .menu-bar {
     display: flex;
-    gap: 4px;
-    padding: 2px 4px;
+    gap: 2px;
+    padding: 1px 3px;
     background-color: var(--window-bg);
     border-bottom: 1px solid var(--bezel-shadow);
     box-shadow:
-        0 1px 0 var(--bezel-light),
+        inset 0 1px 0 var(--bezel-light),
         inset 0 -1px 0 var(--bezel-dark);
 }
 
@@ -137,17 +137,34 @@ html, body {
 }
 
 .menu-toggle {
-    padding: 2px 8px;
-    font-size: 12px;
-    background-color: var(--content-bg);
-    border: 1px solid var(--bezel-shadow);
-    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
-    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 11px;
+    background-color: transparent;
+    border: 1px solid transparent;
+    box-shadow: none;
+    cursor: default;
+    color: var(--window-text);
 }
 
 .menu-toggle:focus {
     outline: none;
-    box-shadow: 0 0 0 1px var(--selection-bg);
+    border-color: var(--bezel-dark) var(--bezel-light) var(--bezel-light) var(--bezel-dark);
+    background-color: var(--window-bg);
+    box-shadow:
+        1px 1px 0 var(--bezel-light) inset,
+        -1px -1px 0 var(--bezel-shadow) inset;
+}
+
+.menu-toggle:hover {
+    background-color: #e5e5e5;
+}
+
+.menu-group.open .menu-toggle {
+    border-color: var(--bezel-dark) var(--bezel-light) var(--bezel-light) var(--bezel-dark);
+    background-color: var(--window-bg);
+    box-shadow:
+        1px 1px 0 var(--bezel-light) inset,
+        -1px -1px 0 var(--bezel-shadow) inset;
 }
 
 .menu-dropdown {
@@ -160,9 +177,9 @@ html, body {
     background-color: var(--window-bg);
     border: 1px solid var(--bezel-shadow);
     box-shadow:
-        2px 2px 0 var(--bezel-light),
-        inset 0 0 0 1px var(--bezel-light),
-        inset -1px -1px 0 var(--bezel-dark);
+        2px 2px 0 var(--bezel-dark),
+        inset 1px 1px 0 var(--bezel-light),
+        inset -1px -1px 0 var(--bezel-shadow);
     z-index: 20;
     padding: 2px;
 }
@@ -173,11 +190,11 @@ html, body {
 
 .menu-item {
     text-align: left;
-    padding: 4px 6px;
-    font-size: 12px;
+    padding: 3px 14px 3px 10px;
+    font-size: 11px;
     background-color: transparent;
     border: 1px solid transparent;
-    cursor: pointer;
+    cursor: default;
 }
 
 .menu-item:hover,
@@ -309,6 +326,23 @@ html, body {
     padding: 0 4px;
     background-color: var(--window-bg);
     font-size: 11px;
+}
+
+.map-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.map-info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+}
+
+.map-info-value {
+    font-weight: bold;
+    text-align: right;
 }
 
 .stack-nav-buttons {
@@ -626,13 +660,8 @@ html, body {
     font-size: 10px;
     overflow-y: auto;
     white-space: pre-wrap;
-    height: 190px;
-}
-
-.log-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex: 1;
+    min-height: 0;
 }
 
 .stack-run-metrics {

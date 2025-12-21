@@ -15,81 +15,120 @@ export class Window_StackNav extends Window_Base {
         const posY = embedded ? 0 : 'center';
         super(posX, posY, width, height, { title, embedded, id: options.id });
         this.element.classList.add("stack-nav");
+        this.embedded = embedded;
 
         if (embedded) {
             this.header.style.display = "none";
         }
 
-        const structure = {
+        const children = [];
+
+        children.push({
+            type: 'panel',
+            props: { className: 'location-art-container' },
+            children: [
+                { type: 'image', props: { id: 'location-art', className: 'location-art-img', src: 'assets/eventArt/default.png' } }
+            ]
+        });
+
+        if (embedded) {
+            children.push({
+                type: 'panel',
+                props: { className: 'group-box' },
+                children: [
+                    { type: 'label', props: { tag: 'legend', text: 'Map' } },
+                    {
+                        type: 'panel',
+                        props: { className: 'map-info' },
+                        children: [
+                            {
+                                type: 'panel',
+                                props: { className: 'map-info-row' },
+                                children: [
+                                    { type: 'label', props: { text: 'Name:' } },
+                                    { type: 'label', props: { id: 'map-title', className: 'map-info-value', text: title } }
+                                ]
+                            },
+                            {
+                                type: 'panel',
+                                props: { className: 'map-info-row' },
+                                children: [
+                                    { type: 'label', props: { text: 'Mode:' } },
+                                    { type: 'label', props: { id: 'map-mode', className: 'map-info-value', text: 'Exploration' } }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            });
+        } else {
+            children.push({
+                type: 'panel',
+                props: { className: 'group-box' },
+                children: [
+                    { type: 'label', props: { tag: 'legend', text: 'Run' } },
+                    {
+                        type: 'panel',
+                        props: { className: 'stack-run-metrics' },
+                        children: [
+                            {
+                                type: 'panel',
+                                children: [
+                                    { type: 'label', props: { text: 'Card:' } },
+                                    { type: 'label', props: { id: 'card-index-label', text: '1 / 1' } }
+                                ]
+                            },
+                            {
+                                type: 'panel',
+                                children: [
+                                    { type: 'label', props: { text: 'Floor depth:' } },
+                                    { type: 'label', props: { id: 'card-depth-label', text: '1' } }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            });
+
+            children.push({
+                type: 'panel',
+                props: { className: 'group-box' },
+                children: [
+                    { type: 'label', props: { tag: 'legend', text: 'Cards (Floors)' } },
+                    { type: 'panel', props: { id: 'card-list', className: 'card-list' } }
+                ]
+            });
+        }
+
+        const root = UI.build(this.content, {
             type: 'panel',
             props: { className: 'stack-nav-content' },
-            children: [
-                {
-                    type: 'panel',
-                    props: { className: 'group-box' },
-                    children: [
-                        { type: 'label', props: { tag: 'legend', text: 'Run' } },
-                        {
-                            type: 'panel',
-                            props: { className: 'stack-run-metrics' },
-                            children: [
-                                {
-                                    type: 'panel',
-                                    children: [
-                                        { type: 'label', props: { text: 'Card: ' } },
-                                        { type: 'label', props: { id: 'card-index-label', text: '1 / 1' } }
-                                    ]
-                                },
-                                {
-                                    type: 'panel',
-                                    children: [
-                                        { type: 'label', props: { text: 'Floor depth: ' } },
-                                        { type: 'label', props: { id: 'card-depth-label', text: '1' } }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                },
-                // Location Art
-                {
-                    type: 'panel',
-                    props: { className: 'location-art-container' },
-                    children: [
-                        { type: 'image', props: { id: 'location-art', className: 'location-art-img', src: 'assets/eventArt/default.png' } }
-                    ]
-                },
-                // Group Cards
-                {
-                    type: 'panel',
-                    props: { className: 'group-box' },
-                    children: [
-                        { type: 'label', props: { tag: 'legend', text: 'Cards (Floors)' } },
-                        { type: 'panel', props: { id: 'card-list', className: 'card-list' } }
-                    ]
-                }
-            ]
-        };
-
-        const root = UI.build(this.content, structure);
+            children
+        });
 
         this.cardIndexLabelEl = root.querySelector("#card-index-label");
         this.cardDepthLabelEl = root.querySelector("#card-depth-label");
         this.locationArtEl = root.querySelector("#location-art");
         this.cardListEl = root.querySelector("#card-list");
+        this.mapTitleEl = root.querySelector("#map-title");
+        this.mapModeEl = root.querySelector("#map-mode");
     }
 
     updateCardHeader(floor, index, total) {
-        this.cardIndexLabelEl.textContent = `${index + 1} / ${total}`;
-        this.cardDepthLabelEl.textContent = floor.depth;
-        if (floor.image) {
-             this.locationArtEl.src = `assets/eventArt/${floor.image}`;
-        } else {
-             this.locationArtEl.src = `assets/eventArt/default.png`;
+        if (this.cardIndexLabelEl) this.cardIndexLabelEl.textContent = `${index + 1} / ${total}`;
+        if (this.cardDepthLabelEl) this.cardDepthLabelEl.textContent = floor.depth;
+        if (this.mapTitleEl) this.mapTitleEl.textContent = floor.title;
+        if (this.locationArtEl) {
+            if (floor.image) {
+                 this.locationArtEl.src = `assets/eventArt/${floor.image}`;
+            } else {
+                 this.locationArtEl.src = `assets/eventArt/default.png`;
+            }
         }
     }
 
     updateCardList(floors, currentIndex, maxReachedIndex, onSelect) {
+        if (!this.cardListEl) return;
         this.cardListEl.innerHTML = "";
         floors.forEach((f, idx) => {
             const item = UI.build(this.cardListEl, {
@@ -103,6 +142,12 @@ export class Window_StackNav extends Window_Base {
             item.textContent = `${idx + 1}. ${f.discovered ? f.title : "Unknown Floor"}`;
         });
     }
+
+    setMode(mode) {
+        if (this.mapModeEl) {
+            this.mapModeEl.textContent = mode;
+        }
+    }
 }
 
 /**
@@ -114,25 +159,6 @@ export class Window_Exploration extends Window_Base {
         this.element.classList.add("card-main");
 
         this.header.style.display = "none";
-
-        const headerBar = UI.build(this.content, {
-            type: 'panel',
-            props: { className: 'embedded-title-bar' },
-            children: [
-                { type: 'label', props: { id: 'card-title', tag: 'div', className: 'embedded-title', text: 'Floor 1' } },
-                {
-                    type: 'panel',
-                    props: { className: 'embedded-mode' },
-                    children: [
-                        { type: 'label', props: { text: 'Mode:', className: 'label' } },
-                        { type: 'label', props: { text: 'Exploration', id: 'mode-label' } }
-                    ]
-                }
-            ]
-        });
-
-        this.titleEl = headerBar.querySelector("#card-title");
-        this.modeLabel = headerBar.querySelector("#mode-label");
 
         const root = UI.build(this.content, {
             type: 'panel',
@@ -149,7 +175,7 @@ export class Window_Exploration extends Window_Base {
     }
 
     setMode(mode) {
-        if (this.modeLabel) this.modeLabel.textContent = mode;
+        // Mode is displayed on the map info panel instead of the embedded header
     }
 
     renderGrid(gridData, onTileClick) {
@@ -212,11 +238,6 @@ export class Window_PartyPanel extends Window_Base {
         this.prevHpMap = new WeakMap();
 
         this.header.style.display = "none";
-
-        UI.build(this.content, {
-            type: 'label',
-            props: { text: 'Party Status', className: 'embedded-title' }
-        });
 
         this.partyGridEl = UI.build(this.content, {
             type: 'panel',
@@ -301,17 +322,6 @@ export class Window_LogPanel extends Window_Base {
         this.element.classList.add("log-panel");
 
         this.header.style.display = "none";
-
-        const toolbar = UI.build(this.content, {
-            type: 'flex',
-            props: { className: 'log-toolbar', justify: 'space-between', align: 'center' },
-            children: [
-                { type: 'label', props: { text: 'Event Log', className: 'embedded-title' } },
-                { type: 'button', props: { id: 'btn-clear-log', className: 'win-btn', label: 'Clear', style: { fontSize: '10px', padding: '0 6px' } } }
-            ]
-        });
-
-        this.btnClear = toolbar.querySelector("#btn-clear-log");
 
         this.logEl = UI.build(this.content, {
             type: 'panel',
@@ -449,6 +459,7 @@ export class Window_Desktop extends Window_Base {
                     { id: 'menu-item-new-game', label: 'New Game', testId: 'menu-new-game' },
                     { id: 'menu-item-save-game', label: 'Save Game', testId: 'menu-save-game' },
                     { id: 'menu-item-load-game', label: 'Load Game', testId: 'menu-load-game' },
+                    { id: 'menu-item-game-info', label: 'Info', testId: 'menu-game-info' },
                     { id: 'menu-item-about', label: 'About', testId: 'menu-about' }
                 ]
             },
@@ -458,7 +469,8 @@ export class Window_Desktop extends Window_Base {
                 items: [
                     { id: 'menu-item-new-run', label: 'New Run', testId: 'menu-new-run' },
                     { id: 'menu-item-reveal-all', label: 'Reveal All', testId: 'menu-reveal-all' },
-                    { id: 'menu-item-teleport', label: 'Teleport', testId: 'menu-teleport' }
+                    { id: 'menu-item-teleport', label: 'Teleport', testId: 'menu-teleport' },
+                    { id: 'menu-item-run-info', label: 'Info', testId: 'menu-run-info' }
                 ]
             },
             {
@@ -535,17 +547,18 @@ export class Window_Desktop extends Window_Base {
     get menuNewGame() { return this.menuEntries?.['menu-item-new-game']; }
     get menuSaveGame() { return this.menuEntries?.['menu-item-save-game']; }
     get menuLoadGame() { return this.menuEntries?.['menu-item-load-game']; }
+    get menuGameInfo() { return this.menuEntries?.['menu-item-game-info']; }
     get menuAbout() { return this.menuEntries?.['menu-item-about']; }
     get menuNewRun() { return this.menuEntries?.['menu-item-new-run']; }
     get menuRevealAll() { return this.menuEntries?.['menu-item-reveal-all']; }
     get menuTeleport() { return this.menuEntries?.['menu-item-teleport']; }
+    get menuRunInfo() { return this.menuEntries?.['menu-item-run-info']; }
     get menuInventory() { return this.menuEntries?.['menu-item-inventory']; }
     get menuFormation() { return this.menuEntries?.['menu-item-formation']; }
     get menuQuests() { return this.menuEntries?.['menu-item-quests']; }
     get menuSettingsGeneral() { return this.menuEntries?.['menu-item-settings-general']; }
     get menuSettingsAudio() { return this.menuEntries?.['menu-item-settings-audio']; }
     get menuHelpGeneral() { return this.menuEntries?.['menu-item-help-general']; }
-    get btnClearLog() { return this.logPanel.btnClear; }
 
     updateCardHeader(floor, index, total) {
         this.stackNav.updateCardHeader(floor, index, total);
@@ -584,6 +597,7 @@ export class Window_Desktop extends Window_Base {
 
     setMode(mode) {
         this.explorationWindow.setMode(mode);
+        this.stackNav.setMode(mode);
     }
 
     renderGrid(gridData, onTileClick) {
