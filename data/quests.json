@@ -1,0 +1,20 @@
+{
+  "q_alicia_sparkle": {
+    "id": "q_alicia_sparkle",
+    "title": "A Sparkle for Laura",
+    "description": "Alicia wants to give Laura something special. Find a 'Glow Moss' in the dungeon's upper levels.",
+    "rewards": [
+      { "type": "item", "id": "potion_high", "amount": 2, "text": "High Potion x2" },
+      { "type": "xp", "amount": 100, "text": "100 XP" }
+    ]
+  },
+  "q_laura_gold": {
+    "id": "q_laura_gold",
+    "title": "Raw Material",
+    "description": "Laura needs a 'Cursed Gold Band' dropped by the Undead in the lower floors for a secret project.",
+    "rewards": [
+      { "type": "gold", "amount": 500, "text": "500 Gold" },
+      { "type": "item", "id": "accessory_ring_def", "amount": 1, "text": "Iron Ring" }
+    ]
+  }
+}

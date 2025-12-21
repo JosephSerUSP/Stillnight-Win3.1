@@ -33,6 +33,12 @@ export class Game_Party {
      */
     this.inventory = [];
 
+    /**
+     * Quest statuses.
+     * @type {Object}
+     */
+    this.quests = {};
+
   }
 
   /**
