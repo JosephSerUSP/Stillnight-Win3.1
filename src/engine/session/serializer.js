@@ -4,6 +4,7 @@ import { Registry } from "../data/registry.js";
 import { ExplorationState } from "./exploration_state.js";
 import { BattleState } from "./battle_state.js";
 import { InterpreterState } from "./interpreter_state.js";
+import { QuestState } from "./quest_state.js";
 
 export class SessionSerializer {
     /**
@@ -18,7 +19,8 @@ export class SessionSerializer {
             party: this.serializeParty(session.party),
             exploration: session.exploration ? this.serializeExploration(session.exploration) : null,
             battle: session.battle ? this.serializeBattle(session.battle) : null,
-            interpreter: session.interpreter ? this.serializeInterpreter(session.interpreter) : null
+            interpreter: session.interpreter ? this.serializeInterpreter(session.interpreter) : null,
+            quests: session.quests ? this.serializeQuests(session.quests) : null
         };
     }
 
@@ -43,6 +45,10 @@ export class SessionSerializer {
 
         if (json.interpreter) {
             session.interpreter = this.deserializeInterpreter(json.interpreter);
+        }
+
+        if (json.quests) {
+            session.quests = this.deserializeQuests(json.quests);
         }
 
         return session;
@@ -170,5 +176,15 @@ export class SessionSerializer {
         const state = new InterpreterState();
         Object.assign(state, data);
         return state;
+    }
+
+    static serializeQuests(quests) {
+        return JSON.parse(JSON.stringify(quests));
+    }
+
+    static deserializeQuests(data) {
+        const quests = new QuestState();
+        Object.assign(quests, data);
+        return quests;
     }
 }

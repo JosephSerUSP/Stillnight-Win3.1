@@ -217,12 +217,14 @@ export class Window_PartyPanel extends Window_Base {
             props: { gap: '2px' },
             children: [
                 { type: 'button', props: { id: 'btn-formation', className: 'win-btn', label: 'Formation...', style: { fontSize: '10px', padding: '0 6px' } } },
-                { type: 'button', props: { id: 'btn-inventory', className: 'win-btn', label: 'Inventory...', testId: 'btn-inventory', style: { fontSize: '10px', padding: '0 6px' } } }
+                { type: 'button', props: { id: 'btn-inventory', className: 'win-btn', label: 'Inventory...', testId: 'btn-inventory', style: { fontSize: '10px', padding: '0 6px' } } },
+                { type: 'button', props: { id: 'btn-quest-log', className: 'win-btn', label: 'Quests', style: { fontSize: '10px', padding: '0 6px' } } }
             ]
         });
 
         this.btnFormation = this.header.querySelector("#btn-formation");
         this.btnInventory = this.header.querySelector("#btn-inventory");
+        this.btnQuestLog = this.header.querySelector("#btn-quest-log");
 
         this.partyGridEl = UI.build(this.content, {
             type: 'panel',

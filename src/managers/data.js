@@ -99,6 +99,12 @@ export class DataManager {
      * @type {Array|null}
      */
     this.themes = null;
+
+    /**
+     * Quest definitions loaded from quests.json.
+     * @type {Array|null}
+     */
+    this.quests = null;
   }
 
   /**
@@ -117,6 +123,7 @@ export class DataManager {
       terms: "data/terms.json",
       themes: "data/themes.json",
       sounds: "data/sounds.json",
+      quests: "data/quests.json",
     };
 
     try {

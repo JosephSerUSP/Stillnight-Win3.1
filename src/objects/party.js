@@ -33,6 +33,18 @@ export class Game_Party {
      */
     this.inventory = [];
 
+    /**
+     * Known words unlocked via story beats.
+     * @type {Array<string>}
+     */
+    this.knownWords = [];
+
+    /**
+     * Story/quest flags for persistent progression.
+     * @type {Record<string, boolean>}
+     */
+    this.storyFlags = {};
+
   }
 
   /**
@@ -296,5 +308,63 @@ export class Game_Party {
           }
           return { success: true, msg: `${member.name} equipped ${item.name}.` };
       }
+  }
+
+  /**
+   * Adds an item instance to the inventory.
+   * @param {Object} item
+   */
+  addItem(item) {
+      this.inventory.push(item);
+  }
+
+  /**
+   * Counts how many copies of an item ID are held.
+   * @param {string} itemId
+   * @returns {number}
+   */
+  countItem(itemId) {
+      return this.inventory.filter((i) => i.id === itemId).length;
+  }
+
+  /**
+   * Removes up to count copies of an item ID from inventory.
+   * @param {string} itemId
+   * @param {number} count
+   */
+  removeItemById(itemId, count = 1) {
+      let remaining = count;
+      this.inventory = this.inventory.filter((item) => {
+          if (item.id === itemId && remaining > 0) {
+              remaining--;
+              return false;
+          }
+          return true;
+      });
+  }
+
+  /**
+   * Checks whether a story flag is set.
+   * @param {string} flag
+   * @returns {boolean}
+   */
+  hasStoryFlag(flag) {
+      return !!this.storyFlags[flag];
+  }
+
+  /**
+   * Sets a story flag to true.
+   * @param {string} flag
+   */
+  setStoryFlag(flag) {
+      this.storyFlags[flag] = true;
+  }
+
+  /**
+   * Clears a story flag.
+   * @param {string} flag
+   */
+  clearStoryFlag(flag) {
+      delete this.storyFlags[flag];
   }
 }

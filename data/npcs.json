@@ -28,7 +28,7 @@
         "choices": [
           {
             "label": "Ask about Quest",
-            "nextState": "quest_offer"
+            "nextState": "quest_router"
           },
           {
             "label": "Back",
@@ -36,15 +36,70 @@
           }
         ]
       },
+      "quest_router": {
+        "condition": "questCompleted:sparkling_surprise",
+        "trueState": "quest_complete_done",
+        "falseState": "quest_offer_entry"
+      },
+      "quest_offer_entry": {
+        "condition": "questActive:sparkling_surprise",
+        "trueState": "quest_active",
+        "falseState": "quest_offer"
+      },
       "quest_offer": {
         "text": "Actually... could you help me find something for her? She loves sparkly things. Maybe if I gave her something special...",
         "choices": [
           {
             "label": "I'll look for it",
-            "action": "close"
+            "action": "quest",
+            "questId": "sparkling_surprise",
+            "onAcceptState": "quest_active"
           },
           {
             "label": "Maybe later",
+            "nextState": "default"
+          }
+        ]
+      },
+      "quest_active": {
+        "text": "Anything glittering for Laura yet? I know it's silly, but... it would mean so much.",
+        "choices": [
+          {
+            "label": "I have something for you",
+            "nextState": "quest_turnin_check"
+          },
+          {
+            "label": "Not yet",
+            "action": "close"
+          }
+        ]
+      },
+      "quest_turnin_check": {
+        "condition": "questReady:sparkling_surprise",
+        "trueState": "quest_turnin",
+        "falseState": "quest_active"
+      },
+      "quest_turnin": {
+        "text": "Is that for Laura? It's beautiful!",
+        "choices": [
+          {
+            "label": "Give Alicia the charm",
+            "action": "quest_complete",
+            "questId": "sparkling_surprise",
+            "onCompleteState": "quest_complete_done",
+            "onFailureState": "quest_active"
+          },
+          {
+            "label": "Hold onto it",
+            "nextState": "quest_active"
+          }
+        ]
+      },
+      "quest_complete_done": {
+        "text": "Thank you! Laura's going to shine when she sees this. I won't forget this.",
+        "choices": [
+          {
+            "label": "Back",
             "nextState": "default"
           }
         ]
@@ -93,7 +148,7 @@
         "choices": [
           {
             "label": "Ask about Quest",
-            "nextState": "quest_ring"
+            "nextState": "quest_router"
           },
           {
             "label": "Back",
@@ -101,15 +156,70 @@
           }
         ]
       },
+      "quest_router": {
+        "condition": "questCompleted:golden_promise",
+        "trueState": "quest_after",
+        "falseState": "quest_offer_entry"
+      },
+      "quest_offer_entry": {
+        "condition": "questActive:golden_promise",
+        "trueState": "quest_active",
+        "falseState": "quest_ring"
+      },
       "quest_ring": {
         "text": "Actually, I need a favor. There's a rare undead prowling the lower floors... rumor has it, it wears a pure gold band. Bring it to me. I need raw material for... a project.",
         "choices": [
           {
             "label": "I'll do it",
-            "action": "close"
+            "action": "quest",
+            "questId": "golden_promise",
+            "onAcceptState": "quest_active"
           },
           {
             "label": "Too dangerous",
+            "nextState": "default"
+          }
+        ]
+      },
+      "quest_active": {
+        "text": "Still hunting for that ring? I need it sooner than later.",
+        "choices": [
+          {
+            "label": "I found a ring",
+            "nextState": "quest_turnin_check"
+          },
+          {
+            "label": "I'll be back",
+            "action": "close"
+          }
+        ]
+      },
+      "quest_turnin_check": {
+        "condition": "questReady:golden_promise",
+        "trueState": "quest_turnin",
+        "falseState": "quest_active"
+      },
+      "quest_turnin": {
+        "text": "Let's see it. No flaws, I hope.",
+        "choices": [
+          {
+            "label": "Hand over the Goldweave Ring",
+            "action": "quest_complete",
+            "questId": "golden_promise",
+            "onCompleteState": "quest_after",
+            "onFailureState": "quest_active"
+          },
+          {
+            "label": "Not yet",
+            "nextState": "quest_active"
+          }
+        ]
+      },
+      "quest_after": {
+        "text": "This will do nicely. You're useful to have around.",
+        "choices": [
+          {
+            "label": "Back",
             "nextState": "default"
           }
         ]

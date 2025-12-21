@@ -12,7 +12,9 @@ import {
   Window_Options,
   Window_AudioPlayer,
   Window_Help,
-  WindowLayer
+  WindowLayer,
+  Window_Quest,
+  Window_QuestLog
 } from "../presentation/windows/index.js";
 
 /**
@@ -71,6 +73,12 @@ export class HUDManager {
         this.helpWindow = new Window_Help();
         this.windowLayer.addChild(this.helpWindow);
 
+        this.questWindow = new Window_Quest();
+        this.windowLayer.addChild(this.questWindow);
+
+        this.questLogWindow = new Window_QuestLog();
+        this.windowLayer.addChild(this.questLogWindow);
+
         this.setupDefaultCloseHandlers();
     }
 
@@ -85,6 +93,8 @@ export class HUDManager {
         this.audioWindow.onUserClose = () => close(this.audioWindow);
         this.audioPlayerWindow.onUserClose = () => close(this.audioPlayerWindow);
         this.helpWindow.onUserClose = () => close(this.helpWindow);
+        this.questWindow.onUserClose = () => close(this.questWindow);
+        this.questLogWindow.onUserClose = () => close(this.questLogWindow);
     }
 
     getSharedWindows() {

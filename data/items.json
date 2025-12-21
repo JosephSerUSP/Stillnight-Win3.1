@@ -115,6 +115,27 @@
     ]
   },
   {
+    "id": "golden_ring",
+    "name": "Goldweave Ring",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 65,
+    "icon": 174,
+    "description": "Braided gold that hums with promise.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "maxHp",
+        "value": 2
+      },
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 1
+      }
+    ]
+  },
+  {
     "id": "alert_charm",
     "name": "Alert Charm",
     "type": "equipment",
