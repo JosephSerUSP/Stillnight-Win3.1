@@ -1,0 +1,32 @@
+{
+  "quest_alicia_gift": {
+    "id": "quest_alicia_gift",
+    "title": "A Sparkly Gift",
+    "description": "Alicia wants to give Laura something sparkly to make her happy. She asked you to look for something suitable.",
+    "giver": "Alicia",
+    "rewards": [
+      { "type": "gold", "value": 150 },
+      { "type": "xp", "value": 100 }
+    ],
+    "stages": {
+      "0": "Find something sparkly for Laura.",
+      "1": "You found a Crystal Shard! Bring it back to Alicia.",
+      "100": "Quest Completed."
+    }
+  },
+  "quest_laura_ring": {
+    "id": "quest_laura_ring",
+    "title": "The Golden Band",
+    "description": "Laura needs a pure gold band from a rare undead in the lower floors for a 'project'.",
+    "giver": "Laura",
+    "rewards": [
+      { "type": "item", "id": "ring_protection" },
+      { "type": "xp", "value": 200 }
+    ],
+    "stages": {
+      "0": "Hunt the undead in the lower floors.",
+      "1": "You recovered the Gold Band. Return to Laura.",
+      "100": "Quest Completed."
+    }
+  }
+}
