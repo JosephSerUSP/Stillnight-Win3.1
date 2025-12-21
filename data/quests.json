@@ -2,6 +2,7 @@
   "sparkling_gift": {
     "name": "Sparkling Gesture",
     "giver": "Alicia",
+    "portrait": "NPC_Alicia",
     "summary": "Find a glittering keepsake that Alicia can gift to Laura.",
     "description": "Alicia wants to surprise Laura with a shimmering token. She believes a rare teardrop crystal from the lower tunnels would be perfect.",
     "objectives": [
@@ -23,6 +24,7 @@
   "golden_promise": {
     "name": "Golden Promise",
     "giver": "Laura",
+    "portrait": "NPC_Laura",
     "summary": "Secure an ornate ring so Laura can work with new material.",
     "description": "Laura needs an unmarked golden band taken from a rare undead. She is willing to pay well for anyone brave enough to retrieve it.",
     "objectives": [

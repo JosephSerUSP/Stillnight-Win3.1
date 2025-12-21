@@ -16,6 +16,7 @@ import { ExplorationAdapter } from "../../adapters/exploration_adapter.js";
 import { selectPartyHUD } from "../selectors/party.js";
 import { selectInventory } from "../selectors/inventory.js";
 import { selectBattlerDetails } from "../selectors/details.js";
+import { selectQuestLog } from "../selectors/quests.js";
 import { QuestLogState } from "../../engine/session/quest_state.js";
 
 /**
@@ -179,6 +180,7 @@ export class Scene_Map extends Scene_Base {
     });
     this.hud.btnFormation.addEventListener("click", this.openFormation.bind(this));
     this.hud.btnInventory.addEventListener("click", this.openInventory.bind(this));
+    this.hud.btnQuests.addEventListener("click", this.openQuestLog.bind(this));
   }
 
   /**
@@ -346,7 +348,16 @@ export class Scene_Map extends Scene_Base {
         items: this.party.inventory.length,
         runActive: this.runActive
     });
+    this.refreshQuestLogWindow();
     this.hud.setMode("Exploration");
+  }
+
+  refreshQuestLogWindow() {
+    if (!this.hudManager || !this.hudManager.questLogWindow) return;
+    if (this.windowManager.stack.includes(this.hudManager.questLogWindow)) {
+        const quests = selectQuestLog(this.session.quests, this.dataManager, this.party);
+        this.hudManager.questLogWindow.setQuests(quests);
+    }
   }
 
   /**
@@ -712,6 +723,13 @@ export class Scene_Map extends Scene_Base {
         (item, action) => this.onInventoryAction(item, action),
         (item) => this.confirmDiscard(item)
     );
+  }
+
+  openQuestLog() {
+    if (this.sceneManager.currentScene() !== this) return;
+    const quests = selectQuestLog(this.session.quests, this.dataManager, this.party);
+    this.hudManager.questLogWindow.setQuests(quests);
+    this.windowManager.push(this.hudManager.questLogWindow);
   }
 
   /**
