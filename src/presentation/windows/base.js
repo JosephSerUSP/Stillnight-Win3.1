@@ -145,11 +145,13 @@ export class Window_Base {
      * @param {boolean} [options.closeButton=true]
      * @param {string} [options.id]
      * @param {boolean} [options.embedded]
+     * @param {boolean} [options.showTitleBar=true]
      */
     constructor(x, y, width, height, options = {}) {
         this.embedded = options.embedded || false;
         this.animator = new WindowAnimator();
         this.isFullyOpen = false;
+        this.showTitleBar = options.showTitleBar !== false;
 
         // Store target dimensions
         this.width = width;
@@ -222,6 +224,10 @@ export class Window_Base {
         };
         this.header = UI.build(this.element, headerStruct);
         this.titleEl = this.header.querySelector("span");
+
+        if (!this.showTitleBar) {
+            this.header.style.display = "none";
+        }
 
         if (!this.embedded) {
             makeDraggable(this.element, this.header);

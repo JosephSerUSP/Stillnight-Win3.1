@@ -152,6 +152,22 @@ export class Scene_Map extends Scene_Base {
     this.checkMusic();
   }
 
+  confirmNewGame() {
+    if (this.sceneManager.currentScene() !== this) return;
+    this.hudManager.confirmWindow.titleEl.textContent = "Start New Game";
+    this.hudManager.confirmWindow.messageEl.textContent = "Starting a new game will reset your current run. Continue?";
+    this.windowManager.push(this.hudManager.confirmWindow);
+
+    this.hudManager.confirmWindow.btnOk.onclick = () => {
+        this.windowManager.close(this.hudManager.confirmWindow);
+        this.startNewRun();
+    };
+
+    this.hudManager.confirmWindow.btnCancel.onclick = () => {
+        this.windowManager.close(this.hudManager.confirmWindow);
+    };
+  }
+
   resumeMusic() {
       this.checkMusic();
   }
@@ -168,17 +184,28 @@ export class Scene_Map extends Scene_Base {
    * @method addEventListeners
    */
   addEventListeners() {
-    this.hud.btnNewRun.addEventListener("click", this.startNewRun.bind(this));
-    this.hud.btnRevealAll.addEventListener("click", this.revealAllFloors.bind(this));
-    this.hud.btnSettings.addEventListener("click", this.openSettings.bind(this));
-    this.hud.btnHelp.addEventListener("click", this.openHelp.bind(this));
+    this.hud.setMenuHandler("game.new", this.confirmNewGame.bind(this));
+    this.hud.setMenuHandler("game.save", () => this.showStubMessage("Save Game is not available yet."));
+    this.hud.setMenuHandler("game.load", () => this.showStubMessage("Load Game is not available yet."));
+    this.hud.setMenuHandler("game.about", () => this.showStubMessage("About screen coming soon."));
+
+    this.hud.setMenuHandler("run.new", this.startNewRun.bind(this));
+    this.hud.setMenuHandler("run.reveal", this.revealAllFloors.bind(this));
+    this.hud.setMenuHandler("run.teleport", this.openTeleportMenu.bind(this));
+
+    this.hud.setMenuHandler("party.inventory", this.openInventory.bind(this));
+    this.hud.setMenuHandler("party.formation", this.openFormation.bind(this));
+    this.hud.setMenuHandler("party.quests", this.openQuestLog.bind(this));
+
+    this.hud.setMenuHandler("settings.general", this.openSettings.bind(this));
+    this.hud.setMenuHandler("settings.audio", this.openAudioSettings.bind(this));
+
+    this.hud.setMenuHandler("help.general", this.openHelp.bind(this));
     this.hud.btnClearLog.addEventListener("click", () => {
       this.hud.clearLog();
       this.setStatus("Log cleared.");
       AudioAdapter.play('UI_CANCEL');
     });
-    this.hud.btnFormation.addEventListener("click", this.openFormation.bind(this));
-    this.hud.btnInventory.addEventListener("click", this.openInventory.bind(this));
   }
 
   /**
@@ -188,6 +215,25 @@ export class Scene_Map extends Scene_Base {
    */
   onKeyDown(e) {
     if (this.inputLocked) return;
+    if (this.windowManager.stack.length === 0) {
+        const key = e.key.toLowerCase();
+        if (key === 'i') {
+            e.preventDefault();
+            this.openInventory();
+            return;
+        }
+        if (key === 'f') {
+            e.preventDefault();
+            this.openFormation();
+            return;
+        }
+        if (key === 'q') {
+            e.preventDefault();
+            this.openQuestLog();
+            return;
+        }
+    }
+
     this.inputController.onKeyDown(e);
   }
 
@@ -459,17 +505,44 @@ export class Scene_Map extends Scene_Base {
         this.map.floorIndex,
         this.map.maxReachedFloorIndex,
         (idx) => {
-            this.map.floorIndex = idx;
-            const floor = this.map.floors[this.map.floorIndex];
-            this.map.playerX = floor.startX;
-            this.map.playerY = floor.startY;
-            this.map.revealAroundPlayer();
-            this.logMessage(`[Navigate] You flip to card ${idx + 1} (${floor.title}).`);
-            AudioAdapter.play('STAIRS');
-            this.updateAll();
-            this.checkMusic();
+            this.travelToFloor(idx, "Navigate");
         }
     );
+  }
+
+  travelToFloor(idx, source = "Teleport") {
+    this.map.floorIndex = idx;
+    const floor = this.map.floors[this.map.floorIndex];
+    this.map.playerX = floor.startX;
+    this.map.playerY = floor.startY;
+    this.map.revealAroundPlayer();
+    this.logMessage(`[${source}] You flip to card ${idx + 1} (${floor.title}).`);
+    AudioAdapter.play('STAIRS');
+    this.updateAll();
+    this.checkMusic();
+  }
+
+  openTeleportMenu() {
+    if (this.sceneManager.currentScene() !== this) return;
+    this.hudManager.floorSelectWindow.setFloors(
+        this.map.floors,
+        this.map.floorIndex,
+        this.map.maxReachedFloorIndex,
+        (idx) => {
+            this.windowManager.close(this.hudManager.floorSelectWindow);
+            this.travelToFloor(idx, "Teleport");
+        }
+    );
+    this.windowManager.push(this.hudManager.floorSelectWindow);
+  }
+
+  showStubMessage(message) {
+    this.setStatus(message);
+    this.logMessage(`[Stub] ${message}`, 'low');
+  }
+
+  openQuestLog() {
+    this.showStubMessage("Quest log is not available yet.");
   }
 
   /**

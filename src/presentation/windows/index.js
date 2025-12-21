@@ -7,6 +7,7 @@ import { Window_PartySelect } from "./party_select.js";
 import { Window_EquipItemSelect } from "./equip_select.js";
 import { Window_Help, Window_Options } from "./misc.js";
 import { Window_Desktop } from "./desktop.js";
+import { Window_FloorSelect } from "./floor_select.js";
 
 export * from "./utils.js";
 export * from "./base.js";
@@ -26,6 +27,7 @@ export * from "./misc.js";
 export * from "./builder.js";
 export * from "./audio_player.js";
 export * from "./quest.js";
+export * from "./floor_select.js";
 
 if (typeof window !== 'undefined' && window.location.search.includes("test=true")) {
     window.Window_Formation = Window_Formation;
@@ -33,6 +35,7 @@ if (typeof window !== 'undefined' && window.location.search.includes("test=true"
     window.Window_Shop = Window_Shop;
     window.Window_Help = Window_Help;
     window.Window_Desktop = Window_Desktop;
+    window.Window_FloorSelect = Window_FloorSelect;
     window.Window_Confirm = Window_Confirm;
     window.Window_ConfirmEffect = Window_ConfirmEffect;
     window.Window_PartySelect = Window_PartySelect;

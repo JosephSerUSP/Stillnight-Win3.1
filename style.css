@@ -139,6 +139,103 @@ html, body {
     gap: 2px;
 }
 
+.window-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px;
+    background-color: var(--content-bg);
+    border: 1px solid var(--bezel-shadow);
+    box-shadow:
+        1px 1px 0 var(--bezel-light) inset,
+        -1px -1px 0 var(--bezel-dark) inset;
+    font-weight: bold;
+    gap: 6px;
+}
+
+.exploration-header {
+    margin-bottom: 4px;
+}
+
+.exploration-title {
+    font-weight: bold;
+}
+
+.mode-badge {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    padding: 2px 6px;
+    background: var(--selection-bg);
+    color: var(--selection-text);
+    border: 1px solid var(--bezel-shadow);
+    box-shadow:
+        1px 1px 0 var(--bezel-light) inset,
+        -1px -1px 0 var(--bezel-dark) inset;
+}
+
+.menu-bar {
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    background-color: var(--window-bg);
+    border: 1px solid var(--bezel-shadow);
+    box-shadow:
+        1px 1px 0 var(--bezel-light) inset,
+        -1px -1px 0 var(--bezel-dark) inset;
+}
+
+.menu {
+    position: relative;
+}
+
+.menu-btn {
+    font-size: 11px;
+    padding: 2px 8px;
+    background-color: var(--window-bg);
+    border: 1px solid transparent;
+}
+
+.menu-btn:hover, .menu.open .menu-btn {
+    border-color: var(--bezel-shadow);
+    background-color: var(--selection-bg);
+    color: var(--selection-text);
+}
+
+.menu-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 180px;
+    background-color: var(--window-bg);
+    border: 1px solid var(--bezel-shadow);
+    box-shadow:
+        2px 2px 0 var(--bezel-dark),
+        1px 1px 0 var(--bezel-light) inset,
+        -1px -1px 0 var(--bezel-dark) inset;
+    display: none;
+    flex-direction: column;
+    z-index: 50;
+}
+
+.menu.open .menu-list {
+    display: flex;
+}
+
+.menu-item {
+    text-align: left;
+    padding: 4px 8px;
+    background: none;
+    border: none;
+    width: 100%;
+    font-size: 11px;
+}
+
+.menu-item:hover {
+    background-color: var(--selection-bg);
+    color: var(--selection-text);
+}
+
 .icon {
     width: 12px;
     height: 12px;
@@ -264,6 +361,10 @@ html, body {
     box-shadow:
         1px 1px 0 var(--bezel-light) inset,
         -1px -1px 0 var(--bezel-dark) inset;
+}
+
+.card-select-list {
+    height: 300px;
 }
 .card-item {
     padding: 2px 4px;
