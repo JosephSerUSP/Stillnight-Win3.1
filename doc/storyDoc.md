@@ -1,7 +1,16 @@
-The Summoner is the player's avatar.
+INFLUENCES / REFERENCES:
+Diablo 1: Atmosphere, Setup (town + dungeon, few but deep NPCs, unfolding story through NPCs and quests)
+Shin Megami Tensei: Seminal Dungeon Crawler with creature collecting and rich dark atmosphere.
+Etrian Odyssey: Epitome of Dungeon Crawling made fun. 
+Azure Dreams: Similar setup, rich NPCs, shifting town state.
+
+GENRE: Dungeon Crawler / Roguelite. Multiple runs with meta-progression.
+
 
 Underneath the remote town of Alencar, 
 
+The player controls a summoner - humans capable of interfacing with otherworldly creatures. 
+Summoners are the few capable of delving safely into the dungeon, as they can recruit such creatures' aid. 
 
 NPCS:
 
