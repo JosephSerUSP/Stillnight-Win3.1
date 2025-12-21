@@ -642,6 +642,7 @@ export class InterpreterAdapter {
         this.scene.hudManager.questWindow.show({
             quest: questData,
             npcName: this._activeNpc?.data?.name,
+            npcPortrait: this._activeNpc?.data?.portrait,
             status,
             onAccept,
             onDecline,
