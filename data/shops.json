@@ -25,6 +25,7 @@
       { "id": "mercury_crest", "condition": "level:5" },
       { "id": "alert_charm", "condition": "level:3" },
       { "id": "rear_mirror", "condition": "level:3" },
+      { "id": "golden_ring", "condition": "level:3" },
       { "id": "hp_boost1" },
       { "id": "hp_boost2", "condition": "level:5" },
       { "id": "hp_boost3", "condition": "level:10" }

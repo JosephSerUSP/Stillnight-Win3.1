@@ -4,6 +4,7 @@ import { ThemeManager } from "../../managers/index.js";
 import { Registry } from "../../engine/data/registry.js";
 import { SessionSerializer } from "../../engine/session/serializer.js";
 import { Game_Party } from "../../objects/party.js";
+import { QuestState } from "../../engine/session/quest_state.js";
 
 /**
  * @class Scene_Boot
@@ -65,7 +66,8 @@ export class Scene_Boot extends Scene_Base {
             party: new Game_Party(),
             exploration: null,
             battle: null,
-            interpreter: null
+            interpreter: null,
+            quests: new QuestState()
         };
     }
 }

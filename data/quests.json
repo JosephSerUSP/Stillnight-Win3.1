@@ -1,0 +1,52 @@
+[
+  {
+    "id": "sparkling_surprise",
+    "title": "Sparkling Surprise",
+    "giver": "Alicia",
+    "summary": "Find a glittering trinket Alicia can gift to Laura.",
+    "description": "Alicia wants to surprise Laura with something bright. A Wind Charm from town would be perfect.",
+    "journal": "Alicia asked me to bring her a Wind Charm so she can finally give Laura a proper gift.",
+    "objectives": [
+      {
+        "type": "item",
+        "id": "wind_charm",
+        "label": "Bring Alicia a Wind Charm",
+        "consume": true
+      }
+    ],
+    "rewards": {
+      "gold": 75,
+      "items": [
+        { "id": "light_amulet", "qty": 1 }
+      ],
+      "flags": ["alicia_sparkle_complete"]
+    },
+    "onAcceptLog": "You promised Alicia you'd find a charm that catches Laura's eye.",
+    "onCompleteLog": "Alicia clasps the charm to her chest, already planning her gift."
+  },
+  {
+    "id": "golden_promise",
+    "title": "Golden Promise",
+    "giver": "Laura",
+    "summary": "Secure a flawless ring so Laura can finish her design.",
+    "description": "Laura needs a Goldweave Ring to complete a commission. She hinted that the lower floors hide what she needs, but merchants sometimes carry them, too.",
+    "journal": "Laura asked me to bring her a Goldweave Ring. If I find one, she'll owe me.",
+    "objectives": [
+      {
+        "type": "item",
+        "id": "golden_ring",
+        "label": "Deliver a Goldweave Ring",
+        "consume": true
+      }
+    ],
+    "rewards": {
+      "gold": 120,
+      "items": [
+        { "id": "mars_emblem", "qty": 1 }
+      ],
+      "flags": ["laura_ring_complete"]
+    },
+    "onAcceptLog": "You agreed to hunt down a Goldweave Ring for Laura.",
+    "onCompleteLog": "Laura inspects the ring, then presses a heavy pouch into your hand."
+  }
+]

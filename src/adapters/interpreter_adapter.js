@@ -21,6 +21,7 @@ export class InterpreterAdapter {
         this.scene = sceneContext;
         this.system = new InterpreterSystem();
         this._onRecruitCallback = null;
+        this._activeNpcContext = null;
     }
 
     get dataManager() { return this.scene.dataManager; }
@@ -28,6 +29,7 @@ export class InterpreterAdapter {
     get sceneManager() { return this.scene.sceneManager; }
     get party() { return this.scene.party; }
     get map() { return this.scene.map; }
+    get questSystem() { return this.scene.questSystem; }
 
     /**
      * Executes a map event action using the system.
@@ -490,6 +492,8 @@ export class InterpreterAdapter {
             return;
         }
 
+        this._activeNpcContext = { npc, stateId };
+
         // Evaluate condition if present
         if (stateData.condition) {
             const result = this._checkCondition(stateData.condition);
@@ -527,15 +531,66 @@ export class InterpreterAdapter {
     _handleNpcChoice(npc, choice) {
         if (choice.action === 'close') {
             this.closeEvent();
-        } else if (choice.nextState) {
-            this._runNpcState(npc, choice.nextState);
-        } else if (choice.action === 'shop') {
+            return;
+        }
+
+        if (choice.action === 'quest') {
+            this.scene.openQuestOffer(choice.questId, {
+                onAccept: () => {
+                    if (choice.onAcceptState) {
+                        this._runNpcState(npc, choice.onAcceptState);
+                    } else if (choice.nextState) {
+                        this._runNpcState(npc, choice.nextState);
+                    }
+                },
+                onDecline: () => {
+                    if (choice.onDeclineState) {
+                        this._runNpcState(npc, choice.onDeclineState);
+                    } else if (this._activeNpcContext) {
+                        this._runNpcState(npc, this._activeNpcContext.stateId);
+                    }
+                }
+            });
+            return;
+        }
+
+        if (choice.action === 'quest_complete') {
+            const completed = this.scene.attemptQuestCompletion(choice.questId, {
+                onComplete: () => {
+                    if (choice.onCompleteState) {
+                        this._runNpcState(npc, choice.onCompleteState);
+                    } else if (choice.nextState) {
+                        this._runNpcState(npc, choice.nextState);
+                    }
+                },
+                onFailure: () => {
+                    if (choice.onFailureState) {
+                        this._runNpcState(npc, choice.onFailureState);
+                    }
+                }
+            });
+
+            if (!completed && !choice.onFailureState) {
+                this.closeEvent();
+            }
+            return;
+        }
+
+        if (choice.action === 'shop') {
              // Trigger shop event with optional specific shop ID
              this.scene.startShop(choice.shopId);
-        } else if (choice.action === 'teleport') {
+             return;
+        }
+
+        if (choice.action === 'teleport') {
             this.closeEvent();
             // TODO: Teleport logic
             this.scene.logMessage("Teleporting...");
+            return;
+        }
+
+        if (choice.nextState) {
+            this._runNpcState(npc, choice.nextState);
         } else {
              this.closeEvent();
         }
@@ -546,6 +601,18 @@ export class InterpreterAdapter {
         const [type, value] = conditionString.split(':');
         if (type === 'hasItem') {
             return this.party.inventory.some(i => i.id === value);
+        }
+        if (type === 'questActive') {
+            return this.questSystem ? this.questSystem.isActive(value) : false;
+        }
+        if (type === 'questCompleted') {
+            return this.questSystem ? this.questSystem.isCompleted(value) : false;
+        }
+        if (type === 'questReady') {
+            return this.questSystem ? this.questSystem.canComplete(value) : false;
+        }
+        if (type === 'questAvailable') {
+            return this.questSystem ? this.questSystem.getStatus(value) === 'available' : false;
         }
         return false;
     }
