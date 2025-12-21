@@ -41,7 +41,8 @@
         "choices": [
           {
             "label": "I'll look for it",
-            "action": "close"
+            "action": "quest",
+            "questId": "quest_alicia_gift"
           },
           {
             "label": "Maybe later",
@@ -106,7 +107,8 @@
         "choices": [
           {
             "label": "I'll do it",
-            "action": "close"
+            "action": "quest",
+            "questId": "quest_laura_gold"
           },
           {
             "label": "Too dangerous",

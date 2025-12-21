@@ -537,6 +537,9 @@ export class InterpreterAdapter {
         } else if (choice.action === 'shop') {
              // Trigger shop event with optional specific shop ID
              this.scene.startShop(choice.shopId);
+        } else if (choice.action === 'quest') {
+             this.closeEvent();
+             this._openQuestOffer(choice.questId);
         } else if (choice.action === 'teleport') {
             this.closeEvent();
             // TODO: Teleport logic
@@ -669,7 +672,8 @@ export class InterpreterAdapter {
             onDecline: () => {
                 this.scene.logMessage("Declined quest.");
                 this.windowManager.close(win);
-            }
+            },
+            dataManager: this.dataManager
         });
 
         this.windowManager.push(win);

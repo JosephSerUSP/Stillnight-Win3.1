@@ -1,5 +1,5 @@
 import { Window_Base } from "./base.js";
-import { createInteractiveLabel } from "./components.js";
+import { Component_InteractiveLabel } from "./components.js";
 
 /**
  * Window for displaying quest offers.
@@ -22,6 +22,7 @@ export class Window_Quest extends Window_Base {
         this.questData = questData;
         this.onAccept = callbacks.onAccept;
         this.onDecline = callbacks.onDecline;
+        this.dataManager = callbacks.dataManager;
         this.show();
         this.refresh();
     }
@@ -78,7 +79,22 @@ export class Window_Quest extends Window_Base {
                 if (reward.type === 'gold') {
                     row.textContent = `${reward.value} Gold`;
                 } else if (reward.type === 'item') {
-                    row.textContent = `${reward.amount || 1}x Item (${reward.id})`;
+                    if (this.dataManager) {
+                        const item = this.dataManager.items.find(i => i.id === reward.id);
+                        if (item) {
+                            if (reward.amount && reward.amount > 1) {
+                                const qty = document.createElement("span");
+                                qty.textContent = `${reward.amount}x `;
+                                qty.style.marginRight = "5px";
+                                row.appendChild(qty);
+                            }
+                            Component_InteractiveLabel(row, { data: item, type: 'item' });
+                        } else {
+                            row.textContent = `${reward.amount || 1}x Item (${reward.id})`;
+                        }
+                    } else {
+                        row.textContent = `${reward.amount || 1}x Item (${reward.id})`;
+                    }
                 }
                 rewardList.appendChild(row);
             });

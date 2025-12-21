@@ -15,5 +15,23 @@
     "rewards": [
       { "type": "gold", "value": 50 }
     ]
+  },
+  {
+    "id": "quest_alicia_gift",
+    "title": "A Gift for Laura",
+    "description": "Alicia wants to give something special to Laura. Find a 'Sparkling Gem' in the dungeon and bring it back to her.",
+    "rewards": [
+      { "type": "gold", "value": 200 },
+      { "type": "item", "id": "ether", "amount": 1 }
+    ]
+  },
+  {
+    "id": "quest_laura_gold",
+    "title": "Golden Ambition",
+    "description": "Laura needs raw gold for a special project. Defeat the Golden Skeleton in the lower dungeon and bring back its ring.",
+    "rewards": [
+      { "type": "gold", "value": 500 },
+      { "type": "item", "id": "accessory_gold_ring", "amount": 1 }
+    ]
   }
 ]
