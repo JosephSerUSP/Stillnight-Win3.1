@@ -491,9 +491,14 @@ export class InterpreterAdapter {
     }
 
     _runNpcState(npc, stateId) {
-        const stateData = npc.states[stateId];
+        let stateData = npc.states[stateId];
         if (!stateData) {
-            console.warn(`NPC state '${stateId}' not found for '${npc.name}'`);
+            console.warn(`NPC state '${stateId}' not found for '${npc.name}'. Trying 'default'.`);
+            stateData = npc.states['default'];
+        }
+
+        if (!stateData) {
+            console.warn(`NPC state 'default' also not found for '${npc.name}'. Closing.`);
             this.closeEvent();
             return;
         }

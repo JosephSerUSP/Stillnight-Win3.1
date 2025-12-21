@@ -110,6 +110,8 @@ export class Window_Event extends Window_Base {
   }
 
   show(data) {
+      this.footer.innerHTML = ""; // Clear lingering buttons immediately
+
       // Custom Title Handling with Icon
       this.titleEl.innerHTML = ""; // Clear existing
       const titleText = data.title || "Event";
@@ -318,6 +320,11 @@ export class Window_Event extends Window_Base {
           choices.forEach(ch => {
               this.addButton(ch.label, (e) => {
                   e.stopPropagation();
+
+                  // Disable all buttons to prevent double interactions and show feedback
+                  const allBtns = this.footer.querySelectorAll('button');
+                  allBtns.forEach(b => b.disabled = true);
+
                   if (ch.onClick) ch.onClick(e);
               });
           });
