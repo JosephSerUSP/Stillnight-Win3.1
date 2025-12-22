@@ -102,22 +102,35 @@ export class DirectorSystem {
             if (this.observer && this.observer.onAction) {
                 this.observer.onAction(node);
             }
-
-            // If the action is instantaneous or handled by view, we might want to auto-advance
-            // if 'next' is present.
-            // If the action is e.g. 'OPEN_SHOP', the view might keep the director paused/waiting.
-            // We'll leave it to the View/Adapter to call handleInput/CONTINUE if needed,
-            // or we auto-advance if it's purely logic.
-            // For now, if 'next' exists, we assume we should move to it?
-            // But if it's a Shop, we probably don't want to move to 'next' immediately
-            // if 'next' leads to text that would overlap the shop.
-
-            // Strategy: Action nodes execute and stay there until external input?
-            // Or Action nodes are transient?
-            // In the example: shop_node has "next": "hub_choices".
-            // This implies: Open Shop -> (Shop Closes) -> Go to Hub Choices.
-            // So we need to wait.
             return;
+        }
+
+        // Handle TEXT -> CHOICE Merge
+        // Optimization: If current node is TEXT and simply transitions to a CHOICE node, merge them.
+        if (node.type === 'TEXT' && node.next) {
+            const nextNode = this.walker.data.nodes[node.next];
+            if (nextNode && nextNode.type === 'CHOICE') {
+                 // Move logic state to the choice node immediately
+                 this.walker.moveTo(node.next);
+
+                 // Create a transient merged node for the observer
+                 // We combine the TEXT content with the CHOICE content (if any)
+                 const mergedNode = {
+                     ...nextNode,
+                     content: node.content + (nextNode.content ? "\n\n" + nextNode.content : ""),
+                     // Inherit visual properties from the TEXT node if missing in CHOICE node
+                     portrait: nextNode.portrait || node.portrait,
+                     speakers: nextNode.speakers || node.speakers,
+                     // Ensure the ID tracks the new node (though `type` is what matters mostly)
+                     // nextNode is the raw data object, it doesn't have ID property usually.
+                     // GraphWalker manages IDs.
+                 };
+
+                 if (this.observer && this.observer.onNode) {
+                    this.observer.onNode(mergedNode);
+                 }
+                 return;
+            }
         }
 
         // Notify Observer for standard nodes (TEXT, CHOICE)
