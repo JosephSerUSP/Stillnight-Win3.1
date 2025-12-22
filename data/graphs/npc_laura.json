@@ -54,12 +54,30 @@
     "talk_menu_choices": {
        "type": "CHOICE",
        "options": [
-          { "label": "Alicia cares about you.", "target": "talk_alicia_cares" },
+          { "label": "Alicia cares about you.", "target": "router_alicia_topic" },
           { "label": "About Raphael", "target": "talk_raphael" },
           { "label": "About the dungeon", "target": "talk_dungeon" },
           { "label": "Ask about Quest", "target": "quest_router" },
           { "label": "Back", "target": "default_text" }
        ]
+    },
+    "router_alicia_topic": {
+      "type": "ROUTER",
+      "condition": "questStatus:sparkling_gift:completed",
+      "trueNode": "talk_alicia_gift",
+      "falseNode": "talk_alicia_cares"
+    },
+    "talk_alicia_gift": {
+      "type": "TEXT",
+      "content": "She gave me this necklace. It’s… a bit much, isn’t it? But she looked so proud. I didn’t have the heart to tell her it clashes with my apron. I wear it anyway. Underneath.",
+      "next": "talk_alicia_gift_choices"
+    },
+    "talk_alicia_gift_choices": {
+      "type": "CHOICE",
+      "options": [
+          { "label": "That’s sweet.", "target": "talk_guilty_vulnerable" },
+          { "label": "Back", "target": "talk_menu_text" }
+      ]
     },
     "talk_alicia_cares": {
        "type": "TEXT",
