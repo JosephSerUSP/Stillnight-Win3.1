@@ -485,7 +485,27 @@ export class Scene_Map extends Scene_Base {
           }
 
           if (isPlayer) {
-            symbol = "☺";
+            // Priority: Event Graphic > Player Graphic
+            // If there's an event here and it's visible, don't overwrite the symbol.
+            let eventVisible = false;
+            if (event) {
+                if (!event.hidden) eventVisible = true;
+                else {
+                    // Check if it's revealed by perception (logic duplicated from above)
+                     let maxSee = 0;
+                     this.party.members.forEach(m => {
+                         const v = m.getPassiveValue("SEE_TRAPS");
+                         if (v > maxSee) maxSee = v;
+                     });
+                     if (maxSee > event.trapValue && !event.isSneakAttack) {
+                         eventVisible = true;
+                     }
+                }
+            }
+
+            if (!eventVisible) {
+                symbol = "☺";
+            }
             cell.cssClass = (cell.cssClass ? cell.cssClass + " " : "") + "tile-player";
           }
           cell.symbol = symbol;
