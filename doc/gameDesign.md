@@ -106,3 +106,7 @@ Effect: Gains gold equal to damage dealt.
 Proficient: 
 Trait: Increases the effect of other traits bestowed by equipment by 'value'%. 
 
+EXAMPLE CREATURES:
+
+Undead Dragon: High MP cost, very powerful.
+DaDa: Quirky alien. Reference to FF8's PuPu. Hard to get, unorthodox mechanics that are hard to get right but rewarding.
