@@ -96,6 +96,107 @@
     }
   },
   {
+    "id": "intro_cutscene",
+    "type": "cutscene",
+    "trigger": "autorun",
+    "scripts": {
+        "onStart": [
+            {
+                "type": "TEXT",
+                "layout": "visual_novel",
+                "title": "Town of Stillnight",
+                "text": "The fog parts, revealing the settlement clinging to the edge of the void. Torches flicker against the encroaching dark.",
+                "speakers": [],
+                "style": "terminal"
+            },
+            {
+                "type": "TEXT",
+                "layout": "visual_novel",
+                "title": "Alicia",
+                "text": "Halt! Who goes there? State your business.",
+                "speakers": [
+                    { "id": "NPC_Alicia", "active": true, "emotion": "neutral" }
+                ],
+                "style": "terminal"
+            },
+            {
+                "type": "TEXT",
+                "layout": "visual_novel",
+                "title": "Laura",
+                "text": "Relax, Alicia. He looks harmless enough. A bit lost, perhaps?",
+                "speakers": [
+                    { "id": "NPC_Alicia", "active": false },
+                    { "id": "NPC_Laura", "active": true, "emotion": "laughter" }
+                ],
+                "style": "terminal"
+            },
+            {
+                "type": "TEXT",
+                "layout": "visual_novel",
+                "title": "Alicia",
+                "text": "We can't afford to be careless, Laura. The creatures are getting bolder.",
+                "speakers": [
+                    { "id": "NPC_Alicia", "active": true, "emotion": "disapproval" },
+                    { "id": "NPC_Laura", "active": false }
+                ],
+                "style": "terminal"
+            },
+            {
+                "type": "TEXT",
+                "layout": "visual_novel",
+                "title": "Laura",
+                "text": "But look at him! He's clearly the new Commander we've been expecting.",
+                "speakers": [
+                    { "id": "NPC_Alicia", "active": false },
+                    { "id": "NPC_Laura", "active": true, "emotion": "neutral" }
+                ],
+                "style": "terminal"
+            },
+            {
+                "type": "TEXT",
+                "layout": "visual_novel",
+                "title": "Alicia",
+                "text": "...You are the Commander? My apologies. I am Alicia, Captain of the Guard.",
+                "speakers": [
+                    { "id": "NPC_Alicia", "active": true, "emotion": "neutral" },
+                    { "id": "NPC_Laura", "active": false }
+                ],
+                "style": "terminal"
+            },
+            {
+                "type": "TEXT",
+                "layout": "visual_novel",
+                "title": "Laura",
+                "text": "And I'm Laura. Welcome to Stillnight, Commander. Or what's left of it.",
+                "speakers": [
+                    { "id": "NPC_Alicia", "active": false },
+                    { "id": "NPC_Laura", "active": true, "emotion": "neutral" }
+                ],
+                "style": "terminal"
+            },
+            {
+                "type": "TEXT",
+                "layout": "visual_novel",
+                "title": "Alicia",
+                "text": "We have secured the town, but the dungeon below... it is a nightmare. We need your guidance.",
+                "speakers": [
+                    { "id": "NPC_Alicia", "active": true, "emotion": "neutral" },
+                    { "id": "NPC_Laura", "active": false }
+                ],
+                "style": "terminal"
+            },
+            {
+                "type": "TEXT",
+                "layout": "visual_novel",
+                "title": "Town of Stillnight",
+                "text": "The gates creak open. Your journey into the depths begins now.",
+                "speakers": [],
+                "style": "terminal"
+            }
+        ]
+    }
+  },
+  {
     "id": "npc_weapon_shop",
     "type": "npc",
     "symbol": "W",
