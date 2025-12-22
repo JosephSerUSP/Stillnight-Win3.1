@@ -48,7 +48,7 @@ TRUE ENDING: The player needs to "beat the game" several times in order to see t
 
 Raphael: At some point, one quest will involve the player choosing a Dancer. They can pick one out of several dancers. This is a way to allow the player to express their sexuality and have it interface with the game and the NPCs somehow - a fun, little event with little gameplay consequence.
 
-Raphael: Usually out of town. The Very few times he visits, the nature of his relationships with Alicia and Laura is revealed. He treats Alicia with kindness but a pinch of rivalry, yet pity. He bosses Laura around and Laura gleefuly complies - Laura's in full control of Raphael and she's well aware. 
+Raphael: Usually out of town. The Very few times he visits, the nature of his relationships with Alicia and Laura is revealed. He treats Alicia with kindness but a pinch of rivalry, yet pity. He bosses Laura around and Laura gleefuly complies - Despite being bossed around like this, Laura's actually in full control of Raphael and she's well aware. 
 Alicia pretends to like Raphael, and even sympathizes with him, but he easily ticks her off and she will spiral, trying her best to not let it show.
 
 -----
