@@ -39,7 +39,7 @@ export class Game_Event {
         // Only specific types are passable (walkable).
         // Traps, Stairs, Recovery points are generally walked ONTO.
         // NPCs, Shops, Enemies, Chests are generally bumped INTO (Obstacles).
-        const passableTypes = ['trap', 'stairs', 'recovery'];
+        const passableTypes = ['trap', 'stairs', 'recovery', 'npc'];
 
         // If it's NOT a passable type, it IS an obstacle.
         this.isObstacle = !passableTypes.includes(this.type);
