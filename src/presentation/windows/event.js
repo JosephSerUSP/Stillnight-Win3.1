@@ -52,17 +52,17 @@ export class Window_Event extends Window_Base {
     this.vnContainer.style.gap = "10px";
     this.vnContainer.style.minHeight = "200px";
 
-    this.portraitContainer = document.createElement("div");
-    this.portraitContainer.className = "inspect-sprite"; // Use shared class
-    this.portraitContainer.style.flexShrink = "0"; // Ensure it doesn't shrink
-    this.portraitContainer.style.width = "128px";
-    this.portraitContainer.style.height = "192px";
-    // Background image and position set dynamically via setPortrait
+    this.portraitsWrapper = document.createElement("div");
+    this.portraitsWrapper.className = "portraits-wrapper";
+    this.portraitsWrapper.style.display = "flex";
+    this.portraitsWrapper.style.flexDirection = "row";
+    this.portraitsWrapper.style.flexShrink = "0";
+    this.portraitsWrapper.style.height = "192px";
 
     this.vnTextContainer = document.createElement("div");
     this.vnTextContainer.className = "vn-text";
 
-    this.vnContainer.appendChild(this.portraitContainer);
+    this.vnContainer.appendChild(this.portraitsWrapper);
     this.vnContainer.appendChild(this.vnTextContainer);
     this.content.appendChild(this.vnContainer);
 
@@ -101,11 +101,29 @@ export class Window_Event extends Window_Base {
       }
   }
 
+  _createPortrait(speakerData) {
+      const p = document.createElement("div");
+      p.className = "inspect-sprite";
+      p.style.width = "128px";
+      p.style.height = "192px";
+      p.style.flexShrink = "0";
+      p.style.marginRight = "10px";
+
+      if (speakerData.active === false) {
+          p.style.filter = "brightness(0.5)";
+      } else {
+          p.style.filter = "brightness(1.0)";
+      }
+
+      setPortrait(p, speakerData.portrait, speakerData.emotion || 'neutral');
+      this.portraitsWrapper.appendChild(p);
+  }
+
   setPortrait(spriteKey, emotion = 'neutral') {
       // Direct update if currently showing VN layout
-      if (this.vnContainer.style.display !== 'none') {
-          setPortrait(this.portraitContainer, spriteKey, emotion);
-          this.portraitContainer.style.display = "block";
+      if (this.vnContainer.style.display !== 'none' && this.portraitsWrapper.lastElementChild) {
+          setPortrait(this.portraitsWrapper.lastElementChild, spriteKey, emotion);
+          this.portraitsWrapper.style.display = "flex";
       }
   }
 
@@ -138,14 +156,34 @@ export class Window_Event extends Window_Base {
           this.standardBody.style.display = "none";
           this.vnContainer.style.display = "flex";
 
-          // Setup Portrait
-          if (data.portrait) {
-              const spriteKey = data.portrait;
-              const emotion = data.emotion || 'neutral';
-              setPortrait(this.portraitContainer, spriteKey, emotion);
-              this.portraitContainer.style.display = "block";
+          // Setup Portraits
+          this.portraitsWrapper.innerHTML = "";
+          let portraitCount = 0;
+
+          if (data.speakers && Array.isArray(data.speakers)) {
+               data.speakers.forEach(speaker => {
+                   this._createPortrait(speaker);
+                   portraitCount++;
+               });
+          } else if (data.portrait) {
+              // Legacy/Single Portrait Support
+              this._createPortrait({
+                  portrait: data.portrait,
+                  emotion: data.emotion || 'neutral',
+                  active: true
+              });
+              portraitCount = 1;
+          }
+
+          if (portraitCount > 0) {
+              this.portraitsWrapper.style.display = "flex";
+              // Adjust window width: 520 base (1 portrait) + 138 per extra (128 + 10 gap)
+              const extraPortraits = Math.max(0, portraitCount - 1);
+              const newWidth = 520 + (extraPortraits * 138);
+              this.element.style.width = `${newWidth}px`;
           } else {
-              this.portraitContainer.style.display = "none";
+              this.portraitsWrapper.style.display = "none";
+              this.element.style.width = "520px";
           }
 
           // Target Element for Text

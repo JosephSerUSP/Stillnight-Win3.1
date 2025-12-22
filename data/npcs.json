@@ -136,7 +136,67 @@
             "nextState": "talk_raphael"
           },
           {
+            "label": "Ask Alicia to join conversation",
+            "nextState": "scene_laura_alicia_start"
+          },
+          {
             "label": "Back",
+            "nextState": "default"
+          }
+        ]
+      },
+      "scene_laura_alicia_start": {
+        "text": "Alicia! Come here for a moment, darling.",
+        "speakerName": "Laura",
+        "speakers": [
+          { "portrait": "NPC_Alicia", "emotion": "neutral", "active": false },
+          { "portrait": "NPC_Laura", "emotion": "approval", "active": true }
+        ],
+        "choices": [
+          {
+            "label": "Continue",
+            "nextState": "scene_laura_alicia_2"
+          }
+        ]
+      },
+      "scene_laura_alicia_2": {
+        "text": "Oh! Laura! I... I was just organizing the... um... inventory. Is something wrong?",
+        "speakerName": "Alicia",
+        "speakers": [
+          { "portrait": "NPC_Alicia", "emotion": "shock", "active": true },
+          { "portrait": "NPC_Laura", "emotion": "neutral", "active": false }
+        ],
+        "choices": [
+          {
+            "label": "Continue",
+            "nextState": "scene_laura_alicia_3"
+          }
+        ]
+      },
+      "scene_laura_alicia_3": {
+        "text": "Nothing is wrong. I just wanted to introduce you to our new friend here. They seem capable. Don't be shy.",
+        "speakerName": "Laura",
+        "speakers": [
+          { "portrait": "NPC_Alicia", "emotion": "neutral", "active": false },
+          { "portrait": "NPC_Laura", "emotion": "laughter", "active": true }
+        ],
+        "choices": [
+          {
+            "label": "Nice to meet you",
+            "nextState": "scene_laura_alicia_4"
+          }
+        ]
+      },
+      "scene_laura_alicia_4": {
+        "text": "H-hello! I'm Alicia. It's... nice to meet you too.",
+        "speakerName": "Alicia",
+        "speakers": [
+          { "portrait": "NPC_Alicia", "emotion": "approval", "active": true },
+          { "portrait": "NPC_Laura", "emotion": "neutral", "active": false }
+        ],
+        "choices": [
+          {
+            "label": "Finish conversation",
             "nextState": "default"
           }
         ]
