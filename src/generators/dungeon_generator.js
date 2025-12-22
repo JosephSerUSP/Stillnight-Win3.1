@@ -177,6 +177,7 @@ export class RandomWalkGenerator extends DungeonGenerator {
             depth: meta.depth,
             intro: meta.intro,
             music: meta.music,
+            image: meta.image,
             encounters: meta.encounters,
             treasures: meta.treasures,
             tiles,
