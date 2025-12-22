@@ -70,7 +70,7 @@ Both a reference to the original summoner from the first Megami Tensei game, as 
 During one specific instance, he can join as a Guest party member. 
 His summons are a special passive and aren't included in the party - they shield him from direct damage and act on his behalf. 
 
-Daphne: First found on the 4th floor of the dungeon. ???? A stub.
+Daphne: Pisces. First found on the 4th floor of the dungeon. ???? A stub.
 
 
 TRUE ENDING: The player needs to "beat the game" several times in order to see the game's true ending - This slowly opens up layers of meta progression which eventually allows the game's "true" ending to be beaten. "Beating the game" means getting the normal ending, where they suffer a gruesome, terrifying fate at the hands of the final boss, and watch the epilogue unfold, with some slightly different sub-scenes depending on what they did on that run and the meta progression. 
