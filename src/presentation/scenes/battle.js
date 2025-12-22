@@ -123,7 +123,9 @@ export class Scene_Battle extends Scene_Base {
     this.applyBattleStartPassives();
     this.renderBattleAscii();
     this.windowManager.push(this.battleWindow);
-    document.getElementById("mode-label").textContent = "Battle";
+    if (this.sceneManager.previous().hud) {
+        this.sceneManager.previous().hud.setMode("Battle");
+    }
     AudioAdapter.play('BATTLE_START');
     AudioAdapter.playMusic('battle1');
 
@@ -283,7 +285,9 @@ export class Scene_Battle extends Scene_Base {
    */
   stop() {
     this.windowManager.close(this.battleWindow);
-    document.getElementById("mode-label").textContent = "Exploration";
+    if (this.sceneManager.previous().hud) {
+        this.sceneManager.previous().hud.setMode("Exploration");
+    }
   }
 
   /**
