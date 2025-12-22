@@ -518,10 +518,11 @@ export class InterpreterAdapter {
         }));
 
         this.scene.hudManager.eventWindow.show({
-            title: npc.name,
+            title: stateData.speakerName || npc.name,
             description: stateData.text,
             layout: npc.layout || 'visual_novel',
             portrait: npc.portrait,
+            speakers: stateData.speakers,
             style: npc.style || 'terminal',
             choices: choices
         });
