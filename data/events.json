@@ -104,14 +104,6 @@
     "actions": [{ "type": "NPC_DIALOGUE", "id": "npc_gate_guard" }]
   },
   {
-    "id": "npc_discussion",
-    "type": "npc",
-    "symbol": "C",
-    "cssClass": "tile-npc",
-    "trigger": "touch",
-    "actions": [{ "type": "NPC_DIALOGUE", "id": "npc_discussion" }]
-  },
-  {
     "id": "trap",
     "type": "trap",
     "symbol": "T",
