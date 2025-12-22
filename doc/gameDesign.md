@@ -111,3 +111,5 @@ Trait: Increases the effect of other traits bestowed by equipment by 'value'%.
 Creatures:
 They have the following:
 Genus: 'Celestial','Demon','Fey','Spirit','Construct','Beast','Undead','Other'
+Evolution information
+Recruit information
