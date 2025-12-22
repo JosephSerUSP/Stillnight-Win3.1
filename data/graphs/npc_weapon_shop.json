@@ -1,0 +1,36 @@
+{
+  "id": "npc_weapon_shop",
+  "name": "Weaponsmith",
+  "layout": "visual_novel",
+  "initialNode": "default_text",
+  "nodes": {
+    "default_text": {
+      "type": "TEXT",
+      "content": "Blades, hammers, axes. If it kills, I sell it. If it breaks, I fix it. If you break, that’s on you.",
+      "next": "default_choices"
+    },
+    "default_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Buy Weapons", "target": "open_shop" },
+        { "label": "Ask about the dungeon", "target": "talk_dungeon_text" },
+        { "label": "Leave", "action": "close" }
+      ]
+    },
+    "open_shop": {
+      "type": "ACTION",
+      "action": "OPEN_SHOP",
+      "shopId": "weapons_basic",
+      "next": "default_choices"
+    },
+    "talk_dungeon_text": {
+      "type": "TEXT",
+      "content": "Down there? Don’t fight fair. Don’t fight pretty. Fight to leave. The only winning move is coming back with your hands still yours.",
+      "next": "talk_dungeon_choices"
+    },
+    "talk_dungeon_choices": {
+      "type": "CHOICE",
+      "options": [ { "label": "Back", "target": "default_text" } ]
+    }
+  }
+}

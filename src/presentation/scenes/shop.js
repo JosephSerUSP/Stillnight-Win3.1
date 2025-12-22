@@ -41,7 +41,9 @@ export class Scene_Shop extends Scene_Base {
     start() {
         this.startBuy();
         this.windowManager.push(this.shopWindow);
-        document.getElementById("mode-label").textContent = "Shop";
+        if (this.sceneManager.previous() && this.sceneManager.previous().hud) {
+            this.sceneManager.previous().hud.setMode("Shop");
+        }
         AudioAdapter.play('UI_SELECT');
     }
 
@@ -121,7 +123,9 @@ export class Scene_Shop extends Scene_Base {
      */
     stop() {
         this.windowManager.close(this.shopWindow);
-        document.getElementById("mode-label").textContent = "Exploration";
+        if (this.sceneManager.previous() && this.sceneManager.previous().hud) {
+            this.sceneManager.previous().hud.setMode("Exploration");
+        }
     }
 
     /**

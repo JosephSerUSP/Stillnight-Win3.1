@@ -40,6 +40,7 @@ export class Scene_Map extends Scene_Base {
         this.session.quests = new QuestLogState();
     }
     this.party = this.session.party;
+    // Pass graphs as npcData for DungeonGenerator
     this.map = new ExplorationAdapter(this.party, this.session.exploration);
     this.interpreter = new InterpreterAdapter(this);
     // BattleManager is deprecated; Scene_Battle uses BattleAdapter internally.
@@ -132,7 +133,7 @@ export class Scene_Map extends Scene_Base {
     if (this.sceneManager.currentScene() !== this) return;
     this.session.quests = new QuestLogState();
     this.party.createInitialMembers(this.dataManager);
-    this.map.initFloors(this.dataManager.maps, this.dataManager.events, this.dataManager.npcs, this.party);
+    this.map.initFloors(this.dataManager.maps, this.dataManager.events, this.dataManager.graphs, this.party);
     this.session.exploration = this.map.state;
     this.runActive = true;
     this.map.floorIndex = 0;

@@ -41,12 +41,6 @@ export class DataManager {
     this.items = null;
 
     /**
-     * The NPC data loaded from npcs.json.
-     * @type {Array|null}
-     */
-    this.npcs = null;
-
-    /**
      * The quest data loaded from quests.json.
      * @type {Object|null}
      */
@@ -105,6 +99,12 @@ export class DataManager {
      * @type {Array|null}
      */
     this.themes = null;
+
+    /**
+     * The graph data loaded from data/graphs/.
+     * @type {Object|null}
+     */
+    this.graphs = {};
   }
 
   /**
@@ -118,7 +118,6 @@ export class DataManager {
       events: "data/events.json",
       maps: "data/maps.json",
       items: "data/items.json",
-      npcs: "data/npcs.json",
       quests: "data/quests.json",
       shops: "data/shops.json",
       terms: "data/terms.json",
@@ -154,6 +153,20 @@ export class DataManager {
         this.animations = animations;
     } catch (error) {
         console.error("Failed to load animations.js:", error);
+    }
+
+    // Load Graphs
+    try {
+        const response = await fetch("data/graphs/index.json");
+        const graphList = await response.json();
+        for (const graphId of graphList) {
+             const gRes = await fetch(`data/graphs/${graphId}.json`);
+             const gData = await gRes.json();
+             this.graphs[graphId] = gData;
+        }
+    } catch (error) {
+        // Warning only, graphs might be empty/missing in some setups
+        console.warn("Failed to load graphs:", error);
     }
 
     // Initialize SoundManager with loaded sound data

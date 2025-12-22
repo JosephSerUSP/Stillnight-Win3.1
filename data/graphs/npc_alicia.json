@@ -1,0 +1,90 @@
+{
+  "id": "npc_alicia",
+  "name": "Alicia",
+  "layout": "visual_novel",
+  "portrait": "NPC_Alicia",
+  "initialNode": "root_router",
+  "nodes": {
+    "root_router": {
+      "type": "ROUTER",
+      "condition": "flag:alicia_first_met",
+      "trueNode": "default_hub_text",
+      "falseNode": "intro_text"
+    },
+    "intro_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "Oh! H-hello—! I… I didn’t see you coming. I’m Alicia. Welcome to my shop! Uhm— please look around! And— and if you’re hungry, I can warm something up. Not for sale. Just… because.",
+      "next": "intro_choices"
+    },
+    "intro_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Buy Consumables", "target": "shop_consumables", "setFlag": "alicia_first_met" },
+        { "label": "You’re kind.", "target": "intro_kind_text" },
+        { "label": "Leave", "action": "close", "setFlag": "alicia_first_met" }
+      ]
+    },
+    "intro_kind_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "M-me? No, I’m… I’m normal. I just… I don’t like when people look empty. Like they forgot they have a body. Sorry. That sounded weird.",
+      "next": "intro_kind_choices"
+    },
+    "intro_kind_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Not weird.", "target": "intro_not_weird_text" },
+        { "label": "Buy Consumables", "target": "shop_consumables", "setFlag": "alicia_first_met" },
+        { "label": "Leave", "action": "close", "setFlag": "alicia_first_met" }
+      ]
+    },
+    "intro_not_weird_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "…Thank you. People usually laugh. Or they say ‘that’s cute’ and then they don’t mean it. Anyway! Please— uhm— browse!",
+      "next": "intro_not_weird_choices"
+    },
+    "intro_not_weird_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Buy Consumables", "target": "shop_consumables", "setFlag": "alicia_first_met" },
+        { "label": "Talk", "target": "talk_menu_text", "setFlag": "alicia_first_met" },
+        { "label": "Leave", "action": "close", "setFlag": "alicia_first_met" }
+      ]
+    },
+    "default_hub_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "Oh! H-hello there! I… I didn’t see you coming! Uhm… welcome! Please look around. And— uh— drink water. People forget.",
+      "next": "default_hub_choices"
+    },
+    "default_hub_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Buy Consumables", "target": "shop_consumables" },
+        { "label": "Talk", "target": "talk_menu_text" },
+        { "label": "Leave", "action": "close" }
+      ]
+    },
+    "shop_consumables": {
+      "type": "ACTION",
+      "action": "OPEN_SHOP",
+      "shopId": "consumables_basic",
+      "next": "default_hub_choices"
+    },
+    "talk_menu_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "O-okay. What do you want to talk about? I’m not good at… normal conversations.",
+      "next": "talk_menu_choices"
+    },
+    "talk_menu_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Back", "target": "default_hub_text" },
+        { "label": "Leave", "action": "close" }
+      ]
+    }
+  }
+}
