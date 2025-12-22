@@ -47,6 +47,8 @@ She loves having a good time, but is very down to earth and no-nonsense as well.
 CPTSD. 
 She's often out of town with Raphael.
 She's often out of town into the dungeon; She's also a Summoner, albeit not a very effective one.
+Laura's very vocal about whom she finds attractive - not directly (her flirting is subtler) but she WILL let both Alicia and Raphael know if she finds some other chick attractive. 
+
 Sample Lines:
 Player-> "Hey. You look like someone who knows when to leave before things get ugly. That’s rare.”
 Player-> “She’ll be fine. She always is.” (about Alicia, if she spirals.)
