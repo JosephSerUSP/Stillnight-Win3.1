@@ -88,6 +88,10 @@
       {
         "itemId": "bone_plate",
         "chance": 0.1
+      },
+      {
+        "itemId": "untarnished_signet",
+        "chance": 0.05
       }
     ],
     "evolutions": [],
@@ -394,6 +398,12 @@
     ],
     "expGrowth": 4,
     "gold": 14,
+    "drops": [
+      {
+        "itemId": "glittering_teardrop",
+        "chance": 0.1
+      }
+    ],
     "evolutions": [],
     "initialParty": true,
     "isRecruitable": true,
