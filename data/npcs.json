@@ -371,5 +371,53 @@
         ]
       }
     }
+  },
+  "npc_discussion": {
+    "name": "Team Discussion",
+    "layout": "visual_novel",
+    "initialState": "part1",
+    "states": {
+      "part1": {
+        "text": "Laura: Well, aren't we a sorry looking bunch today? The dungeon air does wonders for the complexion, really.",
+        "speakers": [
+            { "portrait": "NPC_Laura", "active": true },
+            { "portrait": "NPC_Alicia", "active": false }
+        ],
+        "choices": [
+            { "label": "Continue", "nextState": "part2" }
+        ]
+      },
+      "part2": {
+        "text": "Alicia: Laura! Be nice... they're doing their best! It's just... a bit scary down here.",
+        "speakers": [
+            { "portrait": "NPC_Laura", "active": false },
+            { "portrait": "NPC_Alicia", "active": true }
+        ],
+        "choices": [
+            { "label": "Continue", "nextState": "part3" }
+        ]
+      },
+      "part3": {
+        "text": "Laura: Scary? Darling, the only scary thing is the fashion sense of those goblins. Right, Summoner?",
+        "speakers": [
+            { "portrait": "NPC_Laura", "active": true, "emotion": "laughter" },
+            { "portrait": "NPC_Alicia", "active": false }
+        ],
+        "choices": [
+            { "label": "Agreed", "nextState": "part4" },
+            { "label": "Focus, Laura", "nextState": "part4" }
+        ]
+      },
+      "part4": {
+         "text": "Alicia: ...I think we should keep moving.",
+         "speakers": [
+             { "portrait": "NPC_Laura", "active": false },
+             { "portrait": "NPC_Alicia", "active": true, "emotion": "neutral" }
+         ],
+         "choices": [
+             { "label": "Leave", "action": "close" }
+         ]
+      }
+    }
   }
 }
