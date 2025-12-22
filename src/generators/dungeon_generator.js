@@ -83,7 +83,9 @@ export class DungeonGenerator {
                         if (def.type === "npc" && npcData.length > 0) {
                             const npcDef = npcData[randInt(0, npcData.length - 1)];
                             eventData.symbol = npcDef.char || "N";
-                            eventData.actions = [{ type: "NPC_DIALOGUE", id: npcDef.id }];
+                            eventData.scripts = {
+                                onInteract: [{ type: "NPC_DIALOGUE", id: npcDef.id }]
+                            };
                             eventData.id = npcDef.id; // Compatibility
                         }
 
