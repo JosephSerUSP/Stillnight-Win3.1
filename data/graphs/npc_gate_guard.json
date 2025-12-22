@@ -1,0 +1,55 @@
+{
+  "id": "npc_gate_guard",
+  "name": "Gate Guard",
+  "layout": "visual_novel",
+  "initialNode": "default_router",
+  "nodes": {
+    "default_router": {
+      "type": "ROUTER",
+      "condition": "hasItem:guild_pass",
+      "trueNode": "allow_pass_text",
+      "falseNode": "deny_pass_text"
+    },
+    "deny_pass_text": {
+      "type": "TEXT",
+      "content": "No Guild Pass. Speak to the Guildmaster in town. And don’t try to slip past. I’ve buried faster people than you.",
+      "next": "deny_pass_choices"
+    },
+    "deny_pass_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Leave", "action": "close" }
+      ]
+    },
+    "allow_pass_text": {
+      "type": "TEXT",
+      "content": "Guild Pass verified. Keep your MP above the red line. Don’t be a hero in there— heroes become stains.",
+      "next": "allow_pass_choices"
+    },
+    "allow_pass_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Enter Dungeon", "target": "action_teleport" },
+        { "label": "Ask about stains.", "target": "allow_pass_stains_text" },
+        { "label": "Leave", "action": "close" }
+      ]
+    },
+    "action_teleport": {
+      "type": "ACTION",
+      "action": "TELEPORT",
+      "target": "dungeon_floor_1"
+    },
+    "allow_pass_stains_text": {
+      "type": "TEXT",
+      "content": "People come back talking about ‘treasure’. Then they stop sleeping. Then they stop talking. Then we stop calling them by name. Go.",
+      "next": "allow_pass_stains_choices"
+    },
+    "allow_pass_stains_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Enter Dungeon", "target": "action_teleport" },
+        { "label": "Leave", "action": "close" }
+      ]
+    }
+  }
+}

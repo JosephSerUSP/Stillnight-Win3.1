@@ -41,12 +41,6 @@ export class DataManager {
     this.items = null;
 
     /**
-     * The NPC data loaded from npcs.json.
-     * @type {Array|null}
-     */
-    this.npcs = null;
-
-    /**
      * The quest data loaded from quests.json.
      * @type {Object|null}
      */
@@ -124,7 +118,6 @@ export class DataManager {
       events: "data/events.json",
       maps: "data/maps.json",
       items: "data/items.json",
-      npcs: "data/npcs.json",
       quests: "data/quests.json",
       shops: "data/shops.json",
       terms: "data/terms.json",

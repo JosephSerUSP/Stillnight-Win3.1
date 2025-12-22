@@ -483,17 +483,8 @@ export class InterpreterAdapter {
             return;
         }
 
-        const npc = this.dataManager.npcs[npcId];
-        if (!npc) {
-            console.warn(`NPC '${npcId}' not found.`);
-            return;
-        }
-
-        this._activeNpc = { id: npcId, data: npc };
-        // For now, we only show the initial state.
-        // Complex state machine logic should be handled here or in a dedicated NpcInteractionSystem.
-        // We will implement a basic state handler here.
-        this._runNpcState(npc, npc.initialState || 'default');
+        console.warn(`NPC '${npcId}' not found (Graph missing).`);
+        this.closeEvent();
     }
 
     _startGraphDialogue(graphId, graphData) {
@@ -563,6 +554,22 @@ export class InterpreterAdapter {
         if (node.action === 'OPEN_SHOP') {
             this.scene.startShop(node.shopId);
             this.director.advance();
+        } else if (node.action === 'TELEPORT') {
+            this.director.end();
+            this.closeEvent();
+            this._descendStairs();
+        } else if (node.action === 'OFFER_QUEST') {
+            this._openQuestOffer(node.questId, {
+                acceptState: node.acceptNode,
+                declineState: node.declineNode,
+                nextState: node.next
+            });
+        } else if (node.action === 'COMPLETE_QUEST') {
+            this._completeQuest(node.questId, {
+                completeState: node.completeNode,
+                takeItem: node.takeItem,
+                nextState: node.next
+            });
         } else if (node.action === 'close') {
             this.director.end();
         } else {
@@ -571,94 +578,7 @@ export class InterpreterAdapter {
         }
     }
 
-    _runNpcState(npc, stateId) {
-        const stateData = npc.states[stateId];
-        if (!stateData) {
-            console.warn(`NPC state '${stateId}' not found for '${npc.name}'`);
-            this.closeEvent();
-            return;
-        }
 
-        this._activeNpc = { id: this._activeNpc?.id || npc.name, data: npc };
-
-        // Evaluate condition if present
-        if (stateData.condition) {
-            const result = this._checkCondition(stateData.condition);
-            if (result && stateData.trueState) {
-                this._runNpcState(npc, stateData.trueState);
-                return;
-            } else if (!result && stateData.falseState) {
-                this._runNpcState(npc, stateData.falseState);
-                return;
-            }
-        }
-
-        const choices = (stateData.choices || []).map(ch => ({
-            label: ch.label,
-            onClick: () => this._handleNpcChoice(npc, ch)
-        }));
-
-        this.scene.hudManager.eventWindow.show({
-            title: npc.name,
-            description: stateData.text,
-            layout: npc.layout || 'visual_novel',
-            portrait: npc.portrait,
-            // Pass speakers if defined in state
-            speakers: stateData.speakers,
-            style: npc.style || 'terminal',
-            choices: choices
-        });
-
-        if (!this.windowManager.stack.includes(this.scene.hudManager.eventWindow)) {
-            this.windowManager.push(this.scene.hudManager.eventWindow);
-        }
-
-        this.scene.setStatus(`Talking to ${npc.name}.`);
-        AudioAdapter.play('UI_SELECT');
-    }
-
-    _transitionNpcState(nextStateId) {
-        if (this._activeNpc && nextStateId) {
-            this._runNpcState(this._activeNpc.data, nextStateId);
-        } else {
-            this.closeEvent();
-        }
-    }
-
-    _handleNpcChoice(npc, choice) {
-        // Explicit Close
-        if (choice.action === 'close') {
-            this.closeEvent();
-            return;
-        }
-
-        // Actions that can coexist with state changes or other flows
-        if (choice.action === 'shop') {
-             this.scene.startShop(choice.shopId);
-        } else if (choice.action === 'teleport') {
-            this.closeEvent();
-            // TODO: Teleport logic
-            this.scene.logMessage("Teleporting...");
-            return;
-        }
-
-        // Quest actions override standard flow as they invoke sub-windows with their own callbacks
-        if (choice.action === 'quest') {
-            this._openQuestOffer(choice.questId, choice);
-            return;
-        } else if (choice.action === 'questComplete') {
-            this._completeQuest(choice.questId, choice);
-            return;
-        }
-
-        // State Transition
-        if (choice.nextState) {
-            this._runNpcState(npc, choice.nextState);
-        } else if (choice.action !== 'shop') {
-             // If no next state and not a persisting action (like shop), close by default.
-             this.closeEvent();
-        }
-    }
 
     _getQuestDefinition(questId) {
         if (!questId || !this.dataManager.quests) return null;
@@ -707,8 +627,13 @@ export class InterpreterAdapter {
                 this.scene.setStatus(`Quest accepted: ${quest.name}`);
                 AudioAdapter.play('UI_SELECT');
                 this.windowManager.close(this.scene.hudManager.questWindow);
-                if (choice.acceptState || choice.nextState) {
-                    this._transitionNpcState(choice.acceptState || choice.nextState);
+
+                const nextState = choice.acceptState || choice.nextState;
+                if (this.director && nextState) {
+                    this.director.walker.moveTo(nextState);
+                    this.director.processCurrentNode();
+                } else {
+                    this.closeEvent();
                 }
             } else {
                 this.scene.logMessage(`[Quest] ${quest.name} is already ${result.reason}.`);
@@ -717,8 +642,12 @@ export class InterpreterAdapter {
 
         const onDecline = () => {
             this.windowManager.close(this.scene.hudManager.questWindow);
-            if (choice.declineState) {
-                this._transitionNpcState(choice.declineState);
+            const nextState = choice.declineState;
+            if (this.director && nextState) {
+                this.director.walker.moveTo(nextState);
+                this.director.processCurrentNode();
+            } else {
+                this.closeEvent();
             }
         };
 
@@ -746,8 +675,13 @@ export class InterpreterAdapter {
             this.scene.logMessage(`[Quest] Completed: ${quest.name}.`);
             this.scene.setStatus(`${quest.name} completed.`);
             AudioAdapter.play('ITEM_GET');
-            if (choice.completeState || choice.nextState) {
-                this._transitionNpcState(choice.completeState || choice.nextState);
+
+            const nextState = choice.completeState || choice.nextState;
+            if (this.director && nextState) {
+                this.director.walker.moveTo(nextState);
+                this.director.processCurrentNode();
+            } else {
+                this.closeEvent();
             }
             this.scene.updateAll();
             return;
@@ -762,26 +696,6 @@ export class InterpreterAdapter {
         }
     }
 
-    _checkCondition(conditionString) {
-        if (!conditionString) return true;
-        const [type, ...rest] = conditionString.split(':');
-
-        switch (type) {
-            case 'hasItem':
-                return this.party.hasItem(rest[0]);
-            case 'questStatus': {
-                const questId = rest[0];
-                const desired = rest[1] || 'active';
-                return QuestSystem.getStatus(this.session.quests, questId) === desired;
-            }
-            case 'questActive':
-                return QuestSystem.getStatus(this.session.quests, rest[0]) === 'active';
-            case 'questCompleted':
-                return QuestSystem.getStatus(this.session.quests, rest[0]) === 'completed';
-            default:
-                return false;
-        }
-    }
 
     clearEventTile() {
         if (this.scene.currentInteractionEvent) {
