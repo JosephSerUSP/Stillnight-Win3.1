@@ -61,30 +61,60 @@ html, body {
     font-family: "MS Sans Serif", "Microsoft Sans Serif", Tahoma, sans-serif;
     font-size: 11px;
     color: var(--window-text);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
 }
 
 /* Simple tiled wallpaper using gradients; center the window */
 .desktop {
     width: 100%;
     height: 100%;
+    background-color: var(--desktop-bg);
     background-image:
-        linear-gradient(45deg, rgba(255,255,255,0.2) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.2) 75%, rgba(255,255,255,0.2)),
-        linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.1) 75%, rgba(0,0,0,0.1));
-    background-size: 16px 16px;
-    background-position: 0 0, 8px 8px;
+        radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.14), transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(0, 0, 0, 0.12), transparent 40%),
+        linear-gradient(45deg, rgba(255,255,255,0.18) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.18) 75%, rgba(255,255,255,0.18)),
+        linear-gradient(45deg, rgba(0,0,0,0.12) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.12) 75%, rgba(0,0,0,0.12));
+    background-size: 420px 420px, 380px 380px, 16px 16px, 16px 16px;
+    background-position: 0 0, 0 0, 0 0, 8px 8px;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+/* Subtle retro scrollbars to match the window chrome */
+*::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+*::-webkit-scrollbar-track {
+    background: var(--window-bg);
+    box-shadow: inset 1px 1px 0 var(--bezel-light), inset -1px -1px 0 var(--bezel-dark);
+}
+*::-webkit-scrollbar-thumb {
+    background: var(--bezel-shadow);
+    border: 1px solid var(--bezel-dark);
+    box-shadow: inset 1px 1px 0 var(--bezel-light);
+}
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--selection-bg);
+    border-color: var(--selection-text);
 }
 
 /* ===== Window frame ============================================= */
 .win-window {
     /* Layout handled in JS */
     background-color: var(--window-bg);
+    background-image: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.08));
     box-sizing: border-box;
     border: 2px solid var(--window-border);
+    border-radius: 8px;
+    overflow: hidden;
     box-shadow:
+        0 10px 26px rgba(0, 0, 0, 0.38),
         0 0 0 1px var(--bezel-light) inset,
         0 0 0 2px var(--bezel-shadow) inset,
         0 0 0 3px var(--bezel-dark) inset;
@@ -98,8 +128,10 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 2px 4px;
+    padding: 2px 6px;
     box-sizing: border-box;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+    letter-spacing: 0.3px;
 }
 
 /* Legacy support until JS is fully updated */
@@ -110,9 +142,10 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 2px 4px;
+    padding: 2px 6px;
     box-sizing: border-box;
     font-size: 11px;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
 }
 
 .title-group {
@@ -208,11 +241,13 @@ html, body {
     height: 14px;
     margin-right: 4px;
     background-color: var(--window-bg);
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.35), rgba(0,0,0,0.1));
     border: 1px solid var(--window-border);
     box-shadow:
         1px 1px 0 var(--bezel-light) inset,
         -1px -1px 0 var(--bezel-shadow) inset;
     padding: 2px;
+    border-radius: 3px;
 }
 .title {
     font-weight: bold;
@@ -260,15 +295,25 @@ html, body {
     font-family: inherit;
     font-size: 11px;
     min-width: 18px;
-    padding: 0 4px;
+    padding: 0 6px;
     height: 18px;
     background-color: var(--button-bg);
+    background-image: linear-gradient(180deg, rgba(255,255,255,0.25), rgba(0,0,0,0.1));
     border-width: 2px;
     border-style: solid;
     border-color: var(--bezel-light) var(--bezel-dark) var(--bezel-dark) var(--bezel-light);
     box-sizing: border-box;
     cursor: pointer;
     color: var(--window-text);
+    transition: background-color 0.12s ease, box-shadow 0.12s ease, transform 0.08s ease;
+}
+.win-btn:hover {
+    background-color: var(--bezel-light);
+    box-shadow: 0 0 0 1px var(--selection-bg) inset;
+}
+.win-btn:focus-visible {
+    outline: 2px dashed var(--selection-bg);
+    outline-offset: 2px;
 }
 .win-btn.secondary {
     background-color: #dfe8ff;
@@ -276,24 +321,29 @@ html, body {
 .win-btn:active {
     border-color: var(--bezel-dark) var(--bezel-light) var(--bezel-light) var(--bezel-dark);
     padding-top: 1px;
-    padding-left: 5px;
+    padding-left: 7px;
+    transform: translateY(1px);
 }
 
 .window-content {
     flex: 1;
-    padding: 4px;
+    padding: 8px;
     box-sizing: border-box;
     display: flex;
-    gap: 4px;
+    gap: 6px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(0, 0, 0, 0.08)), var(--window-bg);
 }
 
 .panel {
     background-color: var(--window-bg);
+    background-image: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(0,0,0,0.05));
     border: 2px solid var(--bezel-shadow);
     box-shadow:
         1px 1px 0 var(--bezel-light) inset,
-        -1px -1px 0 var(--bezel-dark) inset;
+        -1px -1px 0 var(--bezel-dark) inset,
+        0 6px 10px rgba(0, 0, 0, 0.12);
     box-sizing: border-box;
+    border-radius: 5px;
 }
 
 /* ===== Left panel: Stack / Run controls ========================= */
@@ -301,8 +351,8 @@ html, body {
     width: 210px;
     display: flex;
     flex-direction: column;
-    padding: 4px;
-    gap: 4px;
+    padding: 6px;
+    gap: 6px;
 }
 .stack-nav h1 {
     font-size: 11px;
@@ -324,7 +374,7 @@ html, body {
     top: -7px;
     left: 8px;
     padding: 0 4px;
-    background-color: var(--window-bg);
+    background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(0,0,0,0.08)), var(--window-bg);
     font-size: 11px;
 }
 
@@ -365,6 +415,8 @@ html, body {
     box-shadow:
         1px 1px 0 var(--bezel-light) inset,
         -1px -1px 0 var(--bezel-dark) inset;
+    border-radius: 4px;
+    padding: 2px;
 }
 .card-item {
     padding: 2px 4px;
@@ -373,8 +425,8 @@ html, body {
     color: var(--window-text);
 }
 .card-item:hover {
-    background-color: var(--bezel-shadow);
-    color: #ffffff;
+    background-color: var(--selection-bg);
+    color: var(--selection-text);
 }
 .card-item.selected {
     background-color: var(--selection-bg);
@@ -397,7 +449,7 @@ html, body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 /* ===== Terminal Look for Battle Window ===== */
@@ -407,12 +459,15 @@ html, body {
     font-family: "Fixedsys", "Lucida Console", "Courier New", monospace;
     font-size: 11px;
     border: 1px solid var(--bezel-shadow);
-    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset;
-    padding: 4px;
+    box-shadow: 1px 1px 0 var(--bezel-light) inset, -1px -1px 0 var(--bezel-dark) inset, 0 4px 12px rgba(0,0,0,0.25) inset;
+    padding: 6px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     gap: 4px;
+    background-image: linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 8px 100%, 100% 8px;
 }
 .terminal-viewport {
     flex: 1;
@@ -469,7 +524,7 @@ html, body {
 .card-area {
     flex: 1;
     display: flex;
-    gap: 4px;
+    gap: 6px;
 }
 
 /* map column stretches, right column fixed width */
