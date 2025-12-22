@@ -392,7 +392,7 @@ export class Window_Desktop extends Window_Base {
 
         const layout = UI.build(container, {
             type: 'panel',
-            props: { className: 'desktop-main', style: { display: 'flex', flexDirection: 'row', width: '100%', height: '100%', flex: '1', gap: '6px' } },
+            props: { className: 'desktop-main', style: { display: 'flex', flexDirection: 'row', width: '100%', flex: '1', gap: '6px' } },
             children: [
                  { type: 'panel', props: { id: 'left-col' } },
                  {
