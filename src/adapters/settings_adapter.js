@@ -1,4 +1,4 @@
-import { ConfigManager } from "../managers/config.js";
+import { ConfigManager } from "./implementations/config_impl.js";
 
 /**
  * Adapter for configuration settings.

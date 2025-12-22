@@ -1,6 +1,7 @@
 import { Scene_Base } from "./base.js";
 import { Scene_Map } from "./map.js";
-import { ThemeManager } from "../../managers/index.js";
+import { ThemeManager } from "../managers/theme_manager.js";
+import { AudioAdapter } from "../../adapters/audio_adapter.js";
 import { Registry } from "../../engine/data/registry.js";
 import { SessionSerializer } from "../../engine/session/serializer.js";
 import { Game_Party } from "../../objects/party.js";
@@ -14,8 +15,8 @@ import { QuestLogState } from "../../engine/session/quest_state.js";
 export class Scene_Boot extends Scene_Base {
     /**
      * Creates a new Scene_Boot.
-     * @param {import("../../managers/index.js").DataManager} dataManager - The data manager instance.
-     * @param {import("../../managers/index.js").SceneManager} sceneManager - The scene manager instance.
+     * @param {import("../../engine/data/loader.js").DataManager} dataManager - The data manager instance.
+     * @param {import("../managers/scene_manager.js").SceneManager} sceneManager - The scene manager instance.
      * @param {import("../windows/index.js").WindowManager} windowManager - The window manager instance.
      */
     constructor(dataManager, sceneManager, windowManager) {
@@ -40,6 +41,9 @@ export class Scene_Boot extends Scene_Base {
         if (this.dataManager.quests) Registry.set('quests', this.dataManager.quests);
 
         ThemeManager.init(this.dataManager.themes);
+        if (this.dataManager.sounds) {
+            await AudioAdapter.init(this.dataManager.sounds);
+        }
 
         // Load Session
         let session;

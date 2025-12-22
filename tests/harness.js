@@ -34,7 +34,7 @@ global.fetch = async (url) => {
 };
 
 // Import Engine Modules
-import { DataManager } from '../src/managers/data.js';
+import { DataManager } from '../src/engine/data/loader.js';
 import { BattleSystem } from '../src/engine/systems/battle.js';
 import { BattleAdapter } from '../src/adapters/battle_adapter.js';
 import { Registry } from '../src/engine/data/registry.js';

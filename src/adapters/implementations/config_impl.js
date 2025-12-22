@@ -1,6 +1,7 @@
 /**
  * @class ConfigManager
  * @description Manages persistent game configuration settings.
+ * Implementation of the configuration storage (localStorage).
  */
 export class ConfigManager {
     static autoBattle = false;
@@ -11,6 +12,7 @@ export class ConfigManager {
 
     static load() {
         try {
+            if (typeof localStorage === 'undefined') return;
             const data = localStorage.getItem("stillnight_config");
             if (data) {
                 const config = JSON.parse(data);
@@ -43,6 +45,7 @@ export class ConfigManager {
 
     static save() {
         try {
+            if (typeof localStorage === 'undefined') return;
             const config = {
                 autoBattle: this.autoBattle,
                 windowAnimations: this.windowAnimations,
