@@ -1,4 +1,4 @@
-import { MidiParser } from './src/managers/midi.js';
+import { MidiParser } from './src/adapters/utils/midi.js';
 import fs from 'fs';
 
 async function checkMidi(path) {

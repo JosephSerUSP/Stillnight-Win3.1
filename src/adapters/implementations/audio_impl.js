@@ -1,5 +1,5 @@
-import { MidiParser, MidiPlayer } from "./midi.js";
-import { ConfigManager } from "./config.js";
+import { MidiParser, MidiPlayer } from "../utils/midi.js";
+import { ConfigManager } from "./config_impl.js";
 
 /**
  * @class SoundManager

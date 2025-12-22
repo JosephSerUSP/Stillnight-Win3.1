@@ -1,4 +1,4 @@
-import { TraitManager } from "../managers/trait_manager.js";
+import { TraitRules } from "../engine/rules/traits.js";
 import { ProgressionSystem } from "../engine/systems/progression.js";
 import { passives as passivesData } from "../../data/passives.js";
 import { states as statesData } from "../../data/states.js";
@@ -115,13 +115,13 @@ export class Game_Battler extends Game_Base {
   // ========================================================================
 
   /**
-   * Generic method to get a parameter value using TraitManager.
+   * Generic method to get a parameter value using TraitRules.
    * @param {string} paramId - The parameter ID (e.g., 'atk', 'maxHp').
    * @param {number} baseValue - The base value.
    * @returns {number}
    */
   getParam(paramId, baseValue) {
-      return TraitManager.getParam(this, paramId, baseValue);
+      return TraitRules.getParam(this, paramId, baseValue);
   }
 
   get maxHp() {
@@ -202,7 +202,7 @@ export class Game_Battler extends Game_Base {
    * @returns {number} The aggregated value.
    */
   getPassiveValue(code) {
-    return TraitManager.getXParam(this, code);
+    return TraitRules.getXParam(this, code);
   }
 
   /**
@@ -211,7 +211,7 @@ export class Game_Battler extends Game_Base {
    * @returns {number}
    */
   getSParam(code) {
-      return TraitManager.getSParam(this, code);
+      return TraitRules.getSParam(this, code);
   }
 
   // ========================================================================
@@ -271,8 +271,8 @@ export class Game_Battler extends Game_Base {
           events.push({ type: 'state_remove', target: this, msg: `${this.name}'s ${state ? state.name : sId} wore off.` });
       });
 
-      // Delegate trait effects to TraitManager
-      const traitEvents = TraitManager.processTrigger('turnStart', this, { allies, enemies, dataManager });
+      // Delegate trait effects to TraitRules
+      const traitEvents = TraitRules.processTrigger('turnStart', this, { allies, enemies, dataManager });
       events.push(...traitEvents);
 
       return events;

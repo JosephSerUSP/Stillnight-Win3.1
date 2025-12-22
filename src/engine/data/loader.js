@@ -1,5 +1,3 @@
-import { SoundManager } from "./sound.js";
-
 /**
  * @class DataManager
  * @description Central manager for loading and accessing game data.
@@ -127,13 +125,13 @@ export class DataManager {
     };
 
     try {
-      const { skills } = await import("../../data/skills.js");
+      const { skills } = await import("../../../data/skills.js");
       this.skills = skills;
-      const { passives } = await import("../../data/passives.js");
+      const { passives } = await import("../../../data/passives.js");
       this.passives = passives;
-      const { states } = await import("../../data/states.js");
+      const { states } = await import("../../../data/states.js");
       this.states = states;
-      const { startingParty } = await import("../../data/party.js");
+      const { startingParty } = await import("../../../data/party.js");
       this.startingParty = startingParty;
     } catch (error) {
       console.error("Failed to load skills.js, passives.js, or states.js:", error);
@@ -150,16 +148,10 @@ export class DataManager {
 
     // Load Animations
     try {
-        const { animations } = await import("../../data/animations.js");
+        const { animations } = await import("../../../data/animations.js");
         this.animations = animations;
     } catch (error) {
         console.error("Failed to load animations.js:", error);
-    }
-
-    // Initialize SoundManager with loaded sound data
-    // We await this to ensure MIDI data is ready before the game starts
-    if (this.sounds) {
-        await SoundManager.init(this.sounds);
     }
 
     this.loaded = true;

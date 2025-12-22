@@ -1,10 +1,18 @@
-import { SoundManager } from "../managers/sound.js";
+import { SoundManager } from "./implementations/audio_impl.js";
 
 /**
  * Adapter for audio operations.
  * Wraps the legacy SoundManager to prevent direct imports from presentation layer.
  */
 export const AudioAdapter = {
+    /**
+     * Initializes the audio system.
+     * @param {Object} soundMap
+     */
+    async init(soundMap) {
+        return SoundManager.init(soundMap);
+    },
+
     /**
      * Plays a sound effect.
      * @param {string} key
