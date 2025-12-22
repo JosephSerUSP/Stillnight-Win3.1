@@ -153,6 +153,7 @@ export class InterpreterAdapter {
             title: e.title || "Event",
             description: e.text,
             image: e.image,
+            layout: e.layout,
             style: e.style || 'terminal',
             choices: [{
                 label: "Continue",

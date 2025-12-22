@@ -17,6 +17,7 @@ import { selectPartyHUD } from "../selectors/party.js";
 import { selectInventory } from "../selectors/inventory.js";
 import { selectBattlerDetails } from "../selectors/details.js";
 import { QuestLogState } from "../../engine/session/quest_state.js";
+import { introSequence } from "../../../data/intro.js";
 
 /**
  * @class Scene_Map
@@ -151,6 +152,10 @@ export class Scene_Map extends Scene_Base {
     AudioAdapter.play('UI_SELECT');
     this.updateAll();
     this.checkMusic();
+
+    if (!this.party.storyFlags['intro_seen']) {
+         this.interpreter.executeSequence(introSequence);
+    }
   }
 
   confirmNewGame() {

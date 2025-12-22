@@ -33,7 +33,8 @@ export class InterpreterSystem {
             'LOG': this._handleLog,
             // Quest handlers
             'OFFER_QUEST': this._handleOfferQuest,
-            'COMPLETE_QUEST': this._handleCompleteQuest
+            'COMPLETE_QUEST': this._handleCompleteQuest,
+            'SET_FLAG': this._handleSetFlag
         };
     }
 
@@ -65,9 +66,9 @@ export class InterpreterSystem {
                 const result = handler.call(this, state, command, session);
                 if (result) {
                     events.push(...result);
-                    if (state.waitMode) {
-                        break;
-                    }
+                }
+                if (state.waitMode) {
+                    break;
                 }
             } else {
                 console.warn(`InterpreterSystem: Unknown command '${command.type}'`, command);
@@ -236,7 +237,8 @@ export class InterpreterSystem {
                  text: command.text,
                  style: command.style,
                  title: command.title,
-                 image: command.image
+                 image: command.image,
+                 layout: command.layout
              });
              state.waitMode = 'input';
         }
@@ -348,5 +350,12 @@ export class InterpreterSystem {
             nextState: command.nextState,
             completeState: command.completeState
         }];
+    }
+
+    _handleSetFlag(state, command, session) {
+        if (session.party) {
+            session.party.storyFlags[command.flag] = command.value;
+        }
+        return null;
     }
 }
