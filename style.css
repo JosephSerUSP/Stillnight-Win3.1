@@ -591,10 +591,11 @@ html, body {
 
 /* party grows; log fixed height window */
 .party-panel {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
 }
 .log-panel {
-    flex: 0 0 230px;
+    flex: 1;
+    min-height: 0;
 }
 
 .party-grid {
