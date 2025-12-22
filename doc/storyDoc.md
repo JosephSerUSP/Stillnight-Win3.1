@@ -3,6 +3,7 @@ Diablo 1: Atmosphere, Setup (town + dungeon, few but deep NPCs, unfolding story 
 Shin Megami Tensei: Seminal Dungeon Crawler with creature collecting and rich dark atmosphere.
 Etrian Odyssey: Epitome of Dungeon Crawling made fun. 
 Azure Dreams: Similar setup, rich NPCs, shifting town state.
+Fatal Frame: Tragic backstory, nature of "the dungeon", NPC depth.
 
 GENRE: Dungeon Crawler / Roguelite. Multiple runs with meta-progression.
 
