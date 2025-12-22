@@ -32,6 +32,7 @@ Geraldo: Runs the Auction house, where one can buy rare, unidentified items.
 His quests are asinine and rarely worth the trouble.
 
 Yukio: Another summoner. At some point during the game, the both of you fight. 
+Both a reference to the original summoner from the first Megami Tensei game, as well as the grandfather to the real life person who inspired Laura.
 
 
 Daphne: Found on the 4th floor of the dungeon. ????
