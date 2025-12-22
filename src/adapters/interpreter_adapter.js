@@ -1,4 +1,5 @@
 import { InterpreterSystem } from "../engine/systems/interpreter.js";
+import { DirectorSystem } from "../engine/systems/director.js";
 import { randInt, pickWeighted, random } from "../core/utils.js";
 import { AudioAdapter } from "./audio_adapter.js";
 import {
@@ -477,6 +478,11 @@ export class InterpreterAdapter {
     }
 
     _openNpcEvent(npcId) {
+        if (this.dataManager.graphs && this.dataManager.graphs[npcId]) {
+            this._startGraphDialogue(npcId, this.dataManager.graphs[npcId]);
+            return;
+        }
+
         const npc = this.dataManager.npcs[npcId];
         if (!npc) {
             console.warn(`NPC '${npcId}' not found.`);
@@ -488,6 +494,81 @@ export class InterpreterAdapter {
         // Complex state machine logic should be handled here or in a dedicated NpcInteractionSystem.
         // We will implement a basic state handler here.
         this._runNpcState(npc, npc.initialState || 'default');
+    }
+
+    _startGraphDialogue(graphId, graphData) {
+        if (!this.director) {
+            this.director = new DirectorSystem();
+        }
+
+        // Active NPC context for metadata (portrait, name)
+        this._activeNpc = { id: graphId, data: graphData };
+
+        const observer = {
+            onNode: (node) => this._renderGraphNode(node),
+            onAction: (node) => this._executeGraphAction(node),
+            onEnd: () => this.closeEvent()
+        };
+
+        const session = {
+            party: this.party,
+            quests: this.session.quests
+        };
+
+        this.director.start(graphId, graphData, session, observer);
+        this.scene.setStatus(`Talking to ${graphData.name || 'someone'}.`);
+        AudioAdapter.play('UI_SELECT');
+    }
+
+    _renderGraphNode(node) {
+        const graphData = this._activeNpc.data;
+        const choices = [];
+
+        if (node.type === 'CHOICE') {
+            node.options.forEach((opt, index) => {
+                choices.push({
+                    label: opt.label,
+                    onClick: () => this.director.handleInput({ type: 'OPTION_SELECTED', index })
+                });
+            });
+        } else if (node.type === 'TEXT') {
+            // Implicit Continue
+            choices.push({
+                label: "Continue",
+                onClick: () => this.director.handleInput({ type: 'CONTINUE' })
+            });
+        }
+
+        let speakers = undefined;
+        if (graphData.layout === 'visual_novel' && graphData.portrait) {
+             speakers = [{ id: graphData.portrait, active: true, emotion: 'neutral' }];
+        }
+
+        this.scene.hudManager.eventWindow.show({
+            title: graphData.name || "Event",
+            description: node.content || "",
+            layout: graphData.layout || 'visual_novel',
+            portrait: graphData.portrait,
+            speakers: speakers,
+            style: 'terminal',
+            choices: choices
+        });
+
+        if (!this.windowManager.stack.includes(this.scene.hudManager.eventWindow)) {
+            this.windowManager.push(this.scene.hudManager.eventWindow);
+        }
+    }
+
+    _executeGraphAction(node) {
+        if (node.action === 'OPEN_SHOP') {
+            this.scene.startShop(node.shopId);
+            this.director.advance();
+        } else if (node.action === 'close') {
+            this.director.end();
+        } else {
+             console.warn("Unknown graph action:", node.action);
+             this.director.advance();
+        }
     }
 
     _runNpcState(npc, stateId) {
