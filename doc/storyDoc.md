@@ -24,7 +24,9 @@ One of the quests involves Alicia joining the party - the player rescues her fro
 
 Laura: A beautiful, tall blonde woman. She's very flirty and touchy with everyone. She loves having a good time, but is very down to earth and no-nonsense as well. Out of her many skills, she's a goldsmith - her quests sometimes reward rare accessories, and when she's in charge of Alicia's shop you can buy some unique accessories from her as well. Sometimes she's in charge of Alicia's shop - they live together part of the time. Her quests are very pragmatic - except one, that requires slaying a rare undead mob for his golden ring, which she will use to craft a wedding ring for her fiancee Raphael. 
 CPTSD. 
+She's often out of town with Raphael.
 
+Raphael: Usually out of town. The Very few times he visits, the nature of his relationships with Alicia and Laura is revealed. He treats Alicia with kindness but a pinch of rivalry, yet pity. He bosses Laura around and Laura gleefuly complies - Laura's in full control of Raphael and she's well aware. 
 
 ????: Runs the Weapons and Armor shop. A stub.
 
