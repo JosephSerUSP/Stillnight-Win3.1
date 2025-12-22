@@ -123,7 +123,50 @@
             "nextState": "talk_intro"
           },
           {
+            "label": "Talk about Alicia",
+            "nextState": "state_alicia_entry"
+          },
+          {
             "label": "Leave",
+            "action": "close"
+          }
+        ]
+      },
+      "state_alicia_entry": {
+        "text": "Alicia? Oh, speak of the devil...",
+        "portrait": "NPC_Laura",
+        "speakers": [
+          { "id": "NPC_Laura", "active": true, "emotion": "neutral" }
+        ],
+        "choices": [
+          {
+            "label": "...",
+            "nextState": "state_alicia_hello"
+          }
+        ]
+      },
+      "state_alicia_hello": {
+        "text": "H-hello! I didn't mean to interrupt! I just... brought the polish.",
+        "speakers": [
+          { "id": "NPC_Alicia", "active": true, "emotion": "shock" },
+          { "id": "NPC_Laura", "active": false, "emotion": "neutral" }
+        ],
+        "choices": [
+          {
+            "label": "Continue",
+            "nextState": "state_alicia_reply"
+          }
+        ]
+      },
+      "state_alicia_reply": {
+        "text": "Just put it on the table, dear. And try not to knock anything over this time, hmm?",
+        "speakers": [
+          { "id": "NPC_Alicia", "active": false, "emotion": "shock" },
+          { "id": "NPC_Laura", "active": true, "emotion": "approval" }
+        ],
+        "choices": [
+          {
+            "label": "Leave them be",
             "action": "close"
           }
         ]
