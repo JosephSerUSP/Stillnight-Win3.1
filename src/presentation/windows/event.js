@@ -1,5 +1,6 @@
 import { Window_Base } from "./base.js";
 import { setPortrait, createIcon } from "./utils.js";
+import { Graphics } from "../../core/utils.js";
 
 /**
  * @class Window_Recruit
@@ -52,17 +53,20 @@ export class Window_Event extends Window_Base {
     this.vnContainer.style.gap = "10px";
     this.vnContainer.style.minHeight = "200px";
 
-    this.portraitContainer = document.createElement("div");
-    this.portraitContainer.className = "inspect-sprite"; // Use shared class
-    this.portraitContainer.style.flexShrink = "0"; // Ensure it doesn't shrink
-    this.portraitContainer.style.width = "128px";
-    this.portraitContainer.style.height = "192px";
-    // Background image and position set dynamically via setPortrait
+    // Replaces single portraitContainer with a wrapper for multiple speakers
+    this.portraitWrapper = document.createElement("div");
+    this.portraitWrapper.className = "vn-portraits";
+    this.portraitWrapper.style.display = "flex";
+    this.portraitWrapper.style.flexDirection = "row";
+    this.portraitWrapper.style.gap = "10px";
+    this.portraitWrapper.style.flexShrink = "0";
 
     this.vnTextContainer = document.createElement("div");
     this.vnTextContainer.className = "vn-text";
+    // Ensure text container takes remaining space
+    this.vnTextContainer.style.flexGrow = "1";
 
-    this.vnContainer.appendChild(this.portraitContainer);
+    this.vnContainer.appendChild(this.portraitWrapper);
     this.vnContainer.appendChild(this.vnTextContainer);
     this.content.appendChild(this.vnContainer);
 
@@ -101,12 +105,46 @@ export class Window_Event extends Window_Base {
       }
   }
 
+  // Deprecated direct usage, kept for safety but functionality moved to updatePortraits
   setPortrait(spriteKey, emotion = 'neutral') {
-      // Direct update if currently showing VN layout
-      if (this.vnContainer.style.display !== 'none') {
-          setPortrait(this.portraitContainer, spriteKey, emotion);
-          this.portraitContainer.style.display = "block";
-      }
+      this.updatePortraits([{ id: spriteKey, emotion, active: true }]);
+  }
+
+  updatePortraits(speakers) {
+      this.portraitWrapper.innerHTML = "";
+
+      // Calculate required width
+      // Base width (520) allows for 1 portrait (128px) + Gap (10px) + Text.
+      // Actually base 520 was fine for 1 portrait.
+      // If we have extra portraits, we need to widen the window.
+      // Extra width per additional speaker = 128 (width) + 10 (gap) = 138px.
+
+      const extraSpeakers = Math.max(0, speakers.length - 1);
+      const newWidth = 520 + (extraSpeakers * 138);
+
+      this.element.style.width = `${newWidth}px`;
+
+      // Re-center window
+      const left = (Graphics.width - newWidth) / 2;
+      this.element.style.left = `${left}px`;
+
+      speakers.forEach(speaker => {
+          const container = document.createElement("div");
+          container.className = "inspect-sprite";
+          container.style.flexShrink = "0";
+          container.style.width = "128px";
+          container.style.height = "192px";
+
+          setPortrait(container, speaker.id, speaker.emotion || 'neutral');
+
+          if (!speaker.active) {
+              container.style.filter = "brightness(0.5)";
+          } else {
+              container.style.filter = "none";
+          }
+
+          this.portraitWrapper.appendChild(container);
+      });
   }
 
   show(data) {
@@ -138,14 +176,22 @@ export class Window_Event extends Window_Base {
           this.standardBody.style.display = "none";
           this.vnContainer.style.display = "flex";
 
-          // Setup Portrait
-          if (data.portrait) {
-              const spriteKey = data.portrait;
-              const emotion = data.emotion || 'neutral';
-              setPortrait(this.portraitContainer, spriteKey, emotion);
-              this.portraitContainer.style.display = "block";
+          // Normalize speakers data
+          let speakers = [];
+          if (data.speakers) {
+              speakers = data.speakers;
+          } else if (data.portrait) {
+              speakers = [{ id: data.portrait, emotion: data.emotion, active: true }];
+          }
+
+          if (speakers.length > 0) {
+              this.updatePortraits(speakers);
+              this.portraitWrapper.style.display = "flex";
           } else {
-              this.portraitContainer.style.display = "none";
+              this.portraitWrapper.style.display = "none";
+              // Reset width if no portraits
+              this.element.style.width = "520px";
+              this.element.style.left = `${(Graphics.width - 520) / 2}px`;
           }
 
           // Target Element for Text
@@ -155,6 +201,10 @@ export class Window_Event extends Window_Base {
           // Standard Layout
           this.vnContainer.style.display = "none";
           this.standardBody.style.display = "flex";
+
+          // Reset width for standard layout
+          this.element.style.width = "520px";
+          this.element.style.left = `${(Graphics.width - 520) / 2}px`;
 
           const imgName = data.image || "default.png";
           this.imageEl.src = `assets/eventArt/${imgName}`;
