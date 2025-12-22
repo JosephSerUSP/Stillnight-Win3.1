@@ -26,14 +26,12 @@ Laura: A beautiful, tall blonde woman. She's very flirty and touchy with everyon
 CPTSD. 
 She's often out of town with Raphael.
 
-Raphael: Usually out of town. The Very few times he visits, the nature of his relationships with Alicia and Laura is revealed. He treats Alicia with kindness but a pinch of rivalry, yet pity. He bosses Laura around and Laura gleefuly complies - Laura's in full control of Raphael and she's well aware. 
-
 ????: Runs the Weapons and Armor shop. A stub.
 
 Geraldo: Runs the Auction house, where one can buy rare, unidentified items.
 His quests are asinine and rarely worth the trouble.
 
-Yoshio: Another summoner. At some point during the game, the both of you fight. 
+Yukio: Another summoner. At some point during the game, the both of you fight. 
 
 
 Daphne: Found on the 4th floor of the dungeon. ????
@@ -43,10 +41,12 @@ TRUE ENDING: The player needs to "beat the game" several times in order to see t
 
 
 
------
-out of order:
-At some point, one quest will involve the player choosing a Dancer. They can pick one out of several dancers. This is a way to allow the player to express their sexuality and have it interface with the game and the NPCs somehow.
+---EVENTS-----
 
+Raphael: At some point, one quest will involve the player choosing a Dancer. They can pick one out of several dancers. This is a way to allow the player to express their sexuality and have it interface with the game and the NPCs somehow.
+
+Raphael: Usually out of town. The Very few times he visits, the nature of his relationships with Alicia and Laura is revealed. He treats Alicia with kindness but a pinch of rivalry, yet pity. He bosses Laura around and Laura gleefuly complies - Laura's in full control of Raphael and she's well aware. 
+Alicia pretends to like Raphael, and even sympathizes with him, but he easily ticks her off and she will spiral, trying her best to not let it show.
 
 -----
 Summons: 
