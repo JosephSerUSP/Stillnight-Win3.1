@@ -523,7 +523,8 @@ export class InterpreterAdapter {
             layout: npc.layout || 'visual_novel',
             portrait: npc.portrait,
             style: npc.style || 'terminal',
-            choices: choices
+            choices: choices,
+            speakers: stateData.speakers
         });
 
         if (!this.windowManager.stack.includes(this.scene.hudManager.eventWindow)) {

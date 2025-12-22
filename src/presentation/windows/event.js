@@ -52,17 +52,17 @@ export class Window_Event extends Window_Base {
     this.vnContainer.style.gap = "10px";
     this.vnContainer.style.minHeight = "200px";
 
-    this.portraitContainer = document.createElement("div");
-    this.portraitContainer.className = "inspect-sprite"; // Use shared class
-    this.portraitContainer.style.flexShrink = "0"; // Ensure it doesn't shrink
-    this.portraitContainer.style.width = "128px";
-    this.portraitContainer.style.height = "192px";
-    // Background image and position set dynamically via setPortrait
+    this.portraitsWrapper = document.createElement("div");
+    this.portraitsWrapper.className = "vn-portraits-wrapper";
+    this.portraitsWrapper.style.display = "flex";
+    this.portraitsWrapper.style.flexDirection = "row";
+    this.portraitsWrapper.style.alignItems = "flex-end";
+    this.portraitsWrapper.style.gap = "0px";
 
     this.vnTextContainer = document.createElement("div");
     this.vnTextContainer.className = "vn-text";
 
-    this.vnContainer.appendChild(this.portraitContainer);
+    this.vnContainer.appendChild(this.portraitsWrapper);
     this.vnContainer.appendChild(this.vnTextContainer);
     this.content.appendChild(this.vnContainer);
 
@@ -104,9 +104,37 @@ export class Window_Event extends Window_Base {
   setPortrait(spriteKey, emotion = 'neutral') {
       // Direct update if currently showing VN layout
       if (this.vnContainer.style.display !== 'none') {
-          setPortrait(this.portraitContainer, spriteKey, emotion);
-          this.portraitContainer.style.display = "block";
+          this.renderSpeakers([{ portrait: spriteKey, emotion, active: true }]);
       }
+  }
+
+  renderSpeakers(speakers) {
+      this.portraitsWrapper.innerHTML = "";
+      if (!speakers || speakers.length === 0) {
+          this.portraitsWrapper.style.display = "none";
+          return;
+      }
+      this.portraitsWrapper.style.display = "flex";
+
+      speakers.forEach(s => {
+          const p = document.createElement("div");
+          p.className = "inspect-sprite";
+          p.style.width = "128px";
+          p.style.height = "192px";
+          p.style.flexShrink = "0";
+          p.style.transition = "filter 0.2s, opacity 0.2s"; // Smooth transition
+
+          setPortrait(p, s.portrait, s.emotion || 'neutral');
+
+          if (s.active === false) {
+              p.style.filter = "brightness(0.5) grayscale(0.3)";
+          } else {
+              p.style.filter = "none";
+              p.style.opacity = "1";
+          }
+
+          this.portraitsWrapper.appendChild(p);
+      });
   }
 
   show(data) {
@@ -138,14 +166,13 @@ export class Window_Event extends Window_Base {
           this.standardBody.style.display = "none";
           this.vnContainer.style.display = "flex";
 
-          // Setup Portrait
-          if (data.portrait) {
-              const spriteKey = data.portrait;
-              const emotion = data.emotion || 'neutral';
-              setPortrait(this.portraitContainer, spriteKey, emotion);
-              this.portraitContainer.style.display = "block";
+          // Setup Portraits
+          if (data.speakers) {
+              this.renderSpeakers(data.speakers);
+          } else if (data.portrait) {
+              this.renderSpeakers([{ portrait: data.portrait, emotion: data.emotion || 'neutral', active: true }]);
           } else {
-              this.portraitContainer.style.display = "none";
+              this.renderSpeakers([]);
           }
 
           // Target Element for Text
