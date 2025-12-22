@@ -4,6 +4,7 @@ Shin Megami Tensei: Seminal Dungeon Crawler with creature collecting and rich da
 Etrian Odyssey: Epitome of Dungeon Crawling made fun. 
 Azure Dreams: Similar setup, rich NPCs, shifting town state.
 Fatal Frame: Tragic backstory, nature of "the dungeon", NPC depth.
+Dream Quest: Meta Progression.
 
 GENRE: Dungeon Crawler / Roguelite. Multiple runs with meta-progression.
 
