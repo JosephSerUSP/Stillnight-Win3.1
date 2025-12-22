@@ -4,9 +4,9 @@
     "type": "stairs",
     "symbol": "S",
     "cssClass": "tile-stairs",
-    "trigger": "touch",
+    "trigger": "step",
     "scripts": {
-        "onInteract": [ { "type": "DESCEND" } ]
+        "onEnter": [ { "type": "DESCEND" } ]
     }
   },
   {
@@ -14,9 +14,9 @@
     "type": "recovery",
     "symbol": "R",
     "cssClass": "tile-recovery",
-    "trigger": "touch",
+    "trigger": "step",
     "scripts": {
-        "onInteract": [
+        "onEnter": [
             { "type": "HEAL_PARTY", "message": "The soothing light restores your party." },
             { "type": "PLAY_SOUND", "name": "HEAL" },
             { "type": "LOG", "text": "You feel refreshed." }
