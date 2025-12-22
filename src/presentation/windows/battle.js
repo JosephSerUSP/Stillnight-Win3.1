@@ -35,8 +35,8 @@ export class Window_Battle extends Window_Base {
 
     const terminal = UI.build(this.content, contentStructure);
     // Flex container children: [0] viewport, [1] log
-    this.viewportEl = terminal.children[0];
-    this.logEl = terminal.children[1];
+    this.viewportEl = terminal.querySelector('#battle-viewport');
+    this.logEl = terminal.querySelector('#battle-log');
 
     // 2. Footer: Action Buttons
     this.btnRound = this.addButton("Resolve Round", () => {
