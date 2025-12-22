@@ -6,7 +6,7 @@
     "initialState": "default",
     "states": {
       "default": {
-        "text": "Oh! H-hello there! I... I didn't see you coming! I'm Alicia... welcome to my shop! Uhm... please look around!",
+        "text": "Oh! H-hello there! I... I didn't see you coming! I'm Alicia... welcome to my shop! Uhm... please look around! If you need anything, I'm right here—promise.",
         "choices": [
           {
             "label": "Buy Consumables",
@@ -18,17 +18,47 @@
             "nextState": "talk_laura"
           },
           {
+            "label": "Ask how she's doing",
+            "nextState": "talk_self"
+          },
+          {
             "label": "Leave",
             "action": "close"
           }
         ]
       },
       "talk_laura": {
-        "text": "Have you seen Laura around? She's... she's so amazing, isn't she? *sigh* Sometimes I wonder if... oh! Nevermind! People say weird things about us, but she's just teasing! She's been with Raphael for 7 years... I just want her to be happy.",
+        "text": "Have you seen Laura around? She's... she's so amazing, isn't she? *sigh* Sometimes I wonder if... oh! Nevermind! People say weird things about us, but she's just teasing! She's been with Raphael for 7 years... I just want her to be happy, even if I'm just cheering from the counter.",
         "choices": [
           {
             "label": "Ask about Quest",
             "nextState": "quest_router"
+          },
+          {
+            "label": "Back",
+            "nextState": "default"
+          }
+        ]
+      },
+      "talk_self": {
+        "text": "I'm fine! Really! Just... trying to keep the shelves tidy and the potions labeled. Laura keeps telling me to relax, but if I stop moving I start overthinking. If you head below, promise you'll come back safely, okay?",
+        "choices": [
+          {
+            "label": "Ask about Raphael",
+            "nextState": "talk_raphael"
+          },
+          {
+            "label": "Back",
+            "nextState": "default"
+          }
+        ]
+      },
+      "talk_raphael": {
+        "text": "Raphael is... nice? He always brings Laura back laughing and tells me to lock up early. I keep telling myself it's fine—he makes her happy. I just wish he'd stop acting like I'm the little sister. I'm not as fragile as I look.",
+        "choices": [
+          {
+            "label": "Comfort her",
+            "nextState": "talk_laura"
           },
           {
             "label": "Back",
@@ -111,7 +141,7 @@
     "initialState": "default",
     "states": {
       "default": {
-        "text": "Well, hello there, darling. Looking for something shiny, or just admiring the view? I'm Laura, the best goldsmith you'll ever meet.",
+        "text": "Well, hello there, darling. Looking for something shiny, or just admiring the view? I'm Laura, the best goldsmith you'll ever meet. Alicia and I run the place when I'm not traveling with Raphael.",
         "choices": [
           {
             "label": "Browse Accessories",
@@ -123,13 +153,17 @@
             "nextState": "talk_intro"
           },
           {
+            "label": "Ask about Alicia",
+            "nextState": "talk_alicia"
+          },
+          {
             "label": "Leave",
             "action": "close"
           }
         ]
       },
       "talk_intro": {
-        "text": "Alicia? Oh, she's a sweet little thing, isn't she? A bit clumsy, but she means well. Don't let her fragility fool you though, she's tougher than she looks.",
+        "text": "Alicia? Oh, she's a sweet little thing, isn't she? A bit clumsy, but she means well. Don't let her fragility fool you though, she's tougher than she looks. Sometimes I let her run the counter alone just to make her breathe.",
         "choices": [
           {
             "label": "About Raphael",
@@ -142,11 +176,24 @@
         ]
       },
       "talk_raphael": {
-        "text": "Raphael? We've been engaged for seven years. He's... steady. Reliable. Not exactly thrilling, but a girl needs stability in these dark times, doesn't she?",
+        "text": "Raphael? We've been engaged for seven years. He's... steady. Reliable. Not exactly thrilling, but a girl needs stability in these dark times, doesn't she? He keeps my feet on the ground when I'm ready to sprint into trouble.",
         "choices": [
           {
             "label": "Ask about Quest",
             "nextState": "quest_router"
+          },
+          {
+            "label": "Back",
+            "nextState": "default"
+          }
+        ]
+      },
+      "talk_alicia": {
+        "text": "Alicia worries too much. I tease her because I want her to loosen up. She thinks I'm heartless, but I'm keeping her from drowning in her own head. If she asks for something sparkly, humor her—she needs to feel useful.",
+        "choices": [
+          {
+            "label": "Ask about Raphael",
+            "nextState": "talk_raphael"
           },
           {
             "label": "Back",
@@ -228,13 +275,13 @@
     "layout": "visual_novel",
     "states": {
       "default": {
-        "text": "Halt! The dungeon below is dangerous. Only authorized Summoners may pass.",
+        "text": "Halt! The dungeon below is dangerous. Only authorized Summoners may pass. The Guild won't send rescue parties if you ignore protocol.",
         "condition": "hasItem:guild_pass",
         "trueState": "allow_pass",
         "falseState": "deny_pass"
       },
       "allow_pass": {
-        "text": "I see you have a Guild Pass. Very well, proceed with caution.",
+        "text": "I see you have a Guild Pass. Very well, proceed with caution. Keep your Return Bead ready—the stairwells shift when the moon changes.",
         "choices": [
           {
             "label": "Enter Dungeon",
@@ -248,7 +295,7 @@
         ]
       },
       "deny_pass": {
-        "text": "You don't have a Guild Pass. Speak to the Guildmaster in town.",
+        "text": "You don't have a Guild Pass. Speak to the Guildmaster in town. Only summoners can handle the drain down there; the rest come back as whispers.",
         "choices": [
           {
             "label": "Leave",
@@ -264,7 +311,7 @@
     "initialState": "default",
     "states": {
       "default": {
-        "text": "A friendly face in the dark! Care for some supplies? It's dangerous ahead.",
+        "text": "A friendly face in the dark! Care for some supplies? It's dangerous ahead. I follow the descent, buying what delvers drag up and selling what they forget to pack.",
         "choices": [
           {
             "label": "Show me what you have",
@@ -285,7 +332,7 @@
     "initialState": "default",
     "states": {
       "default": {
-        "text": "Blades, hammers, axes. If it kills, I sell it.",
+        "text": "Blades, hammers, axes. If it kills, I sell it. The forge downstairs belonged to my father; I quenched steel in monster blood before I could read.",
         "choices": [
           {
             "label": "Buy Weapons",
@@ -306,7 +353,7 @@
     "initialState": "default",
     "states": {
       "default": {
-        "text": "Rare finds! Highest bidder takes all! ...Well, actually, we just sell fixed price for now.",
+        "text": "Rare finds! Highest bidder takes all! ...Well, actually, we just sell fixed price for now. The auction house thrives on secrets—half these relics were pulled from family vaults in Alencar.",
         "choices": [
           {
             "label": "Browse",
@@ -328,10 +375,19 @@
     "initialState": "default",
     "states": {
       "default": {
-        "text": "...",
+        "text": "The stone hums... do you hear it? The fourth floor sings in a key the town ignores. I slipped past the guardians once. That's why I whisper.",
         "choices": [
           {
-            "label": "...",
+            "label": "Ask what she means",
+            "nextState": "hint"
+          }
+        ]
+      },
+      "hint": {
+        "text": "There is a mirror not far from here. It shows you as you were before the dungeon noticed you. If you see me there, don't wake me.",
+        "choices": [
+          {
+            "label": "Leave",
             "action": "close"
           }
         ]
@@ -345,11 +401,37 @@
     "initialState": "default",
     "states": {
       "default": {
-        "text": "Efficiency is key. Do not waste my time.",
+        "text": "Efficiency is key. Do not waste my time. Every second you dither, your summons bleed mana they won't recover.",
         "choices": [
+          {
+            "label": "Ask about duels",
+            "nextState": "duel"
+          },
           {
             "label": "Leave",
             "action": "close"
+          }
+        ]
+      },
+      "duel": {
+        "text": "The Guild wants to see which of us blinks first. When the time comes, stand firm. My guardians will strike instead of me; they prefer it that way.",
+        "choices": [
+          {
+            "label": "Ask why he cares",
+            "nextState": "motive"
+          },
+          {
+            "label": "Back",
+            "nextState": "default"
+          }
+        ]
+      },
+      "motive": {
+        "text": "Summoners come and go. I intend to outlast the town itself. If you want my help, prove you can navigate the dungeon without flinching at the cost.",
+        "choices": [
+          {
+            "label": "Back",
+            "nextState": "default"
           }
         ]
       }
@@ -362,11 +444,24 @@
     "initialState": "default",
     "states": {
       "default": {
-        "text": "Heh, you look like you've seen a ghost. Want to hear a story?",
+        "text": "Heh, you look like you've seen a ghost. Want to hear a story? Every relic I sell comes with one. Whether you want to know it is your problem.",
         "choices": [
+          {
+            "label": "Hear a rumor",
+            "nextState": "rumor"
+          },
           {
             "label": "Leave",
             "action": "close"
+          }
+        ]
+      },
+      "rumor": {
+        "text": "They say a dancer in the capital kept a Return Bead in her hair and vanished mid-performance. If you find it, I'll pay in coin and gossip.",
+        "choices": [
+          {
+            "label": "Back",
+            "nextState": "default"
           }
         ]
       }
