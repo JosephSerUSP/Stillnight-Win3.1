@@ -42,7 +42,7 @@ TRUE ENDING: The player needs to "beat the game" several times in order to see t
 
 -----
 out of order:
-At some point, one quest will involve the player choosing a Dancer. They can pick one out of several dancers. 
+At some point, one quest will involve the player choosing a Dancer. They can pick one out of several dancers. This is a way to allow the player to express their sexuality and have it interface with the game and the NPCs somehow.
 
 
 -----
