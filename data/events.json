@@ -30,7 +30,7 @@
     "cssClass": "tile-enemy",
     "trigger": "touch",
     "scripts": {
-        "onInteract": [{ "type": "BATTLE" }]
+        "onEnter": [{ "type": "BATTLE" }]
     }
   },
   {
@@ -40,7 +40,7 @@
     "cssClass": "tile-shrine",
     "trigger": "touch",
     "scripts": {
-        "onInteract": [
+        "onEnter": [
             { "type": "RANDOM_EVENT", "category": "shrine_scenario" }
         ]
     }
@@ -52,7 +52,7 @@
     "cssClass": "tile-shop",
     "trigger": "touch",
     "scripts": {
-        "onInteract": [{ "type": "SHOP" }]
+        "onEnter": [{ "type": "SHOP" }]
     }
   },
   {
@@ -62,7 +62,7 @@
     "cssClass": "tile-recruit",
     "trigger": "touch",
     "scripts": {
-        "onInteract": [{ "type": "RECRUIT" }]
+        "onEnter": [{ "type": "RECRUIT" }]
     }
   },
   {
@@ -72,7 +72,7 @@
     "cssClass": "tile-npc",
     "trigger": "touch",
     "scripts": {
-        "onInteract": [{ "type": "NPC_DIALOGUE" }]
+        "onEnter": [{ "type": "NPC_DIALOGUE" }]
     }
   },
   {
@@ -82,7 +82,7 @@
     "cssClass": "tile-npc-alicia",
     "trigger": "touch",
     "scripts": {
-        "onInteract": [{ "type": "NPC_DIALOGUE", "id": "npc_alicia" }]
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_alicia" }]
     }
   },
   {
@@ -92,7 +92,7 @@
     "cssClass": "tile-npc-laura",
     "trigger": "touch",
     "scripts": {
-        "onInteract": [{ "type": "NPC_DIALOGUE", "id": "npc_laura" }]
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_laura" }]
     }
   },
   {
@@ -102,7 +102,7 @@
     "cssClass": "tile-npc-weapon",
     "trigger": "touch",
     "scripts": {
-        "onInteract": [{ "type": "NPC_DIALOGUE", "id": "npc_weapon_shop" }]
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_weapon_shop" }]
     }
   },
   {
@@ -112,7 +112,7 @@
     "cssClass": "tile-npc-auction",
     "trigger": "touch",
     "scripts": {
-        "onInteract": [{ "type": "NPC_DIALOGUE", "id": "npc_auction" }]
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_auction" }]
     }
   },
   {
@@ -122,7 +122,7 @@
     "cssClass": "tile-npc-daphne",
     "trigger": "touch",
     "scripts": {
-        "onInteract": [{ "type": "NPC_DIALOGUE", "id": "npc_daphne" }]
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_daphne" }]
     }
   },
   {
@@ -132,7 +132,7 @@
     "cssClass": "tile-npc-guard",
     "trigger": "touch",
     "scripts": {
-        "onInteract": [{ "type": "NPC_DIALOGUE", "id": "npc_gate_guard" }]
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_gate_guard" }]
     }
   },
   {
@@ -157,7 +157,7 @@
     "cssClass": "tile-treasure",
     "trigger": "touch",
     "scripts": {
-        "onInteract": [
+        "onEnter": [
              { "type": "GIVE_ITEM", "itemType": "random" }
         ]
     }
