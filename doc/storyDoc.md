@@ -5,6 +5,7 @@ Etrian Odyssey: Epitome of Dungeon Crawling made fun.
 Azure Dreams: Similar setup, rich NPCs, shifting town state.
 Fatal Frame: Tragic backstory, nature of "the dungeon", NPC depth.
 Dream Quest: Meta Progression.
+Evangelion: Character drama, Atmosphere, Depth.
 
 GENRE: Dungeon Crawler / Roguelite. Multiple runs with meta-progression.
 
