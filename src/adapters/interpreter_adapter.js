@@ -512,7 +512,10 @@ export class InterpreterAdapter {
             }
         }
 
-        const choices = (stateData.choices || []).map(ch => ({
+        const choices = (stateData.choices || []).filter(ch => {
+            if (!ch.condition) return true;
+            return this._checkCondition(ch.condition);
+        }).map(ch => ({
             label: ch.label,
             onClick: () => this._handleNpcChoice(npc, ch)
         }));
@@ -554,8 +557,11 @@ export class InterpreterAdapter {
              this.scene.startShop(choice.shopId);
         } else if (choice.action === 'teleport') {
             this.closeEvent();
-            // TODO: Teleport logic
-            this.scene.logMessage("Teleporting...");
+            this._descendStairs(); // Assuming teleport enters dungeon floor 1 or next floor
+            return;
+        } else if (choice.action === 'descend') {
+            this.closeEvent();
+            this._descendStairs();
             return;
         }
 
