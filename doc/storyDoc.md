@@ -29,7 +29,7 @@ One of the quests involves the player rescuing her from the dungeon - she joins 
 Laura: A beautiful, tall blonde woman. She's very flirty and touchy with everyone, despite being an introvert who enjoys her alone time. She loves having a good time, but is very down to earth and no-nonsense as well. Out of her many skills, she's a goldsmith - her quests sometimes reward rare accessories, and when she's in charge of Alicia's shop you can buy some unique accessories from her as well. Sometimes she's in charge of Alicia's shop - they live together part of the time. Her quests are very pragmatic - except one, that requires slaying a rare undead mob for his golden ring, which she will use to craft a wedding ring for her fiancee Raphael. 
 CPTSD. 
 She's often out of town with Raphael.
-She's often out of town into the dungeon; She's also a Summoner.
+She's often out of town into the dungeon; She's also a Summoner, albeit not a very effective one.
 
 ????: Runs the Weapons and Armor shop. A stub.
 
