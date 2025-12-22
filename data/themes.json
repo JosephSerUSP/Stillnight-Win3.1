@@ -1,7 +1,45 @@
 [
-  {
+{
     "id": "original",
     "name": "Original",
+    "colors": {
+      "desktop-bg": "#000000",
+      "window-bg": "#505050",
+      "window-text": "#c0c0c0",
+      "window-border": "#202020",
+      "window-header-bg-start": "#000088",
+      "window-header-bg-end": "#002222",
+      "window-header-text": "#f0f0f0",
+      "button-bg": "#505050",
+      "terminal-bg": "#000500",
+      "terminal-text": "#00FF00",
+      "tile-bg": "#777777",
+      "tile-fog-bg": "#555555",
+      "tile-fog-text": "#BBBBBB",
+      "tile-player-bg": "#e8e8ff",
+      "text-danger": "#cc0000",
+      "text-highlight": "#8080c0",
+      "text-success": "#66aa66",
+      "text-mystic": "#a000a0",
+      "text-warning": "#c08040",
+      "text-special": "#004000",
+      "text-info": "#6090f0",
+      "selection-bg": "#505070",
+      "selection-text": "#ffffff",
+      "content-bg": "#3c3c3c",
+      "gauge-hp": "#40a040",
+      "gauge-bg": "#303030",
+      "text-functional": "#87a194",
+      "bezel-light": "#666666",
+      "bezel-shadow": "#999999",
+      "bezel-dark": "#333333",
+      "tooltip-bg": "#f0f0d0",
+      "tooltip-text": "#1a1a1a"
+    }
+  },
+  {
+    "id": "classic",
+    "name": "Classic",
     "colors": {
       "desktop-bg": "#008080",
       "window-bg": "#c0c0c0",
