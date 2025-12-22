@@ -4,6 +4,7 @@
     "intro": "A quiet settlement on the edge of the void.",
     "depth": 0,
     "music": "town1",
+    "image": "TownAlencar.png",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "count": 1 },
@@ -22,6 +23,7 @@
     "intro": "You cross the threshold into the dark.",
     "depth": 1,
     "music": "dungeon1",
+    "image": "DungeonFloors1.png",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
@@ -52,6 +54,7 @@
     "intro": "Wind howls across a broken bridge.",
     "depth": 2,
     "music": "dungeon1",
+    "image": "DungeonFloors1.png",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
@@ -76,6 +79,7 @@
     "intro": "Broken bells sway above a dry pit.",
     "depth": 3,
     "music": "dungeon1",
+    "image": "DungeonFloors1.png",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
@@ -95,6 +99,7 @@
     "intro": "Relic pedestals gleam with unnatural light.",
     "depth": 4,
     "music": "dungeon1",
+    "image": "DungeonFloors1.png",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.2 },
@@ -116,6 +121,7 @@
     "intro": "Walls whisper of ancient oaths.",
     "depth": 5,
     "music": "dungeon1",
+    "image": "DungeonFloors1.png",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.2 },
@@ -135,6 +141,7 @@
     "intro": "A presence fills the air. The Eternal Warden awaits.",
     "depth": 6,
     "music": "dungeon1",
+    "image": "DungeonFloors1.png",
     "events": [
       { "id": "recovery", "count": 1 },
       { "id": "enemy", "min": 1, "max": 1 }

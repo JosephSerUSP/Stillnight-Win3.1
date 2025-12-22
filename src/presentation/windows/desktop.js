@@ -27,7 +27,7 @@ export class Window_StackNav extends Window_Base {
             type: 'panel',
             props: { className: 'location-art-container' },
             children: [
-                { type: 'image', props: { id: 'location-art', className: 'location-art-img', src: 'assets/eventArt/default.png' } }
+                { type: 'image', props: { id: 'location-art', className: 'location-art-img', src: 'assets/locationArt/default.png' } }
             ]
         });
 
@@ -120,9 +120,9 @@ export class Window_StackNav extends Window_Base {
         if (this.mapTitleEl) this.mapTitleEl.textContent = floor.title;
         if (this.locationArtEl) {
             if (floor.image) {
-                 this.locationArtEl.src = `assets/eventArt/${floor.image}`;
+                 this.locationArtEl.src = `assets/locationArt/${floor.image}`;
             } else {
-                 this.locationArtEl.src = `assets/eventArt/default.png`;
+                 this.locationArtEl.src = `assets/locationArt/default.png`;
             }
         }
     }
