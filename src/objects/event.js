@@ -17,8 +17,12 @@ export class Game_Event {
     this.type = data.type;
     this.symbol = data.symbol || "?";
     this.cssClass = data.cssClass || "";
+    // triggers: 'touch' (interact), 'step' (enter)
     this.trigger = data.trigger || "touch";
-    this.actions = data.actions || [];
+
+    // Scripts: { onInteract: [], onEnter: [], onSight: [] }
+    this.scripts = data.scripts || {};
+
     if (data.id) this.id = data.id;
     this.hidden = data.hidden || false;
     this.trapValue = data.trapValue || 0;
@@ -26,6 +30,22 @@ export class Game_Event {
     this.encounterData = data.encounterData || null;
     this.isSneakAttack = data.isSneakAttack || false;
     this.isPlayerFirstStrike = data.isPlayerFirstStrike || false;
+
+    // Migration helper for passability
+    // If 'isObstacle' is explicit, use it. Otherwise infer from type for compatibility.
+    if (data.isObstacle !== undefined) {
+        this.isObstacle = data.isObstacle;
+    } else {
+        // Default logic: most things are passable unless they are specific blocking types?
+        // Actually, the old code listed PASSABLE types. Everything else was blocked.
+        const passableTypes = ['enemy', 'shrine', 'recovery', 'trap', 'stairs', 'recruit', 'treasure'];
+        // NPCs are typically obstacles unless specified?
+        // Let's assume obstacles by default if not in passable list
+        this.isObstacle = !passableTypes.includes(this.type) && this.type !== 'npc' && this.id !== 'enemy';
+        // Note: NPCs were obstacles in findPath check?
+        // "if (event) ... passableTypes.includes ... return true; else return false;"
+        // So yes, unknown types are obstacles.
+    }
   }
 
   /**
@@ -51,21 +71,14 @@ export class Game_Event {
                   if (floor.tiles[y][x] === '#') return false;
 
                   // Check events
-                  // User Requirement: "pass through non-obstacle events, such as recovery, shrine, other enemies"
-                  // We treat 'enemy', 'shrine', 'recovery' as passable for pathfinding purposes.
                   const event = floor.events.find(e => e.x === x && e.y === y && e !== this);
                   if (event) {
-                      // Obstacles: maybe chests or NPCs?
-                      // For now, let's assume 'enemy', 'shrine', 'recovery' are passable.
-                      // If undefined type, treat as obstacle?
-                      // Let's invert: what IS an obstacle?
-                      // Walls (handled above).
-                      // Maybe specific event types?
-                      // The prompt implies most things are passable except walls.
-                      const passableTypes = ['enemy', 'shrine', 'recovery', 'trap'];
-                      if (passableTypes.includes(event.type) || event.id === 'enemy') return true;
+                      // Check obstacle property if available, otherwise assume obstacle
+                      if (event.isObstacle !== undefined) return !event.isObstacle;
 
-                      // Unknown types might be obstacles (e.g. NPC blocking a door)
+                      // Fallback for events without the property (shouldn't happen with new ctor but safety)
+                      const passableTypes = ['enemy', 'shrine', 'recovery', 'trap', 'stairs', 'recruit', 'treasure'];
+                      if (passableTypes.includes(event.type) || event.id === 'enemy') return true;
                       return false;
                   }
 
@@ -74,43 +87,31 @@ export class Game_Event {
 
               const path = findPath(map.MAX_W, map.MAX_H, isWalkable, start, end);
 
-              // path[0] is start, path[1] is next step
               if (path.length > 1) {
                   const nextStep = path[1];
-
-                  // Check if we can legally occupy nextStep
-                  // Even if it was "walkable" for pathfinding (pass through),
-                  // we might not want to END our turn on top of another event unless stacking is allowed.
-                  // The user said "pass through", which implies transient overlap.
-                  // But since movement is discrete (step by step), transient overlap = stacking.
-                  // We will allow stacking if the target tile event is "passable".
-
-                  // Re-check specific collision for the destination
                   const isPlayer = (nextStep.x === map.playerX && nextStep.y === map.playerY);
                   if (isPlayer) {
-                      // Don't move onto player, stop adjacent
-                      // This fulfills "finish movement next to the player"
                       return null;
                   }
 
-                  // If we are here, we are not stepping on player.
-                  // Check if we are stepping on another event.
                   const targetEvent = floor.events.find(e => e.x === nextStep.x && e.y === nextStep.y && e !== this);
 
                   if (!targetEvent) {
-                      // Free tile
                       this.x = nextStep.x;
                       this.y = nextStep.y;
                   } else {
-                      // Occupied tile.
-                      // Can we stack?
-                      const passableTypes = ['enemy', 'shrine', 'recovery', 'trap'];
-                      if (passableTypes.includes(targetEvent.type) || targetEvent.id === 'enemy') {
-                          // Allow stacking
+                      // Check passability
+                      let canPass = false;
+                      if (targetEvent.isObstacle !== undefined) canPass = !targetEvent.isObstacle;
+                      else {
+                          const passableTypes = ['enemy', 'shrine', 'recovery', 'trap', 'stairs', 'recruit', 'treasure'];
+                          if (passableTypes.includes(targetEvent.type) || targetEvent.id === 'enemy') canPass = true;
+                      }
+
+                      if (canPass) {
                           this.x = nextStep.x;
                           this.y = nextStep.y;
                       }
-                      // Else blocked by obstacle event (NPC?), wait.
                   }
               }
           }

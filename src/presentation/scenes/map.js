@@ -319,9 +319,11 @@ export class Scene_Map extends Scene_Base {
       if (result.type === 'EVENT' || result.type === 'REVEALED') {
            if (result.type === 'REVEALED') this.updateGrid();
            if (result.event) {
-               if (result.event.type === 'trap') this.updateGrid(); // Trap triggered
-               this.currentInteractionEvent = result.event;
-               this.executeEvent(result.event);
+               // GENERIC ENTER TRIGGER:
+               if (result.event.scripts && result.event.scripts.onEnter) {
+                   this.currentInteractionEvent = result.event;
+                   this.interpreter.executeSequence(result.event.scripts.onEnter, result.event);
+               }
            }
       }
   }
@@ -598,22 +600,18 @@ export class Scene_Map extends Scene_Base {
    * @param {import("../../objects/event.js").Game_Event} event - The event to execute.
    */
   executeEvent(event) {
-      if (event.type === 'BATTLE' || (event.type === 'enemy' || event.id === 'enemy')) {
-          this.startBattle(event.x, event.y, event.encounterData, event.isSneakAttack, event.isPlayerFirstStrike);
-      } else if (event.actions) {
-          event.actions.forEach(action => this.interpreter.execute(action, event));
+      if (event.scripts && event.scripts.onInteract) {
+          // GENERIC INTERACT TRIGGER
+          this.interpreter.executeSequence(event.scripts.onInteract, event);
       }
   }
 
+  // ... (Rest of file remains unchanged: revealAllFloors, animateMapReveal, etc.) ...
 
-  /**
-   * Debug command to reveal the entire map.
-   * @method revealAllFloors
-   */
   revealAllFloors() {
     if (this.sceneManager.currentScene() !== this) return;
     this.map.floors.forEach((f, index) => {
-      if (index === this.map.floorIndex) return; // Skip current floor, animate it instead
+      if (index === this.map.floorIndex) return;
       f.fullyRevealed = true;
       for (let y = 0; y < this.map.MAX_H; y++) {
         for (let x = 0; x < this.map.MAX_W; x++) {
@@ -627,10 +625,6 @@ export class Scene_Map extends Scene_Base {
     AudioAdapter.play('ITEM_GET');
   }
 
-  /**
-   * Animates the map reveal with a radiating effect from the player.
-   * @method animateMapReveal
-   */
   async animateMapReveal() {
       if (this.inputLocked) return;
       this.inputLocked = true;
@@ -666,18 +660,11 @@ export class Scene_Map extends Scene_Base {
           }
       }
 
-      // Ensure everything is revealed at the end
       this.map.revealCurrentFloor(true);
       this.updateGrid();
       this.inputLocked = false;
   }
 
-  /**
-   * Adds XP to a member and handles level-up logging.
-   * @method gainXp
-   * @param {import("../../objects/battler.js").Game_Battler} member - The member to give XP to.
-   * @param {number} amount - The amount of XP.
-   */
   gainXp(member, amount, silent = false) {
     const result = ProgressionSystem.gainXp(member, amount);
     if (result.leveledUp && !silent) {
@@ -689,10 +676,6 @@ export class Scene_Map extends Scene_Base {
     }
   }
 
-  /**
-   * Applies passive effects triggered by movement (e.g., regeneration).
-   * @method applyMovePassives
-   */
   applyMovePassives() {
     this.party.members.forEach((member) => {
       if (member.hp > 0) {
@@ -708,11 +691,6 @@ export class Scene_Map extends Scene_Base {
     this.updateParty();
   }
 
-  /**
-   * Calculates the party's chance to flee from battle.
-   * @method getFleeChance
-   * @returns {number} The chance (0-1).
-   */
   getFleeChance() {
     let baseChance = 0.5;
     this.party.members.forEach((member) => {
@@ -721,31 +699,18 @@ export class Scene_Map extends Scene_Base {
     return Math.max(0, Math.min(1, baseChance));
   }
 
-
-  /**
-   * Determines if a party member is in the "Front" or "Back" row.
-   * @method partyRow
-   * @param {number} index - Member index.
-   * @returns {string} "Front" or "Back".
-   */
   partyRow(index) {
     return index <= 1 ? "Front" : "Back";
   }
 
-  /**
-   * Opens the formation management window.
-   * @method openFormation
-   */
   openFormation() {
     if (this.sceneManager.currentScene() !== this) return;
     this.windowManager.push(this.hudManager.formationWindow);
 
-    // Define the swap handler which acts as the 'refresh' source of truth
     const handleSwap = (idx1, idx2) => {
         if (this.party.reorderMembers(idx1, idx2)) {
              AudioAdapter.play('UI_SELECT');
              const newView = selectPartyHUD(this.party, this.getContext());
-             // Re-bind to ensure closure freshness
              this.hudManager.formationWindow.refresh(newView, () => {}, handleSwap);
              this.updateParty();
              this.logMessage("[Formation] Party order changed.");
@@ -757,23 +722,15 @@ export class Scene_Map extends Scene_Base {
     const partyView = selectPartyHUD(this.party, this.getContext());
     this.hudManager.formationWindow.refresh(
         partyView,
-        () => {}, // onChange (legacy, mostly unused if we handle swap directly)
+        () => {},
         handleSwap
     );
   }
 
-  /**
-   * Closes the formation window.
-   * @method closeFormation
-   */
   closeFormation() {
     this.windowManager.close(this.hudManager.formationWindow);
   }
 
-  /**
-   * Opens the inventory window.
-   * @method openInventory
-   */
   openInventory() {
     if (this.sceneManager.currentScene() !== this) return;
     this.windowManager.push(this.hudManager.inventoryWindow);
@@ -785,10 +742,6 @@ export class Scene_Map extends Scene_Base {
     );
   }
 
-  /**
-   * Closes the inventory window.
-   * @method closeInventory
-   */
   closeInventory() {
     this.windowManager.close(this.hudManager.inventoryWindow);
   }
@@ -865,20 +818,6 @@ export class Scene_Map extends Scene_Base {
             type: "toggle",
             value: SettingsAdapter.windowAnimations,
             onChange: (val) => {
-                // SettingsAdapter doesn't have a setter for windowAnimations, only getter?
-                // I need to update SettingsAdapter to support setting.
-                // SettingsAdapter.windowAnimations is a getter.
-                // I'll fix this in SettingsAdapter or expose a setter.
-                // For now, I'll access ConfigManager via SettingsAdapter if I add a method,
-                // or just assume SettingsAdapter needs an update.
-                // I'll check SettingsAdapter implementation.
-                // It has getters.
-                // I need to add setters or methods.
-                // I will assume I update SettingsAdapter in a moment.
-                // For now, I'll use a hypothetical setter or method.
-                // SettingsAdapter.setWindowAnimations(val);
-                // But wait, the previous code accessed ConfigManager directly.
-                // I'll add setWindowAnimations to SettingsAdapter.
                 SettingsAdapter.setWindowAnimations(val);
                 AudioAdapter.play('UI_SELECT');
             }
@@ -897,11 +836,6 @@ export class Scene_Map extends Scene_Base {
               value: SettingsAdapter.masterVolume,
               onChange: (val) => {
                   SettingsAdapter.setMasterVolume(val);
-                  // SoundManager.updateVolumes() was called. Adapter should handle it.
-                  // SettingsAdapter.setMasterVolume should call ConfigManager.save() and update?
-                  // SoundManager listens to ConfigManager? Or we need to tell AudioAdapter to update?
-                  // AudioAdapter.updateVolumes()?
-                  // I'll add updateVolumes to AudioAdapter.
                   AudioAdapter.updateVolumes();
               }
           },
@@ -986,22 +920,18 @@ export class Scene_Map extends Scene_Base {
   useItem(item, target) {
       const action = new Game_Action(this.party);
       action.setItem(item, this.dataManager);
-
       const events = action.apply(target, this.dataManager);
 
       if (events.length > 0) {
           events.forEach(e => {
               this._playEventAudio(e);
               if (e.msg) this.logMessage(e.msg);
-
               if (e.type === 'xp' && e.result && e.result.leveledUp) {
                  this.logMessage(`[Level] ${target.name} grows to Lv${e.result.newLevel}! HP +${e.result.hpGain}.`);
                  AudioAdapter.play('LEVEL_UP');
               }
           });
-
           this.updateParty();
-          // Update inventory window if open
           if (this.windowManager.stack.includes(this.hudManager.inventoryWindow)) {
                this.hudManager.inventoryWindow.updateItems(selectInventory(this.party));
           }
@@ -1052,12 +982,6 @@ export class Scene_Map extends Scene_Base {
       }
   }
 
-  /**
-   * Opens the inspection window for a specific party member.
-   * @method openInspect
-   * @param {import("../../objects/battler.js").Game_Battler} member - The member to inspect.
-   * @param {number} index - The member's index.
-   */
   openInspect(member, index) {
     const detailsView = selectBattlerDetails(member, this.getContext(), this.dataManager);
     this.hudManager.inspectWindow.setup(detailsView, {
@@ -1074,7 +998,6 @@ export class Scene_Map extends Scene_Base {
         onEvolve: (evoData) => this.openEvolution(member, evoData)
     });
 
-    // Hide sacrifice button for Summoner, show for others
     if (member.role === 'Summoner') {
         this.hudManager.inspectWindow.btnSacrifice.style.display = "none";
     } else {
@@ -1092,12 +1015,6 @@ export class Scene_Map extends Scene_Base {
     this.hudManager.inspectWindow.onUserClose = () => this.closeInspect();
   }
 
-  /**
-   * Sacrifices a party member for gold.
-   * @method sacrificeMember
-   * @param {import("../../objects/battler.js").Game_Battler} member - The member to sacrifice.
-   * @param {number} value - The gold value.
-   */
   sacrificeMember(member, value) {
       if (this.party.removeMember(member)) {
           this.party.gold += value;
@@ -1108,20 +1025,12 @@ export class Scene_Map extends Scene_Base {
       }
   }
 
-  /**
-   * Closes the inspect window.
-   * @method closeInspect
-   */
   closeInspect() {
     this.hudManager.inspectWindow.btnSacrifice.style.display = "none";
     this.windowManager.close(this.hudManager.inspectWindow);
     this.setStatus("Exploration");
   }
 
-  /**
-   * Opens the equipment selection screen within the inspect window.
-   * @method openEquipmentScreen
-   */
   openEquipmentScreen(member) {
     const inventoryItems = this.party.inventory.filter(i => i.type === "equipment");
     const otherMemberItems = this.party.members
@@ -1140,12 +1049,6 @@ export class Scene_Map extends Scene_Base {
     this.windowManager.push(this.hudManager.equipItemSelectWindow);
   }
 
-  /**
-   * Opens the evolution preview window.
-   * @method openEvolution
-   * @param {import("../../objects/battler.js").Game_Battler} member - The member to evolve.
-   * @param {Object} evolutionData - The evolution definition.
-   */
   openEvolution(member, evolutionData) {
       this.closeInspect();
       const nextId = evolutionData.evolvesTo;
@@ -1153,7 +1056,6 @@ export class Scene_Map extends Scene_Base {
       if (!nextData) return;
 
       const nextBattler = Game_Battler.create(nextData, member.level);
-      // Copy equipment to ensure stat preview includes equipment bonuses
       nextBattler.equipmentItem = member.equipmentItem;
 
       const currentView = selectBattlerDetails(member, this.getContext(), this.dataManager);
@@ -1168,13 +1070,6 @@ export class Scene_Map extends Scene_Base {
       this.windowManager.push(this.hudManager.evolutionWindow);
   }
 
-  /**
-   * Prompts to confirm evolution (and resource consumption).
-   * @method confirmEvolution
-   * @param {import("../../objects/battler.js").Game_Battler} member - The member to evolve.
-   * @param {import("../../objects/battler.js").Game_Battler} nextBattler - The evolved form.
-   * @param {Object} evolutionData - The evolution definition.
-   */
   confirmEvolution(member, nextBattler, evolutionData) {
       let msg = `Evolve ${member.name} into ${nextBattler.name}?`;
       if (evolutionData.item) {
@@ -1201,13 +1096,6 @@ export class Scene_Map extends Scene_Base {
       };
   }
 
-  /**
-   * Executes the evolution, updating the party and consuming items.
-   * @method executeEvolution
-   * @param {import("../../objects/battler.js").Game_Battler} member - The member to evolve.
-   * @param {import("../../objects/battler.js").Game_Battler} nextBattler - The evolved form.
-   * @param {Object} evolutionData - The evolution definition.
-   */
   executeEvolution(member, nextBattler, evolutionData) {
       if (evolutionData.item) {
           const idx = this.party.inventory.findIndex(i => i.id === evolutionData.item);
@@ -1240,17 +1128,10 @@ export class Scene_Map extends Scene_Base {
       }
   }
 
-  /**
-   * Equips an item to a member, handling swaps if necessary.
-   * @method equipItem
-   * @param {import("../../objects/battler.js").Game_Battler} member - The member.
-   * @param {Object} item - The item to equip.
-   */
   equipItem(member, item) {
       const result = this.party.equipItem(member, item);
       this.logMessage(`[Equip] ${result.msg}`);
       AudioAdapter.play('EQUIP');
-
       this.openInspect(member, this.party.members.indexOf(member));
       this.updateAll();
   }

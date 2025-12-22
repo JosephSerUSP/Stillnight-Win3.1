@@ -1,4 +1,5 @@
 import { InterpreterState } from "../session/interpreter_state.js";
+import { randInt, pickWeighted, random } from "../../core/utils.js";
 
 /**
  * System for executing event commands (Interpreter).
@@ -11,33 +12,41 @@ export class InterpreterSystem {
         this._handlers = {
             'BATTLE': this._handleBattle,
             'SHOP': this._handleShop,
-            'SHRINE': this._handleShrine,
             'RECRUIT': this._handleRecruit,
             'NPC_DIALOGUE': this._handleNpcDialogue,
             'DESCEND': this._handleDescend,
             'HEAL_PARTY': this._handleHealParty,
+            'DAMAGE_PARTY': this._handleDamageParty,
+            'GIVE_GOLD': this._handleGiveGold,
+            'TAKE_GOLD': this._handleTakeGold,
+            'GIVE_ITEM': this._handleGiveItem,
+            'TAKE_ITEM': this._handleTakeItem,
+            'GIVE_XP': this._handleGiveXp,
             'MESSAGE': this._handleMessage,
-            'TREASURE': this._handleTreasure,
-            'TRAP_TRIGGER': this._handleTrapTrigger,
+            'TEXT': this._handleMessage, // Alias
             'BREAKABLE_WALL': this._handleBreakableWall,
-            'WAIT': this._handleWait
+            'WAIT': this._handleWait,
+            'RANDOM_EVENT': this._handleRandomEvent,
+            'WEIGHTED_BRANCH': this._handleWeightedBranch,
+            'CHOICE': this._handleChoice,
+            'IF': this._handleIf,
+            'LOG': this._handleLog,
+            // Quest handlers
+            'OFFER_QUEST': this._handleOfferQuest,
+            'COMPLETE_QUEST': this._handleCompleteQuest
         };
     }
 
     /**
      * Runs the interpreter until it pauses (wait/input) or finishes.
      * @param {InterpreterState} state
-     * @param {Object} session - Game session (party, map, etc.)
+     * @param {Object} session - Game session (party, map, dataManager, etc.)
      * @returns {Array} List of GameEvents (side effects)
      */
     runUntilPause(state, session) {
         const events = [];
 
-        // Check wait conditions
         if (state.waitMode === 'time') {
-            // In a real tick loop, we'd decrement waitValue.
-            // Since we don't have a delta time here, we rely on the caller to clear the wait.
-            // For now, if we are waiting, we return empty unless the wait is handled externally.
             return events;
         }
 
@@ -56,7 +65,6 @@ export class InterpreterSystem {
                 const result = handler.call(this, state, command, session);
                 if (result) {
                     events.push(...result);
-                    // If a command triggered a wait, stop execution
                     if (state.waitMode) {
                         break;
                     }
@@ -76,7 +84,6 @@ export class InterpreterSystem {
      * @param {Object} session
      */
     executeAction(action, eventContext, session) {
-        // Create a temporary state for this single action
         const state = new InterpreterState();
         state.start([action], eventContext);
         return this.runUntilPause(state, session);
@@ -85,27 +92,26 @@ export class InterpreterSystem {
     // --- Handlers ---
 
     _handleBattle(state, command, session) {
+        const event = state.activeEvent;
+        const x = event ? event.x : 0;
+        const y = event ? event.y : 0;
+        // Pass specific encounter data if present on the event
+        const encounterData = event ? event.encounterData : null;
+        const isSneakAttack = event ? event.isSneakAttack : false;
+        const isPlayerFirstStrike = event ? event.isPlayerFirstStrike : false;
+
         return [{
             type: 'BATTLE_START',
-            x: state.activeEvent ? state.activeEvent.x : 0,
-            y: state.activeEvent ? state.activeEvent.y : 0
+            x: x,
+            y: y,
+            encounterData,
+            isSneakAttack,
+            isPlayerFirstStrike
         }];
     }
 
     _handleShop(state, command, session) {
         return [{ type: 'SHOP_START', shopId: command.shopId }];
-    }
-
-    _handleShrine(state, command, session) {
-        return [{
-            type: 'LOG',
-            text: "[Shrine] You encounter a shrine."
-        }, {
-            type: 'SHRINE_OPEN'
-        }, {
-            type: 'SET_STATUS',
-            text: "Shrine event."
-        }];
     }
 
     _handleRecruit(state, command, session) {
@@ -131,7 +137,7 @@ export class InterpreterSystem {
             session.party.members.forEach(m => {
                 m.hp = m.maxHp;
             });
-            events.push({ type: 'LOG', text: "[Recover] A soft glow restores your party." });
+            events.push({ type: 'LOG', text: command.message || "[Recover] A soft glow restores your party." });
 
             // Handle passives
             session.party.members.forEach((member) => {
@@ -145,29 +151,103 @@ export class InterpreterSystem {
 
         events.push({ type: 'SET_STATUS', text: "Recovered HP." });
         events.push({ type: 'PLAY_SOUND', name: 'HEAL' });
-        events.push({ type: 'APPLY_MOVE_PASSIVES' }); // Legacy behavior maintained
+        events.push({ type: 'APPLY_MOVE_PASSIVES' });
         events.push({ type: 'UPDATE_UI' });
         return events;
     }
 
+    _handleDamageParty(state, command, session) {
+        const events = [];
+        const dmg = command.amount || 5;
+
+        if (session.party) {
+             session.party.members.forEach(m => {
+                m.hp = Math.max(0, m.hp - dmg);
+            });
+            events.push({ type: 'LOG', text: command.message || `The party takes ${dmg} damage.` });
+            events.push({ type: 'CHECK_PERMADEATH' });
+        }
+
+        events.push({ type: 'PLAY_SOUND', name: 'DAMAGE' });
+        events.push({ type: 'UPDATE_UI' });
+        return events;
+    }
+
+    _handleGiveGold(state, command, session) {
+        if (session.party) {
+            session.party.gold += command.value;
+            return [{ type: 'LOG', text: `Gained ${command.value} Gold.` }, { type: 'UPDATE_UI' }];
+        }
+        return null;
+    }
+
+    _handleTakeGold(state, command, session) {
+        if (session.party) {
+            session.party.gold = Math.max(0, session.party.gold - command.value);
+            return [{ type: 'LOG', text: `Lost ${command.value} Gold.` }, { type: 'UPDATE_UI' }];
+        }
+        return null;
+    }
+
+    _handleGiveItem(state, command, session) {
+        if (session.party && session.dataManager) {
+            let item;
+            if (command.itemId) {
+                 item = session.dataManager.items.find(i => i.id === command.itemId);
+            } else if (command.itemType) {
+                 // Random Logic
+                 const candidates = session.dataManager.items.filter(i => i.type !== 'key'); // Default filter
+                 if (candidates.length > 0) {
+                     item = candidates[randInt(0, candidates.length - 1)];
+                 }
+            }
+
+            if (item) {
+                session.party.inventory.push(item);
+                return [
+                    { type: 'LOG', text: `Obtained: ${item.name}` },
+                    { type: 'PLAY_SOUND', name: 'ITEM_GET' },
+                    { type: 'UPDATE_UI' }
+                ];
+            }
+        }
+        return null;
+    }
+
+    _handleTakeItem(state, command, session) {
+         return null;
+    }
+
+    _handleGiveXp(state, command, session) {
+        return [{
+            type: 'GIVE_XP',
+            amount: command.amount
+        }];
+    }
+
     _handleMessage(state, command, session) {
         const events = [{ type: 'UPDATE_UI' }];
-        if (command.text) {
-            events.unshift({ type: 'LOG', text: command.text });
+
+        if (command.style === 'log' || !command.style) {
+             if (command.text) events.unshift({ type: 'LOG', text: command.text });
+        } else {
+             events.push({
+                 type: 'SHOW_TEXT',
+                 text: command.text,
+                 style: command.style,
+                 title: command.title,
+                 image: command.image
+             });
+             state.waitMode = 'input';
         }
         return events;
     }
 
-    _handleTreasure(state, command, session) {
-        return [{ type: 'TREASURE_OPEN' }];
-    }
-
-    _handleTrapTrigger(state, command, session) {
-        return [{ type: 'TRAP_TRIGGER', action: command }];
+    _handleLog(state, command, session) {
+        return [{ type: 'LOG', text: command.text }];
     }
 
     _handleBreakableWall(state, command, session) {
-        // Logic: Decrement HP of wall event.
         const event = state.activeEvent;
         if (!event) return null;
 
@@ -183,8 +263,6 @@ export class InterpreterSystem {
             events.push({ type: 'LOG', text: command.breakMessage || "The wall crumbles away!" });
             events.push({ type: 'SET_STATUS', text: "Path opened." });
             events.push({ type: 'PLAY_SOUND', name: 'DAMAGE' });
-
-            // Remove event and update tile
             events.push({ type: 'WALL_BROKEN', x: event.x, y: event.y });
         }
         events.push({ type: 'UPDATE_UI' });
@@ -195,5 +273,80 @@ export class InterpreterSystem {
         state.waitMode = 'time';
         state.waitValue = command.duration || 1000;
         return null;
+    }
+
+    _handleRandomEvent(state, command, session) {
+        if (!session.dataManager) return null;
+
+        const category = command.category;
+        const candidates = session.dataManager.events.filter(e => e.type === category);
+
+        if (candidates.length === 0) return [{ type: 'LOG', text: "Nothing happens." }];
+
+        const chosen = candidates[randInt(0, candidates.length - 1)];
+
+        if (chosen.script) {
+            state.push(chosen.script);
+        } else {
+             console.warn(`Random event ${chosen.id} has no script.`);
+        }
+
+        return null;
+    }
+
+    _handleWeightedBranch(state, command, session) {
+        const roll = Math.random();
+        let accumulated = 0;
+        let selected = null;
+
+        for (const o of command.outcomes) {
+            accumulated += o.chance;
+            if (roll < accumulated) {
+                selected = o;
+                break;
+            }
+        }
+
+        if (!selected && command.outcomes.length > 0) {
+            selected = command.outcomes[command.outcomes.length - 1];
+        }
+
+        if (selected && selected.script) {
+            state.push(selected.script);
+        }
+
+        return null;
+    }
+
+    _handleChoice(state, command, session) {
+        const events = [{
+            type: 'SHOW_CHOICES',
+            options: command.options
+        }];
+        state.waitMode = 'input';
+        return events;
+    }
+
+    _handleIf(state, command, session) {
+        return null;
+    }
+
+    _handleOfferQuest(state, command, session) {
+        return [{
+            type: 'QUEST_OFFER',
+            questId: command.questId,
+            nextState: command.nextState,
+            acceptState: command.acceptState,
+            declineState: command.declineState
+        }];
+    }
+
+    _handleCompleteQuest(state, command, session) {
+        return [{
+            type: 'QUEST_COMPLETE',
+            questId: command.questId,
+            nextState: command.nextState,
+            completeState: command.completeState
+        }];
     }
 }

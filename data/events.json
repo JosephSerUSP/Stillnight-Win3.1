@@ -5,7 +5,9 @@
     "symbol": "S",
     "cssClass": "tile-stairs",
     "trigger": "touch",
-    "actions": [{ "type": "DESCEND" }]
+    "scripts": {
+        "onInteract": [ { "type": "DESCEND" } ]
+    }
   },
   {
     "id": "recovery",
@@ -13,7 +15,13 @@
     "symbol": "R",
     "cssClass": "tile-recovery",
     "trigger": "touch",
-    "actions": [{ "type": "HEAL_PARTY" }]
+    "scripts": {
+        "onInteract": [
+            { "type": "HEAL_PARTY", "message": "The soothing light restores your party." },
+            { "type": "PLAY_SOUND", "name": "HEAL" },
+            { "type": "LOG", "text": "You feel refreshed." }
+        ]
+    }
   },
   {
     "id": "enemy",
@@ -21,7 +29,9 @@
     "symbol": "E",
     "cssClass": "tile-enemy",
     "trigger": "touch",
-    "actions": [{ "type": "BATTLE" }]
+    "scripts": {
+        "onInteract": [{ "type": "BATTLE" }]
+    }
   },
   {
     "id": "shrine",
@@ -29,7 +39,11 @@
     "symbol": "♱",
     "cssClass": "tile-shrine",
     "trigger": "touch",
-    "actions": [{ "type": "SHRINE" }]
+    "scripts": {
+        "onInteract": [
+            { "type": "RANDOM_EVENT", "category": "shrine_scenario" }
+        ]
+    }
   },
   {
     "id": "shop",
@@ -37,7 +51,9 @@
     "symbol": "¥",
     "cssClass": "tile-shop",
     "trigger": "touch",
-    "actions": [{ "type": "SHOP" }]
+    "scripts": {
+        "onInteract": [{ "type": "SHOP" }]
+    }
   },
   {
     "id": "recruit",
@@ -45,7 +61,9 @@
     "symbol": "U",
     "cssClass": "tile-recruit",
     "trigger": "touch",
-    "actions": [{ "type": "RECRUIT" }]
+    "scripts": {
+        "onInteract": [{ "type": "RECRUIT" }]
+    }
   },
   {
     "id": "npc",
@@ -53,7 +71,9 @@
     "symbol": "N",
     "cssClass": "tile-npc",
     "trigger": "touch",
-    "actions": [{ "type": "NPC_DIALOGUE" }]
+    "scripts": {
+        "onInteract": [{ "type": "NPC_DIALOGUE" }]
+    }
   },
   {
     "id": "npc_alicia",
@@ -61,7 +81,9 @@
     "symbol": "A",
     "cssClass": "tile-npc-alicia",
     "trigger": "touch",
-    "actions": [{ "type": "NPC_DIALOGUE", "id": "npc_alicia" }]
+    "scripts": {
+        "onInteract": [{ "type": "NPC_DIALOGUE", "id": "npc_alicia" }]
+    }
   },
   {
     "id": "npc_laura",
@@ -69,7 +91,9 @@
     "symbol": "L",
     "cssClass": "tile-npc-laura",
     "trigger": "touch",
-    "actions": [{ "type": "NPC_DIALOGUE", "id": "npc_laura" }]
+    "scripts": {
+        "onInteract": [{ "type": "NPC_DIALOGUE", "id": "npc_laura" }]
+    }
   },
   {
     "id": "npc_weapon_shop",
@@ -77,7 +101,9 @@
     "symbol": "W",
     "cssClass": "tile-npc-weapon",
     "trigger": "touch",
-    "actions": [{ "type": "NPC_DIALOGUE", "id": "npc_weapon_shop" }]
+    "scripts": {
+        "onInteract": [{ "type": "NPC_DIALOGUE", "id": "npc_weapon_shop" }]
+    }
   },
   {
     "id": "npc_auction",
@@ -85,7 +111,9 @@
     "symbol": "$",
     "cssClass": "tile-npc-auction",
     "trigger": "touch",
-    "actions": [{ "type": "NPC_DIALOGUE", "id": "npc_auction" }]
+    "scripts": {
+        "onInteract": [{ "type": "NPC_DIALOGUE", "id": "npc_auction" }]
+    }
   },
   {
     "id": "npc_daphne",
@@ -93,7 +121,9 @@
     "symbol": "D",
     "cssClass": "tile-npc-daphne",
     "trigger": "touch",
-    "actions": [{ "type": "NPC_DIALOGUE", "id": "npc_daphne" }]
+    "scripts": {
+        "onInteract": [{ "type": "NPC_DIALOGUE", "id": "npc_daphne" }]
+    }
   },
   {
     "id": "npc_gate_guard",
@@ -101,17 +131,24 @@
     "symbol": "G",
     "cssClass": "tile-npc-guard",
     "trigger": "touch",
-    "actions": [{ "type": "NPC_DIALOGUE", "id": "npc_gate_guard" }]
+    "scripts": {
+        "onInteract": [{ "type": "NPC_DIALOGUE", "id": "npc_gate_guard" }]
+    }
   },
   {
     "id": "trap",
     "type": "trap",
     "symbol": "T",
     "cssClass": "tile-trap",
-    "trigger": "touch",
+    "trigger": "step",
     "hidden": true,
     "trapValue": 5,
-    "actions": [{ "type": "TRAP_TRIGGER", "damage": 5, "message": "You triggered a spike trap!" }]
+    "scripts": {
+        "onEnter": [
+            { "type": "DAMAGE_PARTY", "amount": 5, "message": "You triggered a spike trap!" },
+            { "type": "PLAY_SOUND", "name": "DAMAGE" }
+        ]
+    }
   },
   {
     "id": "treasure",
@@ -119,86 +156,111 @@
     "symbol": "$",
     "cssClass": "tile-treasure",
     "trigger": "touch",
-    "actions": [{ "type": "TREASURE" }]
+    "scripts": {
+        "onInteract": [
+             { "type": "GIVE_ITEM", "itemType": "random" }
+        ]
+    }
   },
   {
     "id": "shrine_shade",
     "type": "shrine_scenario",
-    "title": "Whispering Shade",
-    "description": "A whisper from beyond promises knowledge... at a price.",
-    "choices": [
-      {
-        "label": "Offer HP (lose 3 HP each, gain XP)",
-        "effect": { "type": "multi", "effects": [
-          { "type": "hp", "value": -3, "target": "all" },
-          { "type": "xp", "value": 4, "target": "all" }
+    "script": [
+        { "type": "TEXT", "title": "Whispering Shade", "text": "A whisper from beyond promises knowledge... at a price.", "style": "terminal" },
+        { "type": "CHOICE", "options": [
+            {
+                "label": "Offer HP (lose 3 HP each, gain XP)",
+                "script": [
+                    { "type": "DAMAGE_PARTY", "amount": 3 },
+                    { "type": "GIVE_XP", "amount": 4 }
+                ]
+            },
+            {
+                "label": "Decline",
+                "script": [
+                    { "type": "LOG", "text": "[Shrine] You ignore the whispers." }
+                ]
+            }
         ]}
-      },
-      {
-        "label": "Decline",
-        "effect": { "type": "message", "value": "[Shrine] You ignore the whispers." }
-      }
     ]
   },
   {
     "id": "shrine_idol",
     "type": "shrine_scenario",
-    "title": "Gleaming Idol",
-    "description": "A gleaming idol stands before you, radiating warmth. Touching it could imbue power or curse you.",
-    "choices": [
-      {
-        "label": "Touch the idol",
-        "effect": { "type": "random", "outcomes": [
-          { "chance": 0.5, "effect": { "type": "maxHp", "value": 2, "target": "all" } },
-          { "chance": 0.5, "effect": { "type": "hp", "value": -2, "target": "all" } }
+    "script": [
+        { "type": "TEXT", "title": "Gleaming Idol", "text": "A gleaming idol stands before you, radiating warmth. Touching it could imbue power or curse you.", "style": "terminal" },
+        { "type": "CHOICE", "options": [
+            {
+                "label": "Touch the idol",
+                "script": [
+                     { "type": "WEIGHTED_BRANCH", "outcomes": [
+                         { "chance": 0.5, "script": [ { "type": "LOG", "text": "MaxHP +2 (Simulated)" } ] },
+                         { "chance": 0.5, "script": [ { "type": "DAMAGE_PARTY", "amount": 2 } ] }
+                     ]}
+                ]
+            },
+            {
+                "label": "Walk away",
+                "script": [
+                    { "type": "LOG", "text": "[Shrine] You leave the idol untouched." }
+                ]
+            }
         ]}
-      },
-      {
-        "label": "Walk away",
-        "effect": { "type": "message", "value": "[Shrine] You leave the idol untouched." }
-      }
     ]
   },
   {
     "id": "shrine_spirit",
     "type": "shrine_scenario",
-    "title": "Bargaining Spirit",
-    "description": "A translucent merchant appears, offering to trade gold for knowledge.",
-    "choices": [
-      {
-        "label": "Pay 5G for knowledge",
-        "effect": { "type": "gold", "value": -5, "onSuccess": { "type": "xp", "value": 6, "target": "all" } }
-      },
-      {
-        "label": "Attempt to bargain",
-        "effect": { "type": "random", "outcomes": [
-          { "chance": 0.5, "effect": { "type": "xp", "value": 4, "target": "all" } },
-          { "chance": 0.5, "effect": { "type": "gold", "value": -2 } }
+    "script": [
+        { "type": "TEXT", "title": "Bargaining Spirit", "text": "A translucent merchant appears, offering to trade gold for knowledge.", "style": "terminal" },
+        { "type": "CHOICE", "options": [
+            {
+                "label": "Pay 5G for knowledge",
+                "script": [
+                    { "type": "TAKE_GOLD", "value": 5 },
+                    { "type": "GIVE_XP", "amount": 6 }
+                ]
+            },
+            {
+                "label": "Attempt to bargain",
+                "script": [
+                    { "type": "WEIGHTED_BRANCH", "outcomes": [
+                        { "chance": 0.5, "script": [ { "type": "GIVE_XP", "amount": 4 } ] },
+                        { "chance": 0.5, "script": [ { "type": "TAKE_GOLD", "value": 2 } ] }
+                    ]}
+                ]
+            },
+            {
+                "label": "Leave",
+                "script": [
+                    { "type": "LOG", "text": "[Shrine] You refuse the deal." }
+                ]
+            }
         ]}
-      },
-      {
-        "label": "Leave",
-        "effect": { "type": "message", "value": "[Shrine] You refuse the deal." }
-      }
     ]
   },
   {
     "id": "shrine_haste",
     "type": "shrine_scenario",
-    "title": "Trial of Haste",
-    "description": "A spectral stopwatch hovers in the air, its ticking echoing in your mind. It offers a challenge: a trial of speed for a reward.",
-    "choices": [
-      {
-        "label": "Accept the trial (high risk, high reward)",
-        "effect": { "type": "random", "outcomes": [
-          { "chance": 0.4, "effect": { "type": "xp", "value": 15, "target": "all" } },
-          { "chance": 0.6, "effect": { "type": "hp", "value": -5, "target": "all" } }
+    "script": [
+        { "type": "TEXT", "title": "Trial of Haste", "text": "A spectral stopwatch hovers in the air, its ticking echoing in your mind. It offers a challenge: a trial of speed for a reward.", "style": "terminal" },
+        { "type": "CHOICE", "options": [
+            {
+                "label": "Accept the trial (high risk, high reward)",
+                "script": [
+                    { "type": "WEIGHTED_BRANCH", "outcomes": [
+                        { "chance": 0.4, "script": [ { "type": "GIVE_XP", "amount": 15 } ] },
+                        { "chance": 0.6, "script": [ { "type": "DAMAGE_PARTY", "amount": 5 } ] }
+                    ]}
+                ]
+            },
+            {
+                "label": "Take a small reward instead",
+                "script": [
+                    { "type": "GIVE_GOLD", "value": 10 }
+                ]
+            }
         ]}
-      },
-      {
-        "label": "Take a small reward instead",
-        "effect": { "type": "gold", "value": 10 }
-      }
     ]
   }
 ]
