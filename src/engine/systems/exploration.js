@@ -18,7 +18,6 @@ export class ExplorationSystem {
     createSession(mapData, context) {
         const state = new ExplorationState();
         // Generate floors
-        // Note: Legacy Game_Map used mapData array.
         state.floors = mapData.map((meta, i) =>
             this.generator.generate(meta, i, context.eventDefs, context.npcData, context.party, context.actors)
         );
@@ -71,8 +70,8 @@ export class ExplorationSystem {
         if (event) {
             const isHidden = this._isEventHidden(event, party);
             if (!isHidden) {
-                // Visible event blocking movement (e.g., breakable wall)
-                if (tile === '#') {
+                // Check if obstacle (NPC, Wall, Blocking Event)
+                if (tile === '#' || event.isObstacle) {
                     return { type: 'INTERACT', event };
                 }
             }
@@ -119,15 +118,6 @@ export class ExplorationSystem {
         const floor = state.floors[state.floorIndex];
         const results = [];
 
-        // Use a mock/shim for Game_Map if event.update expects it.
-        // Legacy event.update(map, party) uses map.playerX, map.floors[...].
-        // We can pass `state` as `map` if the structure matches sufficiently.
-        // ExplorationState has floors, floorIndex, playerX, playerY.
-        // It misses removeEvent, MAX_W (it's in config).
-        // I might need to wrap state or modify Event code.
-        // For now, assume Event logic handles 'map' interface duck-typing.
-        // But Event logic might call map.removeEvent.
-
         // Let's create a facade for the map argument expected by event.update
         const mapFacade = {
             ...state, // Spread props (playerX, playerY, floorIndex, floors)
@@ -138,8 +128,6 @@ export class ExplorationSystem {
 
         if (floor.events) {
             floor.events.forEach(event => {
-                // We need to ensure event.update is available.
-                // Events are likely Game_Event instances.
                 if (event.update) {
                     const res = event.update(mapFacade, party);
                     if (res) results.push({ type: 'EVENT', event: res.event || event }); // Wrap collision

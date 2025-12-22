@@ -36,15 +36,13 @@ export class Game_Event {
     if (data.isObstacle !== undefined) {
         this.isObstacle = data.isObstacle;
     } else {
-        // Default logic: most things are passable unless they are specific blocking types?
-        // Actually, the old code listed PASSABLE types. Everything else was blocked.
-        const passableTypes = ['enemy', 'shrine', 'recovery', 'trap', 'stairs', 'recruit', 'treasure'];
-        // NPCs are typically obstacles unless specified?
-        // Let's assume obstacles by default if not in passable list
-        this.isObstacle = !passableTypes.includes(this.type) && this.type !== 'npc' && this.id !== 'enemy';
-        // Note: NPCs were obstacles in findPath check?
-        // "if (event) ... passableTypes.includes ... return true; else return false;"
-        // So yes, unknown types are obstacles.
+        // Only specific types are passable (walkable).
+        // Traps, Stairs, Recovery points are generally walked ONTO.
+        // NPCs, Shops, Enemies, Chests are generally bumped INTO (Obstacles).
+        const passableTypes = ['trap', 'stairs', 'recovery'];
+
+        // If it's NOT a passable type, it IS an obstacle.
+        this.isObstacle = !passableTypes.includes(this.type);
     }
   }
 
@@ -76,10 +74,8 @@ export class Game_Event {
                       // Check obstacle property if available, otherwise assume obstacle
                       if (event.isObstacle !== undefined) return !event.isObstacle;
 
-                      // Fallback for events without the property (shouldn't happen with new ctor but safety)
-                      const passableTypes = ['enemy', 'shrine', 'recovery', 'trap', 'stairs', 'recruit', 'treasure'];
-                      if (passableTypes.includes(event.type) || event.id === 'enemy') return true;
-                      return false;
+                      const passableTypes = ['trap', 'stairs', 'recovery'];
+                      return passableTypes.includes(event.type);
                   }
 
                   return true;
@@ -104,8 +100,8 @@ export class Game_Event {
                       let canPass = false;
                       if (targetEvent.isObstacle !== undefined) canPass = !targetEvent.isObstacle;
                       else {
-                          const passableTypes = ['enemy', 'shrine', 'recovery', 'trap', 'stairs', 'recruit', 'treasure'];
-                          if (passableTypes.includes(targetEvent.type) || targetEvent.id === 'enemy') canPass = true;
+                          const passableTypes = ['trap', 'stairs', 'recovery'];
+                          if (passableTypes.includes(targetEvent.type)) canPass = true;
                       }
 
                       if (canPass) {
