@@ -318,7 +318,7 @@ export class Window_PartyPanel extends Window_Base {
  */
 export class Window_LogPanel extends Window_Base {
     constructor() {
-        super(0, 0, '100%', '230', { title: "Event Log", embedded: true });
+        super(0, 0, '100%', 'auto', { title: "Event Log", embedded: true });
         this.element.classList.add("log-panel");
 
         this.header.style.display = "none";
