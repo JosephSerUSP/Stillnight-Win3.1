@@ -148,6 +148,41 @@ export class Window_Event extends Window_Base {
   }
 
   show(data) {
+      // Determine new text content to check for equality
+      let newTextContent = "";
+      if (Array.isArray(data.description)) {
+           newTextContent = data.description.join('\n');
+      } else if (typeof data.description === 'string') {
+           newTextContent = data.description;
+      }
+
+      // Check if we can perform a partial update (Choices only)
+      // This prevents the text from being cleared and re-typed if it hasn't changed.
+      const previousTextContent = this._currentTextContent;
+      const isSameText = (previousTextContent === newTextContent) && newTextContent !== "";
+      const isSameLayout = this.currentData && this.currentData.layout === (data.layout || 'standard');
+
+      if (isSameText && isSameLayout && this.isFullyOpen) {
+          this.updateChoices(data.choices);
+
+          if (data.layout === 'visual_novel') {
+                let speakers = data.speakers;
+                // Fallback logic matching the main block
+                if (!speakers && data.portrait) {
+                    speakers = [{ id: data.portrait, emotion: data.emotion, active: true }];
+                }
+
+                if (speakers && speakers.length > 0) {
+                    this.updatePortraits(speakers);
+                }
+           }
+
+          this.currentData = data;
+          return;
+      }
+
+      this._currentTextContent = newTextContent;
+
       // Clear lingering choices immediately to prevent layout jumps/stale interactions
       this.footer.innerHTML = "";
 

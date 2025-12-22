@@ -378,6 +378,8 @@ export class InterpreterAdapter {
             this.director = new DirectorSystem();
         }
         this._activeNpc = { id: graphId, data: graphData };
+        this._lastDescription = null;
+        this._lastSpeakers = null;
         const observer = {
             onNode: (node) => this._renderGraphNode(node),
             onAction: (node) => this._executeGraphAction(node),
@@ -410,14 +412,34 @@ export class InterpreterAdapter {
             });
         }
 
+        // Context Persistence: Use last description if current node (CHOICE) has none
+        let description = node.content;
+        if ((description === undefined || description === null) && node.type === 'CHOICE' && this._lastDescription) {
+            description = this._lastDescription;
+        }
+
+        if (node.content) {
+            this._lastDescription = node.content;
+        }
+
         let speakers = node.speakers;
+
+        // Context Persistence: Use last speakers if current node (CHOICE) has none
+        if (!speakers && node.type === 'CHOICE' && this._lastSpeakers) {
+             speakers = this._lastSpeakers;
+        }
+
+        if (speakers) {
+             this._lastSpeakers = speakers;
+        }
+
         if (!speakers && graphData.layout === 'visual_novel' && graphData.portrait) {
              speakers = [{ id: graphData.portrait, active: true, emotion: 'neutral' }];
         }
 
         this.scene.hudManager.eventWindow.show({
             title: graphData.name || "Event",
-            description: node.content || "",
+            description: description || "",
             layout: graphData.layout || 'visual_novel',
             portrait: graphData.portrait,
             speakers: speakers,
