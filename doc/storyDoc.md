@@ -7,6 +7,7 @@ Fatal Frame: Tragic backstory, nature of "the dungeon", NPC depth.
 Dream Quest: Meta Progression.
 Evangelion: Character drama, Atmosphere, Depth.
 
+
 GENRE: Dungeon Crawler / Roguelite. Multiple runs with meta-progression.
 
 
