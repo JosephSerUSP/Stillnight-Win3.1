@@ -227,8 +227,8 @@
       "discussion_part1": {
         "text": "Laura: Well, aren't we a sorry looking bunch today? The dungeon air does wonders for the complexion, really.",
         "speakers": [
-            { "portrait": "NPC_Laura", "active": true },
-            { "portrait": "NPC_Alicia", "active": false }
+            { "portrait": "NPC_Alicia", "active": false },
+            { "portrait": "NPC_Laura", "active": true }
         ],
         "choices": [
             { "label": "Continue", "nextState": "discussion_part2" }
@@ -237,8 +237,8 @@
       "discussion_part2": {
         "text": "Alicia: Laura! Be nice... they're doing their best! It's just... a bit scary down here.",
         "speakers": [
-            { "portrait": "NPC_Laura", "active": false },
-            { "portrait": "NPC_Alicia", "active": true }
+            { "portrait": "NPC_Alicia", "active": true },
+            { "portrait": "NPC_Laura", "active": false }
         ],
         "choices": [
             { "label": "Continue", "nextState": "discussion_part3" }
@@ -247,8 +247,8 @@
       "discussion_part3": {
         "text": "Laura: Scary? Darling, the only scary thing is the fashion sense of those goblins. Right, Summoner?",
         "speakers": [
-            { "portrait": "NPC_Laura", "active": true, "emotion": "laughter" },
-            { "portrait": "NPC_Alicia", "active": false }
+            { "portrait": "NPC_Alicia", "active": false },
+            { "portrait": "NPC_Laura", "active": true, "emotion": "laughter" }
         ],
         "choices": [
             { "label": "Agreed", "nextState": "discussion_part4" },
@@ -258,8 +258,8 @@
       "discussion_part4": {
          "text": "Alicia: ...I think we should keep moving.",
          "speakers": [
-             { "portrait": "NPC_Laura", "active": false },
-             { "portrait": "NPC_Alicia", "active": true, "emotion": "neutral" }
+             { "portrait": "NPC_Alicia", "active": true, "emotion": "neutral" },
+             { "portrait": "NPC_Laura", "active": false }
          ],
          "choices": [
              { "label": "Leave", "action": "close" }

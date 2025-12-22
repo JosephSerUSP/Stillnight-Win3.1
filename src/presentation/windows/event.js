@@ -1,5 +1,6 @@
 import { Window_Base } from "./base.js";
 import { setPortrait, createIcon } from "./utils.js";
+import { Graphics } from "../../core/utils.js";
 
 /**
  * @class Window_Recruit
@@ -20,7 +21,9 @@ export class Window_Recruit extends Window_Base {
 export class Window_Event extends Window_Base {
   constructor() {
     // Dynamic height is handled by 'auto'.
-    super('center', 'center', 520, 'auto', { title: "Event", id: "event-window" });
+    const baseWidth = 520;
+    super('center', 'center', baseWidth, 'auto', { title: "Event", id: "event-window" });
+    this.baseWidth = baseWidth;
 
     // --- Standard Event Layout Elements ---
     this.imageContainer = document.createElement("div");
@@ -166,20 +169,37 @@ export class Window_Event extends Window_Base {
           this.standardBody.style.display = "none";
           this.vnContainer.style.display = "flex";
 
-          // Setup Portraits
+          // Setup Portraits and Adjust Width
+          let speakers = [];
           if (data.speakers) {
-              this.renderSpeakers(data.speakers);
+              speakers = data.speakers;
           } else if (data.portrait) {
-              this.renderSpeakers([{ portrait: data.portrait, emotion: data.emotion || 'neutral', active: true }]);
-          } else {
-              this.renderSpeakers([]);
+              speakers = [{ portrait: data.portrait, emotion: data.emotion || 'neutral', active: true }];
           }
+
+          this.renderSpeakers(speakers);
+
+          // Resize Window based on speakers
+          // Base (1 speaker) = 520px
+          // Each extra speaker adds 128px
+          const speakerCount = speakers.length || 1;
+          const extraSpeakers = Math.max(0, speakerCount - 1);
+          const newWidth = this.baseWidth + (extraSpeakers * 128);
+
+          this.element.style.width = `${newWidth}px`;
+          // Recalculate center
+          const left = (Graphics.width - newWidth) / 2;
+          this.element.style.left = `${left}px`;
 
           // Target Element for Text
           this.targetTextEl = this.vnTextContainer;
 
       } else {
-          // Standard Layout
+          // Standard Layout (reset width)
+          this.element.style.width = `${this.baseWidth}px`;
+          const left = (Graphics.width - this.baseWidth) / 2;
+          this.element.style.left = `${left}px`;
+
           this.vnContainer.style.display = "none";
           this.standardBody.style.display = "flex";
 
