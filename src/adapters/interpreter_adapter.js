@@ -530,8 +530,8 @@ export class InterpreterAdapter {
             });
         }
 
-        let speakers = undefined;
-        if (graphData.layout === 'visual_novel' && graphData.portrait) {
+        let speakers = node.speakers;
+        if (!speakers && graphData.layout === 'visual_novel' && graphData.portrait) {
              speakers = [{ id: graphData.portrait, active: true, emotion: 'neutral' }];
         }
 
