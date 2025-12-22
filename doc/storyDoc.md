@@ -18,6 +18,13 @@ Summoners are the few capable of delving safely into the dungeon, as they can re
 Summoned creatures slowly drain the summoner's MP - running out of MP is a death sentence, gravely crippling the creatures and draining their HP. Knowing when to return to town is essential.
 Having a Return Bead in hand is one such way, but they are rare.
 
+LOCATIONS:
+
+Abandoned House: It becomes the Player's house - they can stay here for free and restore all health and MP. 
+Sometimes NPCs show up to talk to the player, sometimes they leave gifts, and sometimes there are events in the middle of the night.
+
+
+
 NPCS:
 
 Alicia: Libra, 27y. 
