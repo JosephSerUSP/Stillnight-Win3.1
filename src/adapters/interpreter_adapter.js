@@ -431,31 +431,38 @@ export class InterpreterAdapter {
     }
 
     _executeGraphAction(node) {
-        if (node.action === 'OPEN_SHOP') {
-            this.scene.startShop(node.shopId);
-            this.director.advance();
-        } else if (node.action === 'TELEPORT') {
-            this.director.end();
+        try {
+            if (node.action === 'OPEN_SHOP') {
+                this.scene.startShop(node.shopId);
+                this.director.advance();
+            } else if (node.action === 'TELEPORT') {
+                this.director.end();
+                this.closeEvent();
+                this._descendStairs();
+            } else if (node.action === 'OFFER_QUEST') {
+                // Bridge Graph to System Command which then emits UI event?
+                // Actually, Graph Action is executing here directly from Director.
+                // We should use the same UI flow as the command.
+                this._openQuestOffer(node.questId, {
+                    nextState: node.next,
+                    acceptState: node.acceptNode,
+                    declineState: node.declineNode
+                });
+            } else if (node.action === 'COMPLETE_QUEST') {
+                this._completeQuest(node.questId, {
+                    nextState: node.next,
+                    completeState: node.completeNode
+                });
+            } else if (node.action === 'close') {
+                this.director.end();
+            } else {
+                 this.director.advance();
+            }
+        } catch (error) {
+            console.error("InterpreterAdapter: Error executing graph action", error);
+            this.scene.logMessage(`[Error] Event action failed: ${error.message}`);
+            // Attempt to recover by ending event
             this.closeEvent();
-            this._descendStairs();
-        } else if (node.action === 'OFFER_QUEST') {
-            // Bridge Graph to System Command which then emits UI event?
-            // Actually, Graph Action is executing here directly from Director.
-            // We should use the same UI flow as the command.
-            this._openQuestOffer(node.questId, {
-                nextState: node.next,
-                acceptState: node.acceptNode,
-                declineState: node.declineNode
-            });
-        } else if (node.action === 'COMPLETE_QUEST') {
-            this._completeQuest(node.questId, {
-                nextState: node.next,
-                completeState: node.completeNode
-            });
-        } else if (node.action === 'close') {
-            this.director.end();
-        } else {
-             this.director.advance();
         }
     }
 
@@ -502,56 +509,65 @@ export class InterpreterAdapter {
         const quest = this._getQuestDefinition(questId);
         if (!quest) {
             console.warn(`Quest '${questId}' not found.`);
+            this.scene.logMessage(`[Error] Quest data missing for '${questId}'.`);
+            // Attempt to fallback to decline state or just advance
+            if (this.director) this.director.advance();
             return;
         }
 
-        const status = QuestSystem.getStatus(this.session.quests, questId);
-        const questData = this._enrichQuestRewards(quest);
+        try {
+            const status = QuestSystem.getStatus(this.session.quests, questId);
+            const questData = this._enrichQuestRewards(quest);
 
-        const onAccept = () => {
-            const result = QuestSystem.acceptQuest(this.session.quests, questId);
-            if (result.ok) {
-                this.scene.logMessage(`[Quest] Accepted: ${quest.name}.`);
-                this.scene.setStatus(`Quest accepted: ${quest.name}`);
-                AudioAdapter.play('UI_SELECT');
+            const onAccept = () => {
+                const result = QuestSystem.acceptQuest(this.session.quests, questId);
+                if (result.ok) {
+                    this.scene.logMessage(`[Quest] Accepted: ${quest.name}.`);
+                    this.scene.setStatus(`Quest accepted: ${quest.name}`);
+                    AudioAdapter.play('UI_SELECT');
+                    this.windowManager.close(this.scene.hudManager.questWindow);
+
+                    const nextState = choice.acceptState || choice.nextState;
+                    if (this.director && nextState) {
+                        this.director.walker.moveTo(nextState);
+                        this.director.processCurrentNode();
+                    } else if (this.director) { // Fallback if in graph but no state
+                        this.director.advance();
+                    } else {
+                        this.closeEvent();
+                    }
+                } else {
+                    this.scene.logMessage(`[Quest] ${quest.name} is already ${result.reason}.`);
+                }
+            };
+
+            const onDecline = () => {
                 this.windowManager.close(this.scene.hudManager.questWindow);
-
-                const nextState = choice.acceptState || choice.nextState;
+                const nextState = choice.declineState;
                 if (this.director && nextState) {
                     this.director.walker.moveTo(nextState);
                     this.director.processCurrentNode();
-                } else if (this.director) { // Fallback if in graph but no state
+                } else if (this.director) {
                     this.director.advance();
                 } else {
                     this.closeEvent();
                 }
-            } else {
-                this.scene.logMessage(`[Quest] ${quest.name} is already ${result.reason}.`);
-            }
-        };
+            };
 
-        const onDecline = () => {
-            this.windowManager.close(this.scene.hudManager.questWindow);
-            const nextState = choice.declineState;
-            if (this.director && nextState) {
-                this.director.walker.moveTo(nextState);
-                this.director.processCurrentNode();
-            } else if (this.director) {
-                this.director.advance();
-            } else {
-                this.closeEvent();
+            this.scene.hudManager.questWindow.show({
+                quest: questData,
+                npcName: this._activeNpc?.data?.name,
+                status,
+                onAccept,
+                onDecline,
+            });
+            if (!this.windowManager.stack.includes(this.scene.hudManager.questWindow)) {
+                this.windowManager.push(this.scene.hudManager.questWindow);
             }
-        };
-
-        this.scene.hudManager.questWindow.show({
-            quest: questData,
-            npcName: this._activeNpc?.data?.name,
-            status,
-            onAccept,
-            onDecline,
-        });
-        if (!this.windowManager.stack.includes(this.scene.hudManager.questWindow)) {
-            this.windowManager.push(this.scene.hudManager.questWindow);
+        } catch (err) {
+            console.error("Error opening quest offer:", err);
+            this.scene.logMessage("[Error] Failed to open quest window.");
+            if (this.director) this.director.advance();
         }
     }
 
@@ -559,34 +575,53 @@ export class InterpreterAdapter {
         const quest = this._getQuestDefinition(questId);
         if (!quest) {
             console.warn(`Quest '${questId}' not found.`);
+            this.scene.logMessage(`[Error] Quest data missing for '${questId}'.`);
+            if (this.director) this.director.advance();
             return;
         }
 
-        const result = QuestSystem.completeQuest(this.session.quests, quest, this.party, this.dataManager);
-        if (result.ok) {
-            this.scene.logMessage(`[Quest] Completed: ${quest.name}.`);
-            this.scene.setStatus(`${quest.name} completed.`);
-            AudioAdapter.play('ITEM_GET');
+        try {
+            const result = QuestSystem.completeQuest(this.session.quests, quest, this.party, this.dataManager);
+            if (result.ok) {
+                this.scene.logMessage(`[Quest] Completed: ${quest.name}.`);
+                this.scene.setStatus(`${quest.name} completed.`);
+                AudioAdapter.play('ITEM_GET');
 
-            const nextState = choice.completeState || choice.nextState;
-            if (this.director && nextState) {
-                this.director.walker.moveTo(nextState);
-                this.director.processCurrentNode();
-            } else if (this.director) {
-                this.director.advance();
-            } else {
-                this.closeEvent();
+                const nextState = choice.completeState || choice.nextState;
+                if (this.director && nextState) {
+                    this.director.walker.moveTo(nextState);
+                    this.director.processCurrentNode();
+                } else if (this.director) {
+                    this.director.advance();
+                } else {
+                    this.closeEvent();
+                }
+                this.scene.updateAll();
+                return;
             }
-            this.scene.updateAll();
-            return;
-        }
 
-        if (result.reason === 'requirements') {
-            this.scene.logMessage(`[Quest] You still need to bring the requested item.`);
-        } else if (result.reason === 'completed') {
-            this.scene.logMessage(`[Quest] ${quest.name} is already complete.`);
-        } else {
-            this.scene.logMessage(`[Quest] ${quest.name} is not active.`);
+            if (result.reason === 'requirements') {
+                this.scene.logMessage(`[Quest] You still need to bring the requested item.`);
+            } else if (result.reason === 'completed') {
+                this.scene.logMessage(`[Quest] ${quest.name} is already complete.`);
+            } else {
+                this.scene.logMessage(`[Quest] ${quest.name} is not active.`);
+            }
+
+            // If failed to complete, we might want to stay on current node or advance?
+            // Usually we stay or show failure text.
+            // Since this is an ACTION node, if we don't advance, we are stuck.
+            // But usually COMPLETE_QUEST action is triggered by a choice "Hand over item".
+            // If it fails, we should probably fall back to a failure node if provided?
+            // The graph logic in npc_laura.json uses a ROUTER to check `hasItem` first.
+            // So `action_complete_quest` should only be reached if requirements are met (mostly).
+            // But if it fails for other reasons, we advance to keep flow moving.
+            if (this.director) this.director.advance();
+
+        } catch (err) {
+             console.error("Error completing quest:", err);
+             this.scene.logMessage("[Error] Failed to complete quest.");
+             if (this.director) this.director.advance();
         }
     }
 }

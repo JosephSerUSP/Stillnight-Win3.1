@@ -92,6 +92,10 @@ export class Window_Event extends Window_Base {
     });
 
     this.choicesEl = this.footer;
+
+    // Keyboard Navigation
+    this._inputListener = null;
+    this._selectedIndex = 0;
   }
 
   onOpenComplete() {
@@ -114,11 +118,6 @@ export class Window_Event extends Window_Base {
       this.portraitWrapper.innerHTML = "";
 
       // Calculate required width
-      // Base width (520) allows for 1 portrait (128px) + Gap (10px) + Text.
-      // Actually base 520 was fine for 1 portrait.
-      // If we have extra portraits, we need to widen the window.
-      // Extra width per additional speaker = 128 (width) + 10 (gap) = 138px.
-
       const extraSpeakers = Math.max(0, speakers.length - 1);
       const newWidth = 520 + (extraSpeakers * 138);
 
@@ -226,25 +225,38 @@ export class Window_Event extends Window_Base {
           this.targetTextEl.classList.add('terminal-style');
       }
 
+      // Update choices immediately to establish layout size (fixing jitter)
+      this.updateChoices(data.choices);
+
       // Handle Text (Typewriter or Instant)
       let textContent = "";
+      let isInstant = false;
+
       if (Array.isArray(data.description)) {
           // Check for DOM nodes
           const hasNodes = data.description.some(l => l instanceof Node);
           if (hasNodes) {
-               // Render instantly
+               isInstant = true;
                data.description.forEach(line => this.appendLog(line, this.targetTextEl));
-               this.updateChoices(data.choices);
-               return;
+          } else {
+             textContent = data.description.join('\n');
           }
-          textContent = data.description.join('\n');
       } else if (data.description instanceof Node) {
+          isInstant = true;
           this.targetTextEl.appendChild(data.description);
-          this.updateChoices(data.choices);
-          return;
       } else {
           textContent = data.description || "";
       }
+
+      if (isInstant) {
+          this.setChoicesVisible(true);
+          this.resetSelection();
+          this.attachInputListener();
+          return;
+      }
+
+      // If not instant, hide choices until typing completes
+      this.setChoicesVisible(false);
 
       // Start Typewriter Logic
       const onComplete = () => {
@@ -252,7 +264,9 @@ export class Window_Event extends Window_Base {
           // from skipping text directly into a choice selection.
           setTimeout(() => {
               if (this.element.parentNode) { // Ensure window is still active
-                  this.updateChoices(data.choices);
+                   this.setChoicesVisible(true);
+                   this.resetSelection();
+                   this.attachInputListener();
               }
           }, 150);
       };
@@ -266,6 +280,79 @@ export class Window_Event extends Window_Base {
               onComplete
           };
       }
+  }
+
+  setChoicesVisible(visible) {
+      const val = visible ? 'visible' : 'hidden';
+      Array.from(this.footer.children).forEach(btn => {
+          if (btn.tagName === 'BUTTON') {
+               btn.style.visibility = val;
+          }
+      });
+  }
+
+  resetSelection() {
+      this._selectedIndex = 0;
+      this.updateSelection();
+  }
+
+  updateSelection() {
+      const buttons = Array.from(this.footer.children).filter(el => el.tagName === 'BUTTON');
+      if (buttons.length === 0) return;
+
+      if (this._selectedIndex < 0) this._selectedIndex = buttons.length - 1;
+      if (this._selectedIndex >= buttons.length) this._selectedIndex = 0;
+
+      buttons.forEach((btn, index) => {
+          if (index === this._selectedIndex) {
+              btn.focus();
+              btn.classList.add('selected');
+          } else {
+              btn.blur();
+              btn.classList.remove('selected');
+          }
+      });
+  }
+
+  moveSelection(delta) {
+      this._selectedIndex += delta;
+      this.updateSelection();
+  }
+
+  triggerSelection() {
+      const buttons = Array.from(this.footer.children).filter(el => el.tagName === 'BUTTON');
+      if (buttons[this._selectedIndex]) {
+          buttons[this._selectedIndex].click();
+      }
+  }
+
+  attachInputListener() {
+      if (this._inputListener) return;
+      this._inputListener = (e) => {
+          if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+              e.preventDefault();
+              this.moveSelection(-1);
+          } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+              e.preventDefault();
+              this.moveSelection(1);
+          } else if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              this.triggerSelection();
+          }
+      };
+      document.addEventListener('keydown', this._inputListener);
+  }
+
+  removeInputListener() {
+       if (this._inputListener) {
+           document.removeEventListener('keydown', this._inputListener);
+           this._inputListener = null;
+       }
+  }
+
+  close() {
+      this.removeInputListener();
+      super.close();
   }
 
   startTypewriter(text, container, onComplete) {
