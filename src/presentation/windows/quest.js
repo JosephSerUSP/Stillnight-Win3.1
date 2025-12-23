@@ -1,5 +1,7 @@
 import { Window_Base } from "./base.js";
+import { Window_Selectable } from "./selectable.js";
 import { createIcon } from "./utils.js";
+import { UI } from "./builder.js";
 
 /**
  * @class Window_Quest
@@ -172,6 +174,243 @@ export class Window_Quest extends Window_Base {
             }
         };
         document.addEventListener('keydown', this._inputListener);
+    }
+
+    removeInputListener() {
+         if (this._inputListener) {
+             document.removeEventListener('keydown', this._inputListener);
+             this._inputListener = null;
+         }
+    }
+
+    close() {
+        this.removeInputListener();
+        super.close();
+    }
+}
+
+/**
+ * @class Window_QuestLog
+ * @description Displays active and completed quests.
+ */
+export class Window_QuestLog extends Window_Selectable {
+    constructor() {
+        super('center', 'center', 600, 450, { title: "Quest Log", id: "quest-log-window" });
+
+        this.currentTab = 'active';
+        this.questData = { active: [], completed: [] };
+
+        // Keyboard Support
+        this._inputListener = null;
+
+        const structure = {
+            type: 'flex',
+            props: { style: { flexDirection: 'column', flex: '1', gap: '8px', overflow: 'hidden' } },
+            children: [
+                 {
+                    type: 'flex', // Tab Nav
+                    props: { className: 'tab-nav' },
+                    children: [
+                        { type: 'button', props: { className: 'tab-btn active', label: 'Active', onClick: () => this.switchTab('active') } },
+                        { type: 'button', props: { className: 'tab-btn', label: 'Completed', onClick: () => this.switchTab('completed') } }
+                    ]
+                 },
+                 {
+                     type: 'flex',
+                     props: { style: { flex: '1', gap: '8px', minHeight: '0' } },
+                     children: [
+                         {
+                             type: 'panel', // List
+                             props: { className: 'quest-list-panel', style: { width: '40%', display: 'flex', flexDirection: 'column', border: '1px solid var(--bezel-shadow)', background: 'var(--input-bg)' } },
+                             children: [
+                                 { type: 'panel', props: { className: 'quest-list-content', style: { flex: '1', overflowY: 'auto' } } }
+                             ]
+                         },
+                         {
+                             type: 'panel', // Details
+                             props: { className: 'quest-details-panel', style: { flex: '1', padding: '8px', border: '1px solid var(--bezel-shadow)', overflowY: 'auto' } },
+                             children: [
+                                 { type: 'label', props: { tag: 'h3', className: 'quest-detail-title', text: '', style: { marginTop: '0' } } },
+                                 { type: 'label', props: { tag: 'div', className: 'quest-detail-subtitle', text: '', style: { fontSize: '0.9em', color: '#aaa', marginBottom: '8px' } } },
+                                 { type: 'label', props: { tag: 'p', className: 'quest-detail-summary', text: '' } },
+                                 { type: 'label', props: { tag: 'h4', text: 'Objectives', style: { marginTop: '12px', marginBottom: '4px' } } },
+                                 { type: 'label', props: { tag: 'ul', className: 'quest-detail-objectives', style: { paddingLeft: '20px', margin: '0' } } },
+                                 { type: 'label', props: { tag: 'h4', text: 'Rewards', style: { marginTop: '12px', marginBottom: '4px' } } },
+                                 { type: 'label', props: { tag: 'ul', className: 'quest-detail-rewards', style: { paddingLeft: '20px', margin: '0' } } }
+                             ]
+                         }
+                     ]
+                 }
+            ]
+        };
+
+        const root = UI.build(this.content, structure);
+
+        this.btnTabActive = root.children[0].children[0];
+        this.btnTabCompleted = root.children[0].children[1];
+
+        this.listEl = root.children[1].children[0].children[0];
+        this.detailsEl = root.children[1].children[1];
+
+        this.detailTitle = this.detailsEl.querySelector('.quest-detail-title');
+        this.detailSubtitle = this.detailsEl.querySelector('.quest-detail-subtitle');
+        this.detailSummary = this.detailsEl.querySelector('.quest-detail-summary');
+        this.detailObjectives = this.detailsEl.querySelector('.quest-detail-objectives');
+        this.detailRewards = this.detailsEl.querySelector('.quest-detail-rewards');
+
+        this.addButton("Close", () => this.onUserClose());
+    }
+
+    setup(questData) {
+        this.questData = questData;
+        this.switchTab('active');
+        this.attachInputListener();
+    }
+
+    switchTab(tab) {
+        this.currentTab = tab;
+        this.btnTabActive.classList.toggle('active', tab === 'active');
+        this.btnTabCompleted.classList.toggle('active', tab === 'completed');
+
+        this.renderList();
+        // Select first item if available
+        if (this._data.length > 0) {
+            this.select(0);
+        } else {
+            this.deselect();
+            this.clearDetails();
+        }
+    }
+
+    renderList() {
+        this.listEl.innerHTML = "";
+        const items = this.questData[this.currentTab] || [];
+        this.setData(items); // Updates this._data for Window_Selectable
+
+        if (items.length === 0) {
+            const empty = document.createElement('div');
+            empty.textContent = "No quests.";
+            empty.style.padding = "8px";
+            empty.style.color = "#888";
+            this.listEl.appendChild(empty);
+            return;
+        }
+
+        items.forEach((q, idx) => {
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            item.style.padding = "4px 8px";
+            item.style.cursor = "pointer";
+            item.textContent = q.name;
+            item.dataset.index = idx;
+            // The click is handled by Window_Selectable delegation if we use standard data-index
+            // But Window_Selectable relies on click. We want to ensure focus.
+            // Let's rely on Window_Selectable's onClick for mouse.
+            this.listEl.appendChild(item);
+        });
+    }
+
+    // Override select to update details and visual state
+    select(index) {
+        super.select(index);
+
+        // Window_Selectable updates this._index
+        if (this._index >= 0 && this._data[this._index]) {
+            this.renderDetails(this._data[this._index]);
+        }
+
+        // Update visual selection class
+        Array.from(this.listEl.children).forEach((el) => {
+             if (el.dataset.index == index) el.classList.add('selected');
+             else el.classList.remove('selected');
+        });
+
+        // Ensure visible
+        const selectedEl = this.listEl.querySelector(`[data-index="${index}"]`);
+        if (selectedEl) {
+            selectedEl.scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    renderDetails(quest) {
+        if (!quest) {
+            this.clearDetails();
+            return;
+        }
+
+        this.detailTitle.textContent = quest.name;
+        this.detailSubtitle.textContent = quest.giver ? `From: ${quest.giver}` : '';
+        this.detailSummary.textContent = quest.description;
+
+        this.detailObjectives.innerHTML = "";
+        (quest.objectives || []).forEach(obj => {
+            const li = document.createElement('li');
+            li.textContent = obj;
+            this.detailObjectives.appendChild(li);
+        });
+
+        this.detailRewards.innerHTML = "";
+        if (quest.rewards) {
+             if (quest.rewards.gold) {
+                const li = document.createElement('li');
+                const icon = createIcon(85);
+                li.appendChild(icon);
+                li.append(` ${quest.rewards.gold} Gold`);
+                this.detailRewards.appendChild(li);
+             }
+             if (Array.isArray(quest.rewards.items)) {
+                for (const item of quest.rewards.items) {
+                    const li = document.createElement('li');
+                    const icon = createIcon(item.icon || 173);
+                    li.appendChild(icon);
+                    li.append(` ${item.qty || 1}x ${item.name || item.id}`);
+                    this.detailRewards.appendChild(li);
+                }
+             }
+        }
+    }
+
+    clearDetails() {
+        this.detailTitle.textContent = "No Quest Selected";
+        this.detailSubtitle.textContent = "";
+        this.detailSummary.textContent = "";
+        this.detailObjectives.innerHTML = "";
+        this.detailRewards.innerHTML = "";
+    }
+
+    attachInputListener() {
+        if (this._inputListener) return;
+        this._inputListener = (e) => {
+            if (!this.isFullyOpen) return;
+
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                this.moveSelection(-1);
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                this.moveSelection(1);
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                // Optional: Switch Tabs
+                if (this.currentTab === 'completed') this.switchTab('active');
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                // Optional: Switch Tabs
+                if (this.currentTab === 'active') this.switchTab('completed');
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                this.onUserClose();
+            }
+        };
+        document.addEventListener('keydown', this._inputListener);
+    }
+
+    moveSelection(delta) {
+        if (this._data.length === 0) return;
+        let newIndex = this._index + delta;
+        if (newIndex < 0) newIndex = this._data.length - 1;
+        if (newIndex >= this._data.length) newIndex = 0;
+        this.select(newIndex);
     }
 
     removeInputListener() {
