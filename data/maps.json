@@ -33,6 +33,7 @@
       { "id": "npc_laura", "x": 12, "y": 5 },
       { "id": "npc_weapon_shop", "x": 4, "y": 5 },
       { "id": "npc_auction", "x": 4, "y": 13 },
+      { "id": "npc_gambler", "x": 6, "y": 9 },
       { "id": "npc_gate_guard", "x": 9, "y": 16 }
     ],
     "treasures": [],
