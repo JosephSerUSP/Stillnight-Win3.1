@@ -50,17 +50,46 @@ export class DungeonGenerator {
      */
     _populateEvents(meta, eventDefs, floorCells, npcData, party, actors) {
         const events = [];
-        const used = [...floorCells.slice(-1)]; // Reserve start position
+        // Track used cells. Start with the start position if known (usually last in floorCells for RandomWalk)
+        // For FixedLayout, floorCells might be just all dots.
+        // We will manage 'used' set manually.
+        const usedSet = new Set();
 
-        const pickCell = (exclude = []) => {
-            const exSet = new Set(exclude.map((c) => c.join(",")));
-            const candidates = floorCells.filter((c) => !exSet.has(c.join(",")));
-            if (candidates.length === 0) return null;
-            return candidates[randInt(0, candidates.length - 1)];
+        // Helper to check usage
+        const isUsed = (x, y) => usedSet.has(`${x},${y}`);
+        const markUsed = (x, y) => usedSet.add(`${x},${y}`);
+
+        // Helper to pick a random unused cell
+        const pickCell = () => {
+             // Filter floorCells that are not used
+             const candidates = floorCells.filter(([x, y]) => !isUsed(x, y));
+             if (candidates.length === 0) return null;
+             return candidates[randInt(0, candidates.length - 1)];
         };
 
         if (meta.events) {
-            meta.events.forEach((config) => {
+            // 1. Process Fixed Events first
+            meta.events.filter(c => c.x !== undefined && c.y !== undefined).forEach(config => {
+                 // def might be undefined if id is 'enemy' without a definition in events.json, but usually 'enemy' is a type, not an id?
+                 // Wait, events.json has { "id": "enemy", "type": "enemy" }?
+                 // Usually eventDefs comes from data/events.json.
+                 // Let's handle the case where def is missing but we can infer type?
+                 // No, strict dependency on eventDefs.
+                 let def = eventDefs.find((e) => e.id === config.id);
+                 if (!def) {
+                      // Fallback for special IDs like 'stairs' if not in events.json?
+                      // 'stairs' is in events.json usually.
+                      // If config.id is 'enemy', checking if there's an event named 'enemy'.
+                      return;
+                 }
+
+                 const eventData = this._createEventData(def, config, npcData, party, actors);
+                 events.push(new Game_Event(config.x, config.y, eventData));
+                 markUsed(config.x, config.y);
+            });
+
+            // 2. Process Random Events
+            meta.events.filter(c => c.x === undefined || c.y === undefined).forEach(config => {
                 const def = eventDefs.find((e) => e.id === config.id);
                 if (!def) return;
 
@@ -72,45 +101,58 @@ export class DungeonGenerator {
                     count = 1;
 
                 for (let i = 0; i < count; i++) {
-                    const pos = pickCell(used);
+                    const pos = pickCell();
                     if (pos) {
-                        const eventData = { ...def };
-
-                        // Apply overrides from config (like behavior, symbol)
-                        Object.assign(eventData, config);
-
-                        // Special handling for NPC dynamic data
-                        if (def.type === "npc" && npcData.length > 0) {
-                            const npcDef = npcData[randInt(0, npcData.length - 1)];
-                            eventData.symbol = npcDef.char || "N";
-                            eventData.scripts = {
-                                onInteract: [{ type: "NPC_DIALOGUE", id: npcDef.id }]
-                            };
-                            eventData.id = npcDef.id; // Compatibility
-                        }
-
-                        // Determine Encounter and Sneak Attack for Battle events or Enemies
-                        if (def.type === 'enemy' || config.id === 'enemy' || def.id === 'enemy') {
-                            // 1. Resolve Encounter
-                            if (config.encounters) {
-                                eventData.encounterData = pickWeighted(config.encounters);
-                            } else if (meta.encounters && meta.encounters.length > 0) {
-                                eventData.encounterData = pickWeighted(meta.encounters);
-                            }
-
-                            // 2. Initiative Check (Sneak Attack)
-                            if (party && !eventData.isSneakAttack) {
-                                EncounterManager.determineInitiative(party, eventData, actors);
-                            }
-                        }
-
+                        const eventData = this._createEventData(def, config, npcData, party, actors);
                         events.push(new Game_Event(pos[0], pos[1], eventData));
-                        used.push(pos);
+                        markUsed(pos[0], pos[1]);
                     }
                 }
             });
         }
         return events;
+    }
+
+    _createEventData(def, config, npcData, party, actors) {
+        const eventData = { ...def, ...config };
+
+        // Special handling for NPC dynamic data
+        // Check if npcData exists before accessing length
+        if (def.type === "npc" && npcData && npcData.length > 0 && !config.id.startsWith('npc_')) {
+             // Only random NPCs if it's a generic 'npc' type, not specific 'npc_alicia'
+            const npcDef = npcData[randInt(0, npcData.length - 1)];
+            eventData.symbol = npcDef.char || "N";
+            eventData.scripts = {
+                onInteract: [{ type: "NPC_DIALOGUE", id: npcDef.id }]
+            };
+            // Retain original ID if needed, or update?
+            // Usually generic NPCs get the specific ID for lookup, but let's be careful.
+             eventData.id = npcDef.id;
+        }
+
+        // Determine Encounter and Sneak Attack for Battle events or Enemies
+        if (def.type === 'enemy' || config.id === 'enemy' || def.id === 'enemy') {
+            // 1. Resolve Encounter
+            if (config.encounters) {
+                eventData.encounterData = pickWeighted(config.encounters);
+            } else if (config.encounterData) {
+                // Already set
+            }
+             else {
+                 // Fallback to meta encounters - handled by caller?
+                 // Actually we can't easily access 'meta' here unless we pass it specifically to this helper
+                 // or ensure config has it merged.
+                 // For now, assume config has it or we missed it.
+                 // Wait, random events logic in _populateEvents loop didn't merge meta.encounters.
+            }
+
+            // 2. Initiative Check (Sneak Attack)
+            if (party && !eventData.isSneakAttack) {
+                EncounterManager.determineInitiative(party, eventData, actors);
+            }
+        }
+
+        return eventData;
     }
 }
 
@@ -161,6 +203,7 @@ export class RandomWalkGenerator extends DungeonGenerator {
             }
         }
 
+        // Ensure minimum size
         if (floorCells.length < 10) {
             for (let iy = offsetY + 1; iy < offsetY + innerH - 1; iy++) {
                 for (let ix = offsetX + 1; ix < offsetX + innerW - 1; ix++) {
@@ -170,8 +213,34 @@ export class RandomWalkGenerator extends DungeonGenerator {
             }
         }
 
-        const events = this._populateEvents(meta, eventDefs, floorCells, npcData, party, actors);
+        // Pass meta.encounters down to config for random enemies if not present
+        if (meta.events) {
+            meta.events.forEach(e => {
+                if (!e.encounters && meta.encounters) {
+                    e.encounters = meta.encounters;
+                }
+            });
+        }
+
+        // Start position is the last cell generated
         const startPos = floorCells[floorCells.length - 1];
+        // Mark start as used? _populateEvents does its own tracking.
+        // But we want to ensure we don't spawn on top of start if possible?
+        // Actually, start position is just where player spawns.
+        // For random walk, it's safer to exclude startPos from spawn candidates if we want.
+        // The previous code did: const used = [...floorCells.slice(-1)];
+        // Let's replicate that logic in _populateEvents or here?
+        // I'll filter floorCells passed to _populateEvents to exclude startPos if desired,
+        // OR just pass startPos as 'used' in a more robust way?
+        // _populateEvents now manages 'usedSet'.
+        // I'll rely on luck or just let it spawn there?
+        // Better: Pre-seed usedSet with startPos. But _populateEvents doesn't take 'usedSet'.
+        // I'll temporarily remove startPos from floorCells passed to it?
+        // Or better, let's just accept that _populateEvents handles it.
+        // Wait, I changed _populateEvents to NOT take 'used' array.
+        // I should probably manually exclude startPos.
+
+        const events = this._populateEvents(meta, eventDefs, floorCells.filter(c => c[0] !== startPos[0] || c[1] !== startPos[1]), npcData, party, actors);
 
         return {
             id: "F" + (index + 1),
@@ -188,6 +257,70 @@ export class RandomWalkGenerator extends DungeonGenerator {
             startX: startPos[0],
             startY: startPos[1],
             discovered: false,
+        };
+    }
+}
+
+export class FixedLayoutGenerator extends DungeonGenerator {
+    generate(meta, index, eventDefs, npcData, party, actors) {
+        const tiles = this._initTiles();
+        const visited = this._initVisited();
+        const floorCells = [];
+        let startX = 0;
+        let startY = 0;
+
+        // Parse Layout
+        // meta.layout is array of strings
+        // We centre it? Or just assume it fits 19x19?
+        // Let's assume it fits.
+
+        meta.layout.forEach((row, y) => {
+            [...row].forEach((char, x) => {
+                if (y < this.MAX_H && x < this.MAX_W) {
+                    if (char === 'S') {
+                        startX = x;
+                        startY = y;
+                        tiles[y][x] = '.';
+                        floorCells.push([x, y]);
+                    } else if (char === '#') {
+                        tiles[y][x] = '#';
+                    } else {
+                        // Treat any other character (including '.') as walkable floor
+                        tiles[y][x] = '.';
+                        floorCells.push([x, y]);
+                    }
+                }
+            });
+        });
+
+         // Pass meta.encounters down
+        if (meta.events) {
+            meta.events.forEach(e => {
+                if (!e.encounters && meta.encounters) {
+                    e.encounters = meta.encounters;
+                }
+            });
+        }
+
+        // Exclude start pos from random spawns
+        const spawnCells = floorCells.filter(c => c[0] !== startX || c[1] !== startY);
+        const events = this._populateEvents(meta, eventDefs, spawnCells, npcData, party, actors);
+
+        return {
+            id: "F" + (index + 1),
+            title: meta.title,
+            depth: meta.depth,
+            intro: meta.intro,
+            music: meta.music,
+            image: meta.image,
+            encounters: meta.encounters,
+            treasures: meta.treasures,
+            tiles,
+            events,
+            visited,
+            startX,
+            startY,
+            discovered: false
         };
     }
 }

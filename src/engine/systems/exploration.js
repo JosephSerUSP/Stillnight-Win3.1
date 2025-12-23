@@ -1,12 +1,13 @@
 import { ExplorationState } from "../session/exploration_state.js";
-import { RandomWalkGenerator } from "../../generators/dungeon_generator.js";
+import { RandomWalkGenerator, FixedLayoutGenerator } from "../../generators/dungeon_generator.js";
 
 /**
  * System for Exploration logic (Movement, Interaction, Visibility).
  */
 export class ExplorationSystem {
     constructor() {
-        this.generator = new RandomWalkGenerator();
+        this.randomGenerator = new RandomWalkGenerator();
+        this.fixedGenerator = new FixedLayoutGenerator();
     }
 
     /**
@@ -18,9 +19,10 @@ export class ExplorationSystem {
     createSession(mapData, context) {
         const state = new ExplorationState();
         // Generate floors
-        state.floors = mapData.map((meta, i) =>
-            this.generator.generate(meta, i, context.eventDefs, context.npcData, context.party, context.actors)
-        );
+        state.floors = mapData.map((meta, i) => {
+            const generator = meta.layout ? this.fixedGenerator : this.randomGenerator;
+            return generator.generate(meta, i, context.eventDefs, context.npcData, context.party, context.actors);
+        });
 
         if (state.floors.length > 0) {
             const f = state.floors[0];

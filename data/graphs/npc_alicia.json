@@ -7,10 +7,39 @@
   "nodes": {
     "root_router": {
       "type": "ROUTER",
-      "condition": "flag:alicia_first_met",
-      "trueNode": "default_hub_text",
-      "falseNode": "intro_text"
+      "branches": [
+         { "condition": "questStatus:silent_shipment:active", "target": "quest_shipment_router" },
+         { "condition": "flag:alicia_first_met", "target": "default_hub_text" }
+      ],
+      "next": "intro_text"
     },
+
+    "quest_shipment_router": {
+      "type": "ROUTER",
+      "condition": "flag:shipment_investigated",
+      "trueNode": "default_hub_text",
+      "falseNode": "quest_shipment_text"
+    },
+
+    "quest_shipment_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "Oh! Are you looking for the supply cart? I heard it! I was listening to the wind near the chasm, and I heard squeaky wheels stop suddenly. Then... goblin noises. Lots of them.",
+      "next": "quest_shipment_choices"
+    },
+    "quest_shipment_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Goblins? I should tell the guard.", "target": "quest_shipment_resolve", "setFlag": "shipment_investigated" }
+      ]
+    },
+    "quest_shipment_resolve": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "Please be careful! If the goblins have the food, they'll be... energetic.",
+      "next": "default_hub_text"
+    },
+
     "intro_text": {
       "type": "TEXT",
       "speaker": "Alicia",

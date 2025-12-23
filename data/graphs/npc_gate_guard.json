@@ -6,10 +6,21 @@
   "nodes": {
     "default_router": {
       "type": "ROUTER",
-      "condition": "hasItem:guild_pass",
-      "trueNode": "allow_pass_text",
-      "falseNode": "deny_pass_text"
+      "branches": [
+        { "condition": "questStatus:silent_shipment:completed", "target": "quest_complete_text" },
+        { "condition": "questStatus:silent_shipment:active", "target": "quest_active_router" },
+        { "condition": "hasItem:guild_pass", "target": "allow_pass_text" }
+      ],
+      "next": "deny_pass_text"
     },
+
+    "quest_active_router": {
+      "type": "ROUTER",
+      "condition": "flag:shipment_investigated",
+      "trueNode": "quest_turn_in_text",
+      "falseNode": "quest_reminder_text"
+    },
+
     "deny_pass_text": {
       "type": "TEXT",
       "content": "No Guild Pass. Speak to the Guildmaster in town. And don’t try to slip past. I’ve buried faster people than you.",
@@ -18,9 +29,47 @@
     "deny_pass_choices": {
       "type": "CHOICE",
       "options": [
+        { "label": "Anything strange happening?", "target": "quest_offer_text", "condition": "questStatus:silent_shipment:inactive" },
         { "label": "Leave", "action": "close" }
       ]
     },
+
+    "quest_offer_text": {
+      "type": "TEXT",
+      "content": "Strange? Always. But the supply shipment is late. Very late. It usually comes through the old tunnel, but it's silent.",
+      "next": "quest_offer_choice"
+    },
+    "quest_offer_choice": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll investigate.", "action": "quest", "questId": "silent_shipment" },
+        { "label": "Not my problem.", "action": "close" }
+      ]
+    },
+
+    "quest_reminder_text": {
+      "type": "TEXT",
+      "content": "Any news on the shipment? Ask Alicia, she usually hears the carts coming.",
+      "next": "close_choice"
+    },
+
+    "quest_turn_in_text": {
+      "type": "TEXT",
+      "content": "So Alicia heard them stop near the chasm? Damn. That means goblins or worse. Thanks for the intel. I'll double the watch.",
+      "next": "quest_complete_action"
+    },
+    "quest_complete_action": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "silent_shipment",
+      "next": "quest_complete_text"
+    },
+    "quest_complete_text": {
+      "type": "TEXT",
+      "content": "You did good work. Watch your back out there.",
+      "next": "allow_pass_choices"
+    },
+
     "allow_pass_text": {
       "type": "TEXT",
       "content": "Guild Pass verified. Keep your MP above the red line. Don’t be a hero in there— heroes become stains.",
@@ -31,6 +80,7 @@
       "options": [
         { "label": "Enter Dungeon", "target": "action_teleport" },
         { "label": "Ask about stains.", "target": "allow_pass_stains_text" },
+        { "label": "Anything strange?", "target": "quest_offer_text", "condition": "questStatus:silent_shipment:inactive" },
         { "label": "Leave", "action": "close" }
       ]
     },
@@ -50,6 +100,12 @@
         { "label": "Enter Dungeon", "target": "action_teleport" },
         { "label": "Leave", "action": "close" }
       ]
+    },
+    "close_choice": {
+        "type": "CHOICE",
+        "options": [
+            { "label": "Leave", "action": "close" }
+        ]
     }
   }
 }
