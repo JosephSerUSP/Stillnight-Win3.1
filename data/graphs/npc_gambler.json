@@ -5,7 +5,7 @@
             "content": "Well met, traveler. I'm a collector of sorts. A collector of... numbers.",
             "next": "choice1",
             "portrait": "NPC_Raphael",
-            "speakers": [{ "id": "gambler", "name": "The Gambler", "active": true }]
+            "speakers": [{ "id": "NPC_Raphael", "name": "The Gambler", "active": true }]
         },
         "choice1": {
             "type": "CHOICE",
