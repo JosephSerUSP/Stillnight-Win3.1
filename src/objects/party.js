@@ -175,19 +175,22 @@ export class Game_Party {
 
   /**
    * Handles map steps. Drains MP and applies Weakened effects.
+   * @param {boolean} [isSafe=false] - If true, prevents MP drain and removes weakened state.
    * @returns {Array} List of events (e.g. damage logs).
    */
-  onStep() {
+  onStep(isSafe = false) {
       const events = [];
       const activeCount = this.activeMembers.length;
       if (activeCount === 0 || !this.summoner) return events;
 
-      // Drain MP
-      const mpCostPerStep = activeCount; // 1 MP per active creature
-      this.summoner.mp = Math.max(0, this.summoner.mp - mpCostPerStep);
+      // Drain MP (only if not safe)
+      if (!isSafe) {
+          const mpCostPerStep = activeCount; // 1 MP per active creature
+          this.summoner.mp = Math.max(0, this.summoner.mp - mpCostPerStep);
+      }
 
       // Check Weakened State
-      if (this.summoner.mp === 0) {
+      if (this.summoner.mp === 0 && !isSafe) {
           // Apply Weakened State if not already applied
           this.activeMembers.forEach(m => {
               if (!m.isStateAffected('weakened')) {
@@ -200,7 +203,7 @@ export class Game_Party {
               // events.push({ type: 'damage', target: m, value: damage }); // Too spammy for map?
           });
       } else {
-          // Remove Weakened State if applied
+          // Remove Weakened State if applied (either recovered MP or entered Safe Zone)
           this.activeMembers.forEach(m => {
               if (m.isStateAffected('weakened')) {
                   m.removeState('weakened');
