@@ -257,7 +257,8 @@ export class Scene_Map extends Scene_Base {
 
     // Summoner MP Drain / Weakened Check on successful move or interaction
     if (result.type === 'MOVED' || result.type === 'SEQUENCE') {
-        const stepEvents = this.party.onStep();
+        const isSafe = this.isSafeZone();
+        const stepEvents = this.party.onStep(isSafe);
         if (stepEvents.length > 0) {
             stepEvents.forEach(e => {
                 if (e.msg) this.logMessage(e.msg);
@@ -527,6 +528,11 @@ export class Scene_Map extends Scene_Base {
     if (this.hudManager.cardListWindow) {
         this.hudManager.cardListWindow.updateCardHeader(floor, this.map.floorIndex, this.map.floors.length);
     }
+  }
+
+  isSafeZone() {
+      const floor = this.map.floors[this.map.floorIndex];
+      return floor && floor.safe === true;
   }
 
   /**

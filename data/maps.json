@@ -3,6 +3,7 @@
     "title": "Town of Stillnight",
     "intro": "A quiet settlement on the edge of the void.",
     "depth": 0,
+    "safe": true,
     "music": "town1",
     "image": "TownAlencar.png",
     "layout": [
