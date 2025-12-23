@@ -40,6 +40,12 @@ export class Game_Party {
     this.storyFlags = {};
 
     /**
+     * Narrative variables for counters and values.
+     * @type {Object}
+     */
+    this.variables = {};
+
+    /**
      * Learned codex words.
      * @type {Array<string>}
      */
@@ -321,6 +327,58 @@ export class Game_Party {
       return true;
   }
 
+
+  /**
+   * Sets a narrative variable.
+   * @param {string} key - The variable name.
+   * @param {number|string} value - The value.
+   */
+  setVariable(key, value) {
+      this.variables[key] = value;
+  }
+
+  /**
+   * Gets a narrative variable.
+   * @param {string} key - The variable name.
+   * @returns {number|string|undefined} The value.
+   */
+  getVariable(key) {
+      return this.variables[key];
+  }
+
+  /**
+   * Modifies a numeric narrative variable.
+   * @param {string} key - The variable name.
+   * @param {string} operation - 'add', 'sub', 'mul', 'div', 'set'.
+   * @param {number} value - The operand.
+   */
+  modifyVariable(key, operation, value) {
+      let current = this.variables[key];
+      // Initialize if undefined and operation is math
+      if (current === undefined && operation !== 'set') {
+          current = 0;
+      }
+
+      switch (operation) {
+          case 'add':
+              this.variables[key] = current + value;
+              break;
+          case 'sub':
+              this.variables[key] = current - value;
+              break;
+          case 'mul':
+              this.variables[key] = current * value;
+              break;
+          case 'div':
+              this.variables[key] = Math.floor(current / value);
+              break;
+          case 'set':
+              this.variables[key] = value;
+              break;
+          default:
+              console.warn(`Game_Party: Unknown modify operation '${operation}'`);
+      }
+  }
 
   /**
    * Equips an item to a member, handling swaps and inventory updates.

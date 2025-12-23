@@ -163,6 +163,16 @@
     }
   },
   {
+    "id": "npc_gambler",
+    "type": "npc",
+    "symbol": "G",
+    "cssClass": "tile-npc-gambler",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_gambler" }]
+    }
+  },
+  {
     "id": "shrine_shade",
     "type": "shrine_scenario",
     "script": [
