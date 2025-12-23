@@ -167,7 +167,7 @@
     "type": "npc",
     "symbol": "G",
     "cssClass": "tile-npc-gambler",
-    "trigger": "touch",
+    "trigger": "step",
     "scripts": {
         "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_gambler" }]
     }
