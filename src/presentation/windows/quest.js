@@ -47,6 +47,10 @@ export class Window_Quest extends Window_Base {
         this.bodyEl.appendChild(this.rewardList);
 
         this.footer.classList.add('quest-footer');
+
+        // Keyboard Navigation
+        this._inputListener = null;
+        this._selectedIndex = 0;
     }
 
     /**
@@ -106,5 +110,79 @@ export class Window_Quest extends Window_Base {
         if (status !== 'inactive') {
             acceptBtn.disabled = true;
         }
+
+        // Prepare keyboard selection
+        this.resetSelection();
+        this.attachInputListener();
+    }
+
+    resetSelection() {
+        // Default to 'Accept' (last button) if enabled, otherwise 'Decline' (first button)
+        const buttons = Array.from(this.footer.children).filter(el => el.tagName === 'BUTTON');
+        if (buttons.length > 1 && !buttons[1].disabled) {
+             this._selectedIndex = 1; // Accept
+        } else {
+             this._selectedIndex = 0; // Decline
+        }
+        this.updateSelection();
+    }
+
+    updateSelection() {
+        const buttons = Array.from(this.footer.children).filter(el => el.tagName === 'BUTTON');
+        if (buttons.length === 0) return;
+
+        if (this._selectedIndex < 0) this._selectedIndex = buttons.length - 1;
+        if (this._selectedIndex >= buttons.length) this._selectedIndex = 0;
+
+        buttons.forEach((btn, index) => {
+            if (index === this._selectedIndex) {
+                btn.focus();
+                btn.classList.add('selected');
+            } else {
+                btn.blur();
+                btn.classList.remove('selected');
+            }
+        });
+    }
+
+    moveSelection(delta) {
+        this._selectedIndex += delta;
+        this.updateSelection();
+    }
+
+    triggerSelection() {
+        const buttons = Array.from(this.footer.children).filter(el => el.tagName === 'BUTTON');
+        if (buttons[this._selectedIndex] && !buttons[this._selectedIndex].disabled) {
+            buttons[this._selectedIndex].click();
+        }
+    }
+
+    attachInputListener() {
+        if (this._inputListener) return;
+        this._inputListener = (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                this.moveSelection(-1);
+            } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                this.moveSelection(1);
+            } else if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.triggerSelection();
+            }
+        };
+        document.addEventListener('keydown', this._inputListener);
+    }
+
+    removeInputListener() {
+         if (this._inputListener) {
+             document.removeEventListener('keydown', this._inputListener);
+             this._inputListener = null;
+         }
+    }
+
+    close() {
+        this.removeInputListener();
+        super.close();
     }
 }
