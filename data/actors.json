@@ -575,5 +575,81 @@
     "spriteKey": "egg",
     "gold": 0,
     "expGrowth": 20
+  },
+  {
+    "id": "s_daemon",
+    "name": "S-Daemon",
+    "level": 99,
+    "role": "NPC",
+    "maxHp": 999,
+    "spriteKey": "archangel",
+    "passives": [],
+    "elements": [],
+    "skills": [],
+    "flavor": "A System Daemon tasked with maintaining the integrity of the Stillnight OS.",
+    "expGrowth": 0,
+    "gold": 0,
+    "drops": [],
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": false,
+    "isEvolved": false
+  },
+  {
+    "id": "bit_rot",
+    "name": "Bit-Rot",
+    "level": 2,
+    "role": "Debuffer",
+    "maxHp": 13,
+    "spriteKey": "ooze",
+    "passives": [],
+    "elements": [
+      "Black"
+    ],
+    "skills": [
+      "boneRush"
+    ],
+    "flavor": "A glob of corrupted data that degrades everything it touches.",
+    "expGrowth": 3,
+    "gold": 10,
+    "drops": [
+      {
+        "itemId": "corrupted_key",
+        "chance": 0.2
+      }
+    ],
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false
+  },
+  {
+    "id": "memory_leak",
+    "name": "Memory-Leak",
+    "level": 5,
+    "role": "Caster",
+    "maxHp": 40,
+    "spriteKey": "wisp",
+    "passives": [],
+    "elements": [
+      "Blue",
+      "Black"
+    ],
+    "skills": [
+      "shadowClaw"
+    ],
+    "flavor": "An entity that consumes system resources, growing ever larger and more unstable.",
+    "expGrowth": 8,
+    "gold": 100,
+    "drops": [
+      {
+        "itemId": "firewall_pass",
+        "chance": 1
+      }
+    ],
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": false,
+    "isEvolved": false
   }
 ]

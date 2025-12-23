@@ -58,5 +58,72 @@
       "gold": 50,
       "xp": 100
     }
+  },
+  "system_corruption_detected": {
+    "name": "System Corruption Detected",
+    "giver": "S-Daemon",
+    "portrait": "s_daemon",
+    "summary": "Purge the Bit-Rot corruption from the first floor.",
+    "description": "The S-Daemon has detected rogue data fragments called 'Bit-Rot' and has tasked you with eliminating them to restore system integrity.",
+    "objectives": [
+      "Defeat 3 Bit-Rot entities.",
+      "Report back to the S-Daemon."
+    ],
+    "rewards": {
+      "gold": 50,
+      "xp": 100
+    }
+  },
+  "the_firewall": {
+    "name": "The Firewall",
+    "giver": "S-Daemon",
+    "portrait": "s_daemon",
+    "summary": "Retrieve a Firewall Pass from a Memory-Leak entity.",
+    "description": "A powerful 'Memory-Leak' entity is draining system resources. To analyze its defenses, the S-Daemon needs you to acquire a Firewall Pass it holds.",
+    "objectives": [
+      "Locate and defeat the Memory-Leak on a deeper floor.",
+      "Return the Firewall Pass to the S-Daemon."
+    ],
+    "requirements": {
+      "items": [
+        {
+          "id": "firewall_pass",
+          "qty": 1,
+          "consume": true
+        }
+      ]
+    },
+    "rewards": {
+      "gold": 200
+    }
+  },
+  "corrupted_data": {
+    "name": "Corrupted Data",
+    "giver": "S-Daemon",
+    "portrait": "s_daemon",
+    "summary": "Collect corrupted data fragments for the S-Daemon.",
+    "description": "The S-Daemon can analyze the 'Bit-Rot' corruption if you collect enough data fragments from them. These fragments can be repurposed into useful items.",
+    "objectives": [
+      "Collect 5 Corrupted Keys.",
+      "Bring them to the S-Daemon."
+    ],
+    "requirements": {
+      "items": [
+        {
+          "id": "corrupted_key",
+          "qty": 5,
+          "consume": true
+        }
+      ]
+    },
+    "rewards": {
+      "gold": 75,
+      "items": [
+        {
+          "id": "hp_boost1",
+          "qty": 1
+        }
+      ]
+    }
   }
 }

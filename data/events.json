@@ -326,5 +326,25 @@
     "scripts": {
         "onEnter": [{ "type": "TEXT", "text": "The temple is quiet. You feel a sense of peace.", "style": "terminal" }]
     }
+  },
+  {
+    "id": "npc_s_daemon",
+    "type": "npc",
+    "symbol": "D",
+    "cssClass": "tile-npc-daemon",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "s_daemon" }]
+    }
+  },
+  {
+    "id": "boss_memory_leak",
+    "type": "enemy",
+    "symbol": "M",
+    "cssClass": "tile-enemy-boss",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "BATTLE", "encounterData": { "enemies": ["memory_leak"], "fixed": true } }]
+    }
   }
 ]

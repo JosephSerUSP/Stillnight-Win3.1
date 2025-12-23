@@ -56,6 +56,7 @@
       { "id": "enemy", "min": 2, "max": 3 },
       { "id": "recruit", "chance": 0.5 },
       { "id": "treasure", "count": 1 },
+      { "id": "npc_s_daemon", "count": 1 },
       {
           "id": "enemy",
           "count": 1,
@@ -112,7 +113,8 @@
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 4, "max": 6 },
       { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
+      { "id": "recruit", "chance": 0.7 },
+      { "id": "boss_memory_leak", "count": 1 }
     ],
     "encounters": [
       { "id": "golem", "weight": 6 },

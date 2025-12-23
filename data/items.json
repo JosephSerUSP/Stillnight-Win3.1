@@ -410,5 +410,21 @@
     "cost": 0,
     "icon": 218,
     "description": "A heavy golden ring, unmarked and waiting for a new story. Laura can reshape it into something precious."
+  },
+  {
+    "id": "corrupted_key",
+    "name": "Corrupted Key",
+    "type": "quest",
+    "cost": 0,
+    "icon": 219,
+    "description": "A key-shaped data fragment, leaking corrupted code. Used to unlock certain system processes."
+  },
+  {
+    "id": "firewall_pass",
+    "name": "Firewall Pass",
+    "type": "quest",
+    "cost": 0,
+    "icon": 220,
+    "description": "A temporary access token to bypass a low-level system firewall. Dropped by a Memory-Leak."
   }
 ]
