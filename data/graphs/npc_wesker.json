@@ -1,0 +1,45 @@
+{
+  "id": "npc_wesker",
+  "name": "Wesker",
+  "layout": "visual_novel",
+  "portrait": "NPC_Wesker",
+  "initialNode": "root_router",
+  "nodes": {
+    "root_router": {
+      "type": "ROUTER",
+      "branches": [
+         { "condition": "flag:wesker_revealed", "target": "wesker_taunt" }
+      ],
+      "next": "intro_text"
+    },
+    "intro_text": {
+      "type": "TEXT",
+      "speaker": "Wesker",
+      "content": "You're doing well. Keep pushing forward.",
+      "next": "intro_choices"
+    },
+    "intro_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Thanks, Captain.", "action": "close" },
+        { "label": "Something feels off.", "target": "suspicion_text" }
+      ]
+    },
+    "suspicion_text": {
+      "type": "TEXT",
+      "speaker": "Wesker",
+      "content": "Focus on the mission. Emotions will only get you killed.",
+      "next": "intro_choices"
+    },
+    "wesker_taunt": {
+      "type": "TEXT",
+      "speaker": "Wesker",
+      "content": "The Tyrant is a magnificent creature, isn't it? And you... you were just a test subject.",
+      "next": "wesker_leave"
+    },
+    "wesker_leave": {
+        "type": "CHOICE",
+        "options": [{ "label": "Wesker!", "action": "close" }]
+    }
+  }
+}

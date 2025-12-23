@@ -410,5 +410,189 @@
     "cost": 0,
     "icon": 218,
     "description": "A heavy golden ring, unmarked and waiting for a new story. Laura can reshape it into something precious."
+  },
+  {
+    "id": "green_herb",
+    "name": "Green Herb",
+    "type": "consumable",
+    "cost": 20,
+    "description": "A healing herb native to the Arklay Mountains. Heals 30 HP.",
+    "icon": 53,
+    "effects": [{ "type": "hp", "value": 30 }]
+  },
+  {
+    "id": "red_herb",
+    "name": "Red Herb",
+    "type": "consumable",
+    "cost": 50,
+    "description": "Enhances the potency of other herbs. No effect on its own.",
+    "icon": 54,
+    "effects": []
+  },
+  {
+    "id": "mixed_herb",
+    "name": "Mixed Herb (G+R)",
+    "type": "consumable",
+    "cost": 100,
+    "description": "A mixture of green and red herbs. Fully restores HP.",
+    "icon": 55,
+    "effects": [{ "type": "hp", "value": 999 }]
+  },
+  {
+    "id": "first_aid_spray",
+    "name": "First Aid Spray",
+    "type": "consumable",
+    "cost": 200,
+    "description": "Fully restores HP. Used for emergencies.",
+    "icon": 56,
+    "effects": [{ "type": "hp", "value": 999 }]
+  },
+  {
+    "id": "handgun",
+    "name": "Samurai Edge",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 500,
+    "icon": 100,
+    "description": "Standard issue S.T.A.R.S. handgun. Reliable.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 5 },
+      { "code": "SKILL_ADD", "dataId": "magnumShot" }
+    ]
+  },
+  {
+    "id": "shotgun",
+    "name": "W-870 Shotgun",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 1200,
+    "icon": 101,
+    "description": "Pump-action shotgun. Good for crowd control.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 8 },
+      { "code": "SKILL_ADD", "dataId": "shotgunBlast" }
+    ]
+  },
+  {
+    "id": "magnum",
+    "name": "Lightning Hawk",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 2500,
+    "icon": 102,
+    "description": "High-powered magnum. Kills most things in one shot.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 15 },
+      { "code": "SKILL_ADD", "dataId": "magnumShot" }
+    ]
+  },
+  {
+    "id": "rocket_launcher",
+    "name": "Rocket Launcher",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 9999,
+    "icon": 103,
+    "description": "The ultimate bio-weapon neutralizer. One shot is all you need.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 999 },
+      { "code": "SKILL_ADD", "dataId": "rocketLauncher" }
+    ]
+  },
+  {
+    "id": "spade_key",
+    "name": "Spade Key",
+    "type": "quest",
+    "cost": 0,
+    "icon": 200,
+    "description": "A key with a Spade emblem."
+  },
+  {
+    "id": "diamond_key",
+    "name": "Diamond Key",
+    "type": "quest",
+    "cost": 0,
+    "icon": 201,
+    "description": "A key with a Diamond emblem."
+  },
+  {
+    "id": "heart_key",
+    "name": "Heart Key",
+    "type": "quest",
+    "cost": 0,
+    "icon": 202,
+    "description": "A key with a Heart emblem."
+  },
+  {
+    "id": "club_key",
+    "name": "Club Key",
+    "type": "quest",
+    "cost": 0,
+    "icon": 203,
+    "description": "A key with a Club emblem."
+  },
+  {
+    "id": "lion_medallion",
+    "name": "Lion Medallion",
+    "type": "quest",
+    "cost": 0,
+    "icon": 210,
+    "description": "A medallion with a lion relief."
+  },
+  {
+    "id": "unicorn_medallion",
+    "name": "Unicorn Medallion",
+    "type": "quest",
+    "cost": 0,
+    "icon": 211,
+    "description": "A medallion with a unicorn relief."
+  },
+  {
+    "id": "maiden_medallion",
+    "name": "Maiden Medallion",
+    "type": "quest",
+    "cost": 0,
+    "icon": 212,
+    "description": "A medallion with a maiden relief."
+  },
+  {
+    "id": "g_virus_sample",
+    "name": "G-Virus Sample",
+    "type": "quest",
+    "cost": 0,
+    "icon": 220,
+    "description": "A vial containing the G-Virus."
+  },
+  {
+    "id": "vaccine_base",
+    "name": "Vaccine Base",
+    "type": "quest",
+    "cost": 0,
+    "icon": 221,
+    "description": "Base fluid for the vaccine."
+  },
+  {
+    "id": "t_antivirus",
+    "name": "T-Antivirus",
+    "type": "quest",
+    "cost": 0,
+    "icon": 222,
+    "description": "The cure for the T-Virus."
+  },
+  {
+    "id": "fuse_main",
+    "name": "Main Fuse",
+    "type": "quest",
+    "cost": 0,
+    "icon": 230,
+    "description": "A heavy industrial fuse."
+  },
+  {
+    "id": "valve_handle",
+    "name": "Valve Handle",
+    "type": "quest",
+    "cost": 0,
+    "icon": 231,
+    "description": "A handle for operating square valves."
   }
 ]

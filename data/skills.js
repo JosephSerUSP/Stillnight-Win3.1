@@ -157,5 +157,101 @@ export const skills = {
             { type: 'hp_drain', formula: '4 + 0.6 * a.level' },
             { type: 'add_status', status: 'sleep', chance: 0.5, duration: 3 }
         ]
+    },
+
+    // Biohazard Skills
+    bite: {
+        id: 'bite',
+        name: 'Bite',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "A savage bite that may infect the victim.",
+        effects: [
+            { type: 'hp_damage', formula: '5 + 1.5 * a.atk' },
+            { type: 'add_status', status: 'infected', chance: 0.3 }
+        ]
+    },
+    clawSlash: {
+        id: 'clawSlash',
+        name: 'Claw Slash',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "A deadly swipe with sharp claws.",
+        effects: [
+            { type: 'hp_damage', formula: '8 + 1.8 * a.atk' }
+        ]
+    },
+    tongueLash: {
+        id: 'tongueLash',
+        name: 'Tongue Lash',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "A long-range tongue strike. May cause blindness.",
+        effects: [
+            { type: 'hp_damage', formula: '10 + 1.5 * a.atk' },
+            { type: 'add_status', status: 'blind', chance: 0.5 }
+        ]
+    },
+    acidSpit: {
+        id: 'acidSpit',
+        name: 'Acid Spit',
+        target: 'enemy-any',
+        element: 'Green',
+        description: "Corrosive acid.",
+        effects: [
+            { type: 'hp_damage', formula: '15 + 2.0 * a.atk' },
+            { type: 'add_status', status: 'poison', chance: 0.8 }
+        ]
+    },
+    tentacleStrike: {
+        id: 'tentacleStrike',
+        name: 'Tentacle Strike',
+        target: 'enemy-all',
+        element: 'Red',
+        description: "A sweeping attack hitting all enemies.",
+        effects: [
+            { type: 'hp_damage', formula: '20 + 2.5 * a.atk' }
+        ]
+    },
+    shotgunBlast: {
+        id: 'shotgunBlast',
+        name: 'Shotgun Blast',
+        target: 'enemy-all',
+        element: 'Red',
+        description: "Wide spread damage.",
+        effects: [
+            { type: 'hp_damage', formula: '30 + 1.0 * a.atk' }
+        ]
+    },
+    rocketLauncher: {
+        id: 'rocketLauncher',
+        name: 'Rocket Launcher',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "Massive explosive damage.",
+        effects: [
+            { type: 'hp_damage', formula: '999' }
+        ]
+    },
+    magnumShot: {
+        id: 'magnumShot',
+        name: 'Magnum Shot',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "High caliber round.",
+        effects: [
+            { type: 'hp_damage', formula: '50 + 3.0 * a.atk' }
+        ]
+    },
+    flamethrower: {
+        id: 'flamethrower',
+        name: 'Flamethrower',
+        target: 'enemy-all',
+        element: 'Red',
+        description: "Burns everything.",
+        effects: [
+            { type: 'hp_damage', formula: '10 + 0.5 * a.atk' },
+            { type: 'add_status', status: 'burn', chance: 1.0 } // Assuming burn exists or will be added, if not, it will be ignored or cause error. Just sticking to damage for now.
+        ]
     }
 };

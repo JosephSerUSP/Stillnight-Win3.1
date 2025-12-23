@@ -1,0 +1,70 @@
+{
+  "id": "npc_nemesis",
+  "name": "Nemesis",
+  "layout": "visual_novel",
+  "portrait": "NPC_Nemesis",
+  "initialNode": "root_router",
+  "nodes": {
+    "root_router": {
+      "type": "ROUTER",
+      "branches": [
+         { "condition": "questStatus:nemesis_final:completed", "target": "quest_completed_text" },
+         { "condition": "questStatus:nemesis_final:active", "target": "encounter_start" }
+      ],
+      "next": "encounter_start_offer"
+    },
+    "encounter_start_offer": {
+        "type": "TEXT",
+        "speaker": "Nemesis",
+        "content": "STAAAAAARS....",
+        "next": "action_offer_quest"
+    },
+    "action_offer_quest": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "nemesis_final",
+      "acceptNode": "encounter_start",
+      "declineNode": "encounter_start"
+    },
+    "encounter_start": {
+      "type": "TEXT",
+      "speaker": "Nemesis",
+      "content": "STAAAAAARS....",
+      "next": "encounter_choice"
+    },
+    "encounter_choice": {
+       "type": "CHOICE",
+       "options": [
+           { "label": "Fight!", "target": "boss_battle" }
+       ]
+    },
+    "boss_battle": {
+        "type": "ACTION",
+        "action": "BATTLE",
+        "enemies": ["nemesis"],
+        "next": "post_battle"
+    },
+    "post_battle": {
+        "type": "TEXT",
+        "speaker": "System",
+        "content": "The monster dissolves into a pile of organic sludge.",
+        "next": "action_complete_quest"
+    },
+    "action_complete_quest": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "nemesis_final",
+      "completeNode": "quest_completed_text"
+    },
+    "quest_completed_text": {
+      "type": "TEXT",
+      "speaker": "Narrator",
+      "content": "The nightmare is over. You have escaped Raccoon City.",
+      "next": "game_end_choice"
+    },
+    "game_end_choice": {
+        "type": "CHOICE",
+        "options": [{ "label": "Fin.", "action": "close" }]
+    }
+  }
+}

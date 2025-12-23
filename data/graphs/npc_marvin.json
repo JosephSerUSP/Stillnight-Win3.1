@@ -1,0 +1,138 @@
+{
+  "id": "npc_marvin",
+  "name": "Marvin",
+  "layout": "visual_novel",
+  "portrait": "NPC_Marvin",
+  "initialNode": "root_router",
+  "nodes": {
+    "root_router": {
+      "type": "ROUTER",
+      "branches": [
+         { "condition": "questStatus:lost_officer:completed", "target": "quest2_completed_text" },
+         { "condition": "questStatus:lost_officer:active", "target": "quest2_active_text" },
+         { "condition": "questStatus:lockdown:completed", "target": "quest2_offer_text" },
+         { "condition": "questStatus:lockdown:active", "target": "quest1_active_text" }
+      ],
+      "next": "quest1_offer_text"
+    },
+
+    "quest1_offer_text": {
+      "type": "TEXT",
+      "speaker": "Marvin",
+      "content": "Officer... I'm glad you made it. But this place... it's compromised. I'm not going to make it, but you might.",
+      "next": "quest1_offer_text2"
+    },
+    "quest1_offer_text2": {
+      "type": "TEXT",
+      "speaker": "Marvin",
+      "content": "The West Wing is locked down. You need the Spade Key. It's in the records room, or maybe on a desk... I can't remember. Find it.",
+      "next": "quest1_offer_choices"
+    },
+    "quest1_offer_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'm on it.", "target": "action_offer_quest1" },
+        { "label": "You need a doctor.", "target": "marvin_refusal" }
+      ]
+    },
+    "marvin_refusal": {
+      "type": "TEXT",
+      "speaker": "Marvin",
+      "content": "Forget about me! Just go! Before it's too late!",
+      "next": "quest1_offer_choices"
+    },
+    "action_offer_quest1": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "lockdown",
+      "acceptNode": "quest1_active_text",
+      "declineNode": "quest1_offer_choices"
+    },
+    "quest1_active_text": {
+      "type": "TEXT",
+      "speaker": "Marvin",
+      "content": "The Spade Key... West Wing. Don't hesitate.",
+      "next": "quest1_active_router"
+    },
+    "quest1_active_router": {
+      "type": "ROUTER",
+      "condition": "hasItem:spade_key",
+      "trueNode": "quest1_turnin_text",
+      "falseNode": "quest1_exit"
+    },
+    "quest1_exit": {
+        "type": "CHOICE",
+        "options": [{ "label": "Leave", "action": "close" }]
+    },
+    "quest1_turnin_text": {
+      "type": "TEXT",
+      "speaker": "Marvin",
+      "content": "You found it. Good. That opens the library and the waiting room.",
+      "next": "action_complete_quest1"
+    },
+    "action_complete_quest1": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "lockdown",
+      "completeNode": "quest2_offer_text"
+    },
+
+    "quest2_offer_text": {
+      "type": "TEXT",
+      "speaker": "Marvin",
+      "content": "There's one more thing. Officer Elliot... he went East. He thought he found a way out. I haven't heard from him.",
+      "next": "quest2_offer_choices"
+    },
+    "quest2_offer_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll find him.", "target": "action_offer_quest2" }
+      ]
+    },
+    "action_offer_quest2": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "lost_officer",
+      "acceptNode": "quest2_active_text",
+      "declineNode": "quest2_offer_choices"
+    },
+    "quest2_active_text": {
+      "type": "TEXT",
+      "speaker": "Marvin",
+      "content": "Elliot is smart. He might have left notes. Find his notebook if you can't save him.",
+      "next": "quest2_active_router"
+    },
+    "quest2_active_router": {
+      "type": "ROUTER",
+      "condition": "flag:found_elliot_notebook",
+      "trueNode": "quest2_turnin_text",
+      "falseNode": "quest2_exit"
+    },
+    "quest2_exit": {
+        "type": "CHOICE",
+        "options": [{ "label": "Leave", "action": "close" }]
+    },
+    "quest2_turnin_text": {
+      "type": "TEXT",
+      "speaker": "Marvin",
+      "content": "This notebook... it explains the medallions. The statue. It's the way out.",
+      "next": "action_complete_quest2"
+    },
+    "action_complete_quest2": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "lost_officer",
+      "completeNode": "quest2_completed_text"
+    },
+    "quest2_completed_text": {
+      "type": "TEXT",
+      "speaker": "Marvin",
+      "content": "Go. I'll... hold the fort. Just go.",
+      "next": "quest2_completed_choices"
+    },
+    "quest2_completed_choices": {
+       "type": "CHOICE",
+       "options": [{ "label": "Goodbye, Marvin.", "action": "close" }]
+    }
+  }
+}
