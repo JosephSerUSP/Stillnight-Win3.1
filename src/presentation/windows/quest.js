@@ -1,6 +1,6 @@
 import { Window_Base } from "./base.js";
 import { Window_Selectable } from "./selectable.js";
-import { createIcon, createInteractiveLabel } from "./utils.js";
+import { createIcon, createInteractiveLabel, setPortrait } from "./utils.js";
 import { UI } from "./builder.js";
 
 /**
@@ -64,6 +64,13 @@ export class Window_Quest extends Window_Base {
         this.titleText.textContent = quest.name;
         this.subtitleEl.textContent = npcName ? `Offered by ${npcName}` : quest.giver || '';
         this.summaryEl.textContent = quest.description || quest.summary;
+
+        if (quest.portrait) {
+            setPortrait(this.portraitEl, quest.portrait);
+            this.portraitEl.style.display = 'block';
+        } else {
+            this.portraitEl.style.display = 'none';
+        }
 
         this.statusTag.textContent = status === 'completed' ? 'Completed' : status === 'active' ? 'In Progress' : 'New Quest';
         this.statusTag.dataset.status = status;
@@ -280,6 +287,7 @@ export class Window_QuestLog extends Window_Selectable {
         this.listEl = root.children[1].children[0].children[0];
         this.detailsEl = root.children[1].children[1];
 
+        this.detailPortrait = this.detailsEl.querySelector('.quest-detail-portrait');
         this.detailTitle = this.detailsEl.querySelector('.quest-detail-title');
         this.detailSubtitle = this.detailsEl.querySelector('.quest-detail-subtitle');
         this.detailSummary = this.detailsEl.querySelector('.quest-detail-summary');
@@ -370,6 +378,13 @@ export class Window_QuestLog extends Window_Selectable {
         this.detailSubtitle.textContent = quest.giver ? `From: ${quest.giver}` : '';
         this.detailSummary.textContent = quest.description;
 
+        if (quest.portrait && this.detailPortrait) {
+            setPortrait(this.detailPortrait, quest.portrait);
+            this.detailPortrait.style.display = 'block';
+        } else if (this.detailPortrait) {
+            this.detailPortrait.style.display = 'none';
+        }
+
         this.detailObjectives.innerHTML = "";
         (quest.objectives || []).forEach(obj => {
             const li = document.createElement('li');
@@ -410,6 +425,7 @@ export class Window_QuestLog extends Window_Selectable {
         this.detailSummary.textContent = "";
         this.detailObjectives.innerHTML = "";
         this.detailRewards.innerHTML = "";
+        if (this.detailPortrait) this.detailPortrait.style.display = 'none';
     }
 
     attachInputListener() {

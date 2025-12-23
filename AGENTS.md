@@ -1,4 +1,5 @@
 Disable window animations when running tests, unless otherwise required.
+All Map Events are **non-solid** (`isObstacle: false`) and interactable via `onEnter` (step-on) triggers, unless explicitly documented otherwise.
 
 ## Refactor
 Please refer to `refactor.md` for the architectural roadmap and strict import boundaries. Update it accordingly as the refactor is executed.
