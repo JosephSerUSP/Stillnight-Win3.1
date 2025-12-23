@@ -1,6 +1,6 @@
 import { Window_Base } from "./base.js";
 import { Window_Selectable } from "./selectable.js";
-import { createIcon, createInteractiveLabel } from "./utils.js";
+import { createIcon, createInteractiveLabel, setPortrait } from "./utils.js";
 import { UI } from "./builder.js";
 
 /**
@@ -9,10 +9,34 @@ import { UI } from "./builder.js";
  */
 export class Window_Quest extends Window_Base {
     constructor() {
-        super('center', 'center', 540, 'auto', { title: "Quest Offer", id: "quest-window" });
+        super('center', 'center', 600, 'auto', { title: "Quest Offer", id: "quest-window" });
 
         this.bodyEl = this.createPanel();
         this.bodyEl.classList.add('quest-body');
+
+        // Layout Container
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.gap = '12px';
+        this.bodyEl.appendChild(container);
+
+        // Left: Portrait
+        this.portraitEl = document.createElement('div');
+        this.portraitEl.className = 'quest-portrait';
+        this.portraitEl.style.width = '128px';
+        this.portraitEl.style.height = '192px';
+        this.portraitEl.style.flexShrink = '0';
+        this.portraitEl.style.backgroundRepeat = 'no-repeat';
+        this.portraitEl.style.border = '1px solid #333';
+        this.portraitEl.style.backgroundColor = '#111';
+        container.appendChild(this.portraitEl);
+
+        // Right: Content
+        const contentCol = document.createElement('div');
+        contentCol.style.flex = '1';
+        contentCol.style.display = 'flex';
+        contentCol.style.flexDirection = 'column';
+        container.appendChild(contentCol);
 
         this.headerEl = document.createElement('div');
         this.headerEl.className = 'quest-header';
@@ -29,24 +53,24 @@ export class Window_Quest extends Window_Base {
         this.headerEl.appendChild(this.titleText);
         this.headerEl.appendChild(this.statusTag);
         this.headerEl.appendChild(this.subtitleEl);
-        this.bodyEl.appendChild(this.headerEl);
+        contentCol.appendChild(this.headerEl);
 
         this.summaryEl = document.createElement('p');
         this.summaryEl.className = 'quest-summary';
-        this.bodyEl.appendChild(this.summaryEl);
+        contentCol.appendChild(this.summaryEl);
 
         this.objectiveList = document.createElement('ul');
         this.objectiveList.className = 'quest-objectives';
-        this.bodyEl.appendChild(this.objectiveList);
+        contentCol.appendChild(this.objectiveList);
 
         this.rewardHeader = document.createElement('div');
         this.rewardHeader.className = 'quest-rewards-header';
         this.rewardHeader.textContent = 'Rewards';
-        this.bodyEl.appendChild(this.rewardHeader);
+        contentCol.appendChild(this.rewardHeader);
 
         this.rewardList = document.createElement('ul');
         this.rewardList.className = 'quest-rewards';
-        this.bodyEl.appendChild(this.rewardList);
+        contentCol.appendChild(this.rewardList);
 
         this.footer.classList.add('quest-footer');
 
@@ -61,6 +85,16 @@ export class Window_Quest extends Window_Base {
      */
     show(data) {
         const { quest, status = 'inactive', npcName, onAccept, onDecline } = data;
+
+        // Portrait
+        if (quest.portrait) {
+            setPortrait(this.portraitEl, quest.portrait);
+            this.portraitEl.style.display = 'block';
+        } else {
+            // Fallback to hidden if no portrait
+            this.portraitEl.style.display = 'none';
+        }
+
         this.titleText.textContent = quest.name;
         this.subtitleEl.textContent = npcName ? `Offered by ${npcName}` : quest.giver || '';
         this.summaryEl.textContent = quest.description || quest.summary;
@@ -81,20 +115,6 @@ export class Window_Quest extends Window_Base {
                 const li = document.createElement('li');
                 const goldData = { name: "Gold", icon: 85, description: "Currency used to buy items." };
                 const label = createInteractiveLabel(goldData, 'item');
-                // Label includes the name. We want "X Gold".
-                // InteractiveLabel renders "Icon Name".
-                // We can append qty manually or just rely on text.
-                // Standard: Icon + Name. We can append quantity.
-                // Or create a custom label structure reusing the component.
-                // Let's use the component for the item part and append quantity text.
-                // But InteractiveLabel puts name inside.
-                // Let's use it as: createInteractiveLabel({name: "Gold", icon: 85}) then append qty.
-                // Actually the current impl was: Icon + " 100 Gold".
-                // InteractiveLabel produces: [Icon] [Name] (with tooltip).
-                // If we use that, we get: [Icon] [Gold]. Then we need to show quantity.
-                // Maybe: [Icon] [Gold] x100 ?
-
-                // Let's just use the label for the "Gold" part.
                 label.style.marginRight = "5px";
                 li.appendChild(label);
                 li.appendChild(document.createTextNode(`x${quest.rewards.gold}`));
@@ -103,14 +123,6 @@ export class Window_Quest extends Window_Base {
             if (Array.isArray(quest.rewards.items)) {
                 for (const item of quest.rewards.items) {
                     const li = document.createElement('li');
-                    // Item usually has { name, icon, id, qty }
-                    // createInteractiveLabel expects data with name/icon/description
-                    // We might need to ensure 'item' has enough data for tooltip if possible.
-                    // If it's just a reward struct { id: 'potion', qty: 1 }, we might miss details.
-                    // Ideally we should look it up, but Window_Quest might not have dataManager.
-                    // The caller passes 'data'. If data.quest is fully hydrated great.
-                    // If not, we do our best.
-
                     const label = createInteractiveLabel(item, 'item');
                     label.style.marginRight = "5px";
                     li.appendChild(label);
@@ -223,7 +235,7 @@ export class Window_Quest extends Window_Base {
  */
 export class Window_QuestLog extends Window_Selectable {
     constructor() {
-        super('center', 'center', 600, 450, { title: "Quest Log", id: "quest-log-window" });
+        super('center', 'center', 700, 500, { title: "Quest Log", id: "quest-log-window" }); // Increased size for portrait
 
         this.currentTab = 'active';
         this.questData = { active: [], completed: [] };
@@ -249,7 +261,7 @@ export class Window_QuestLog extends Window_Selectable {
                      children: [
                          {
                              type: 'panel', // List
-                             props: { className: 'quest-list-panel', style: { width: '40%', display: 'flex', flexDirection: 'column', border: '1px solid var(--bezel-shadow)', background: 'var(--input-bg)' } },
+                             props: { className: 'quest-list-panel', style: { width: '30%', display: 'flex', flexDirection: 'column', border: '1px solid var(--bezel-shadow)', background: 'var(--input-bg)' } },
                              children: [
                                  { type: 'panel', props: { className: 'quest-list-content', style: { flex: '1', overflowY: 'auto' } } }
                              ]
@@ -258,10 +270,31 @@ export class Window_QuestLog extends Window_Selectable {
                              type: 'panel', // Details
                              props: { className: 'quest-details-panel', style: { flex: '1', padding: '8px', border: '1px solid var(--bezel-shadow)', overflowY: 'auto' } },
                              children: [
-                                 { type: 'label', props: { tag: 'h3', className: 'quest-detail-title', text: '', style: { marginTop: '0' } } },
-                                 { type: 'label', props: { tag: 'div', className: 'quest-detail-subtitle', text: '', style: { fontSize: '0.9em', color: '#aaa', marginBottom: '8px' } } },
-                                 { type: 'label', props: { tag: 'p', className: 'quest-detail-summary', text: '' } },
-                                 { type: 'label', props: { tag: 'h4', text: 'Objectives', style: { marginTop: '12px', marginBottom: '4px' } } },
+                                 // Top Section: Flex Row for Portrait + Header Info
+                                 {
+                                     type: 'flex',
+                                     props: { style: { gap: '12px', marginBottom: '12px' } },
+                                     children: [
+                                         {
+                                             type: 'panel',
+                                             props: {
+                                                 className: 'quest-detail-portrait',
+                                                 style: { width: '128px', height: '192px', flexShrink: '0', backgroundRepeat: 'no-repeat', border: '1px solid #333', backgroundColor: '#111' }
+                                             }
+                                         },
+                                         {
+                                             type: 'flex',
+                                             props: { style: { flexDirection: 'column', flex: '1' } },
+                                             children: [
+                                                 { type: 'label', props: { tag: 'h3', className: 'quest-detail-title', text: '', style: { marginTop: '0' } } },
+                                                 { type: 'label', props: { tag: 'div', className: 'quest-detail-subtitle', text: '', style: { fontSize: '0.9em', color: '#aaa', marginBottom: '8px' } } },
+                                                 { type: 'label', props: { tag: 'p', className: 'quest-detail-summary', text: '' } }
+                                             ]
+                                         }
+                                     ]
+                                 },
+                                 // Bottom Section: Objectives and Rewards
+                                 { type: 'label', props: { tag: 'h4', text: 'Objectives', style: { marginTop: '0', marginBottom: '4px' } } },
                                  { type: 'label', props: { tag: 'ul', className: 'quest-detail-objectives', style: { paddingLeft: '20px', margin: '0' } } },
                                  { type: 'label', props: { tag: 'h4', text: 'Rewards', style: { marginTop: '12px', marginBottom: '4px' } } },
                                  { type: 'label', props: { tag: 'ul', className: 'quest-detail-rewards', style: { paddingLeft: '20px', margin: '0' } } }
@@ -280,11 +313,22 @@ export class Window_QuestLog extends Window_Selectable {
         this.listEl = root.children[1].children[0].children[0];
         this.detailsEl = root.children[1].children[1];
 
-        this.detailTitle = this.detailsEl.querySelector('.quest-detail-title');
-        this.detailSubtitle = this.detailsEl.querySelector('.quest-detail-subtitle');
-        this.detailSummary = this.detailsEl.querySelector('.quest-detail-summary');
-        this.detailObjectives = this.detailsEl.querySelector('.quest-detail-objectives');
-        this.detailRewards = this.detailsEl.querySelector('.quest-detail-rewards');
+        // Access deeply nested elements
+        const topSection = this.detailsEl.children[0];
+        this.detailPortrait = topSection.children[0];
+        const infoSection = topSection.children[1];
+
+        this.detailTitle = infoSection.children[0];
+        this.detailSubtitle = infoSection.children[1];
+        this.detailSummary = infoSection.children[2];
+
+        this.detailObjectives = this.detailsEl.children[2]; // Objectives UL (index 2 is the list, index 1 is label)
+        this.detailRewards = this.detailsEl.children[4];    // Rewards UL (index 4 is the list, index 3 is label)
+
+        // Wait, UI.build children access relies on exact order.
+        // Structure:
+        // Details Panel -> [0: Flex (Portrait+Info), 1: Label(Obj), 2: UL(Obj), 3: Label(Rew), 4: UL(Rew)]
+        // Correct.
 
         this.addButton("Close", () => this.onUserClose());
     }
@@ -331,9 +375,6 @@ export class Window_QuestLog extends Window_Selectable {
             item.style.cursor = "pointer";
             item.textContent = q.name;
             item.dataset.index = idx;
-            // The click is handled by Window_Selectable delegation if we use standard data-index
-            // But Window_Selectable relies on click. We want to ensure focus.
-            // Let's rely on Window_Selectable's onClick for mouse.
             this.listEl.appendChild(item);
         });
     }
@@ -342,18 +383,15 @@ export class Window_QuestLog extends Window_Selectable {
     select(index) {
         super.select(index);
 
-        // Window_Selectable updates this._index
         if (this._index >= 0 && this._data[this._index]) {
             this.renderDetails(this._data[this._index]);
         }
 
-        // Update visual selection class
         Array.from(this.listEl.children).forEach((el) => {
              if (el.dataset.index == index) el.classList.add('selected');
              else el.classList.remove('selected');
         });
 
-        // Ensure visible
         const selectedEl = this.listEl.querySelector(`[data-index="${index}"]`);
         if (selectedEl) {
             selectedEl.scrollIntoView({ block: 'nearest' });
@@ -364,6 +402,14 @@ export class Window_QuestLog extends Window_Selectable {
         if (!quest) {
             this.clearDetails();
             return;
+        }
+
+        // Update Portrait
+        if (quest.portrait) {
+            setPortrait(this.detailPortrait, quest.portrait);
+            this.detailPortrait.style.display = 'block';
+        } else {
+            this.detailPortrait.style.display = 'none';
         }
 
         this.detailTitle.textContent = quest.name;
@@ -405,6 +451,7 @@ export class Window_QuestLog extends Window_Selectable {
     }
 
     clearDetails() {
+        this.detailPortrait.style.display = 'none'; // Hide portrait when clear
         this.detailTitle.textContent = "No Quest Selected";
         this.detailSubtitle.textContent = "";
         this.detailSummary.textContent = "";
@@ -425,11 +472,9 @@ export class Window_QuestLog extends Window_Selectable {
                 this.moveSelection(1);
             } else if (e.key === 'ArrowLeft') {
                 e.preventDefault();
-                // Optional: Switch Tabs
                 if (this.currentTab === 'completed') this.switchTab('active');
             } else if (e.key === 'ArrowRight') {
                 e.preventDefault();
-                // Optional: Switch Tabs
                 if (this.currentTab === 'active') this.switchTab('completed');
             } else if (e.key === 'Escape') {
                 e.preventDefault();
