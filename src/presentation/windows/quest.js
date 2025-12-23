@@ -1,6 +1,6 @@
 import { Window_Base } from "./base.js";
 import { Window_Selectable } from "./selectable.js";
-import { createIcon } from "./utils.js";
+import { createIcon, createInteractiveLabel } from "./utils.js";
 import { UI } from "./builder.js";
 
 /**
@@ -79,17 +79,45 @@ export class Window_Quest extends Window_Base {
         if (quest.rewards) {
             if (quest.rewards.gold) {
                 const li = document.createElement('li');
-                const icon = createIcon(85);
-                li.appendChild(icon);
-                li.append(` ${quest.rewards.gold} Gold`);
+                const goldData = { name: "Gold", icon: 85, description: "Currency used to buy items." };
+                const label = createInteractiveLabel(goldData, 'item');
+                // Label includes the name. We want "X Gold".
+                // InteractiveLabel renders "Icon Name".
+                // We can append qty manually or just rely on text.
+                // Standard: Icon + Name. We can append quantity.
+                // Or create a custom label structure reusing the component.
+                // Let's use the component for the item part and append quantity text.
+                // But InteractiveLabel puts name inside.
+                // Let's use it as: createInteractiveLabel({name: "Gold", icon: 85}) then append qty.
+                // Actually the current impl was: Icon + " 100 Gold".
+                // InteractiveLabel produces: [Icon] [Name] (with tooltip).
+                // If we use that, we get: [Icon] [Gold]. Then we need to show quantity.
+                // Maybe: [Icon] [Gold] x100 ?
+
+                // Let's just use the label for the "Gold" part.
+                label.style.marginRight = "5px";
+                li.appendChild(label);
+                li.appendChild(document.createTextNode(`x${quest.rewards.gold}`));
                 this.rewardList.appendChild(li);
             }
             if (Array.isArray(quest.rewards.items)) {
                 for (const item of quest.rewards.items) {
                     const li = document.createElement('li');
-                    const icon = createIcon(item.icon || 173);
-                    li.appendChild(icon);
-                    li.append(` ${item.qty || 1}x ${item.name || item.id}`);
+                    // Item usually has { name, icon, id, qty }
+                    // createInteractiveLabel expects data with name/icon/description
+                    // We might need to ensure 'item' has enough data for tooltip if possible.
+                    // If it's just a reward struct { id: 'potion', qty: 1 }, we might miss details.
+                    // Ideally we should look it up, but Window_Quest might not have dataManager.
+                    // The caller passes 'data'. If data.quest is fully hydrated great.
+                    // If not, we do our best.
+
+                    const label = createInteractiveLabel(item, 'item');
+                    label.style.marginRight = "5px";
+                    li.appendChild(label);
+
+                    if (item.qty && item.qty > 1) {
+                         li.appendChild(document.createTextNode(`x${item.qty}`));
+                    }
                     this.rewardList.appendChild(li);
                 }
             }
@@ -353,17 +381,23 @@ export class Window_QuestLog extends Window_Selectable {
         if (quest.rewards) {
              if (quest.rewards.gold) {
                 const li = document.createElement('li');
-                const icon = createIcon(85);
-                li.appendChild(icon);
-                li.append(` ${quest.rewards.gold} Gold`);
+                const goldData = { name: "Gold", icon: 85, description: "Currency used to buy items." };
+                const label = createInteractiveLabel(goldData, 'item');
+                label.style.marginRight = "5px";
+                li.appendChild(label);
+                li.appendChild(document.createTextNode(`x${quest.rewards.gold}`));
                 this.detailRewards.appendChild(li);
              }
              if (Array.isArray(quest.rewards.items)) {
                 for (const item of quest.rewards.items) {
                     const li = document.createElement('li');
-                    const icon = createIcon(item.icon || 173);
-                    li.appendChild(icon);
-                    li.append(` ${item.qty || 1}x ${item.name || item.id}`);
+                    const label = createInteractiveLabel(item, 'item');
+                    label.style.marginRight = "5px";
+                    li.appendChild(label);
+
+                    if (item.qty && item.qty > 1) {
+                         li.appendChild(document.createTextNode(`x${item.qty}`));
+                    }
                     this.detailRewards.appendChild(li);
                 }
              }
