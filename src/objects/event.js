@@ -31,19 +31,9 @@ export class Game_Event {
     this.isSneakAttack = data.isSneakAttack || false;
     this.isPlayerFirstStrike = data.isPlayerFirstStrike || false;
 
-    // Migration helper for passability
-    // If 'isObstacle' is explicit, use it. Otherwise infer from type for compatibility.
-    if (data.isObstacle !== undefined) {
-        this.isObstacle = data.isObstacle;
-    } else {
-        // Only specific types are passable (walkable).
-        // Traps, Stairs, Recovery points are generally walked ONTO.
-        // NPCs, Shops, Enemies, Chests are generally bumped INTO (Obstacles).
-        const passableTypes = ['trap', 'stairs', 'recovery', 'npc'];
-
-        // If it's NOT a passable type, it IS an obstacle.
-        this.isObstacle = !passableTypes.includes(this.type);
-    }
+    // By default, events are NOT obstacles unless explicitly set.
+    // This allows the player to move onto the tile (triggering onEnter).
+    this.isObstacle = data.isObstacle === true;
   }
 
   /**
@@ -71,11 +61,11 @@ export class Game_Event {
                   // Check events
                   const event = floor.events.find(e => e.x === x && e.y === y && e !== this);
                   if (event) {
-                      // Check obstacle property if available, otherwise assume obstacle
-                      if (event.isObstacle !== undefined) return !event.isObstacle;
+                      // Use explicit obstacle property
+                      if (event.isObstacle) return false;
 
-                      const passableTypes = ['trap', 'stairs', 'recovery'];
-                      return passableTypes.includes(event.type);
+                      // If not explicitly an obstacle, it is passable.
+                      return true;
                   }
 
                   return true;
@@ -97,14 +87,7 @@ export class Game_Event {
                       this.y = nextStep.y;
                   } else {
                       // Check passability
-                      let canPass = false;
-                      if (targetEvent.isObstacle !== undefined) canPass = !targetEvent.isObstacle;
-                      else {
-                          const passableTypes = ['trap', 'stairs', 'recovery'];
-                          if (passableTypes.includes(targetEvent.type)) canPass = true;
-                      }
-
-                      if (canPass) {
+                      if (!targetEvent.isObstacle) {
                           this.x = nextStep.x;
                           this.y = nextStep.y;
                       }
