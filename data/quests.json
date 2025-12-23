@@ -40,6 +40,20 @@
         { "id": "alert_charm", "qty": 1 }
       ]
     }
+  },
+  "silent_shipment": {
+    "name": "The Silent Shipment",
+    "giver": "Gate Guard",
+    "summary": "Investigate the missing supply shipment.",
+    "description": "The Gate Guard is worried about a shipment that never arrived. He suspects someone in town might know more.",
+    "objectives": [
+      "Ask around town about the shipment.",
+      "Speak to Alicia about any strange sightings.",
+      "Return to the Gate Guard with your findings."
+    ],
+    "rewards": {
+      "gold": 50,
+      "xp": 100
+    }
   }
 }
-
