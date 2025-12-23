@@ -42,9 +42,15 @@
     "quest_offer_choice": {
       "type": "CHOICE",
       "options": [
-        { "label": "I'll investigate.", "action": "OFFER_QUEST", "questId": "silent_shipment" },
+        { "label": "I'll investigate.", "target": "action_offer_quest" },
         { "label": "Not my problem.", "action": "close" }
       ]
+    },
+    "action_offer_quest": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "silent_shipment",
+      "next": "close_choice"
     },
 
     "quest_reminder_text": {
