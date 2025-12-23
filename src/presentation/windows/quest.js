@@ -1,6 +1,6 @@
 import { Window_Base } from "./base.js";
 import { Window_Selectable } from "./selectable.js";
-import { createIcon, createInteractiveLabel } from "./utils.js";
+import { createIcon, createInteractiveLabel, setPortrait } from "./utils.js";
 import { UI } from "./builder.js";
 
 /**
@@ -17,6 +17,32 @@ export class Window_Quest extends Window_Base {
         this.headerEl = document.createElement('div');
         this.headerEl.className = 'quest-header';
 
+        // Portrait Container
+        this.portraitEl = document.createElement('div');
+        this.portraitEl.className = 'quest-portrait';
+        this.portraitEl.style.width = '64px';
+        this.portraitEl.style.height = '64px';
+        this.portraitEl.style.marginRight = '12px';
+        this.portraitEl.style.flexShrink = '0';
+        this.portraitEl.style.border = '1px solid var(--window-border)';
+        this.portraitEl.style.backgroundColor = 'var(--input-bg)';
+        // Insert at start of body, but header is also there.
+        // We probably want a flex container for the top section (Header + Portrait).
+        // Let's restructure: Top = [Portrait | HeaderContent]
+
+        this.topSection = document.createElement('div');
+        this.topSection.style.display = 'flex';
+        this.topSection.style.marginBottom = '8px';
+        this.bodyEl.appendChild(this.topSection);
+
+        this.topSection.appendChild(this.portraitEl);
+
+        this.headerContent = document.createElement('div');
+        this.headerContent.style.flex = '1';
+        this.headerContent.style.display = 'flex';
+        this.headerContent.style.flexDirection = 'column';
+        this.topSection.appendChild(this.headerContent);
+
         this.titleText = document.createElement('div');
         this.titleText.className = 'quest-title';
 
@@ -26,10 +52,17 @@ export class Window_Quest extends Window_Base {
         this.subtitleEl = document.createElement('div');
         this.subtitleEl.className = 'quest-subtitle';
 
-        this.headerEl.appendChild(this.titleText);
-        this.headerEl.appendChild(this.statusTag);
-        this.headerEl.appendChild(this.subtitleEl);
-        this.bodyEl.appendChild(this.headerEl);
+        // Re-append to headerContent
+        // We want Title + Status on one line, Subtitle below.
+        const titleRow = document.createElement('div');
+        titleRow.style.display = 'flex';
+        titleRow.style.justifyContent = 'space-between';
+        titleRow.style.alignItems = 'center';
+        titleRow.appendChild(this.titleText);
+        titleRow.appendChild(this.statusTag);
+
+        this.headerContent.appendChild(titleRow);
+        this.headerContent.appendChild(this.subtitleEl);
 
         this.summaryEl = document.createElement('p');
         this.summaryEl.className = 'quest-summary';
@@ -64,6 +97,14 @@ export class Window_Quest extends Window_Base {
         this.titleText.textContent = quest.name;
         this.subtitleEl.textContent = npcName ? `Offered by ${npcName}` : quest.giver || '';
         this.summaryEl.textContent = quest.description || quest.summary;
+
+        // Set portrait if available (from quest definition)
+        if (quest.portrait) {
+            setPortrait(this.portraitEl, quest.portrait);
+            this.portraitEl.style.display = 'block';
+        } else {
+            this.portraitEl.style.display = 'none';
+        }
 
         this.statusTag.textContent = status === 'completed' ? 'Completed' : status === 'active' ? 'In Progress' : 'New Quest';
         this.statusTag.dataset.status = status;
@@ -258,8 +299,21 @@ export class Window_QuestLog extends Window_Selectable {
                              type: 'panel', // Details
                              props: { className: 'quest-details-panel', style: { flex: '1', padding: '8px', border: '1px solid var(--bezel-shadow)', overflowY: 'auto' } },
                              children: [
-                                 { type: 'label', props: { tag: 'h3', className: 'quest-detail-title', text: '', style: { marginTop: '0' } } },
-                                 { type: 'label', props: { tag: 'div', className: 'quest-detail-subtitle', text: '', style: { fontSize: '0.9em', color: '#aaa', marginBottom: '8px' } } },
+                                 {
+                                     type: 'flex',
+                                     props: { style: { marginBottom: '8px', gap: '8px' } },
+                                     children: [
+                                         { type: 'panel', props: { className: 'quest-detail-portrait', style: { width: '48px', height: '48px', border: '1px solid #333', background: '#000' } } },
+                                         {
+                                             type: 'flex',
+                                             props: { style: { flexDirection: 'column', flex: '1' } },
+                                             children: [
+                                                { type: 'label', props: { tag: 'h3', className: 'quest-detail-title', text: '', style: { marginTop: '0', marginBottom: '4px' } } },
+                                                { type: 'label', props: { tag: 'div', className: 'quest-detail-subtitle', text: '', style: { fontSize: '0.9em', color: '#aaa' } } }
+                                             ]
+                                         }
+                                     ]
+                                 },
                                  { type: 'label', props: { tag: 'p', className: 'quest-detail-summary', text: '' } },
                                  { type: 'label', props: { tag: 'h4', text: 'Objectives', style: { marginTop: '12px', marginBottom: '4px' } } },
                                  { type: 'label', props: { tag: 'ul', className: 'quest-detail-objectives', style: { paddingLeft: '20px', margin: '0' } } },
@@ -280,6 +334,7 @@ export class Window_QuestLog extends Window_Selectable {
         this.listEl = root.children[1].children[0].children[0];
         this.detailsEl = root.children[1].children[1];
 
+        this.detailPortrait = this.detailsEl.querySelector('.quest-detail-portrait');
         this.detailTitle = this.detailsEl.querySelector('.quest-detail-title');
         this.detailSubtitle = this.detailsEl.querySelector('.quest-detail-subtitle');
         this.detailSummary = this.detailsEl.querySelector('.quest-detail-summary');
@@ -369,6 +424,13 @@ export class Window_QuestLog extends Window_Selectable {
         this.detailTitle.textContent = quest.name;
         this.detailSubtitle.textContent = quest.giver ? `From: ${quest.giver}` : '';
         this.detailSummary.textContent = quest.description;
+
+        if (quest.portrait) {
+            setPortrait(this.detailPortrait, quest.portrait);
+            this.detailPortrait.style.display = 'block';
+        } else {
+            this.detailPortrait.style.display = 'none';
+        }
 
         this.detailObjectives.innerHTML = "";
         (quest.objectives || []).forEach(obj => {
