@@ -106,5 +106,13 @@ export class Window_Quest extends Window_Base {
         if (status !== 'inactive') {
             acceptBtn.disabled = true;
         }
+
+        // Default selection: Accept if enabled, else Decline (index 0)
+        // Note: addButton appends. Decline is index 0. Accept is index 1.
+        if (status === 'inactive') {
+            this.selectButton(1);
+        } else {
+            this.selectButton(0);
+        }
     }
 }

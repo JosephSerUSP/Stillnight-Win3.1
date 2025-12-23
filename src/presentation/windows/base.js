@@ -239,6 +239,9 @@ export class Window_Base {
             type: 'panel',
             props: { className: 'window-footer' }
         });
+
+        // State for generic button navigation
+        this._selectedButtonIndex = -1;
     }
 
     open() {
@@ -343,5 +346,66 @@ export class Window_Base {
         };
         const panel = UI.build(this.content, structure);
         return panel;
+    }
+
+    // --- Generic Navigation Logic ---
+
+    getNavButtons() {
+        // Query only buttons that are not disabled and are visible (roughly)
+        // We use .win-btn as the standard class.
+        // We can check offsetParent to see if visible.
+        return Array.from(this.footer.querySelectorAll('.win-btn')).filter(btn => !btn.disabled && btn.offsetParent !== null);
+    }
+
+    selectButton(index) {
+        const buttons = this.getNavButtons();
+        if (buttons.length === 0) return;
+
+        if (index < 0) index = 0;
+        if (index >= buttons.length) index = buttons.length - 1;
+
+        // Remove selected from all
+        buttons.forEach(b => b.classList.remove('selected'));
+
+        this._selectedButtonIndex = index;
+        const btn = buttons[index];
+        if (btn) {
+            btn.classList.add('selected');
+            btn.focus(); // Focus specifically helps with some browsers/environments
+        }
+    }
+
+    handleInput(e) {
+        // Generic input handling for navigation
+        const buttons = this.getNavButtons();
+        if (buttons.length === 0) return false;
+
+        // Initialize selection if needed
+        if (this._selectedButtonIndex === -1 && buttons.length > 0) {
+             // Find currently selected if any (e.g. set by subclass)
+             const current = buttons.findIndex(b => b.classList.contains('selected'));
+             if (current !== -1) this._selectedButtonIndex = current;
+             else this.selectButton(0);
+        }
+
+        switch (e.key) {
+            case 'ArrowRight':
+            case 'ArrowDown':
+                this.selectButton((this._selectedButtonIndex + 1) % buttons.length);
+                return true;
+            case 'ArrowLeft':
+            case 'ArrowUp':
+                this.selectButton((this._selectedButtonIndex - 1 + buttons.length) % buttons.length);
+                return true;
+            case 'Enter':
+            case ' ':
+                if (this._selectedButtonIndex >= 0 && buttons[this._selectedButtonIndex]) {
+                    buttons[this._selectedButtonIndex].click();
+                    return true;
+                }
+                break;
+        }
+
+        return false;
     }
 }
