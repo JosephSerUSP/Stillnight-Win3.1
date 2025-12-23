@@ -326,5 +326,15 @@
     "scripts": {
         "onEnter": [{ "type": "TEXT", "text": "The temple is quiet. You feel a sense of peace.", "style": "terminal" }]
     }
+  },
+  {
+    "id": "npc_archivist",
+    "type": "npc",
+    "symbol": "A",
+    "cssClass": "tile-npc-archivist",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_archivist" }]
+    }
   }
 ]

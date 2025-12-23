@@ -575,5 +575,29 @@
     "spriteKey": "egg",
     "gold": 0,
     "expGrowth": 20
+  },
+  {
+    "id": "glitchAlpha",
+    "name": "Glitch Alpha",
+    "level": 3,
+    "role": "Attacker",
+    "maxHp": 15,
+    "spriteKey": "glitch",
+    "passives": [],
+    "elements": ["Black"],
+    "skills": ["shadowClaw"],
+    "flavor": "A fragmented data-echo, flickering violently between states.",
+    "expGrowth": 5,
+    "gold": 20,
+    "drops": [
+      {
+        "itemId": "echo_fragment",
+        "chance": 0.2
+      }
+    ],
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": false,
+    "isEvolved": false
   }
 ]

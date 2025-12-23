@@ -410,5 +410,13 @@
     "cost": 0,
     "icon": 218,
     "description": "A heavy golden ring, unmarked and waiting for a new story. Laura can reshape it into something precious."
+  },
+  {
+    "id": "echo_fragment",
+    "name": "Echo Fragment",
+    "type": "quest",
+    "cost": 0,
+    "icon": 228,
+    "description": "A fragmented data-echo of a forgotten User."
   }
 ]

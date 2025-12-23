@@ -58,5 +58,27 @@
       "gold": 50,
       "xp": 100
     }
+  },
+  "a_glimmer_of_the_past": {
+    "name": "A Glimmer of the Past",
+    "giver": "Data Archivist",
+    "portrait": "NPC_Archivist",
+    "summary": "Investigate the strange data anomaly.",
+    "description": "The Data Archivist has detected a strange data anomaly, an 'Echo Fragment'. They have asked you to investigate its source.",
+    "objectives": [
+      "Find the source of the Echo Fragment.",
+      "Return to the Data Archivist with your findings."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "echo_fragment", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 100,
+      "items": [
+        { "id": "sigil_ink", "qty": 1 }
+      ]
+    }
   }
 }
