@@ -82,8 +82,10 @@ export class DirectorSystem {
                  // Legacy-style binary router support
                  const result = TransitionLogic.evaluate(node.condition, this.session);
                  nextNodeId = result ? node.trueNode : node.falseNode;
-            } else {
-                // Unconditional jump
+            }
+
+            // Fallback to 'next' if no conditional target was found
+            if (!nextNodeId && node.next) {
                 nextNodeId = node.next;
             }
 
