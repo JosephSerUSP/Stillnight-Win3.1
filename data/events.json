@@ -28,7 +28,7 @@
     "type": "enemy",
     "symbol": "E",
     "cssClass": "tile-enemy",
-    "trigger": "touch",
+    "trigger": "step",
     "scripts": {
         "onEnter": [{ "type": "BATTLE" }]
     }
@@ -38,7 +38,7 @@
     "type": "shrine",
     "symbol": "♱",
     "cssClass": "tile-shrine",
-    "trigger": "touch",
+    "trigger": "step",
     "scripts": {
         "onEnter": [
             { "type": "RANDOM_EVENT", "category": "shrine_scenario" }
@@ -50,7 +50,7 @@
     "type": "shop",
     "symbol": "¥",
     "cssClass": "tile-shop",
-    "trigger": "touch",
+    "trigger": "step",
     "scripts": {
         "onEnter": [{ "type": "SHOP" }]
     }
@@ -60,7 +60,7 @@
     "type": "recruit",
     "symbol": "U",
     "cssClass": "tile-recruit",
-    "trigger": "touch",
+    "trigger": "step",
     "scripts": {
         "onEnter": [{ "type": "RECRUIT" }]
     }
@@ -70,7 +70,7 @@
     "type": "npc",
     "symbol": "N",
     "cssClass": "tile-npc",
-    "trigger": "touch",
+    "trigger": "step",
     "scripts": {
         "onEnter": [{ "type": "NPC_DIALOGUE" }]
     }
@@ -80,7 +80,7 @@
     "type": "npc",
     "symbol": "A",
     "cssClass": "tile-npc-alicia",
-    "trigger": "touch",
+    "trigger": "step",
     "scripts": {
         "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_alicia" }]
     }
@@ -90,7 +90,7 @@
     "type": "npc",
     "symbol": "L",
     "cssClass": "tile-npc-laura",
-    "trigger": "touch",
+    "trigger": "step",
     "scripts": {
         "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_laura" }]
     }
@@ -100,7 +100,7 @@
     "type": "npc",
     "symbol": "W",
     "cssClass": "tile-npc-weapon",
-    "trigger": "touch",
+    "trigger": "step",
     "scripts": {
         "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_weapon_shop" }]
     }
@@ -110,7 +110,7 @@
     "type": "npc",
     "symbol": "$",
     "cssClass": "tile-npc-auction",
-    "trigger": "touch",
+    "trigger": "step",
     "scripts": {
         "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_auction" }]
     }
@@ -120,7 +120,7 @@
     "type": "npc",
     "symbol": "D",
     "cssClass": "tile-npc-daphne",
-    "trigger": "touch",
+    "trigger": "step",
     "scripts": {
         "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_daphne" }]
     }
@@ -130,7 +130,7 @@
     "type": "npc",
     "symbol": "G",
     "cssClass": "tile-npc-guard",
-    "trigger": "touch",
+    "trigger": "step",
     "scripts": {
         "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_gate_guard" }]
     }
@@ -155,7 +155,7 @@
     "type": "treasure",
     "symbol": "$",
     "cssClass": "tile-treasure",
-    "trigger": "touch",
+    "trigger": "step",
     "scripts": {
         "onEnter": [
              { "type": "GIVE_ITEM", "itemType": "random" }
@@ -168,8 +168,9 @@
     "symbol": "G",
     "cssClass": "tile-npc-gambler",
     "trigger": "touch",
+    "isObstacle": true,
     "scripts": {
-        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_gambler" }]
+        "onInteract": [{ "type": "NPC_DIALOGUE", "id": "npc_gambler" }]
     }
   },
   {
