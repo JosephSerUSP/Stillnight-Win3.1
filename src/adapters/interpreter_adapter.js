@@ -95,6 +95,9 @@ export class InterpreterAdapter {
                 case 'PLAY_SOUND':
                     AudioAdapter.play(e.name);
                     break;
+                case 'PLAY_MUSIC':
+                    AudioAdapter.playMusic(e.name);
+                    break;
                 case 'UPDATE_UI':
                     this.scene.updateAll();
                     break;

@@ -80,6 +80,7 @@
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 3, "max": 4 },
+      { "id": "shrine_music_box", "chance": 0.3 },
       { "id": "shrine", "chance": 0.5 },
       { "id": "npc_dungeon_merchant", "chance": 0.5 },
       { "id": "recruit", "chance": 0.6 },
@@ -99,7 +100,7 @@
     "title": "Floor 3: Rusted Choir",
     "intro": "Broken bells sway above a dry pit.",
     "depth": 3,
-    "music": "dungeon1",
+    "music": "emotional1_bitSad",
     "image": "DungeonFloors1.png",
     "events": [
       { "id": "stairs", "count": 1 },
@@ -119,7 +120,7 @@
     "title": "Floor 4: Cryptic Vault",
     "intro": "Relic pedestals gleam with unnatural light.",
     "depth": 4,
-    "music": "dungeon1",
+    "music": "event9_magical",
     "image": "DungeonFloors1.png",
     "events": [
       { "id": "stairs", "count": 1 },
@@ -161,7 +162,7 @@
     "title": "Floor 6: Stillnight Sanctum",
     "intro": "A presence fills the air. The Eternal Warden awaits.",
     "depth": 6,
-    "music": "dungeon1",
+    "music": "event4_darkJester",
     "image": "DungeonFloors1.png",
     "events": [
       { "id": "recovery", "count": 1 },
