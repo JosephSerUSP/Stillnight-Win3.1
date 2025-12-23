@@ -1,414 +1,146 @@
 [
   {
-    "id": "hp_tonic",
-    "name": "HP Tonic",
+    "id": "potion",
+    "name": "Potion",
     "type": "consumable",
-    "cost": 10,
-    "description": "Heals one member to full HP.",
-    "icon": 52,
-    "effects": [
-      {
-        "type": "hp",
-        "value": 999
-      }
-    ]
+    "description": "Restores 200 HP.",
+    "icon": 1,
+    "effects": [{ "type": "hp", "value": 200 }],
+    "price": 50
   },
   {
-    "id": "sigil_ink",
-    "name": "Sigil Ink",
+    "id": "hi_potion",
+    "name": "Hi-Potion",
     "type": "consumable",
-    "cost": 20,
-    "description": "+2 max HP to one member.",
-    "icon": 55,
-    "effects": [
-      {
-        "type": "maxHp",
-        "value": 2
-      }
-    ]
+    "description": "Restores 1000 HP.",
+    "icon": 2,
+    "effects": [{ "type": "hp", "value": 1000 }],
+    "price": 200
   },
   {
-    "id": "whispered_lessons",
-    "name": "Whispered Lessons",
+    "id": "x_potion",
+    "name": "X-Potion",
     "type": "consumable",
-    "cost": 64,
-    "description": "+6 XP to one member.",
-    "icon": 64,
-    "effects": [
-      {
-        "type": "xp",
-        "value": 6
-      }
-    ]
+    "description": "Fully restores HP.",
+    "icon": 3,
+    "effects": [{ "type": "hp", "value": 9999 }],
+    "price": 1000
   },
   {
-    "id": "silver_blade",
-    "name": "Silver Blade",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 25,
-    "icon": 180,
-    "description": "Sharpened steel blade.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 1
-      },
-      {
-        "code": "CRI",
-        "value": 0.1
-      }
-    ]
+    "id": "ether",
+    "name": "Ether",
+    "type": "consumable",
+    "description": "Restores 50 MP.",
+    "icon": 4,
+    "effects": [{ "type": "mp", "value": 50 }],
+    "price": 500
   },
   {
-    "id": "bone_plate",
-    "name": "Bone Plate",
-    "type": "equipment",
-    "equipType": "Armor",
-    "cost": 25,
-    "icon": 172,
-    "description": "Sturdy bone harness.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "maxHp",
-        "value": 3
-      }
-    ]
+    "id": "turbo_ether",
+    "name": "Turbo Ether",
+    "type": "consumable",
+    "description": "Restores 200 MP.",
+    "icon": 5,
+    "effects": [{ "type": "mp", "value": 200 }],
+    "price": 2000
   },
   {
-    "id": "wind_charm",
-    "name": "Wind Charm",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 35,
-    "icon": 174,
-    "description": "A charm of rushing air.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 1
-      },
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "maxHp",
-        "value": 1
-      }
-    ]
-  },
-  {
-    "id": "light_amulet",
-    "name": "Light Amulet",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 30,
-    "icon": 174,
-    "description": "Glowing amulet.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "maxHp",
-        "value": 2
-      }
-    ]
-  },
-  {
-    "id": "alert_charm",
-    "name": "Alert Charm",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 150,
-    "icon": 174,
-    "description": "Humming chime.",
-    "traits": [
-      {
-        "code": "INITIATIVE",
-        "value": 0.05
-      }
-    ]
-  },
-  {
-    "id": "rear_mirror",
-    "name": "Rear Mirror",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 200,
+    "id": "phoenix_down",
+    "name": "Phoenix Down",
+    "type": "consumable",
+    "description": "Revives a KO'd ally.",
     "icon": 6,
-    "description": "Reflective glass. Prevents sneak attacks if in back row.",
-    "traits": [
-      {
-        "code": "REAR_GUARD",
-        "value": 1
-      }
-    ]
+    "effects": [{ "type": "revive", "value": 0.5 }],
+    "price": 100
   },
   {
-    "id": "mystic_egg",
-    "name": "Mystic Egg",
+    "id": "remedy",
+    "name": "Remedy",
     "type": "consumable",
-    "cost": 500,
-    "icon": 184,
-    "description": "A mysterious egg that pulses with life. Use to hatch.",
-    "effects": [
-      {
-        "type": "recruit_egg",
-        "value": "egg"
-      }
-    ]
+    "description": "Cures most status ailments.",
+    "icon": 7,
+    "effects": [{ "type": "remove_status", "value": "all_bad" }],
+    "price": 300
   },
   {
-    "id": "exp_boost",
-    "name": "Golden Egg",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 9999,
-    "icon": 184,
-    "description": "Beautiful golden egg, sought after by many.",
-    "traits": [
-      {
-        "code": "XP_RATE",
-        "value": 1.5
-      }
-    ]
+    "id": "elixir",
+    "name": "Elixir",
+    "type": "consumable",
+    "description": "Fully restores HP and MP.",
+    "icon": 8,
+    "effects": [{ "type": "hp", "value": 9999 }, { "type": "mp", "value": 999 }],
+    "price": 5000
   },
   {
-    "id": "hp_boost1",
-    "name": "Vitality Seal 1",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 125,
-    "icon": 174,
-    "description": "+10% Max HP",
-    "traits": [
-      {
-        "code": "PARAM_RATE",
-        "dataId": "maxHp",
-        "value": 1.1
-      }
-    ]
+    "id": "al_bhed_potion",
+    "name": "Al Bhed Potion",
+    "type": "consumable",
+    "description": "Restores 1000 HP to party and cures Poison/Silence/Petrify.",
+    "icon": 9,
+    "effects": [{ "type": "hp", "value": 1000, "target": "all" }, { "type": "remove_status", "value": "poison" }],
+    "price": 300
   },
   {
-    "id": "hp_boost2",
-    "name": "Vitality Seal 2",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 400,
-    "icon": 174,
-    "description": "+20% Max HP",
-    "traits": [
-      {
-        "code": "PARAM_RATE",
-        "dataId": "maxHp",
-        "value": 1.2
-      }
-    ]
+    "id": "brotherhood",
+    "name": "Brotherhood",
+    "type": "weapon",
+    "description": "A sword given by Wakka.",
+    "icon": 10,
+    "traits": [{ "code": "ATK", "value": 15 }, { "code": "STR", "value": 5 }],
+    "price": 0
   },
   {
-    "id": "hp_boost3",
-    "name": "Vitality Seal 3",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 2800,
-    "icon": 174,
-    "description": "+30% Max HP",
-    "traits": [
-      {
-        "code": "PARAM_RATE",
-        "dataId": "maxHp",
-        "value": 1.3
-      }
-    ]
+    "id": "summoner_staff",
+    "name": "Summoner's Staff",
+    "type": "weapon",
+    "description": "Standard issue rod for summoners.",
+    "icon": 11,
+    "traits": [{ "code": "MAG", "value": 10 }, { "code": "MP", "value": 20 }],
+    "price": 200
   },
   {
-    "id": "radiant_blade_flavio",
-    "name": "Radiant Blade Flavio",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1995,
-    "icon": 71,
-    "description": "Lucent blade carrying the blessings of the sun.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Red"
-      },
-      {
-        "code": "CRI",
-        "value": 0.2
-      }
-    ]
+    "id": "official_ball",
+    "name": "Official Ball",
+    "type": "weapon",
+    "description": "Regulation blitzball.",
+    "icon": 12,
+    "traits": [{ "code": "ACC", "value": 10 }, { "code": "ATK", "value": 12 }],
+    "price": 150
   },
   {
-    "id": "wind_dancer",
-    "name": "Wind Dancer",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1520,
-    "icon": 72,
-    "description": "Leaf-shaped daggers that strike with the speed of wind.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Green"
-      },
-      {
-        "code": "CRI",
-        "value": 0.15
-      }
-    ]
+    "id": "onyx_cactuar",
+    "name": "Onyx Cactuar",
+    "type": "weapon",
+    "description": "A doll resembling a Cactuar.",
+    "icon": 13,
+    "traits": [{ "code": "MAG", "value": 15 }, { "code": "INT", "value": 5 }],
+    "price": 300
   },
   {
-    "id": "water_scepter",
-    "name": "Water Scepter",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1520,
-    "icon": 73,
-    "description": "Leaf-shaped daggers that strike with the speed of wind.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Blue"
-      },
-      {
-        "code": "CRI",
-        "value": 0.15
-      }
-    ]
+    "id": "variable_steel",
+    "name": "Variable Steel",
+    "type": "weapon",
+    "description": "A greatsword for Auron.",
+    "icon": 14,
+    "traits": [{ "code": "ATK", "value": 25 }, { "code": "PIERCE", "value": 1 }],
+    "price": 500
   },
   {
-    "id": "holy_sword_gram",
-    "name": "Holy Sword Gram",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1520,
-    "icon": 74,
-    "description": "Legendary sword wielded by angels of time immemorial.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "White"
-      },
-      {
-        "code": "CRI",
-        "value": 0.15
-      }
-    ]
+    "id": "spirit_lance",
+    "name": "Spirit Lance",
+    "type": "weapon",
+    "description": "Ancestral lance of the Ronso.",
+    "icon": 15,
+    "traits": [{ "code": "ATK", "value": 18 }, { "code": "AGI", "value": 5 }],
+    "price": 400
   },
   {
-    "id": "dark_scepter_lucille",
-    "name": "Dark Scepter Lucille",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1666,
-    "icon": 75,
-    "description": "Cursed sceptre. Once wielded by a fallen queen, or so they say.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Black"
-      },
-      {
-        "code": "CRI",
-        "value": 0.1
-      }
-    ]
-  },
-  {
-    "id": "mars_emblem",
-    "name": "Mars Emblem",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 400,
-    "icon": 81,
-    "description": "Its magicked properties imbue the wearer with elemental energy.",
-    "traits": [
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Red"
-      }
-    ]
-  },
-  {
-    "id": "mercury_crest",
-    "name": "Mercury Crest",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 1260,
-    "icon": 83,
-    "description": "Ornate and delicate, its blue sheen is comforting.",
-    "traits": [
-      {
-        "code": "HRG",
-        "value": 0.05
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Blue"
-      }
-    ]
-  },
-  {
-    "id": "hermes_boots",
-    "name": "Hermes' Boots",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 2100,
-    "icon": 82,
-    "description": "Wondrous boots that grant the wearer unimaginable swiftness.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "asp",
-        "value": 2
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Green"
-      }
-    ]
-  },
-  {
-    "id": "glittering_teardrop",
-    "name": "Glittering Teardrop",
-    "type": "quest",
-    "cost": 0,
-    "icon": 228,
-    "description": "A flawless crystal that catches the faintest light. Alicia believes Laura will love it."
-  },
-  {
-    "id": "untarnished_signet",
-    "name": "Untarnished Signet",
-    "type": "quest",
-    "cost": 0,
-    "icon": 218,
-    "description": "A heavy golden ring, unmarked and waiting for a new story. Laura can reshape it into something precious."
+    "id": "claw",
+    "name": "Claw",
+    "type": "weapon",
+    "description": "Sharp claws for Rikku.",
+    "icon": 16,
+    "traits": [{ "code": "AGI", "value": 10 }, { "code": "LUK", "value": 5 }],
+    "price": 350
   }
 ]

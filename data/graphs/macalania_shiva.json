@@ -1,0 +1,30 @@
+{
+  "id": "macalania_shiva",
+  "name": "Trial of Ice",
+  "layout": "visual_novel",
+  "portrait": "Vampire",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "So you have discovered my little secret. Death is a release, you see.",
+      "speaker": "Seymour",
+      "next": "yuna_angry"
+    },
+    "yuna_angry": {
+      "id": "yuna_angry",
+      "type": "TEXT",
+      "text": "Maester Seymour! I send you now!",
+      "speaker": "Yuna",
+      "portrait": "NPC_Alicia",
+      "next": "end"
+    },
+    "end": {
+      "id": "end",
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "q12_macalania_temple"
+    }
+  }
+}

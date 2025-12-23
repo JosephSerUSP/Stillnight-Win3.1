@@ -1,0 +1,38 @@
+{
+  "id": "luca_goers",
+  "name": "The Big Game",
+  "layout": "visual_novel",
+  "portrait": "NPC_Geraldo",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "The Luca Goers are tough, but we can take 'em!",
+      "speaker": "Wakka",
+      "next": "auron_appear"
+    },
+    "auron_appear": {
+      "id": "auron_appear",
+      "type": "TEXT",
+      "text": "There is no time for games. Sin is coming.",
+      "speaker": "Auron",
+      "portrait": "NPC_Yukio",
+      "next": "tidus_shock"
+    },
+    "tidus_shock": {
+      "id": "tidus_shock",
+      "type": "TEXT",
+      "text": "Auron! You're here!",
+      "speaker": "Tidus",
+      "portrait": "NPC_Raphael",
+      "next": "end"
+    },
+    "end": {
+      "id": "end",
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "q5_luca"
+    }
+  }
+}

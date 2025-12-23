@@ -1,0 +1,30 @@
+{
+  "id": "mushroom_sin",
+  "name": "Operation Mi'ihen",
+  "layout": "visual_novel",
+  "portrait": "Vampire",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "Observe the power of Yevon's enemies. Futile.",
+      "speaker": "Seymour",
+      "next": "lulu_horror"
+    },
+    "lulu_horror": {
+      "id": "lulu_horror",
+      "type": "TEXT",
+      "text": "The Sinspawn... it wiped them out instantly.",
+      "speaker": "Lulu",
+      "portrait": "NPC_Laura",
+      "next": "end"
+    },
+    "end": {
+      "id": "end",
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "q7_mushroom_rock"
+    }
+  }
+}

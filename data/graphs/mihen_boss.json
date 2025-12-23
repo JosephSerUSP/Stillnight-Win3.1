@@ -1,0 +1,22 @@
+{
+  "id": "mihen_boss",
+  "name": "Chocobo Eater",
+  "layout": "visual_novel",
+  "portrait": "NPC_Yukio",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "A large fiend blocks the road. It seems fond of Chocobos.",
+      "speaker": "Rin",
+      "next": "end"
+    },
+    "end": {
+      "id": "end",
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "q6_miihen"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 [
   {
-    "title": "Town of Stillnight",
-    "intro": "A quiet settlement on the edge of the void.",
+    "title": "Besaid Village",
+    "intro": "A peaceful island village where your journey begins.",
     "depth": 0,
     "safe": true,
     "music": "town1",
@@ -12,50 +12,46 @@
       "#.......#.#.......#",
       "#.###.........###.#",
       "#.###.........###.#",
-      "#.#W#.........#U#.#",
+      "#.#W#.........#I#.#",
       "#.................#",
-      "#.###.........#L#.#",
+      "#.###.........#T#.#",
       "#.##H...#.#...###.#",
-      "#.###S...R....A##.#",
+      "#.###Y...R....A##.#",
       "#.###...#.#...###.#",
       "#.................#",
-      "#########....#P#..#",
+      "#########....#.#..#",
       "#########....###..#",
-      "########T....###..#",
+      "########S....###..#",
       "#########....###..#",
       "#########....###..#",
       "#.................#",
       "#############.#####"
     ],
     "events": [
-      { "id": "npc_gate_guard", "x": 9, "y": 0 },
+      { "id": "npc_wakka", "x": 9, "y": 0 },
       { "id": "npc_weapon_shop", "x": 3, "y": 5 },
-      { "id": "recruit", "x": 15, "y": 5 },
-      { "id": "npc_laura", "x": 15, "y": 7 },
-      { "id": "loc_abandoned_house", "x": 4, "y": 8 },
+      { "id": "npc_lulu", "x": 15, "y": 5 },
+      { "id": "npc_tidus", "x": 15, "y": 7 },
+      { "id": "loc_temple", "x": 4, "y": 8 },
       { "id": "recovery", "x": 9, "y": 9 },
-      { "id": "npc_alicia", "x": 14, "y": 9 },
-      { "id": "npc_gambler", "x": 6, "y": 9 },
-      { "id": "loc_pub", "x": 14, "y": 12 },
-      { "id": "npc_auction", "x": 10, "y": 13 },
-      { "id": "loc_temple", "x": 8, "y": 14 }
+      { "id": "npc_yuna", "x": 5, "y": 9 },
+      { "id": "npc_crusader", "x": 6, "y": 9 },
+      { "id": "loc_dock", "x": 14, "y": 12 }
     ],
     "treasures": [],
     "encounters": [],
     "recruits": []
   },
   {
-    "title": "Floor 1: Entry Hall",
-    "intro": "You cross the threshold into the dark.",
+    "title": "S.S. Liki",
+    "intro": "The ferry to Kilika. Sin is near.",
     "depth": 1,
     "music": "dungeon1",
     "image": "DungeonFloors1.png",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
+      { "id": "recovery", "chance": 0.5 },
       { "id": "enemy", "min": 2, "max": 3 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "treasure", "count": 1 },
       {
           "id": "enemy",
           "count": 1,
@@ -63,21 +59,19 @@
           "symbol": "!",
           "cssClass": "text-danger",
           "encounters": [
-              { "id": "imp", "weight": 10 }
+              { "id": "sinspawn", "weight": 10 }
           ]
       }
     ],
-    "treasures": ["potion", "antidote"],
+    "treasures": ["potion"],
     "encounters": [
-      { "id": "pixie", "weight": 5 },
-      { "id": "skeleton", "weight": 5 },
-      { "id": "imp", "weight": 3 }
+      { "id": "sinspawn", "weight": 5 }
     ],
-    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat","candle"]
+    "recruits": []
   },
   {
-    "title": "Floor 2: Chasm Crossing",
-    "intro": "Wind howls across a broken bridge.",
+    "title": "Kilika Woods",
+    "intro": "A dense jungle infested with monsters.",
     "depth": 2,
     "music": "dungeon1",
     "image": "DungeonFloors1.png",
@@ -85,67 +79,58 @@
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 3, "max": 4 },
-      { "id": "shrine_music_box", "chance": 0.3 },
-      { "id": "shrine", "chance": 0.5 },
       { "id": "npc_dungeon_merchant", "chance": 0.5 },
       { "id": "recruit", "chance": 0.6 },
       { "id": "trap", "min": 1, "max": 2 },
       { "id": "treasure", "chance": 0.5 }
     ],
-    "treasures": ["hi_potion", "iron_sword"],
+    "treasures": ["hi_potion"],
     "encounters": [
-      { "id": "skeleton", "weight": 8 },
-      { "id": "imp", "weight": 5 },
-      { "id": "wisp", "weight": 4 },
-      { "id": "ooze", "weight": 3 }
+      { "id": "killer_bee", "weight": 8 },
+      { "id": "ragora", "weight": 5 },
+      { "id": "yellow_element", "weight": 4 }
     ],
-    "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
+    "recruits": ["ragora"]
   },
   {
-    "title": "Floor 3: Rusted Choir",
-    "intro": "Broken bells sway above a dry pit.",
+    "title": "Kilika Temple",
+    "intro": "The Trial of Fire.",
     "depth": 3,
-    "music": "emotional1_bitSad",
+    "music": "event9_magical",
     "image": "DungeonFloors1.png",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
+      { "id": "shrine", "chance": 1 }
     ],
     "encounters": [
-      { "id": "golem", "weight": 6 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 3 }
+      { "id": "yellow_element", "weight": 6 },
+      { "id": "demon", "weight": 4 }
     ],
-    "recruits": ["golem", "demon", "angel", "larva","flauros"]
+    "recruits": ["demon"]
   },
   {
-    "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
+    "title": "Luca Stadium",
+    "intro": "The biggest city in Spira.",
     "depth": 4,
-    "music": "event9_magical",
-    "image": "DungeonFloors1.png",
+    "music": "town1",
+    "image": "TownAlencar.png",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 7 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "npc_dungeon_merchant", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "npc_daphne", "count": 1 }
+      { "id": "recovery", "chance": 1 },
+      { "id": "npc_auron", "chance": 1 },
+      { "id": "enemy", "min": 2, "max": 3 }
     ],
     "encounters": [
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 4 },
-      { "id": "ghoul", "weight": 4 }
+      { "id": "worker_machina", "weight": 8 },
+      { "id": "sahagin", "weight": 4 }
     ],
-    "recruits": ["demon", "angel", "golem","flauros"]
+    "recruits": []
   },
   {
-    "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
+    "title": "Mi'ihen Highroad",
+    "intro": "A long road to the north.",
     "depth": 5,
     "music": "dungeon1",
     "image": "DungeonFloors1.png",
@@ -157,16 +142,231 @@
       { "id": "recruit", "chance": 0.4 }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 2 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
+      { "id": "dual_horn", "weight": 5 },
+      { "id": "bomb", "weight": 5 },
+      { "id": "flauros", "weight": 2 }
     ],
-    "recruits": ["demon", "angel"]
+    "recruits": ["bomb", "dual_horn"]
   },
   {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
+    "title": "Mushroom Rock Road",
+    "intro": "The Crusaders are gathering.",
     "depth": 6,
+    "music": "event4_darkJester",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "recovery", "count": 1 },
+      { "id": "enemy", "min": 3, "max": 4 },
+      { "id": "stairs", "count": 1 }
+    ],
+    "encounters": [
+      { "id": "sinspawn", "weight": 10 },
+      { "id": "funguar", "weight": 5 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Djose Temple",
+    "intro": "The Trial of Lightning.",
+    "depth": 7,
+    "music": "event9_magical",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 4, "max": 6 },
+      { "id": "shrine", "chance": 1 }
+    ],
+    "encounters": [
+      { "id": "gold_element", "weight": 6 },
+      { "id": "garm", "weight": 4 }
+    ],
+    "recruits": ["garm"]
+  },
+  {
+    "title": "Moonflow",
+    "intro": "A river of pyreflies.",
+    "depth": 8,
+    "music": "event5_nostalgia",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.5 },
+      { "id": "npc_rikku", "count": 1 },
+      { "id": "enemy", "min": 2, "max": 3 }
+    ],
+    "encounters": [
+      { "id": "ochu", "weight": 5 },
+      { "id": "sahagin_chief", "weight": 5 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Thunder Plains",
+    "intro": "Eternal storm. Dodge the lightning.",
+    "depth": 9,
+    "music": "dungeon1",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.2 },
+      { "id": "enemy", "min": 5, "max": 7 },
+      { "id": "treasure", "chance": 0.5 }
+    ],
+    "encounters": [
+      { "id": "iron_giant", "weight": 3 },
+      { "id": "gold_element", "weight": 5 },
+      { "id": "melusine", "weight": 4 }
+    ],
+    "recruits": ["iron_giant"]
+  },
+  {
+    "title": "Macalania Woods",
+    "intro": "A crystal forest.",
+    "depth": 10,
+    "music": "dungeon1",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 4, "max": 6 }
+    ],
+    "encounters": [
+      { "id": "chimera", "weight": 4 },
+      { "id": "blue_element", "weight": 5 },
+      { "id": "wasp", "weight": 4 }
+    ],
+    "recruits": ["chimera"]
+  },
+  {
+    "title": "Macalania Temple",
+    "intro": "The Trial of Ice. Betrayal awaits.",
+    "depth": 11,
+    "music": "event9_magical",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 3, "max": 5 },
+      { "id": "shrine", "chance": 1 }
+    ],
+    "encounters": [
+      { "id": "evil_eye", "weight": 6 },
+      { "id": "ice_flan", "weight": 5 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Bikanel Desert",
+    "intro": "Endless sands. No magic here.",
+    "depth": 12,
+    "music": "dungeon1",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.1 },
+      { "id": "enemy", "min": 6, "max": 8 }
+    ],
+    "encounters": [
+      { "id": "zu", "weight": 3 },
+      { "id": "sand_worm", "weight": 4 },
+      { "id": "cactuar", "weight": 5 }
+    ],
+    "recruits": ["cactuar"]
+  },
+  {
+    "title": "Home",
+    "intro": "The Al Bhed sanctuary, burning.",
+    "depth": 13,
+    "music": "emotional3_sadSad",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.2 },
+      { "id": "enemy", "min": 5, "max": 7 }
+    ],
+    "encounters": [
+      { "id": "bomb", "weight": 5 },
+      { "id": "chimera", "weight": 4 },
+      { "id": "guado_guardian", "weight": 6 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Bevelle",
+    "intro": "The heart of Yevon.",
+    "depth": 14,
+    "music": "event4_darkJester",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 4, "max": 6 },
+      { "id": "shrine", "chance": 1 }
+    ],
+    "encounters": [
+      { "id": "warrior_monk", "weight": 8 },
+      { "id": "iron_giant", "weight": 3 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Calm Lands",
+    "intro": "The scar of history.",
+    "depth": 15,
+    "music": "event8_yearning",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.5 },
+      { "id": "enemy", "min": 5, "max": 8 }
+    ],
+    "encounters": [
+      { "id": "malboro", "weight": 3 },
+      { "id": "coeurl", "weight": 4 },
+      { "id": "defender", "weight": 3 }
+    ],
+    "recruits": ["malboro", "coeurl"]
+  },
+  {
+    "title": "Mt. Gagazet",
+    "intro": "The path of the Ronso.",
+    "depth": 16,
+    "music": "dungeon1",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 5, "max": 7 }
+    ],
+    "encounters": [
+      { "id": "bandersnatch", "weight": 5 },
+      { "id": "nidhogg", "weight": 4 },
+      { "id": "imp", "weight": 5 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Zanarkand Ruins",
+    "intro": "The dead city that never sleeps.",
+    "depth": 17,
+    "music": "emotional2_sadNostalgic",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.4 },
+      { "id": "enemy", "min": 4, "max": 6 }
+    ],
+    "encounters": [
+      { "id": "fallen_monk", "weight": 6 },
+      { "id": "behemoth", "weight": 3 }
+    ],
+    "recruits": ["behemoth"]
+  },
+  {
+    "title": "Inside Sin",
+    "intro": "The final dream.",
+    "depth": 18,
     "music": "event4_darkJester",
     "image": "DungeonFloors1.png",
     "events": [
@@ -174,8 +374,7 @@
       { "id": "enemy", "min": 1, "max": 1 }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
+      { "id": "sin", "weight": 10 }
     ],
     "recruits": []
   }

@@ -1,0 +1,70 @@
+{
+  "id": "intro",
+  "name": "The Stranger",
+  "layout": "visual_novel",
+  "portrait": "NPC_Raphael",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "Where... where am I? This isn't Zanarkand.",
+      "speaker": "Tidus",
+      "next": "wakka_meet"
+    },
+    "wakka_meet": {
+      "id": "wakka_meet",
+      "type": "TEXT",
+      "text": "Hey! You okay there, ya? You took quite a swallow of seawater.",
+      "speaker": "Wakka",
+      "portrait": "NPC_Geraldo",
+      "next": "wakka_meet_2"
+    },
+    "wakka_meet_2": {
+      "id": "wakka_meet_2",
+      "type": "TEXT",
+      "text": "I'm Wakka. Welcome to Besaid.",
+      "speaker": "Wakka",
+      "portrait": "NPC_Geraldo",
+      "next": "choice_who_are_you"
+    },
+    "choice_who_are_you": {
+      "id": "choice_who_are_you",
+      "type": "CHOICE",
+      "choices": [
+        { "text": "I'm Tidus. I play for the Zanarkand Abes.", "next": "wakka_laugh" },
+        { "text": "I don't remember anything.", "next": "wakka_concern" }
+      ]
+    },
+    "wakka_laugh": {
+      "id": "wakka_laugh",
+      "type": "TEXT",
+      "text": "Zanarkand? That's a good one! You must be hit in the head by Sin's toxin, ya?",
+      "speaker": "Wakka",
+      "portrait": "NPC_Geraldo",
+      "next": "yuna_intro"
+    },
+    "wakka_concern": {
+      "id": "wakka_concern",
+      "type": "TEXT",
+      "text": "Sin's toxin... Nasty stuff. Don't worry, we'll get you sorted.",
+      "speaker": "Wakka",
+      "portrait": "NPC_Geraldo",
+      "next": "yuna_intro"
+    },
+    "yuna_intro": {
+      "id": "yuna_intro",
+      "type": "TEXT",
+      "text": "Come on. The Summoner is at the temple. You should meet her.",
+      "speaker": "Wakka",
+      "portrait": "NPC_Geraldo",
+      "next": "end"
+    },
+    "end": {
+      "id": "end",
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "q1_besaid"
+    }
+  }
+}

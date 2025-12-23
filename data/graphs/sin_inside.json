@@ -1,0 +1,22 @@
+{
+  "id": "sin_inside",
+  "name": "Inside Sin",
+  "layout": "visual_novel",
+  "portrait": "NPC_Raphael",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "This is it. The end of the dream. Let's finish this.",
+      "speaker": "Tidus",
+      "next": "end"
+    },
+    "end": {
+      "id": "end",
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "q19_sin"
+    }
+  }
+}

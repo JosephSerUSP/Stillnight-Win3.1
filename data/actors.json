@@ -1,336 +1,399 @@
 [
   {
-    "id": "pixie",
-    "name": "Pixie",
+    "id": "summoner",
+    "name": "Yuna",
     "level": 1,
-    "role": "Healer",
-    "maxHp": 9,
-    "spriteKey": "pixie",
-    "passives": [
-      "postBattleHeal",
-      "sense"
-    ],
-    "elements": [
-      "Green",
-      "Green"
-    ],
-    "skills": [
-      "windBlade",
-      "soothingMote"
-    ],
-    "flavor": "A wandering mote-courier who got lost between shrines and never looked back.",
-    "expGrowth": 2,
-    "gold": 15,
-    "drops": [
-      {
-        "itemId": "hp_tonic",
-        "chance": 0.3
-      }
-    ],
-    "evolutions": [
-      {
-        "level": 6,
-        "evolvesTo": "highPixie"
-      }
-    ],
-    "initialParty": true,
-    "isRecruitable": true,
-    "isEvolved": false
+    "maxHp": 450,
+    "maxMp": 120,
+    "role": "Summoner",
+    "elements": ["White"],
+    "skills": ["cure", "esuna"],
+    "traits": [],
+    "spriteKey": "NPC_Alicia",
+    "gold": 500,
+    "expGrowth": 20
   },
   {
-    "id": "highPixie",
-    "name": "High Pixie",
-    "level": 6,
-    "role": "Healer",
-    "maxHp": 15,
-    "spriteKey": "highPixie",
-    "passives": [
-      "postBattleHeal"
-    ],
-    "elements": [
-      "Green",
-      "Green",
-      "White"
-    ],
-    "skills": [
-      "windBlade",
-      "soothingMote",
-      "holySmite"
-    ],
-    "flavor": "A pixie that has attained a higher state of being.",
-    "expGrowth": 3,
-    "gold": 30,
-    "evolutions": [],
-    "initialParty": false,
-    "isRecruitable": false,
-    "isEvolved": true
-  },
-  {
-    "id": "skeleton",
-    "name": "Skeleton",
+    "id": "tidus",
+    "name": "Tidus",
     "level": 1,
-    "role": "Attacker",
-    "maxHp": 11,
-    "spriteKey": "skeleton",
-    "passives": [
-      "undeadFortitude"
-    ],
-    "elements": [
-      "Black"
-    ],
-    "skills": [
-      "boneRush"
-    ],
-    "flavor": "A reanimated corpse that just wants to go back to sleep.",
-    "expGrowth": 4,
-    "gold": 18,
-    "drops": [
-      {
-        "itemId": "bone_plate",
-        "chance": 0.1
-      },
-      {
-        "itemId": "untarnished_signet",
-        "chance": 0.05
-      }
-    ],
+    "role": "Guardian",
+    "maxHp": 520,
+    "spriteKey": "NPC_Raphael",
+    "passives": ["initiative", "counter"],
+    "elements": ["Water"],
+    "skills": ["quickHit", "cheer", "haste"],
+    "flavor": "A star Blitzball player from Zanarkand who washed ashore.",
+    "expGrowth": 10,
+    "gold": 0,
+    "drops": [],
     "evolutions": [],
     "initialParty": true,
     "isRecruitable": true,
     "isEvolved": false
   },
   {
-    "id": "angel",
-    "name": "Angel",
-    "level": 1,
-    "role": "Support",
-    "maxHp": 12,
-    "spriteKey": "angel",
-    "passives": [
-      "holyAura"
-    ],
-    "elements": [
-      "White",
-      "White",
-      "Blue"
-    ],
-    "skills": [
-      "holySmite",
-      "divineFavor"
-    ],
-    "flavor": "A celestial being tasked with guiding the lost. Its patience is legendary.",
-    "expGrowth": 5,
-    "gold": 20,
-    "evolutions": [
-      {
-        "level": 6,
-        "evolvesTo": "archangel"
-      }
-    ],
-    "initialParty": false,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "archangel",
-    "name": "Archangel",
-    "level": 6,
-    "role": "Support",
-    "maxHp": 16,
-    "spriteKey": "archangel",
-    "passives": [
-      "holyAura"
-    ],
-    "elements": [
-      "White",
-      "White",
-      "Blue"
-    ],
-    "skills": [
-      "holySmite",
-      "divineFavor",
-      "soothingMote"
-    ],
-    "flavor": "A celestial being tasked with guiding the lost. Its patience is legendary.",
-    "expGrowth": 5,
-    "gold": 20,
-    "evolutions": [],
-    "initialParty": false,
-    "isRecruitable": false,
-    "isEvolved": true
-  },
-  {
-    "id": "demon",
-    "name": "Demon",
-    "level": 2,
-    "role": "Attacker",
-    "maxHp": 12,
-    "spriteKey": "demon",
-    "passives": [
-      "chaosPact"
-    ],
-    "elements": [
-      "Red",
-      "Black"
-    ],
-    "skills": [
-      "shadowClaw",
-      "infernalPact"
-    ],
-    "flavor": "A pact-bound fiend that revels in chaos and destruction.",
-    "expGrowth": 5,
-    "gold": 25,
-    "drops": [
-      {
-        "itemId": "silver_blade",
-        "chance": 0.1
-      }
-    ],
-    "evolutions": [
-      {
-        "level": 6,
-        "evolvesTo": "incubus"
-      }
-    ],
-    "initialParty": false,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "incubus",
-    "name": "Incubus",
-    "level": 6,
-    "role": "Attacker",
-    "maxHp": 22,
-    "spriteKey": "incubus",
-    "passives": [
-      "chaosPact",
-      "etherealBody"
-    ],
-    "elements": [
-      "Black",
-      "Black",
-      "Blue"
-    ],
-    "skills": [
-      "shadowClaw",
-      "infernalPact",
-      "drainKiss"
-    ],
-    "flavor": "A demon that invades dreams to steal vitality.",
-    "expGrowth": 6,
-    "gold": 60,
-    "evolutions": [],
-    "initialParty": false,
-    "isRecruitable": false,
-    "isEvolved": true
-  },
-  {
-    "id": "nurse",
-    "name": "Nurse",
-    "level": 1,
-    "role": "Healer",
-    "maxHp": 14,
-    "spriteKey": "nurse",
-    "passives": [
-      "symbiosis"
-    ],
-    "elements": [
-      "Black",
-      "Black"
-    ],
-    "skills": [
-      "needleShot",
-      "fieldSurgery"
-    ],
-    "flavor": "She's here to help. Please don't resist.",
-    "expGrowth": 4,
-    "gold": 20,
-    "evolutions": [],
-    "initialParty": false,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "imp",
-    "name": "Imp",
-    "level": 1,
-    "role": "Attacker",
-    "maxHp": 8,
-    "spriteKey": "imp",
-    "passives": [
-      "mischief"
-    ],
-    "elements": [
-      "Red",
-      "Red",
-      "Red"
-    ],
-    "skills": [
-      "shadowClaw"
-    ],
-    "flavor": "A mischievous lesser demon that enjoys playing pranks.",
-    "expGrowth": 3,
-    "gold": 12,
-    "drops": [
-      {
-        "itemId": "whispered_lessons",
-        "chance": 0.2
-      }
-    ],
-    "evolutions": [],
+    "id": "wakka",
+    "name": "Wakka",
+    "level": 3,
+    "role": "Guardian",
+    "maxHp": 600,
+    "spriteKey": "NPC_Geraldo",
+    "passives": ["accuracy"],
+    "elements": ["Water"],
+    "skills": ["darkAttack", "elementReels"],
+    "flavor": "Captain of the Besaid Aurochs. Dislikes Machina.",
+    "expGrowth": 12,
+    "gold": 100,
     "initialParty": true,
     "isRecruitable": true,
     "isEvolved": false
   },
   {
-    "id": "golem",
-    "name": "Golem",
-    "level": 2,
-    "role": "Tank",
-    "maxHp": 15,
-    "spriteKey": "golem",
-    "passives": [
-      "rearGuard",
-      "goldDigger"
-    ],
+    "id": "lulu",
+    "name": "Lulu",
+    "level": 5,
+    "role": "Guardian",
+    "maxHp": 380,
+    "spriteKey": "NPC_Laura",
+    "passives": ["focus"],
+    "elements": ["Black"],
+    "skills": ["fire", "blizzard", "thunder", "water"],
+    "flavor": "A stern Black Mage who has guarded summoners before.",
+    "expGrowth": 12,
+    "gold": 150,
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false
+  },
+  {
+    "id": "kimahri",
+    "name": "Kimahri",
+    "level": 4,
+    "role": "Guardian",
+    "maxHp": 650,
+    "spriteKey": "flauros",
+    "passives": ["lancet"],
+    "elements": ["Blue"],
+    "skills": ["jump", "seedCannon"],
+    "flavor": "A silent Ronso warrior who protects Yuna.",
+    "expGrowth": 12,
+    "gold": 0,
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false
+  },
+  {
+    "id": "auron",
+    "name": "Auron",
+    "level": 10,
+    "role": "Guardian",
+    "maxHp": 1200,
+    "spriteKey": "NPC_Yukio",
+    "passives": ["counter", "piercing"],
     "elements": [],
-    "skills": [
-      "boneRush"
-    ],
-    "flavor": "An animated statue, slow but incredibly durable.",
-    "expGrowth": 8,
-    "gold": 40,
-    "evolutions": [],
+    "skills": ["powerBreak", "armorBreak", "dragonFang"],
+    "flavor": "The legendary guardian who traveled with Lord Braska.",
+    "expGrowth": 15,
+    "gold": 0,
     "initialParty": false,
     "isRecruitable": true,
     "isEvolved": false
   },
   {
-    "id": "ghoul",
-    "name": "Ghoul",
-    "level": 2,
-    "role": "Tank",
-    "maxHp": 15,
-    "spriteKey": "ghoul",
-    "passives": [
-      "goldDigger"
-    ],
-    "elements": [
-      "Black",
-      "Black",
-      "Black"
-    ],
-    "skills": [
-      "boneRush"
-    ],
-    "flavor": "An animated statue, slow but incredibly durable.",
-    "expGrowth": 8,
-    "gold": 40,
-    "evolutions": [],
+    "id": "rikku",
+    "name": "Rikku",
+    "level": 6,
+    "role": "Guardian",
+    "maxHp": 450,
+    "spriteKey": "NPC_Daphne",
+    "passives": ["steal", "use"],
+    "elements": [],
+    "skills": ["mug", "mix", "grenade"],
+    "flavor": "An Al Bhed girl with a knack for machinery.",
+    "expGrowth": 12,
+    "gold": 200,
     "initialParty": false,
     "isRecruitable": true,
     "isEvolved": false
+  },
+  {
+    "id": "seymour",
+    "name": "Seymour",
+    "level": 15,
+    "role": "Maester",
+    "maxHp": 2500,
+    "spriteKey": "Vampire",
+    "passives": ["autoLife"],
+    "elements": ["Black", "White"],
+    "skills": ["multiThundara", "requiem"],
+    "flavor": "Maester of Yevon, leader of the Guado. Something is off about him.",
+    "expGrowth": 50,
+    "gold": 1000,
+    "initialParty": false,
+    "isRecruitable": false,
+    "isEvolved": false
+  },
+  {
+    "id": "valefor",
+    "name": "Valefor",
+    "level": 5,
+    "role": "Aeon",
+    "maxHp": 800,
+    "spriteKey": "archangel",
+    "passives": ["flying"],
+    "elements": ["White"],
+    "skills": ["sonicWings", "energyRay"],
+    "flavor": "The Fayth of Besaid. A soaring bird-like Aeon.",
+    "expGrowth": 20,
+    "gold": 0,
+    "initialParty": false,
+    "isRecruitable": true
+  },
+  {
+    "id": "ifrit",
+    "name": "Ifrit",
+    "level": 8,
+    "role": "Aeon",
+    "maxHp": 1000,
+    "spriteKey": "demon",
+    "passives": ["fireEater"],
+    "elements": ["Red"],
+    "skills": ["meteorStrike", "hellfire"],
+    "flavor": "The Fayth of Kilika. A raging fire demon.",
+    "expGrowth": 25,
+    "gold": 0,
+    "initialParty": false,
+    "isRecruitable": true
+  },
+  {
+    "id": "ixion",
+    "name": "Ixion",
+    "level": 12,
+    "role": "Aeon",
+    "maxHp": 1200,
+    "spriteKey": "flauros",
+    "passives": ["lightningEater"],
+    "elements": ["Blue"],
+    "skills": ["aerospark", "thorHammer"],
+    "flavor": "The Fayth of Djose. A unicorn charged with lightning.",
+    "expGrowth": 30,
+    "gold": 0,
+    "initialParty": false,
+    "isRecruitable": true
+  },
+  {
+    "id": "shiva",
+    "name": "Shiva",
+    "level": 15,
+    "role": "Aeon",
+    "maxHp": 1100,
+    "spriteKey": "highPixie",
+    "passives": ["iceEater"],
+    "elements": ["Blue"],
+    "skills": ["heavenlyStrike", "diamondDust"],
+    "flavor": "The Fayth of Macalania. The empress of ice.",
+    "expGrowth": 35,
+    "gold": 0,
+    "initialParty": false,
+    "isRecruitable": true
+  },
+  {
+    "id": "bahamut",
+    "name": "Bahamut",
+    "level": 25,
+    "role": "Aeon",
+    "maxHp": 3000,
+    "spriteKey": "Golem",
+    "passives": ["breakDamageLimit"],
+    "elements": ["Black"],
+    "skills": ["impulse", "megaFlare"],
+    "flavor": "The King of Dragons.",
+    "expGrowth": 50,
+    "gold": 0,
+    "initialParty": false,
+    "isRecruitable": true
+  },
+  {
+    "id": "sinspawn",
+    "name": "Sinspawn",
+    "level": 2,
+    "role": "Minion",
+    "maxHp": 40,
+    "spriteKey": "larva",
+    "passives": [],
+    "elements": ["Water"],
+    "skills": ["waterGun"],
+    "flavor": "A piece of Sin shed from its body.",
+    "expGrowth": 5,
+    "gold": 10,
+    "drops": [{"itemId": "potion", "chance": 0.2}],
+    "isRecruitable": false
+  },
+  {
+    "id": "klikos",
+    "name": "Klikos",
+    "level": 4,
+    "role": "Boss",
+    "maxHp": 200,
+    "spriteKey": "ooze",
+    "passives": ["regeneration"],
+    "elements": ["Water"],
+    "skills": ["doublePunch"],
+    "flavor": "A slime monster blocking the trial.",
+    "expGrowth": 50,
+    "gold": 100,
+    "isRecruitable": false
+  },
+  {
+    "id": "bomb",
+    "name": "Bomb",
+    "level": 5,
+    "role": "Minion",
+    "maxHp": 60,
+    "spriteKey": "wisp",
+    "passives": ["explode"],
+    "elements": ["Red"],
+    "skills": ["fire"],
+    "flavor": "It gets bigger when hit.",
+    "expGrowth": 8,
+    "gold": 20,
+    "isRecruitable": false
+  },
+  {
+    "id": "chocobo_eater",
+    "name": "Chocobo Eater",
+    "level": 8,
+    "role": "Boss",
+    "maxHp": 800,
+    "spriteKey": "incubus",
+    "passives": ["armored"],
+    "elements": [],
+    "skills": ["fistOfFury"],
+    "flavor": "A gluttonous beast that preys on Chocobos.",
+    "expGrowth": 100,
+    "gold": 500,
+    "isRecruitable": false
+  },
+  {
+    "id": "sinspawn_gui",
+    "name": "Sinspawn Gui",
+    "level": 12,
+    "role": "Boss",
+    "maxHp": 2000,
+    "spriteKey": "demon",
+    "passives": ["armored"],
+    "elements": ["Black"],
+    "skills": ["gravija"],
+    "flavor": "A massive spawn used to bait the Crusaders.",
+    "expGrowth": 500,
+    "gold": 1000,
+    "isRecruitable": false
+  },
+  {
+    "id": "extractor",
+    "name": "Extractor",
+    "level": 10,
+    "role": "Boss",
+    "maxHp": 1500,
+    "spriteKey": "golem",
+    "passives": ["mechanical"],
+    "elements": ["Blue"],
+    "skills": ["depthCharge"],
+    "flavor": "Al Bhed machine designed to capture Summoners.",
+    "expGrowth": 300,
+    "gold": 600,
+    "isRecruitable": false
+  },
+  {
+    "id": "spherimorph",
+    "name": "Spherimorph",
+    "level": 15,
+    "role": "Boss",
+    "maxHp": 1800,
+    "spriteKey": "ooze",
+    "passives": ["elementShift"],
+    "elements": ["Water", "Red", "Blue", "Black"],
+    "skills": ["press"],
+    "flavor": "An amorphous blob that changes elemental weakness.",
+    "expGrowth": 400,
+    "gold": 800,
+    "isRecruitable": false
+  },
+  {
+    "id": "crawler",
+    "name": "Crawler",
+    "level": 18,
+    "role": "Boss",
+    "maxHp": 2500,
+    "spriteKey": "golem",
+    "passives": ["mechanical"],
+    "elements": ["Blue"],
+    "skills": ["manaBeam"],
+    "flavor": "Forbidden machina guarding the ice temple.",
+    "expGrowth": 600,
+    "gold": 1000,
+    "isRecruitable": false
+  },
+  {
+    "id": "evrae",
+    "name": "Evrae",
+    "level": 25,
+    "role": "Boss",
+    "maxHp": 4000,
+    "spriteKey": "archangel",
+    "passives": ["flying"],
+    "elements": ["White"],
+    "skills": ["poisonBreath", "stoneGaze"],
+    "flavor": "Guardian of Bevelle.",
+    "expGrowth": 2000,
+    "gold": 3000,
+    "isRecruitable": false
+  },
+  {
+    "id": "seymour_flux",
+    "name": "Seymour Flux",
+    "level": 30,
+    "role": "Boss",
+    "maxHp": 6000,
+    "spriteKey": "crimsonLord",
+    "passives": ["autoProtect"],
+    "elements": ["Black"],
+    "skills": ["crossCleave", "totalAnnihilation"],
+    "flavor": "Seymour in his twisted, final form.",
+    "expGrowth": 5000,
+    "gold": 0,
+    "isRecruitable": false
+  },
+  {
+    "id": "yunalesca",
+    "name": "Yunalesca",
+    "level": 35,
+    "role": "Boss",
+    "maxHp": 8000,
+    "spriteKey": "highPixie",
+    "passives": ["zombieTouch"],
+    "elements": [],
+    "skills": ["megaDeath", "hellbiter"],
+    "flavor": "The first Summoner, caught in an eternal cycle.",
+    "expGrowth": 8000,
+    "gold": 0,
+    "isRecruitable": false
+  },
+  {
+    "id": "sin",
+    "name": "Sin",
+    "level": 50,
+    "role": "Calamity",
+    "maxHp": 20000,
+    "spriteKey": "demon",
+    "passives": ["gigaGraviton"],
+    "elements": ["Black"],
+    "skills": ["gigaGraviton", "terraGraviton"],
+    "flavor": "The punishment for Spira's vanity.",
+    "expGrowth": 0,
+    "gold": 0,
+    "isRecruitable": false
   },
   {
     "id": "ooze",
@@ -339,241 +402,14 @@
     "role": "Debuffer",
     "maxHp": 18,
     "spriteKey": "ooze",
-    "passives": [
-      "rearGuard"
-    ],
-    "elements": [
-      "Green"
-    ],
-    "skills": [
-      "windBlade"
-    ],
+    "passives": ["rearGuard"],
+    "elements": ["Green"],
+    "skills": ["windBlade"],
     "expGrowth": 5,
     "gold": 10,
     "evolutions": [],
     "initialParty": true,
     "isRecruitable": true,
     "isEvolved": false
-  },
-  {
-    "id": "bat",
-    "name": "Bat",
-    "level": 1,
-    "role": "Attacker",
-    "maxHp": 10,
-    "spriteKey": "bat",
-    "passives": [
-      "nightVision",
-      "initiative"
-    ],
-    "elements": [
-      "Black"
-    ],
-    "skills": [
-      "boneRush"
-    ],
-    "expGrowth": 3,
-    "gold": 8,
-    "evolutions": [],
-    "initialParty": true,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "wisp",
-    "name": "Wisp",
-    "level": 1,
-    "role": "Caster",
-    "maxHp": 12,
-    "spriteKey": "wisp",
-    "passives": [
-      "etherealBody"
-    ],
-    "elements": [
-      "Blue",
-      "Blue"
-    ],
-    "skills": [
-      "soothingMote"
-    ],
-    "expGrowth": 4,
-    "gold": 14,
-    "drops": [
-      {
-        "itemId": "glittering_teardrop",
-        "chance": 0.1
-      }
-    ],
-    "evolutions": [],
-    "initialParty": true,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "egg",
-    "name": "Egg",
-    "level": 1,
-    "role": "None",
-    "maxHp": 5,
-    "spriteKey": "egg",
-    "elements": [],
-    "skills": [
-      "wait"
-    ],
-    "expGrowth": 1,
-    "gold": 1,
-    "evolutions": [
-      {
-        "level": 10,
-        "evolvesTo": "phoenix"
-      }
-    ],
-    "initialParty": false,
-    "isRecruitable": false,
-    "isEvolved": false
-  },
-  {
-    "id": "phoenix",
-    "name": "Phoenix",
-    "level": 10,
-    "role": "Reviver",
-    "spriteKey": "phoenix",
-    "maxHp": 25,
-    "passives": [
-      "rebirth"
-    ],
-    "elements": [
-      "Red",
-      "White"
-    ],
-    "skills": [
-      "flameRebirth",
-      "divineFavor"
-    ],
-    "expGrowth": 10,
-    "gold": 100,
-    "evolutions": [],
-    "initialParty": false,
-    "isRecruitable": false,
-    "isEvolved": true
-  },
-  {
-    "id": "larva",
-    "name": "Larva",
-    "level": 1,
-    "role": "Parasite",
-    "maxHp": 12,
-    "spriteKey": "larva",
-    "passives": [
-      "parasite"
-    ],
-    "elements": [
-      "Red"
-    ],
-    "skills": [],
-    "flavor": "It's eating your rations. And your tank.",
-    "expGrowth": 2,
-    "gold": 5,
-    "evolutions": [
-      {
-        "level": 6,
-        "evolvesTo": "crimsonLord"
-      }
-    ],
-    "initialParty": false,
-    "isRecruitable": true,
-    "isEvolved": false
-  },
-  {
-    "id": "crimsonLord",
-    "name": "Crimson Lord",
-    "level": 6,
-    "role": "Vampire",
-    "maxHp": 55,
-    "spriteKey": "vampire",
-    "passives": [],
-    "elements": [
-      "Red",
-      "Black"
-    ],
-    "skills": [
-      "shadowClaw",
-      "infernalPact"
-    ],
-    "flavor": "He has drunk his fill, and now commands the blood.",
-    "expGrowth": 6,
-    "gold": 80,
-    "evolutions": [],
-    "initialParty": false,
-    "isRecruitable": false,
-    "isEvolved": true
-  },
-  {
-      "id": "flauros",
-      "name": "Flauros",
-      "level": 3,
-      "role": "Attacker",
-      "maxHp": 19,
-      "spriteKey": "flauros",
-      "passives": ["initiative", "chaosPact"],
-      "elements": ["Red", "Red", "Black"],
-      "skills": ["shadowClaw", "infernalPact"],
-      "flavor": "A savage leopard demon. It smells of brimstone and burnt hair.",
-      "expGrowth": 6,
-      "gold": 35,
-      "drops": [{ "itemId": "obsidian_shard", "chance": 0.15 }],
-      "evolutions": [],
-      "initialParty": false,
-      "isRecruitable": true,
-      "isEvolved": false
-  },
-  {
-      "id": "candle",
-      "name": "Candle",
-      "level": 1,
-      "role": "Support",
-      "maxHp": 7,
-      "spriteKey": "candle",
-      "passives": ["nightVision"],
-      "elements": ["Red", "White"],
-      "skills": ["soothingMote", "divineFavor"],
-      "flavor": "A simple wax candle given life. Ideally, keep it away from the library.",
-      "expGrowth": 2,
-      "gold": 8,
-      "drops": [{ "itemId": "melted_wax", "chance": 0.4 }],
-      "evolutions": [{ "level": 8, "evolvesTo": "lantern" }],
-      "initialParty": false,
-      "isRecruitable": true,
-      "isEvolved": false
-  },
-  {
-    "id": "shadowStalker",
-    "name": "Shadow Stalker",
-    "level": 12,
-    "maxHp": 40,
-    "role": "Assassin",
-    "elements": ["Shadow"],
-    "skills": ["shadowClaw", "assassinate"],
-    "traits": [
-        { "code": "EVA", "value": 0.15 },
-        { "code": "CRI", "value": 0.1 }
-    ],
-    "spriteKey": "ShadowStalker",
-    "gold": 14,
-    "expGrowth": 10
-  },
-  {
-    "id": "summoner",
-    "name": "Alex",
-    "level": 1,
-    "maxHp": 18,
-    "maxMp": 820,
-    "role": "Summoner",
-    "elements": [],
-    "skills": [],
-    "traits": [],
-    "spriteKey": "egg",
-    "gold": 0,
-    "expGrowth": 20
   }
 ]

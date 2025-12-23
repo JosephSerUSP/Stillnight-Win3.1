@@ -1,0 +1,74 @@
+{
+  "id": "besaid_temple",
+  "name": "Meeting Yuna",
+  "layout": "visual_novel",
+  "portrait": "NPC_Alicia",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "I have done it. I have become a Summoner.",
+      "speaker": "Yuna",
+      "next": "lulu_comment"
+    },
+    "lulu_comment": {
+      "id": "lulu_comment",
+      "type": "TEXT",
+      "text": "Don't celebrate yet. This is only the beginning.",
+      "speaker": "Lulu",
+      "portrait": "NPC_Laura",
+      "next": "tidus_observe"
+    },
+    "tidus_observe": {
+      "id": "tidus_observe",
+      "type": "TEXT",
+      "text": "(She's... beautiful.)",
+      "speaker": "Tidus",
+      "portrait": "NPC_Raphael",
+      "next": "yuna_greet"
+    },
+    "yuna_greet": {
+      "id": "yuna_greet",
+      "type": "TEXT",
+      "text": "Hello. I am Yuna. Wakka told me about you.",
+      "speaker": "Yuna",
+      "next": "yuna_request"
+    },
+    "yuna_request": {
+      "id": "yuna_request",
+      "type": "TEXT",
+      "text": "Will you guard me? On my pilgrimage to Zanarkand?",
+      "speaker": "Yuna",
+      "next": "choice_guard"
+    },
+    "choice_guard": {
+      "id": "choice_guard",
+      "type": "CHOICE",
+      "choices": [
+        { "text": "I'll do it. Maybe I can find a way home.", "next": "yuna_happy" },
+        { "text": "I'm not much of a fighter, but I'll try.", "next": "yuna_encourage" }
+      ]
+    },
+    "yuna_happy": {
+      "id": "yuna_happy",
+      "type": "TEXT",
+      "text": "Thank you! Let's go. Spira awaits.",
+      "speaker": "Yuna",
+      "next": "end"
+    },
+    "yuna_encourage": {
+      "id": "yuna_encourage",
+      "type": "TEXT",
+      "text": "We will help each other. I promise.",
+      "speaker": "Yuna",
+      "next": "end"
+    },
+    "end": {
+      "id": "end",
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "q2_departure"
+    }
+  }
+}

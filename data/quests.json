@@ -1,62 +1,173 @@
 {
-  "sparkling_gift": {
-    "name": "Sparkling Gesture",
-    "giver": "Alicia",
-    "portrait": "NPC_Alicia",
-    "summary": "Find a glittering keepsake that Alicia can gift to Laura.",
-    "description": "Alicia wants to surprise Laura with a shimmering token. She believes a rare teardrop crystal from the lower tunnels would be perfect.",
-    "objectives": [
-      "Locate a Glittering Teardrop in the dungeon.",
-      "Return it to Alicia so she can craft a gift for Laura."
-    ],
-    "requirements": {
-      "items": [
-        { "id": "glittering_teardrop", "qty": 1, "consume": true }
-      ]
-    },
-    "rewards": {
-      "gold": 45,
-      "items": [
-        { "id": "light_amulet", "qty": 1 }
-      ]
-    }
-  },
-  "golden_promise": {
-    "name": "Golden Promise",
-    "giver": "Laura",
-    "portrait": "NPC_Laura",
-    "summary": "Secure an ornate ring so Laura can work with new material.",
-    "description": "Laura needs an unmarked golden band taken from a rare undead. She is willing to pay well for anyone brave enough to retrieve it.",
-    "objectives": [
-      "Acquire an Untarnished Signet from the depths.",
-      "Deliver the ring to Laura at her forge."
-    ],
-    "requirements": {
-      "items": [
-        { "id": "untarnished_signet", "qty": 1, "consume": true }
-      ]
-    },
-    "rewards": {
-      "gold": 80,
-      "items": [
-        { "id": "alert_charm", "qty": 1 }
-      ]
-    }
-  },
-  "silent_shipment": {
-    "name": "The Silent Shipment",
-    "giver": "Gate Guard",
+  "q1_besaid": {
+    "name": "The Stranger",
+    "giver": "Wakka",
     "portrait": "NPC_Geraldo",
-    "summary": "Investigate the missing supply shipment.",
-    "description": "The Gate Guard is worried about a shipment that never arrived. He suspects someone in town might know more.",
-    "objectives": [
-      "Ask around town about the shipment.",
-      "Speak to Alicia about any strange sightings.",
-      "Return to the Gate Guard with your findings."
-    ],
-    "rewards": {
-      "gold": 50,
-      "xp": 100
-    }
+    "summary": "Meet the Summoner.",
+    "description": "You washed up on Besaid Island. Wakka wants you to meet the Summoner at the temple.",
+    "objectives": ["Go to the Temple", "Meet Yuna"],
+    "rewards": { "xp": 100, "items": ["potion"] }
+  },
+  "q2_departure": {
+    "name": "Departure",
+    "giver": "Yuna",
+    "portrait": "NPC_Alicia",
+    "summary": "Leave Besaid.",
+    "description": "Yuna begins her pilgrimage. Board the S.S. Liki.",
+    "objectives": ["Board the ship"],
+    "rewards": { "xp": 200, "items": ["potion"] }
+  },
+  "q3_kilika_woods": {
+    "name": "Jungle Trek",
+    "giver": "Lulu",
+    "portrait": "NPC_Laura",
+    "summary": "Cross Kilika Woods.",
+    "description": "Monsters infest the woods. Clear a path to the temple.",
+    "objectives": ["Defeat the Ochu"],
+    "rewards": { "xp": 300, "items": ["hi_potion"] }
+  },
+  "q4_kilika_temple": {
+    "name": "Trial of Fire",
+    "giver": "Yuna",
+    "portrait": "NPC_Alicia",
+    "summary": "Obtain Ifrit.",
+    "description": "Complete the trials in Kilika Temple to gain the Aeon Ifrit.",
+    "objectives": ["Enter the Chamber of the Fayth"],
+    "rewards": { "xp": 400, "items": ["red_ring"] }
+  },
+  "q5_luca": {
+    "name": "The Big Game",
+    "giver": "Wakka",
+    "portrait": "NPC_Geraldo",
+    "summary": "Survive the tournament.",
+    "description": "The Aurochs play today. But fiends are attacking the stadium.",
+    "objectives": ["Defeat the Sahagin"],
+    "rewards": { "xp": 500, "items": ["official_ball"] }
+  },
+  "q6_miihen": {
+    "name": "Chocobo Eater",
+    "giver": "Rin",
+    "portrait": "NPC_Yukio",
+    "summary": "Protect the Chocobos.",
+    "description": "A monster is eating the Chocobos on the highroad.",
+    "objectives": ["Defeat the Chocobo Eater"],
+    "rewards": { "xp": 600, "items": ["hi_potion"] }
+  },
+  "q7_mushroom_rock": {
+    "name": "Operation Mi'ihen",
+    "giver": "Lulu",
+    "portrait": "NPC_Laura",
+    "summary": "Witness the operation.",
+    "description": "The Crusaders are using Machina to fight Sin. It won't end well.",
+    "objectives": ["Defeat Sinspawn Gui"],
+    "rewards": { "xp": 800, "items": ["tough_bangle"] }
+  },
+  "q8_djose": {
+    "name": "Trial of Lightning",
+    "giver": "Yuna",
+    "portrait": "NPC_Alicia",
+    "summary": "Obtain Ixion.",
+    "description": "The thunderous temple of Djose awaits.",
+    "objectives": ["Pray to the Fayth"],
+    "rewards": { "xp": 1000, "items": ["yellow_ring"] }
+  },
+  "q9_moonflow": {
+    "name": "Crossing the Moonflow",
+    "giver": "Wakka",
+    "portrait": "NPC_Geraldo",
+    "summary": "Ride the Shoopuf.",
+    "description": "Cross the river safely. Watch out for kidnappers.",
+    "objectives": ["Defeat the Extractor"],
+    "rewards": { "xp": 1200, "items": ["mega_potion"] }
+  },
+  "q10_thunder_plains": {
+    "name": "Lightning Rods",
+    "giver": "Rikku",
+    "portrait": "NPC_Daphne",
+    "summary": "Cross the plains.",
+    "description": "Rikku is terrified of lightning. Get to the agency quickly.",
+    "objectives": ["Reach Macalania"],
+    "rewards": { "xp": 1500, "items": ["ether"] }
+  },
+  "q11_macalania_woods": {
+    "name": "Crystal Forest",
+    "giver": "Auron",
+    "portrait": "NPC_Yukio",
+    "summary": "Find the sphere.",
+    "description": "A sphere in the woods reveals the truth about Jecht.",
+    "objectives": ["Defeat Spherimorph"],
+    "rewards": { "xp": 1800, "items": ["jecht_sphere"] }
+  },
+  "q12_macalania_temple": {
+    "name": "Trial of Ice",
+    "giver": "Yuna",
+    "portrait": "NPC_Alicia",
+    "summary": "Obtain Shiva.",
+    "description": "Seymour awaits at the temple. Confront him.",
+    "objectives": ["Defeat Seymour", "Obtain Shiva"],
+    "rewards": { "xp": 2500, "items": ["blizzard_ring"] }
+  },
+  "q13_bikanel": {
+    "name": "Lost in Sand",
+    "giver": "Tidus",
+    "portrait": "NPC_Raphael",
+    "summary": "Find the others.",
+    "description": "You are lost in the desert. Find Yuna.",
+    "objectives": ["Reach Home"],
+    "rewards": { "xp": 3000, "items": ["x_potion"] }
+  },
+  "q14_home": {
+    "name": "Homecoming",
+    "giver": "Rikku",
+    "portrait": "NPC_Daphne",
+    "summary": "Defend Home.",
+    "description": "The Guado are attacking the Al Bhed Home.",
+    "objectives": ["Escape on the Airship"],
+    "rewards": { "xp": 3500, "items": ["al_bhed_potion"] }
+  },
+  "q15_bevelle": {
+    "name": "The Wedding",
+    "giver": "Tidus",
+    "portrait": "NPC_Raphael",
+    "summary": "Rescue Yuna.",
+    "description": "Crash the wedding and save Yuna from Seymour.",
+    "objectives": ["Defeat Evrae", "Interrupt the ceremony"],
+    "rewards": { "xp": 4000, "items": ["phoenix_down"] }
+  },
+  "q16_calm_lands": {
+    "name": "The Calm Before",
+    "giver": "Auron",
+    "portrait": "NPC_Yukio",
+    "summary": "Cross the plains.",
+    "description": "The final rest before the end of the journey.",
+    "objectives": ["Reach Mt. Gagazet"],
+    "rewards": { "xp": 4500, "items": ["rusty_sword"] }
+  },
+  "q17_gagazet": {
+    "name": "Mountain of the Ronso",
+    "giver": "Kimahri",
+    "portrait": "flauros",
+    "summary": "Climb the mountain.",
+    "description": "The Ronso guard the path. Prove your strength.",
+    "objectives": ["Defeat Seymour Flux"],
+    "rewards": { "xp": 6000, "items": ["saturn_sigil"] }
+  },
+  "q18_zanarkand": {
+    "name": "To Zanarkand",
+    "giver": "Yuna",
+    "portrait": "NPC_Alicia",
+    "summary": "The Final Summoning.",
+    "description": "Learn the truth from Yunalesca.",
+    "objectives": ["Defeat Yunalesca"],
+    "rewards": { "xp": 8000, "items": ["sun_crest"] }
+  },
+  "q19_sin": {
+    "name": "Inside Sin",
+    "giver": "Tidus",
+    "portrait": "NPC_Raphael",
+    "summary": "End the spiral.",
+    "description": "Defeat Sin and bring the Eternal Calm.",
+    "objectives": ["Defeat Yu Yevon"],
+    "rewards": { "xp": 10000, "items": ["calm"] }
   }
 }

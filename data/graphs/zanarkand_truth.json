@@ -1,0 +1,30 @@
+{
+  "id": "zanarkand_truth",
+  "name": "The Truth",
+  "layout": "visual_novel",
+  "portrait": "NPC_Alicia",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "The Final Summoning... it requires a sacrifice. One of you must become the Fayth.",
+      "speaker": "Yunalesca",
+      "portrait": "highPixie",
+      "next": "yuna_refuse"
+    },
+    "yuna_refuse": {
+      "id": "yuna_refuse",
+      "type": "TEXT",
+      "text": "I will not! I will not sacrifice my friends for a false hope!",
+      "speaker": "Yuna",
+      "next": "end"
+    },
+    "end": {
+      "id": "end",
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "q18_zanarkand"
+    }
+  }
+}

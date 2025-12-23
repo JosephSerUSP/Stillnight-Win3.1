@@ -1,0 +1,30 @@
+{
+  "id": "guado_mansion",
+  "name": "Seymour's Proposal",
+  "layout": "visual_novel",
+  "portrait": "Vampire",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "Lady Yuna. Your union with me would bring hope to Spira.",
+      "speaker": "Seymour",
+      "next": "yuna_hesitant"
+    },
+    "yuna_hesitant": {
+      "id": "yuna_hesitant",
+      "type": "TEXT",
+      "text": "I... I must continue my pilgrimage.",
+      "speaker": "Yuna",
+      "portrait": "NPC_Alicia",
+      "next": "end"
+    },
+    "end": {
+      "id": "end",
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "q9_moonflow"
+    }
+  }
+}

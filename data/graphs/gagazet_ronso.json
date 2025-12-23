@@ -1,0 +1,22 @@
+{
+  "id": "gagazet_ronso",
+  "name": "Mountain of the Ronso",
+  "layout": "visual_novel",
+  "portrait": "flauros",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "Kimahri show strength. Biran and Yenke acknowledge.",
+      "speaker": "Kimahri",
+      "next": "end"
+    },
+    "end": {
+      "id": "end",
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "q17_gagazet"
+    }
+  }
+}

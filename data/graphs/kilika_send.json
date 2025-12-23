@@ -1,0 +1,52 @@
+{
+  "id": "kilika_send",
+  "name": "The Sending",
+  "layout": "visual_novel",
+  "portrait": "NPC_Alicia",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "The people... they need to be sent. Or they will become fiends.",
+      "speaker": "Yuna",
+      "next": "yuna_dance"
+    },
+    "yuna_dance": {
+      "id": "yuna_dance",
+      "type": "TEXT",
+      "text": "(Yuna performs the dance. Pyreflies rise from the water, carrying the souls of the dead.)",
+      "speaker": "Narrator",
+      "next": "lulu_explain"
+    },
+    "lulu_explain": {
+      "id": "lulu_explain",
+      "type": "TEXT",
+      "text": "Look. She guides them to the Farplane. It is a summoner's duty.",
+      "speaker": "Lulu",
+      "portrait": "NPC_Laura",
+      "next": "tidus_sad"
+    },
+    "tidus_sad": {
+      "id": "tidus_sad",
+      "type": "TEXT",
+      "text": "It's... sad. But beautiful.",
+      "speaker": "Tidus",
+      "portrait": "NPC_Raphael",
+      "next": "yuna_tired"
+    },
+    "yuna_tired": {
+      "id": "yuna_tired",
+      "type": "TEXT",
+      "text": "I must be strong. For Spira.",
+      "speaker": "Yuna",
+      "next": "end"
+    },
+    "end": {
+      "id": "end",
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "q3_kilika_woods"
+    }
+  }
+}

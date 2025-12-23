@@ -1,12 +1,54 @@
 [
-  "npc_alicia",
-  "npc_laura",
-  "npc_gate_guard",
-  "npc_dungeon_merchant",
-  "npc_weapon_shop",
-  "npc_auction",
-  "npc_daphne",
-  "npc_yukio",
-  "npc_geraldo",
-  "npc_gambler"
+  {
+    "id": "intro",
+    "name": "The Stranger"
+  },
+  {
+    "id": "besaid_temple",
+    "name": "Meeting Yuna"
+  },
+  {
+    "id": "kilika_send",
+    "name": "The Sending"
+  },
+  {
+      "id": "luca_goers",
+      "name": "The Big Game"
+  },
+  {
+      "id": "mihen_boss",
+      "name": "Chocobo Eater"
+  },
+  {
+      "id": "mushroom_sin",
+      "name": "Operation Mi'ihen"
+  },
+  {
+      "id": "guado_mansion",
+      "name": "Seymour's Proposal"
+  },
+  {
+      "id": "macalania_shiva",
+      "name": "Trial of Ice"
+  },
+  {
+      "id": "bikanel_home",
+      "name": "Home Destruction"
+  },
+  {
+      "id": "bevelle_wedding",
+      "name": "The Wedding"
+  },
+  {
+      "id": "gagazet_ronso",
+      "name": "Mountain of the Ronso"
+  },
+  {
+      "id": "zanarkand_truth",
+      "name": "The Truth"
+  },
+  {
+      "id": "sin_inside",
+      "name": "Inside Sin"
+  }
 ]

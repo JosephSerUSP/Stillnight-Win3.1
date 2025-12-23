@@ -1,0 +1,30 @@
+{
+  "id": "bikanel_home",
+  "name": "Home Destruction",
+  "layout": "visual_novel",
+  "portrait": "NPC_Daphne",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "Home is under attack! The Guado are here!",
+      "speaker": "Rikku",
+      "next": "cid_shout"
+    },
+    "cid_shout": {
+      "id": "cid_shout",
+      "type": "TEXT",
+      "text": "Get to the Airship! We're blowing the place!",
+      "speaker": "Cid",
+      "portrait": "NPC_Yukio",
+      "next": "end"
+    },
+    "end": {
+      "id": "end",
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "q14_home"
+    }
+  }
+}
