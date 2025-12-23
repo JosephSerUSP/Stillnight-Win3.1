@@ -47,6 +47,34 @@ export class TransitionLogic {
             case 'questCompleted':
                 return QuestSystem.getStatus(session.quests, parts[1]) === 'completed';
 
+            case 'var':
+                // Format: var:variableName:operator:value
+                // e.g., var:trust:>:10, var:faction:==:mages
+                if (parts.length < 4) return false;
+                const varName = parts[1];
+                const op = parts[2];
+                const targetVal = isNaN(parts[3]) ? parts[3] : parseFloat(parts[3]);
+
+                const currentVal = session.party.getVariable(varName);
+
+                // If variable is undefined, treat as 0 for numeric comparisons
+                const val = (currentVal === undefined && typeof targetVal === 'number') ? 0 : currentVal;
+
+                switch (op) {
+                    case '>': return val > targetVal;
+                    case '<': return val < targetVal;
+                    case '>=': return val >= targetVal;
+                    case '<=': return val <= targetVal;
+                    case '==': return val == targetVal;
+                    case '!=': return val != targetVal;
+                    default: return false;
+                }
+
+            case 'random':
+                // Format: random:0.5 (50% chance)
+                const chance = parseFloat(parts[1]);
+                return Math.random() < chance;
+
             default:
                 console.warn(`TransitionLogic: Unknown condition type '${type}'`);
                 return false;

@@ -1,5 +1,7 @@
 import { InterpreterState } from "../session/interpreter_state.js";
 import { randInt, pickWeighted, random } from "../../core/utils.js";
+import { interpolateText } from "../utils/text_interpolator.js";
+import { TransitionLogic } from "../graph/transition.js";
 
 /**
  * System for executing event commands (Interpreter).
@@ -33,7 +35,10 @@ export class InterpreterSystem {
             'LOG': this._handleLog,
             // Quest handlers
             'OFFER_QUEST': this._handleOfferQuest,
-            'COMPLETE_QUEST': this._handleCompleteQuest
+            'COMPLETE_QUEST': this._handleCompleteQuest,
+            // Variable handlers
+            'SET_VARIABLE': this._handleSetVariable,
+            'MODIFY_VARIABLE': this._handleModifyVariable
         };
     }
 
@@ -227,13 +232,14 @@ export class InterpreterSystem {
 
     _handleMessage(state, command, session) {
         const events = [{ type: 'UPDATE_UI' }];
+        const text = interpolateText(command.text, session);
 
         if (command.style === 'log' || !command.style) {
-             if (command.text) events.unshift({ type: 'LOG', text: command.text });
+             if (text) events.unshift({ type: 'LOG', text: text });
         } else {
              events.push({
                  type: 'SHOW_TEXT',
-                 text: command.text,
+                 text: text,
                  style: command.style,
                  title: command.title,
                  image: command.image
@@ -244,7 +250,8 @@ export class InterpreterSystem {
     }
 
     _handleLog(state, command, session) {
-        return [{ type: 'LOG', text: command.text }];
+        const text = interpolateText(command.text, session);
+        return [{ type: 'LOG', text: text }];
     }
 
     _handleBreakableWall(state, command, session) {
@@ -328,6 +335,31 @@ export class InterpreterSystem {
     }
 
     _handleIf(state, command, session) {
+        // command: { type: 'IF', condition: 'var:trust:>:10', then: [scripts], else: [scripts] }
+        const result = TransitionLogic.evaluate(command.condition, session);
+
+        if (result && command.then) {
+            state.push(command.then);
+        } else if (!result && command.else) {
+            state.push(command.else);
+        }
+
+        return null;
+    }
+
+    _handleSetVariable(state, command, session) {
+        // command: { type: 'SET_VARIABLE', key: 'trust', value: 10 }
+        if (session.party) {
+            session.party.setVariable(command.key, command.value);
+        }
+        return null;
+    }
+
+    _handleModifyVariable(state, command, session) {
+        // command: { type: 'MODIFY_VARIABLE', key: 'trust', operation: 'add', value: 5 }
+        if (session.party) {
+            session.party.modifyVariable(command.key, command.operation, command.value);
+        }
         return null;
     }
 

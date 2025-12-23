@@ -1,5 +1,6 @@
 import { GraphWalker } from "../graph/walker.js";
 import { TransitionLogic } from "../graph/transition.js";
+import { interpolateText } from "../utils/text_interpolator.js";
 
 export class DirectorSystem {
     constructor() {
@@ -128,6 +129,11 @@ export class DirectorSystem {
                      // GraphWalker manages IDs.
                  };
 
+                 // Interpolate text
+                 if (mergedNode.content) {
+                     mergedNode.content = interpolateText(mergedNode.content, this.session);
+                 }
+
                  if (this.observer && this.observer.onNode) {
                     this.observer.onNode(mergedNode);
                  }
@@ -137,7 +143,12 @@ export class DirectorSystem {
 
         // Notify Observer for standard nodes (TEXT, CHOICE)
         if (this.observer && this.observer.onNode) {
-            this.observer.onNode(node);
+            // Clone the node to avoid mutating the graph data with interpolated text
+            const displayNode = { ...node };
+            if (displayNode.content) {
+                displayNode.content = interpolateText(displayNode.content, this.session);
+            }
+            this.observer.onNode(displayNode);
         }
     }
 
