@@ -23,12 +23,31 @@ export class Window_Quest extends Window_Base {
         this.statusTag = document.createElement('span');
         this.statusTag.className = 'quest-status';
 
+        this.portraitEl = document.createElement('div');
+        this.portraitEl.className = 'quest-portrait';
+        this.portraitEl.style.width = '64px';
+        this.portraitEl.style.height = '64px';
+        this.portraitEl.style.float = 'left';
+        this.portraitEl.style.marginRight = '10px';
+        this.portraitEl.style.border = '1px solid var(--window-border)';
+        this.portraitEl.style.backgroundColor = 'var(--input-bg)';
+        // Insert portrait before other header elements to float correctly,
+        // or re-arrange.
+        // Let's create a container for text next to portrait.
+        this.headerInfo = document.createElement('div');
+        this.headerInfo.style.overflow = 'hidden'; // Clear float
+
         this.subtitleEl = document.createElement('div');
         this.subtitleEl.className = 'quest-subtitle';
 
-        this.headerEl.appendChild(this.titleText);
-        this.headerEl.appendChild(this.statusTag);
-        this.headerEl.appendChild(this.subtitleEl);
+        this.headerEl.appendChild(this.portraitEl);
+        this.headerInfo.appendChild(this.titleText);
+        this.headerInfo.appendChild(this.statusTag);
+        this.headerInfo.appendChild(this.subtitleEl);
+        this.headerEl.appendChild(this.headerInfo);
+
+        // Ensure header clears floats
+        this.headerEl.style.overflow = 'hidden';
         this.bodyEl.appendChild(this.headerEl);
 
         this.summaryEl = document.createElement('p');

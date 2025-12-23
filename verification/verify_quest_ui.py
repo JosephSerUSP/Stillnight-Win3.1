@@ -76,7 +76,12 @@ def verify_gate_guard_quest():
                     rewards: { gold: 50 }
                 };
                 questLog.setup({ active: [quest], completed: [] });
-                questLog.show();
+                // Window_Selectable (superclass) doesn't have show() in some legacy code, usually uses open() or is managed by windowManager.
+                // But Window_Base usually has show().
+                // However, let's just make sure it's visible.
+                if (questLog.show) questLog.show();
+                else questLog.open();
+
                 questLog.renderDetails(quest); // Force detail render
             }
         }""")
