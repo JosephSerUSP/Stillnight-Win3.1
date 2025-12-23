@@ -12,6 +12,7 @@ import {
   Window_Options,
   Window_AudioPlayer,
   Window_Quest,
+  Window_QuestLog,
   Window_Help,
   Window_Info,
   Window_StackNav,
@@ -43,6 +44,9 @@ export class HUDManager {
 
         this.questWindow = new Window_Quest();
         this.windowLayer.addChild(this.questWindow);
+
+        this.questLogWindow = new Window_QuestLog();
+        this.windowLayer.addChild(this.questLogWindow);
 
         this.formationWindow = new Window_Formation();
         this.windowLayer.addChild(this.formationWindow);
@@ -99,6 +103,7 @@ export class HUDManager {
         this.helpWindow.onUserClose = () => close(this.helpWindow);
         this.infoWindow.onUserClose = () => close(this.infoWindow);
         this.questWindow.onUserClose = () => close(this.questWindow);
+        this.questLogWindow.onUserClose = () => close(this.questLogWindow);
         this.cardListWindow.onUserClose = () => close(this.cardListWindow);
     }
 

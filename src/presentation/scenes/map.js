@@ -16,6 +16,7 @@ import { ExplorationAdapter } from "../../adapters/exploration_adapter.js";
 import { selectPartyHUD } from "../selectors/party.js";
 import { selectInventory } from "../selectors/inventory.js";
 import { selectBattlerDetails } from "../selectors/details.js";
+import { selectQuestLog } from "../selectors/quest.js";
 import { QuestLogState } from "../../engine/session/quest_state.js";
 
 /**
@@ -778,7 +779,11 @@ export class Scene_Map extends Scene_Base {
 
   openQuests() {
     this.hud.closeMenus();
-    this.showStubMessage("Quest log coming soon.");
+    if (this.sceneManager.currentScene() !== this) return;
+
+    const questView = selectQuestLog(this.session.quests, this.dataManager);
+    this.hudManager.questLogWindow.setup(questView);
+    this.windowManager.push(this.hudManager.questLogWindow);
   }
 
   openHelp() {

@@ -49,6 +49,7 @@
     --bezel-dark: #404040;
     --tooltip-bg: #ffffe1;
     --tooltip-text: #000000;
+    --input-bg: #ffffff;
 }
 
 html, body {
