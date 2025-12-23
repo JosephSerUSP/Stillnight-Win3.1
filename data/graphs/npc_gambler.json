@@ -1,4 +1,9 @@
 {
+    "id": "npc_gambler",
+    "name": "The Gambler",
+    "layout": "visual_novel",
+    "portrait": "NPC_Raphael",
+    "initialNode": "start",
     "nodes": {
         "start": {
             "type": "TEXT",
