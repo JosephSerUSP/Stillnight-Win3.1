@@ -326,5 +326,15 @@
     "scripts": {
         "onEnter": [{ "type": "TEXT", "text": "The temple is quiet. You feel a sense of peace.", "style": "terminal" }]
     }
+  },
+  {
+    "id": "npc_data_broker",
+    "type": "npc",
+    "symbol": "D",
+    "cssClass": "tile-npc-data-broker",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_data_broker" }]
+    }
   }
 ]

@@ -58,5 +58,28 @@
       "gold": 50,
       "xp": 100
     }
+  },
+  "the_glitching_hunt": {
+    "name": "The Glitching Hunt",
+    "giver": "Data Broker",
+    "portrait": "NPC_DataBroker",
+    "summary": "Hunt down a 'glitched' creature and bring back proof of its existence.",
+    "description": "A mysterious Data Broker has noticed anomalies in the dungeon's data streams. He wants you to hunt one of the 'glitched' creatures he's detected—a so-called Glitch Wolf—and bring back a Corrupted Data Shard as proof.",
+    "objectives": [
+      "Defeat a Glitch Wolf.",
+      "Collect a Corrupted Data Shard.",
+      "Return the shard to the Data Broker."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "corrupted_data_shard", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 100,
+      "items": [
+        { "id": "hp_tonic", "qty": 3 }
+      ]
+    }
   }
 }

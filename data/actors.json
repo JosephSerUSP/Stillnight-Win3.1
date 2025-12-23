@@ -575,5 +575,36 @@
     "spriteKey": "egg",
     "gold": 0,
     "expGrowth": 20
+  },
+  {
+    "id": "glitchWolf",
+    "name": "Glitch Wolf",
+    "level": 3,
+    "role": "Attacker",
+    "maxHp": 18,
+    "spriteKey": "glitchWolf",
+    "passives": [
+      "initiative"
+    ],
+    "elements": [
+      "Black",
+      "Red"
+    ],
+    "skills": [
+      "shadowClaw"
+    ],
+    "flavor": "A corrupted canine predator, its form flickering between data and reality.",
+    "expGrowth": 5,
+    "gold": 30,
+    "drops": [
+      {
+        "itemId": "corrupted_data_shard",
+        "chance": 0.8
+      }
+    ],
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": false,
+    "isEvolved": false
   }
 ]

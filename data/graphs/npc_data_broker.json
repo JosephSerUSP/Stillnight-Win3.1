@@ -1,0 +1,102 @@
+{
+  "name": "Data Broker",
+  "portrait": "NPC_DataBroker",
+  "startNode": "start",
+  "nodes": {
+    "start": {
+      "type": "ROUTER",
+      "routes": [
+        {
+          "condition": { "quest": { "id": "the_glitching_hunt", "status": "COMPLETED" } },
+          "target": "post_quest"
+        },
+        {
+          "condition": { "quest": { "id": "the_glitching_hunt", "status": "ACTIVE" } },
+          "target": "quest_in_progress"
+        }
+      ],
+      "default": "introduction"
+    },
+    "introduction": {
+      "type": "TEXT",
+      "content": "You there. You look capable. I've been monitoring... anomalies. Unscheduled data spikes in the lower levels. I call them 'glitches'. They're new, and they're dangerous. I need someone to investigate.",
+      "next": "offer_quest_choice"
+    },
+    "offer_quest_choice": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "What kind of 'anomalies'?", "target": "explain_glitch" },
+        { "label": "I'm interested. What do you need?", "target": "accept_quest_action" },
+        { "label": "Sounds like a you problem.", "target": "decline_quest" }
+      ]
+    },
+    "explain_glitch": {
+      "type": "TEXT",
+      "content": "The creatures down there are... wrong. Their data signatures are corrupted, unstable. I've tracked one specific waveform, a 'Glitch Wolf'. Find one, neutralize it, and bring me back a fragment of its corrupted code. Then we'll talk.",
+      "next": "offer_quest_choice"
+    },
+    "accept_quest_action": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "the_glitching_hunt",
+        "acceptNode": "quest_accepted_text",
+        "declineNode": "decline_quest"
+    },
+    "quest_accepted_text": {
+        "type": "TEXT",
+        "content": "Good. Be careful. Standard protocols may not apply to these things.",
+        "next": "end"
+    },
+    "decline_quest": {
+      "type": "TEXT",
+      "content": "Your loss. The data is valuable, and I pay well for it. Come back if you change your mind.",
+      "next": "end"
+    },
+    "quest_in_progress": {
+      "type": "ROUTER",
+      "routes": [
+        {
+          "condition": { "inventory": { "has": "corrupted_data_shard" } },
+          "target": "complete_quest_prompt"
+        }
+      ],
+      "default": "quest_reminder"
+    },
+    "quest_reminder": {
+      "type": "TEXT",
+      "content": "You still need to find a Glitch Wolf and bring back a Corrupted Data Shard. My readings indicate they're most common on the first few floors.",
+      "next": "end"
+    },
+    "complete_quest_prompt": {
+      "type": "TEXT",
+      "content": "My sensors are picking up a corrupted data fragment on your person. Is that what I think it is?",
+      "next": "complete_quest_choice"
+    },
+    "complete_quest_choice": {
+        "type": "CHOICE",
+        "options": [
+            { "label": "Hand over the Corrupted Data Shard.", "target": "complete_quest_action" },
+            { "label": "Not yet.", "target": "end" }
+        ]
+    },
+    "complete_quest_action": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "the_glitching_hunt",
+        "completeNode": "quest_complete_text"
+    },
+    "quest_complete_text": {
+        "type": "TEXT",
+        "content": "Excellent. This shard confirms my suspicions. The corruption is spreading. This is just the beginning. I'll have more work for you soon.",
+        "next": "end"
+    },
+    "post_quest": {
+      "type": "TEXT",
+      "content": "I'm still analyzing the data from that shard. Check back with me later, I might have another task for you.",
+      "next": "end"
+    },
+    "end": {
+      "type": "END"
+    }
+  }
+}

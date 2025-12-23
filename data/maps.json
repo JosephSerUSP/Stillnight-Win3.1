@@ -38,7 +38,8 @@
       { "id": "npc_gambler", "x": 6, "y": 9 },
       { "id": "loc_pub", "x": 14, "y": 12 },
       { "id": "npc_auction", "x": 10, "y": 13 },
-      { "id": "loc_temple", "x": 8, "y": 14 }
+      { "id": "loc_temple", "x": 8, "y": 14 },
+      { "id": "npc_data_broker", "x": 1, "y": 1 }
     ],
     "treasures": [],
     "encounters": [],
@@ -71,7 +72,8 @@
     "encounters": [
       { "id": "pixie", "weight": 5 },
       { "id": "skeleton", "weight": 5 },
-      { "id": "imp", "weight": 3 }
+      { "id": "imp", "weight": 3 },
+      { "id": "glitchWolf", "weight": 2 }
     ],
     "recruits": ["pixie", "skeleton", "imp", "wisp", "bat","candle"]
   },
