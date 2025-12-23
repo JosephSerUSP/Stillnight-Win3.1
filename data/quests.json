@@ -1,62 +1,271 @@
 {
-  "sparkling_gift": {
-    "name": "Sparkling Gesture",
-    "giver": "Alicia",
-    "portrait": "NPC_Alicia",
-    "summary": "Find a glittering keepsake that Alicia can gift to Laura.",
-    "description": "Alicia wants to surprise Laura with a shimmering token. She believes a rare teardrop crystal from the lower tunnels would be perfect.",
+  "q_contact": {
+    "name": "The Contact",
+    "giver": "Biggs",
+    "portrait": "NPC_Biggs",
+    "summary": "Find the Resistance leader hiding in the slums.",
+    "description": "Biggs, a defector, says the Resistance leader Celes is hiding in the Abandoned House in Aetheria. You need to find her to join the cause.",
     "objectives": [
-      "Locate a Glittering Teardrop in the dungeon.",
-      "Return it to Alicia so she can craft a gift for Laura."
-    ],
-    "requirements": {
-      "items": [
-        { "id": "glittering_teardrop", "qty": 1, "consume": true }
-      ]
-    },
-    "rewards": {
-      "gold": 45,
-      "items": [
-        { "id": "light_amulet", "qty": 1 }
-      ]
-    }
-  },
-  "golden_promise": {
-    "name": "Golden Promise",
-    "giver": "Laura",
-    "portrait": "NPC_Laura",
-    "summary": "Secure an ornate ring so Laura can work with new material.",
-    "description": "Laura needs an unmarked golden band taken from a rare undead. She is willing to pay well for anyone brave enough to retrieve it.",
-    "objectives": [
-      "Acquire an Untarnished Signet from the depths.",
-      "Deliver the ring to Laura at her forge."
-    ],
-    "requirements": {
-      "items": [
-        { "id": "untarnished_signet", "qty": 1, "consume": true }
-      ]
-    },
-    "rewards": {
-      "gold": 80,
-      "items": [
-        { "id": "alert_charm", "qty": 1 }
-      ]
-    }
-  },
-  "silent_shipment": {
-    "name": "The Silent Shipment",
-    "giver": "Gate Guard",
-    "portrait": "NPC_Geraldo",
-    "summary": "Investigate the missing supply shipment.",
-    "description": "The Gate Guard is worried about a shipment that never arrived. He suspects someone in town might know more.",
-    "objectives": [
-      "Ask around town about the shipment.",
-      "Speak to Alicia about any strange sightings.",
-      "Return to the Gate Guard with your findings."
+      "Go to the Abandoned House in Aetheria.",
+      "Speak with Celes."
     ],
     "rewards": {
       "gold": 50,
+      "xp": 50
+    }
+  },
+  "q_scraps": {
+    "name": "Scrap Metal",
+    "giver": "Cid",
+    "portrait": "NPC_Cid",
+    "summary": "Collect Magitek Scraps for repairs.",
+    "description": "Cid needs parts to repair the resistance radio. Magitek Soldiers in the sewers drop them.",
+    "objectives": [
+      "Collect 3 Magitek Scraps from Magitek Soldiers.",
+      "Return to Cid."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "magitek_scrap", "qty": 3, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 100,
+      "items": [
+        { "id": "ether", "qty": 2 }
+      ]
+    }
+  },
+  "q_radio": {
+    "name": "The Signal",
+    "giver": "Cid",
+    "portrait": "NPC_Cid",
+    "summary": "Find a Vacuum Tube to fix the radio.",
+    "description": "The radio needs a specific Vacuum Tube. Cid thinks one might be in the deeper sewers.",
+    "objectives": [
+      "Search the Sewers (Floor 2) for a Radio Tube.",
+      "Bring it to Cid."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "radio_tube", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "xp": 100,
+      "items": [
+        { "id": "mythril_sword", "qty": 1 }
+      ]
+    }
+  },
+  "q_leak": {
+    "name": "The Leak",
+    "giver": "Celes",
+    "portrait": "NPC_Celes",
+    "summary": "Investigate the Aether leak in the sewers.",
+    "description": "The Aether levels in the sewers are spiking. Something is down there causing it.",
+    "objectives": [
+      "Defeat the Sewer King on Floor 3.",
+      "Report back to Celes."
+    ],
+    "rewards": {
+      "gold": 200,
+      "xp": 150
+    }
+  },
+  "q_codes": {
+    "name": "Missing Courier",
+    "giver": "Biggs",
+    "portrait": "NPC_Biggs",
+    "summary": "Find the missing courier.",
+    "description": "A courier carrying encryption keys never arrived. He was last seen near the Pub.",
+    "objectives": [
+      "Ask around the Pub.",
+      "Find the Courier's stash."
+    ],
+    "requirements": {
+        "items": [
+            { "id": "encryption_key", "qty": 1, "consume": false }
+        ]
+    },
+    "rewards": {
+      "items": [
+        { "id": "sprint_shoes", "qty": 1 }
+      ]
+    }
+  },
+  "q_infiltrate": {
+    "name": "Infiltration",
+    "giver": "Celes",
+    "portrait": "NPC_Celes",
+    "summary": "Enter the Magitek Factory.",
+    "description": "We have the codes. Use the encryption key to access the Factory entrance.",
+    "objectives": [
+      "Enter the Magitek Factory (Floor 4)."
+    ],
+    "rewards": {
       "xp": 100
+    }
+  },
+  "q_uniform": {
+    "name": "The Disguise",
+    "giver": "Wedge",
+    "portrait": "NPC_Wedge",
+    "summary": "Steal an Imperial Uniform.",
+    "description": "To move freely in the factory, you need a disguise. Steal one from an Officer.",
+    "objectives": [
+      "Obtain an Imperial Uniform from an Officer.",
+      "Show it to Wedge."
+    ],
+    "requirements": {
+        "items": [
+            { "id": "imperial_uniform", "qty": 1, "consume": false }
+        ]
+    },
+    "rewards": {
+      "gold": 150
+    }
+  },
+  "q_sabotage": {
+    "name": "Sabotage",
+    "giver": "Cid",
+    "portrait": "NPC_Cid",
+    "summary": "Destroy the factory generator.",
+    "description": "Plant a bomb on the main generator in the factory.",
+    "objectives": [
+      "Find the generator on Floor 5.",
+      "Sabotage it."
+    ],
+    "rewards": {
+      "items": [
+        { "id": "magitek_blade", "qty": 1 }
+      ]
+    }
+  },
+  "q_rescue": {
+    "name": "Prison Break",
+    "giver": "Celes",
+    "portrait": "NPC_Celes",
+    "summary": "Rescue the captured Esper.",
+    "description": "Reports say they have a live Esper in the detention block. We must free them.",
+    "objectives": [
+      "Find the detention block on Floor 6.",
+      "Free the prisoner."
+    ],
+    "rewards": {
+      "xp": 300
+    }
+  },
+  "q_core": {
+    "name": "Aether Core",
+    "giver": "Cid",
+    "portrait": "NPC_Cid",
+    "summary": "Steal a Refined Aether Core.",
+    "description": "We need their power source to fuel our airship.",
+    "objectives": [
+      "Find the Core in the research lab.",
+      "Bring it to Cid."
+    ],
+    "requirements": {
+        "items": [
+            { "id": "aether_core", "qty": 1, "consume": true }
+        ]
+    },
+    "rewards": {
+      "items": [
+          { "id": "force_shield", "qty": 1 }
+      ]
+    }
+  },
+  "q_boss": {
+    "name": "Proto-Armor",
+    "giver": "Alert System",
+    "portrait": "NPC_Alert",
+    "summary": "Defeat the Prototype.",
+    "description": "The factory defenses have activated a prototype armor. Destroy it!",
+    "objectives": [
+      "Defeat the Proto Armor on Floor 6."
+    ],
+    "rewards": {
+      "gold": 1000,
+      "xp": 500
+    }
+  },
+  "q_airship": {
+    "name": "The Blackjack",
+    "giver": "Setzer",
+    "portrait": "NPC_Gambler",
+    "summary": "Repair the Airship.",
+    "description": "The gambler Setzer will help us, if we fix his ship. We need the Aether Core we stole.",
+    "objectives": [
+      "Deliver the Aether Core to Setzer at the Pub."
+    ],
+    "rewards": {
+      "xp": 200
+    }
+  },
+  "q_summit": {
+    "name": "To the Skies",
+    "giver": "Celes",
+    "portrait": "NPC_Celes",
+    "summary": "Reach the Floating Continent.",
+    "description": "The Empire has raised a continent into the sky. We must follow them.",
+    "objectives": [
+      "Travel to the Floating Continent (Floor 7)."
+    ],
+    "rewards": {
+      "items": [
+          { "id": "hero_ring", "qty": 1 }
+      ]
+    }
+  },
+  "q_kefka": {
+    "name": "Mad Clown",
+    "giver": "Celes",
+    "portrait": "NPC_Celes",
+    "summary": "Stop Kefka.",
+    "description": "Kefka is trying to absorb the Warring Triad. Stop him at all costs.",
+    "objectives": [
+      "Confront Kefka on the Floating Continent."
+    ],
+    "rewards": {
+      "gold": 5000
+    }
+  },
+  "q_guardian": {
+    "name": "The Ultimate Weapon",
+    "giver": "Kefka",
+    "portrait": "NPC_Kefka",
+    "summary": "Survive the Ultima Weapon.",
+    "description": "Kefka has unleashed the ancient beast. Defeat it.",
+    "objectives": [
+      "Defeat Ultima Weapon on Floor 9."
+    ],
+    "rewards": {
+      "items": [
+          { "id": "atmacell_blade", "qty": 1 }
+      ]
+    }
+  },
+    "q_restore": {
+    "name": "World of Hope",
+    "giver": "Celes",
+    "portrait": "NPC_Celes",
+    "summary": "Stabilize the Aether.",
+    "description": "The world is shaking. Find the elemental cores to stabilize it.",
+    "objectives": [
+      "Collect 4 Elemental Cores.",
+      "Bring them to the Temple."
+    ],
+    "requirements": {
+        "items": [
+            { "id": "elemental_core", "qty": 4, "consume": true }
+        ]
+    },
+    "rewards": {
+      "items": [
+          { "id": "exp_boost", "qty": 1 }
+      ]
     }
   }
 }

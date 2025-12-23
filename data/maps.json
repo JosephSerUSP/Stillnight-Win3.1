@@ -1,7 +1,7 @@
 [
   {
-    "title": "Town of Stillnight",
-    "intro": "A quiet settlement on the edge of the void.",
+    "title": "Aetheria",
+    "intro": "The city of steam and magic, under Imperial occupation.",
     "depth": 0,
     "safe": true,
     "music": "town1",
@@ -30,23 +30,24 @@
     "events": [
       { "id": "npc_gate_guard", "x": 9, "y": 0 },
       { "id": "npc_weapon_shop", "x": 3, "y": 5 },
-      { "id": "recruit", "x": 15, "y": 5 },
+      { "id": "npc_biggs", "x": 15, "y": 5 },
       { "id": "npc_laura", "x": 15, "y": 7 },
-      { "id": "loc_abandoned_house", "x": 4, "y": 8 },
+      { "id": "npc_celes", "x": 4, "y": 8 },
       { "id": "recovery", "x": 9, "y": 9 },
       { "id": "npc_alicia", "x": 14, "y": 9 },
       { "id": "npc_gambler", "x": 6, "y": 9 },
       { "id": "loc_pub", "x": 14, "y": 12 },
-      { "id": "npc_auction", "x": 10, "y": 13 },
-      { "id": "loc_temple", "x": 8, "y": 14 }
+      { "id": "npc_wedge", "x": 10, "y": 13 },
+      { "id": "loc_temple", "x": 8, "y": 14 },
+      { "id": "npc_cid", "x": 5, "y": 9 }
     ],
     "treasures": [],
     "encounters": [],
     "recruits": []
   },
   {
-    "title": "Floor 1: Entry Hall",
-    "intro": "You cross the threshold into the dark.",
+    "title": "Sewers: Access Tunnel",
+    "intro": "Dank tunnels running beneath the city.",
     "depth": 1,
     "music": "dungeon1",
     "image": "DungeonFloors1.png",
@@ -54,30 +55,19 @@
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 2, "max": 3 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "treasure", "count": 1 },
-      {
-          "id": "enemy",
-          "count": 1,
-          "behavior": "chase",
-          "symbol": "!",
-          "cssClass": "text-danger",
-          "encounters": [
-              { "id": "imp", "weight": 10 }
-          ]
-      }
+      { "id": "treasure", "count": 1 }
     ],
-    "treasures": ["potion", "antidote"],
+    "treasures": ["potion", "antidote", "magitek_scrap"],
     "encounters": [
-      { "id": "pixie", "weight": 5 },
-      { "id": "skeleton", "weight": 5 },
-      { "id": "imp", "weight": 3 }
+      { "id": "imp", "weight": 5 },
+      { "id": "bat", "weight": 5 },
+      { "id": "skeleton", "weight": 3 }
     ],
-    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat","candle"]
+    "recruits": ["imp", "bat"]
   },
   {
-    "title": "Floor 2: Chasm Crossing",
-    "intro": "Wind howls across a broken bridge.",
+    "title": "Sewers: Main Drainage",
+    "intro": "The smell is unbearable here.",
     "depth": 2,
     "music": "dungeon1",
     "image": "DungeonFloors1.png",
@@ -85,25 +75,20 @@
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 3, "max": 4 },
-      { "id": "shrine_music_box", "chance": 0.3 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "npc_dungeon_merchant", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.6 },
       { "id": "trap", "min": 1, "max": 2 },
-      { "id": "treasure", "chance": 0.5 }
+      { "id": "treasure", "count": 2 }
     ],
-    "treasures": ["hi_potion", "iron_sword"],
+    "treasures": ["hi_potion", "iron_sword", "radio_tube"],
     "encounters": [
       { "id": "skeleton", "weight": 8 },
-      { "id": "imp", "weight": 5 },
-      { "id": "wisp", "weight": 4 },
-      { "id": "ooze", "weight": 3 }
+      { "id": "ooze", "weight": 5 },
+      { "id": "magitek_soldier", "weight": 2 }
     ],
-    "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
+    "recruits": ["skeleton", "ooze"]
   },
   {
-    "title": "Floor 3: Rusted Choir",
-    "intro": "Broken bells sway above a dry pit.",
+    "title": "Sewers: King's Lair",
+    "intro": "Squeaking echoes from the darkness.",
     "depth": 3,
     "music": "emotional1_bitSad",
     "image": "DungeonFloors1.png",
@@ -111,19 +96,27 @@
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
+      {
+          "id": "enemy",
+          "count": 1,
+          "behavior": "chase",
+          "symbol": "!",
+          "cssClass": "text-danger",
+          "encounters": [
+              { "id": "sewer_king", "weight": 10 }
+          ]
+      }
     ],
     "encounters": [
-      { "id": "golem", "weight": 6 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 3 }
+      { "id": "ooze", "weight": 6 },
+      { "id": "bat", "weight": 4 },
+      { "id": "magitek_soldier", "weight": 3 }
     ],
-    "recruits": ["golem", "demon", "angel", "larva","flauros"]
+    "recruits": ["ooze"]
   },
   {
-    "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
+    "title": "Magitek Factory: Entry",
+    "intro": "The hum of machinery fills the air.",
     "depth": 4,
     "music": "event9_magical",
     "image": "DungeonFloors1.png",
@@ -131,21 +124,20 @@
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.2 },
       { "id": "enemy", "min": 5, "max": 7 },
-      { "id": "shrine", "chance": 0.5 },
       { "id": "npc_dungeon_merchant", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "npc_daphne", "count": 1 }
+      { "id": "treasure", "chance": 0.5 }
     ],
+    "treasures": ["magitek_scrap", "ether"],
     "encounters": [
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 4 },
-      { "id": "ghoul", "weight": 4 }
+      { "id": "magitek_soldier", "weight": 8 },
+      { "id": "officer", "weight": 4 },
+      { "id": "golem", "weight": 4 }
     ],
-    "recruits": ["demon", "angel", "golem","flauros"]
+    "recruits": ["golem"]
   },
   {
-    "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
+    "title": "Magitek Factory: Core",
+    "intro": "Pipes pulsate with raw energy.",
     "depth": 5,
     "music": "dungeon1",
     "image": "DungeonFloors1.png",
@@ -153,29 +145,108 @@
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.2 },
       { "id": "enemy", "min": 5, "max": 8 },
-      { "id": "shrine", "chance": 0.4 },
-      { "id": "recruit", "chance": 0.4 }
+      { "id": "treasure", "count": 1 }
     ],
+    "treasures": ["aether_core", "elixir"],
     "encounters": [
-      { "id": "crimsonLord", "weight": 2 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
+      { "id": "magitek_armor", "weight": 4 },
+      { "id": "magitek_soldier", "weight": 8 },
+      { "id": "officer", "weight": 5 }
     ],
-    "recruits": ["demon", "angel"]
+    "recruits": []
   },
   {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
+    "title": "Magitek Factory: Research",
+    "intro": "The forbidden zone.",
     "depth": 6,
     "music": "event4_darkJester",
     "image": "DungeonFloors1.png",
     "events": [
       { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
+      { "id": "stairs", "count": 1 },
+      {
+          "id": "enemy",
+          "count": 1,
+          "behavior": "chase",
+          "symbol": "P",
+          "cssClass": "text-danger",
+          "encounters": [
+              { "id": "proto_armor", "weight": 10 }
+          ]
+      }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
+      { "id": "proto_armor", "weight": 1 },
+      { "id": "magitek_armor", "weight": 5 }
+    ],
+    "recruits": []
+  },
+   {
+    "title": "Floating Continent: Arrival",
+    "intro": "The wind is thin and cold up here.",
+    "depth": 7,
+    "music": "dungeon1",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.2 },
+      { "id": "enemy", "min": 5, "max": 8 }
+    ],
+    "encounters": [
+      { "id": "angel", "weight": 5 },
+      { "id": "demon", "weight": 5 },
+      { "id": "magitek_armor", "weight": 5 }
+    ],
+    "recruits": ["angel", "demon"]
+  },
+   {
+    "title": "Floating Continent: Ruins",
+    "intro": "Ancient statues line the path.",
+    "depth": 8,
+    "music": "dungeon1",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.2 },
+      { "id": "enemy", "min": 5, "max": 8 },
+       {
+          "id": "enemy",
+          "count": 1,
+          "behavior": "chase",
+          "symbol": "K",
+          "cssClass": "text-danger",
+          "encounters": [
+              { "id": "kefka", "weight": 10 }
+          ]
+      }
+    ],
+    "encounters": [
+      { "id": "archangel", "weight": 5 },
+      { "id": "crimsonLord", "weight": 5 }
+    ],
+    "recruits": []
+  },
+   {
+    "title": "Floating Continent: Zenith",
+    "intro": "The end of the world.",
+    "depth": 9,
+    "music": "event4_darkJester",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "recovery", "count": 1 },
+       {
+          "id": "enemy",
+          "count": 1,
+          "behavior": "chase",
+          "symbol": "U",
+          "cssClass": "text-danger",
+          "encounters": [
+              { "id": "ultima_weapon", "weight": 10 }
+          ]
+      }
+    ],
+    "encounters": [
+      { "id": "crimsonLord", "weight": 5 }
     ],
     "recruits": []
   }
