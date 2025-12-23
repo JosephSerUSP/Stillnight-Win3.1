@@ -316,7 +316,7 @@ export function createCommanderSlot(summonerView, options = {}) {
     equipContainer.style.color = "var(--text-muted)";
 
     if (summonerView.equipmentItem) {
-        const itemLabel = Component_InteractiveLabel(null, { data: summonerView.equipmentItem, type: 'item', showTooltip: false });
+        const itemLabel = Component_InteractiveLabel(null, { data: summonerView.equipmentItem, type: 'item' });
         // Override label style to fit small slot
         itemLabel.style.marginRight = "0";
         equipContainer.appendChild(itemLabel);
