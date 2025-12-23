@@ -296,5 +296,35 @@
             }
         ]}
     ]
+  },
+  {
+    "id": "loc_abandoned_house",
+    "type": "npc",
+    "symbol": "H",
+    "cssClass": "tile-house",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "TEXT", "text": "This abandoned house is now your home. It's safe here.", "style": "terminal" }]
+    }
+  },
+  {
+    "id": "loc_pub",
+    "type": "npc",
+    "symbol": "P",
+    "cssClass": "tile-pub",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "TEXT", "text": "The pub is lively with patrons sharing stories.", "style": "terminal" }]
+    }
+  },
+  {
+    "id": "loc_temple",
+    "type": "npc",
+    "symbol": "T",
+    "cssClass": "tile-temple",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "TEXT", "text": "The temple is quiet. You feel a sense of peace.", "style": "terminal" }]
+    }
   }
 ]
