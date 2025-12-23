@@ -102,7 +102,12 @@ export class SoundManager {
       // Try to fetch directory listing if possible (for local/dev environments),
       // otherwise fall back to known list.
       const midiFolder = 'assets/midi/';
-      let midiFiles = ['battle1.mid', 'dungeon1.mid', 'town1.mid', 'event1.mid', 'event2.mid','victory1.mid'];
+      let midiFiles = [
+          'battle1.mid', 'dungeon1.mid', 'town1.mid', 'event1.mid', 'event2.mid', 'victory1.mid',
+          'coverCapsuleHello.mid', 'emotional1_bitSad.mid', 'emotional2_sadNostalgic.mid', 'emotional3_sadSad.mid',
+          'event3.mid', 'event4_darkJester.mid', 'event5_nostalgia.mid', 'event6_happyfinality.mid',
+          'event7_happyPrelude.mid', 'event8_yearning.mid', 'event9_magical.mid'
+      ];
 
       try {
           // Attempt to scan directory (works in some local servers that serve auto-index)
