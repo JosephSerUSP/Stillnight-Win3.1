@@ -7,7 +7,7 @@ import { Window_PartySelect } from "./party_select.js";
 import { Window_EquipItemSelect } from "./equip_select.js";
 import { Window_Help, Window_Options, Window_Info } from "./misc.js";
 import { Window_Desktop } from "./desktop.js";
-import { Window_QuestLog } from "./quest.js";
+import { Window_QuestLog, Window_Quest } from "./quest.js";
 
 export * from "./utils.js";
 export * from "./base.js";
@@ -42,4 +42,5 @@ if (typeof window !== 'undefined' && window.location.search.includes("test=true"
     window.Window_Battle = Window_Battle;
     window.Window_Options = Window_Options;
     window.Window_QuestLog = Window_QuestLog;
+    window.Window_Quest = Window_Quest;
 }

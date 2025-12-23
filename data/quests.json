@@ -46,6 +46,7 @@
     "giver": "Gate Guard",
     "summary": "Investigate the missing supply shipment.",
     "description": "The Gate Guard is worried about a shipment that never arrived. He suspects someone in town might know more.",
+    "portrait": "NPC_Geraldo",
     "objectives": [
       "Ask around town about the shipment.",
       "Speak to Alicia about any strange sightings.",

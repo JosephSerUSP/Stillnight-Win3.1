@@ -113,3 +113,7 @@ They have the following:
 Genus: 'Celestial','Demon','Fey','Spirit','Construct','Beast','Undead','Other'
 Evolution information
 Recruit information
+
+## 3. Event System (Design Rules)
+- **Non-Solid Events:** No event in the game should be a solid obstacle. They're all "onEnter", unless explicitly stated otherwise.
+- **Interactions:** Most interactions (NPCs, Shops) should be triggered by stepping onto the tile (`trigger: "step"`), not bumping into it.
