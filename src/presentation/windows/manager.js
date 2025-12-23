@@ -50,6 +50,11 @@ export class WindowManager {
   handleInput(e) {
       if (this.stack.length === 0) return false;
       const topWindow = this.stack[this.stack.length - 1];
+
+      if (topWindow.handleInput && topWindow.handleInput(e)) {
+          return true;
+      }
+
       if (e.key === "Escape") {
           topWindow.onEscape();
           return true;
