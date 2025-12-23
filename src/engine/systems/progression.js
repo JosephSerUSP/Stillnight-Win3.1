@@ -13,7 +13,8 @@ export class ProgressionSystem {
      * @returns {number} XP needed.
      */
     static xpNeeded(level, growthRate = 5) {
-        return Math.floor(level * (growthRate * 0.5) + 10);
+        const lvl = level || 1;
+        return Math.floor(lvl * (growthRate * 0.5) + 10);
     }
 
     /**
@@ -24,6 +25,8 @@ export class ProgressionSystem {
      */
     static gainXp(battler, amount) {
         if (amount <= 0) return { leveledUp: false, hpGain: 0, newLevel: battler.level };
+
+        if (battler.level === undefined) battler.level = 1;
 
         // Rate trait check requires accessing battler.traits
         const rate = battler.traits.filter(t => t.code === 'XP_RATE')

@@ -152,10 +152,11 @@ export class Game_Battler extends Game_Base {
 
   get atk() {
       let base = 0;
+      const lvl = this.level || 1;
       if (this.isEnemy) {
-           base = this.level;
+           base = lvl;
       } else {
-           base = 3 + Math.floor(this.level / 2);
+           base = 3 + Math.floor(lvl / 2);
       }
       return this.getParam('atk', base);
   }
