@@ -2,6 +2,7 @@
   "sparkling_gift": {
     "name": "Sparkling Gesture",
     "giver": "Alicia",
+    "portrait": "NPC_Alicia",
     "summary": "Find a glittering keepsake that Alicia can gift to Laura.",
     "description": "Alicia wants to surprise Laura with a shimmering token. She believes a rare teardrop crystal from the lower tunnels would be perfect.",
     "objectives": [
@@ -44,6 +45,7 @@
   "silent_shipment": {
     "name": "The Silent Shipment",
     "giver": "Gate Guard",
+    "portrait": "NPC_Geraldo",
     "summary": "Investigate the missing supply shipment.",
     "description": "The Gate Guard is worried about a shipment that never arrived. He suspects someone in town might know more.",
     "objectives": [
