@@ -1,0 +1,198 @@
+{
+  "name": "S-Daemon",
+  "portrait": "s_daemon",
+  "layout": "visual_novel",
+  "nodes": {
+    "START": {
+      "type": "ROUTER",
+      "routes": [
+        {
+          "condition": {
+            "type": "quest_status",
+            "questId": "system_corruption_detected",
+            "status": "inactive"
+          },
+          "node": "intro"
+        },
+        {
+          "condition": {
+            "type": "quest_status",
+            "questId": "system_corruption_detected",
+            "status": "active"
+          },
+          "node": "reminder_bit_rot"
+        },
+        {
+          "condition": {
+            "type": "quest_status",
+            "questId": "system_corruption_detected",
+            "status": "completed"
+          },
+          "node": "post_bit_rot"
+        }
+      ]
+    },
+    "intro": {
+      "type": "TEXT",
+      "content": "Greetings, User. I am a System Daemon. My function is to maintain the integrity of this OS. I have detected a severe corruption in this sector... rogue data fragments I call 'Bit-Rot'. Will you assist me in purging them?",
+      "next": "offer_quest_bit_rot"
+    },
+    "offer_quest_bit_rot": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "system_corruption_detected",
+      "acceptNode": "quest_accepted",
+      "declineNode": "quest_declined"
+    },
+    "quest_accepted": {
+      "type": "TEXT",
+      "content": "Excellent. Eliminate three of the Bit-Rot entities on this floor and report back to me. I will monitor your progress.",
+      "next": "END"
+    },
+    "quest_declined": {
+      "type": "TEXT",
+      "content": "I see. The system remains at risk. Should you reconsider, I will be here.",
+      "next": "END"
+    },
+    "reminder_bit_rot": {
+      "type": "TEXT",
+      "content": "The Bit-Rot corruption persists. Eliminate three of them to proceed.",
+      "next": "END"
+    },
+    "post_bit_rot": {
+      "type": "ROUTER",
+      "routes": [
+        {
+          "condition": {
+            "type": "quest_status",
+            "questId": "the_firewall",
+            "status": "inactive"
+          },
+          "node": "intro_firewall"
+        },
+        {
+          "condition": {
+            "type": "quest_status",
+            "questId": "the_firewall",
+            "status": "active"
+          },
+          "node": "reminder_firewall"
+        },
+        {
+          "condition": {
+            "type": "quest_status",
+            "questId": "the_firewall",
+            "status": "completed"
+          },
+          "node": "outro"
+        }
+      ]
+    },
+    "intro_firewall": {
+      "type": "TEXT",
+      "content": "You have done well. However, a more significant threat has emerged a 'Memory-Leak' entity that is consuming vast amounts of system resources. It is protected by a low-level firewall. Retrieve a Firewall Pass from it so I can analyze its defenses.",
+      "next": "offer_quest_firewall"
+    },
+    "offer_quest_firewall": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "the_firewall",
+      "acceptNode": "quest_accepted_firewall",
+      "declineNode": "quest_declined_firewall"
+    },
+    "quest_accepted_firewall": {
+      "type": "TEXT",
+      "content": "The Memory-Leak is located on a deeper level. Find it, defeat it, and bring me the pass.",
+      "next": "END"
+    },
+    "quest_declined_firewall": {
+      "type": "TEXT",
+      "content": "This is a critical task. The stability of the entire system is at stake. Return to me when you are ready.",
+      "next": "END"
+    },
+    "reminder_firewall": {
+      "type": "TEXT",
+      "content": "I am still waiting for the Firewall Pass. The Memory-Leak must be dealt with.",
+      "next": "END"
+    },
+    "outro": {
+      "type": "ROUTER",
+      "routes": [
+        {
+          "condition": { "type": "quest_status", "questId": "corrupted_data", "status": "completed" },
+          "node": "final_words"
+        },
+        {
+          "condition": { "type": "has_item", "itemId": "corrupted_key", "qty": 5 },
+          "node": "offer_turn_in"
+        },
+        {
+          "condition": { "type": "quest_status", "questId": "corrupted_data", "status": "active" },
+          "node": "reminder_corrupted_data"
+        },
+        {
+          "condition": { "type": "quest_status", "questId": "corrupted_data", "status": "inactive" },
+          "node": "offer_corrupted_data_intro"
+        }
+      ]
+    },
+    "offer_corrupted_data_intro": {
+      "type": "TEXT",
+      "content": "Thank you for your service, User. The system is safer, for now. By the way, those Bit-Rot fragments are a valuable source of data. If you collect 5 of their Corrupted Keys, I can repurpose them into a useful system upgrade for you.",
+      "next": "offer_corrupted_data_action"
+    },
+    "offer_corrupted_data_action": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "corrupted_data",
+      "acceptNode": "quest_accepted_corrupted",
+      "declineNode": "decline_corrupted_data"
+    },
+    "quest_accepted_corrupted": {
+      "type": "TEXT",
+      "content": "Excellent. Return to me when you have 5 Corrupted Keys.",
+      "next": "END"
+    },
+    "decline_corrupted_data": {
+      "type": "TEXT",
+      "content": "I understand. The offer stands should you change your mind.",
+      "next": "END"
+    },
+    "reminder_corrupted_data": {
+      "type": "TEXT",
+      "content": "The main threat is neutralized, but I can still make use of 5 Corrupted Keys if you find them.",
+      "next": "END"
+    },
+    "offer_turn_in": {
+      "type": "TEXT",
+      "content": "I see you have collected 5 Corrupted Keys. Would you like to hand them over for your reward?",
+      "next": "offer_turn_in_choice"
+    },
+    "offer_turn_in_choice": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Yes, here they are.", "next": "try_complete_corrupted_data" },
+        { "label": "Not right now.", "next": "END" }
+      ]
+    },
+    "try_complete_corrupted_data": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "corrupted_data",
+      "completeNode": "complete_success"
+    },
+    "complete_success": {
+      "type": "TEXT",
+      "content": "Excellent. I have processed the fragments. Here is your reward.",
+      "next": "final_words"
+    },
+    "final_words": {
+      "type": "TEXT",
+      "content": "Thank you for your continued assistance in maintaining system integrity.",
+      "next": "END"
+    },
+    "END": {
+      "type": "END"
+    }
+  }
+}
