@@ -1,0 +1,46 @@
+{
+  "id": "npc_trepe",
+  "name": "Instructor Trepe",
+  "layout": "visual_novel",
+  "portrait": "NPC_Alicia",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "Leon, please don't be late for the field exam. The Radio Tower mission is critical.",
+      "speakers": [
+        { "id": "trepe", "name": "Trepe", "emotion": "neutral", "active": true }
+      ],
+      "next": "choice_mission"
+    },
+    "choice_mission": {
+      "id": "choice_mission",
+      "type": "CHOICE",
+      "options": [
+        { "text": "What's the objective?", "target": "mission_brief" },
+        { "text": "Whatever.", "target": "end" }
+      ]
+    },
+    "mission_brief": {
+      "id": "mission_brief",
+      "type": "TEXT",
+      "text": "Galbadian forces have seized the tower. We need to secure it and reactivate the broadcast. Be careful of the X-ATM092 unit.",
+      "next": "offer_quest_3"
+    },
+    "offer_quest_3": {
+        "id": "offer_quest_3",
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "q3_radio_tower",
+        "next": "end",
+        "acceptNode": "end"
+    },
+    "end": {
+      "id": "end",
+      "type": "TEXT",
+      "text": "I'll be monitoring from the command center.",
+      "next": null
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "id": "npc_heartilly",
+  "name": "Heartilly",
+  "layout": "visual_novel",
+  "portrait": "NPC_Laura",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "You're the SeeD mercenaries? You look... different than I expected. But if you can help us liberate Timber, I don't care.",
+      "speakers": [
+        { "id": "heartilly", "name": "Heartilly", "emotion": "neutral", "active": true }
+      ],
+      "next": "choice_resistance"
+    },
+    "choice_resistance": {
+      "id": "choice_resistance",
+      "type": "CHOICE",
+      "options": [
+        { "text": "We're here to work.", "target": "mission_details" },
+        { "text": "This is a contract.", "target": "mission_details" }
+      ]
+    },
+    "mission_details": {
+      "id": "mission_details",
+      "type": "TEXT",
+      "text": "We need to hijack the broadcast station in the Forest Outpost. It's heavily guarded.",
+      "next": "offer_quest_7"
+    },
+    "offer_quest_7": {
+        "id": "offer_quest_7",
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "q7_timber_resistance",
+        "next": "end",
+        "acceptNode": "end"
+    },
+    "end": {
+      "id": "end",
+      "type": "TEXT",
+      "text": "Let's make history.",
+      "next": null
+    }
+  }
+}

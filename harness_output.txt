@@ -1,0 +1,127 @@
+
+> app@1.0.0 harness
+> node tests/harness.js
+
+SoundManager: Failed to load midi 'battle1' from 'assets/midi/battle1.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 16)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'dungeon1' from 'assets/midi/dungeon1.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 17)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'town1' from 'assets/midi/town1.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 18)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'event1' from 'assets/midi/event1.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 19)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'event2' from 'assets/midi/event2.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 20)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'victory1' from 'assets/midi/victory1.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 21)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'coverCapsuleHello' from 'assets/midi/coverCapsuleHello.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 22)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'emotional1_bitSad' from 'assets/midi/emotional1_bitSad.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 23)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'emotional2_sadNostalgic' from 'assets/midi/emotional2_sadNostalgic.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 24)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'emotional3_sadSad' from 'assets/midi/emotional3_sadSad.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 25)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'event3' from 'assets/midi/event3.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 26)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'event4_darkJester' from 'assets/midi/event4_darkJester.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 27)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'event5_nostalgia' from 'assets/midi/event5_nostalgia.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 28)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'event6_happyfinality' from 'assets/midi/event6_happyfinality.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 29)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'event7_happyPrelude' from 'assets/midi/event7_happyPrelude.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 30)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'event8_yearning' from 'assets/midi/event8_yearning.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 31)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+SoundManager: Failed to load midi 'event9_magical' from 'assets/midi/event9_magical.mid'. Error: HTTP error undefined
+    at SoundManager.loadMidi (file:///app/src/managers/sound.js:170:35)
+    at async Promise.allSettled (index 32)
+    at async SoundManager.loadAll (file:///app/src/managers/sound.js:143:7)
+    at async DataManager.loadData (file:///app/src/managers/data.js:175:9)
+    at async init (file:///app/tests/harness.js:55:5)
+    at async main (file:///app/tests/harness.js:185:9)
+[Harness] Running Battle with seed 12345...
+[Harness] Running Dungeon Gen with seed 67890...
+FAILURE: Logs do not match.
+Battle Log Mismatch

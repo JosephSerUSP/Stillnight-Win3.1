@@ -136,6 +136,56 @@
     }
   },
   {
+    "id": "npc_headmaster_cid",
+    "type": "npc",
+    "symbol": "C",
+    "cssClass": "tile-npc-guard",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_headmaster_cid" }]
+    }
+  },
+  {
+    "id": "npc_trepe",
+    "type": "npc",
+    "symbol": "T",
+    "cssClass": "tile-npc-alicia",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_trepe" }]
+    }
+  },
+  {
+    "id": "npc_dincht",
+    "type": "npc",
+    "symbol": "Z",
+    "cssClass": "tile-npc-yukio",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_dincht" }]
+    }
+  },
+  {
+    "id": "npc_heartilly",
+    "type": "npc",
+    "symbol": "R",
+    "cssClass": "tile-npc-laura",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_heartilly" }]
+    }
+  },
+  {
+    "id": "npc_eda_projection",
+    "type": "npc",
+    "symbol": "E",
+    "cssClass": "tile-npc-daphne",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_eda_projection" }]
+    }
+  },
+  {
     "id": "trap",
     "type": "trap",
     "symbol": "T",
@@ -325,6 +375,61 @@
     "trigger": "touch",
     "scripts": {
         "onEnter": [{ "type": "TEXT", "text": "The temple is quiet. You feel a sense of peace.", "style": "terminal" }]
+    }
+  },
+  {
+    "id": "loc_gate",
+    "type": "npc",
+    "symbol": "↓",
+    "cssClass": "tile-stairs",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "TRAVEL", "floorIndex": 1 }]
+    }
+  },
+  {
+    "id": "loc_train_station",
+    "type": "npc",
+    "symbol": "E",
+    "cssClass": "tile-stairs",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "TRAVEL", "floorIndex": 3 }]
+    }
+  },
+  {
+    "id": "npc_academy_shop",
+    "type": "shop",
+    "symbol": "$",
+    "cssClass": "tile-shop",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "SHOP" }]
+    }
+  },
+  {
+    "id": "npc_bar_owner",
+    "type": "npc",
+    "symbol": "B",
+    "cssClass": "tile-npc-gambler",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [
+            { "type": "TEXT", "text": "Welcome to the Owl's Nest. What can I get you?", "style": "terminal" },
+            { "type": "CHOICE", "options": [
+                {
+                    "label": "Order a drink",
+                    "script": [ { "type": "TEXT", "text": "Here's your drink. That'll be 10G." } ]
+                },
+                {
+                    "label": "But the owls are still around",
+                    "script": [
+                        { "type": "TEXT", "text": "...Follow me to the back room." },
+                        { "type": "ACTION", "action": "OFFER_QUEST", "questId": "q8_resistance_contact" }
+                    ]
+                }
+            ]}
+        ]
     }
   }
 ]

@@ -1,0 +1,50 @@
+{
+  "id": "npc_headmaster_cid",
+  "name": "Headmaster Cid",
+  "layout": "visual_novel",
+  "portrait": "NPC_Geraldo",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "Ah, Leon. Good to see you. The Qualification Exam is approaching. Are you ready?",
+      "speakers": [
+        { "id": "headmaster", "name": "Cid", "emotion": "neutral", "active": true },
+        { "id": "leon", "name": "Leon", "emotion": "neutral", "active": false }
+      ],
+      "next": "choice_exam"
+    },
+    "choice_exam": {
+      "id": "choice_exam",
+      "type": "CHOICE",
+      "options": [
+        { "text": "I'm ready. Where do I go?", "target": "exam_details" },
+        { "text": "Not yet.", "target": "end" }
+      ]
+    },
+    "exam_details": {
+      "id": "exam_details",
+      "type": "TEXT",
+      "text": "Go to the Inferno Cave. Your task is to defeat the Fire Daemon, Ifrit. Return when you have his card... err, I mean, his acknowledgement.",
+      "speakers": [
+        { "id": "headmaster", "name": "Cid", "emotion": "happy", "active": true }
+      ],
+      "next": "offer_quest_1"
+    },
+    "offer_quest_1": {
+        "id": "offer_quest_1",
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "q1_qualification",
+        "next": "end",
+        "acceptNode": "end"
+    },
+    "end": {
+      "id": "end",
+      "type": "TEXT",
+      "text": "Good luck, Leon.",
+      "next": null
+    }
+  }
+}

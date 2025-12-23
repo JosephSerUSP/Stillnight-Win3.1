@@ -410,5 +410,67 @@
     "cost": 0,
     "icon": 218,
     "description": "A heavy golden ring, unmarked and waiting for a new story. Laura can reshape it into something precious."
+  },
+  {
+    "id": "gunblade_revolver",
+    "name": "Revolver",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 500,
+    "icon": 180,
+    "description": "A standard issue Gunblade.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 5 },
+      { "code": "CRI", "value": 0.1 }
+    ]
+  },
+  {
+    "id": "chain_whip",
+    "name": "Chain Whip",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 450,
+    "icon": 181,
+    "description": "A whip made of chain links.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 4 },
+      { "code": "PARAM_PLUS", "dataId": "agi", "value": 2 }
+    ]
+  },
+  {
+    "id": "metal_knuckles",
+    "name": "Metal Knuckles",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 400,
+    "icon": 182,
+    "description": "Reinforced combat gloves.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 6 }
+    ]
+  },
+  {
+    "id": "blaster_edge",
+    "name": "Blaster Edge",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 550,
+    "icon": 183,
+    "description": "A projectile weapon for sorceresses.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "mat", "value": 4 },
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 2 }
+    ]
+  },
+  {
+    "id": "phoenix_down",
+    "name": "Phoenix Down",
+    "type": "consumable",
+    "cost": 500,
+    "icon": 190,
+    "description": "Revives a fallen ally with low HP.",
+    "effects": [
+      { "type": "revive", "value": 0.25 }
+    ]
   }
 ]

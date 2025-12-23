@@ -43,20 +43,226 @@
       ]
     }
   },
-  "silent_shipment": {
-    "name": "The Silent Shipment",
-    "giver": "Gate Guard",
+  "q1_qualification": {
+    "name": "The Qualification Exam",
+    "giver": "Headmaster Cid",
     "portrait": "NPC_Geraldo",
-    "summary": "Investigate the missing supply shipment.",
-    "description": "The Gate Guard is worried about a shipment that never arrived. He suspects someone in town might know more.",
+    "summary": "Prove your worth by defeating Ifrit.",
+    "description": "To become a SeeD, you must venture into the Inferno Cave and obtain Ifrit's acknowledgement.",
     "objectives": [
-      "Ask around town about the shipment.",
-      "Speak to Alicia about any strange sightings.",
-      "Return to the Gate Guard with your findings."
+      "Travel to the Inferno Cave.",
+      "Defeat Ifrit.",
+      "Return to Headmaster Cid."
     ],
     "rewards": {
-      "gold": 50,
-      "xp": 100
+        "gold": 500,
+        "items": [{ "id": "gunblade_revolver", "qty": 1 }]
+    }
+  },
+  "q2_seed_inauguration": {
+    "name": "SeeD Inauguration",
+    "giver": "Headmaster Cid",
+    "portrait": "NPC_Geraldo",
+    "summary": "Attend the ceremony.",
+    "description": "You have passed the exam. Speak to the Headmaster to receive your uniform.",
+    "objectives": [
+      "Speak to Cid in the office."
+    ],
+    "rewards": {
+        "xp": 200,
+        "gold": 1000
+    }
+  },
+  "q3_radio_tower": {
+    "name": "The Radio Tower",
+    "giver": "Instructor Trepe",
+    "portrait": "NPC_Alicia",
+    "summary": "Secure the communication tower.",
+    "description": "Galbadian forces have seized the Dollet Radio Tower. Retake it.",
+    "objectives": [
+      "Travel to Radio Tower Ruins.",
+      "Climb to the top.",
+      "Defeat the mechanical guardian."
+    ],
+    "rewards": {
+        "items": [{ "id": "chain_whip", "qty": 1 }]
+    }
+  },
+  "q4_secure_tower": {
+    "name": "Secure the Tower",
+    "giver": "Instructor Trepe",
+    "portrait": "NPC_Alicia",
+    "summary": "Defeat X-ATM092.",
+    "description": "The spider bot is rampant. Destroy it before it destroys the town.",
+    "objectives": [
+      "Defeat X-ATM092."
+    ],
+    "rewards": {
+        "gold": 2000,
+        "items": [{ "id": "metal_knuckles", "qty": 1 }]
+    }
+  },
+  "q5_escape_ruins": {
+    "name": "Escape the Ruins",
+    "giver": "Instructor Trepe",
+    "portrait": "NPC_Alicia",
+    "summary": "Get out alive.",
+    "description": "The mission is compromised. Retreat to the beach.",
+    "objectives": [
+      "Escape the Radio Tower Ruins."
+    ],
+    "rewards": {
+        "xp": 500
+    }
+  },
+  "q6_report_headmaster": {
+    "name": "Debriefing",
+    "giver": "Headmaster Cid",
+    "portrait": "NPC_Geraldo",
+    "summary": "Report mission results.",
+    "description": "Tell Cid what happened at the tower.",
+    "objectives": [
+      "Return to the Academy.",
+      "Speak to Cid."
+    ],
+    "rewards": {
+        "gold": 500
+    }
+  },
+  "q7_timber_resistance": {
+    "name": "Timber Resistance",
+    "giver": "Heartilly",
+    "portrait": "NPC_Laura",
+    "summary": "Aid the Forest Owls.",
+    "description": "Meet the contact in the Forest Outpost.",
+    "objectives": [
+      "Travel to Forest Outpost.",
+      "Meet Heartilly."
+    ],
+    "rewards": {
+        "items": [{ "id": "blaster_edge", "qty": 1 }]
+    }
+  },
+  "q8_resistance_contact": {
+    "name": "The Contact",
+    "giver": "Heartilly",
+    "portrait": "NPC_Laura",
+    "summary": "Verify the password.",
+    "description": "Speak the password to the bar owner: 'But the owls are still around'.",
+    "objectives": [
+      "Find the Bar Owner.",
+      "Say the password."
+    ],
+    "rewards": {
+        "items": [{ "id": "phoenix_down", "qty": 3 }]
+    }
+  },
+  "q9_train_heist": {
+    "name": "Train Heist",
+    "giver": "Heartilly",
+    "portrait": "NPC_Laura",
+    "summary": "Intercept the President's train.",
+    "description": "Navigate the train cars and decouple the VIP carriage.",
+    "objectives": [
+      "Clear the train dungeon."
+    ],
+    "rewards": {
+        "gold": 3000
+    }
+  },
+  "q10_broadcast_hijack": {
+    "name": "Broadcast Hijack",
+    "giver": "Heartilly",
+    "portrait": "NPC_Laura",
+    "summary": "Send the message.",
+    "description": "Use the radio equipment to broadcast the resistance message.",
+    "objectives": [
+      "Activate the transmitter."
+    ],
+    "rewards": {
+        "xp": 1000
+    }
+  },
+  "q11_sorceress_sighting": {
+    "name": "Sorceress Sighting",
+    "giver": "Headmaster Cid",
+    "portrait": "NPC_Geraldo",
+    "summary": "Investigate the rumors.",
+    "description": "A sorceress has been seen near the Iron Institute.",
+    "objectives": [
+      "Travel to the Iron Institute."
+    ],
+    "rewards": {
+        "items": [{ "id": "exp_boost", "qty": 1 }]
+    }
+  },
+  "q12_assassination_plot": {
+    "name": "Assassination Plot",
+    "giver": "General Caraway",
+    "portrait": "NPC_Gate_Guard",
+    "summary": "Eliminate the Sorceress.",
+    "description": "The Sorceress Edea must be stopped. Take the shot.",
+    "objectives": [
+      "Position the sniper team.",
+      "Confront Edea."
+    ],
+    "rewards": {
+        "items": [{ "id": "hp_boost3", "qty": 1 }]
+    }
+  },
+  "q13_failed_mission": {
+    "name": "Broken Chains",
+    "giver": "Dincht",
+    "portrait": "NPC_Yukio",
+    "summary": "Escape custody.",
+    "description": "The assassination failed. We are captured in the Desert Prison.",
+    "objectives": [
+      "Retrieve weapons.",
+      "Escape the cell."
+    ],
+    "rewards": {
+        "xp": 500
+    }
+  },
+  "q14_prison_break": {
+    "name": "Prison Break",
+    "giver": "Dincht",
+    "portrait": "NPC_Yukio",
+    "summary": "Get out of the prison.",
+    "description": "Fight your way up the prison floors.",
+    "objectives": [
+      "Reach the top floor."
+    ],
+    "rewards": {
+        "gold": 5000
+    }
+  },
+  "q15_missile_base": {
+    "name": "Missile Threat",
+    "giver": "Trepe",
+    "portrait": "NPC_Alicia",
+    "summary": "Stop the launch.",
+    "description": "Missiles are targeted at the Academy. Infiltrate the base and set the self-destruct.",
+    "objectives": [
+      "Infiltrate Missile Base.",
+      "Set self-destruct."
+    ],
+    "rewards": {
+        "items": [{ "id": "hermes_boots", "qty": 1 }]
+    }
+  },
+  "q16_time_compression": {
+    "name": "Time Compression",
+    "giver": "Edea",
+    "portrait": "NPC_Daphne",
+    "summary": "The end of time.",
+    "description": "Confront the Sorceress in her chamber and stop the compression.",
+    "objectives": [
+      "Travel to the Sorceress Chamber.",
+      "Defeat Edea."
+    ],
+    "rewards": {
+        "items": [{ "id": "exp_boost", "qty": 2 }]
     }
   }
 }

@@ -1,0 +1,39 @@
+{
+  "id": "npc_eda_projection",
+  "name": "Edea Projection",
+  "layout": "visual_novel",
+  "portrait": "NPC_Daphne",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "TEXT",
+      "text": "Poor lost children. Do you think you can stop the compression of time? The future is mine.",
+      "speakers": [
+        { "id": "edea", "name": "Edea", "emotion": "laughter", "active": true }
+      ],
+      "next": "choice_confront"
+    },
+    "choice_confront": {
+      "id": "choice_confront",
+      "type": "CHOICE",
+      "options": [
+        { "text": "We will stop you!", "target": "battle_start" },
+        { "text": "...", "target": "battle_start" }
+      ]
+    },
+    "battle_start": {
+      "id": "battle_start",
+      "type": "ACTION",
+      "action": "BATTLE",
+      "encounterId": "sorceress_edea",
+      "next": "post_battle"
+    },
+    "post_battle": {
+      "id": "post_battle",
+      "type": "TEXT",
+      "text": "This is not the end... merely a beginning...",
+      "next": null
+    }
+  }
+}

@@ -5,39 +5,22 @@
   },
   {
     "type": "battler_act",
-    "name": "Skeleton",
-    "hp": 13
+    "name": "Bat",
+    "hp": 10
   },
   {
     "type": "damage",
     "value": 4,
     "isCritical": false,
-    "msg": "Skeleton attacks Ooze for 4.",
+    "msg": "Bat attacks Ooze for 4.",
     "hpBefore": 18,
     "hpAfter": 14,
     "targetName": "Ooze"
   },
   {
     "type": "battler_act",
-    "name": "Wisp",
-    "hp": 22
-  },
-  {
-    "type": "use_skill",
-    "skillName": "(W)Soothing Mote",
-    "msg": "Wisp uses (W)Soothing Mote!",
-    "battlerName": "Wisp"
-  },
-  {
-    "type": "heal",
-    "value": 0,
-    "msg": "  Skeleton heals 0 HP.",
-    "targetName": "Skeleton"
-  },
-  {
-    "type": "battler_act",
     "name": "Ooze",
-    "hp": 14
+    "hp": 18
   },
   {
     "type": "use_skill",
@@ -48,71 +31,25 @@
   {
     "type": "damage",
     "value": 8,
-    "msg": "  Skeleton takes 8 damage.",
-    "targetName": "Skeleton"
-  },
-  {
-    "type": "battler_act",
-    "name": "Ooze",
-    "hp": 18
-  },
-  {
-    "type": "damage",
-    "value": 2,
-    "isCritical": false,
-    "msg": "Ooze attacks Wisp for 2.",
-    "hpBefore": 22,
-    "hpAfter": 20,
-    "targetName": "Wisp"
-  },
-  {
-    "turn": 2,
-    "type": "turn_start"
-  },
-  {
-    "type": "battler_act",
-    "name": "Skeleton",
-    "hp": 5
-  },
-  {
-    "type": "use_skill",
-    "skillName": "(K)Bone Rush",
-    "msg": "Skeleton uses (K)Bone Rush!",
-    "battlerName": "Skeleton"
-  },
-  {
-    "type": "damage",
-    "value": 10,
-    "msg": "  Ooze takes 10 damage.",
+    "msg": "  Ooze takes 8 damage.",
     "targetName": "Ooze"
   },
   {
     "type": "battler_act",
     "name": "Wisp",
-    "hp": 20
+    "hp": 13
   },
   {
-    "type": "damage",
-    "value": 4,
-    "isCritical": false,
-    "msg": "Wisp attacks Ooze for 4.",
-    "hpBefore": 18,
-    "hpAfter": 14,
-    "targetName": "Ooze"
+    "type": "use_skill",
+    "skillName": "(W)Soothing Mote",
+    "msg": "Wisp uses (W)Soothing Mote!",
+    "battlerName": "Wisp"
   },
   {
-    "type": "battler_act",
-    "name": "Ooze",
-    "hp": 4
-  },
-  {
-    "type": "damage",
-    "value": 1,
-    "isCritical": false,
-    "msg": "Ooze attacks Wisp for 1.",
-    "hpBefore": 20,
-    "hpAfter": 19,
-    "targetName": "Wisp"
+    "type": "heal",
+    "value": 0,
+    "msg": "  Bat heals 0 HP.",
+    "targetName": "Bat"
   },
   {
     "type": "battler_act",
@@ -124,9 +61,100 @@
     "value": 1,
     "isCritical": false,
     "msg": "Ooze attacks Wisp for 1.",
-    "hpBefore": 19,
-    "hpAfter": 18,
+    "hpBefore": 13,
+    "hpAfter": 12,
     "targetName": "Wisp"
+  },
+  {
+    "type": "battler_act",
+    "name": "Ooze",
+    "hp": 10
+  },
+  {
+    "type": "damage",
+    "value": 1,
+    "isCritical": false,
+    "msg": "Ooze attacks Ooze for 1.",
+    "hpBefore": 18,
+    "hpAfter": 17,
+    "targetName": "Ooze"
+  },
+  {
+    "turn": 2,
+    "type": "turn_start"
+  },
+  {
+    "type": "battler_act",
+    "name": "Bat",
+    "hp": 10
+  },
+  {
+    "type": "damage",
+    "value": 2,
+    "isCritical": false,
+    "msg": "Bat attacks Ooze for 2.",
+    "hpBefore": 10,
+    "hpAfter": 8,
+    "targetName": "Ooze"
+  },
+  {
+    "type": "battler_act",
+    "name": "Ooze",
+    "hp": 17
+  },
+  {
+    "type": "damage",
+    "value": 3,
+    "isCritical": false,
+    "msg": "Ooze attacks Ooze for 3.",
+    "hpBefore": 8,
+    "hpAfter": 5,
+    "targetName": "Ooze"
+  },
+  {
+    "type": "battler_act",
+    "name": "Wisp",
+    "hp": 12
+  },
+  {
+    "type": "damage",
+    "value": 3,
+    "isCritical": false,
+    "msg": "Wisp attacks Ooze for 3.",
+    "hpBefore": 14,
+    "hpAfter": 11,
+    "targetName": "Ooze"
+  },
+  {
+    "type": "battler_act",
+    "name": "Ooze",
+    "hp": 11
+  },
+  {
+    "type": "use_skill",
+    "skillName": "(G)Wind Blade",
+    "msg": "Ooze uses (G)Wind Blade!",
+    "battlerName": "Ooze"
+  },
+  {
+    "type": "damage",
+    "value": 9,
+    "msg": "  Bat takes 9 damage.",
+    "targetName": "Bat"
+  },
+  {
+    "type": "battler_act",
+    "name": "Ooze",
+    "hp": 5
+  },
+  {
+    "type": "damage",
+    "value": 1,
+    "isCritical": false,
+    "msg": "Ooze attacks Bat for 2.",
+    "hpBefore": 2,
+    "hpAfter": 0,
+    "targetName": "Bat"
   },
   {
     "turn": 3,
@@ -134,25 +162,22 @@
   },
   {
     "type": "battler_act",
-    "name": "Skeleton",
-    "hp": 5
-  },
-  {
-    "type": "use_skill",
-    "skillName": "(K)Bone Rush",
-    "msg": "Skeleton uses (K)Bone Rush!",
-    "battlerName": "Skeleton"
+    "name": "Ooze",
+    "hp": 17
   },
   {
     "type": "damage",
-    "value": 10,
-    "msg": "  Ooze takes 10 damage.",
+    "value": 4,
+    "isCritical": false,
+    "msg": "Ooze attacks Ooze for 4.",
+    "hpBefore": 11,
+    "hpAfter": 7,
     "targetName": "Ooze"
   },
   {
     "type": "battler_act",
     "name": "Wisp",
-    "hp": 18
+    "hp": 12
   },
   {
     "type": "use_skill",
@@ -162,14 +187,31 @@
   },
   {
     "type": "heal",
-    "value": 8,
-    "msg": "  Skeleton heals 8 HP.",
-    "targetName": "Skeleton"
+    "value": 1,
+    "msg": "  Wisp heals 1 HP.",
+    "targetName": "Wisp"
   },
   {
     "type": "battler_act",
     "name": "Ooze",
-    "hp": 4
+    "hp": 7
+  },
+  {
+    "type": "use_skill",
+    "skillName": "(G)Wind Blade",
+    "msg": "Ooze uses (G)Wind Blade!",
+    "battlerName": "Ooze"
+  },
+  {
+    "type": "damage",
+    "value": 8,
+    "msg": "  Ooze takes 8 damage.",
+    "targetName": "Ooze"
+  },
+  {
+    "type": "battler_act",
+    "name": "Ooze",
+    "hp": 5
   },
   {
     "type": "use_skill",
@@ -184,9 +226,13 @@
     "targetName": "Wisp"
   },
   {
+    "turn": 4,
+    "type": "turn_start"
+  },
+  {
     "type": "battler_act",
     "name": "Ooze",
-    "hp": 4
+    "hp": 9
   },
   {
     "type": "use_skill",
@@ -196,35 +242,14 @@
   },
   {
     "type": "damage",
-    "value": 8,
-    "msg": "  Wisp takes 8 damage.",
-    "targetName": "Wisp"
-  },
-  {
-    "turn": 4,
-    "type": "turn_start"
-  },
-  {
-    "type": "battler_act",
-    "name": "Skeleton",
-    "hp": 13
-  },
-  {
-    "type": "use_skill",
-    "skillName": "(K)Bone Rush",
-    "msg": "Skeleton uses (K)Bone Rush!",
-    "battlerName": "Skeleton"
-  },
-  {
-    "type": "damage",
-    "value": 4,
-    "msg": "  Ooze takes 4 damage.",
+    "value": 5,
+    "msg": "  Ooze takes 5 damage.",
     "targetName": "Ooze"
   },
   {
     "type": "battler_act",
     "name": "Wisp",
-    "hp": 1
+    "hp": 4
   },
   {
     "type": "use_skill",
@@ -234,14 +259,14 @@
   },
   {
     "type": "heal",
-    "value": 11,
-    "msg": "  Wisp heals 11 HP.",
+    "value": 7,
+    "msg": "  Wisp heals 7 HP.",
     "targetName": "Wisp"
   },
   {
     "type": "battler_act",
     "name": "Ooze",
-    "hp": 4
+    "hp": 7
   },
   {
     "type": "use_skill",
@@ -252,8 +277,8 @@
   {
     "type": "damage",
     "value": 9,
-    "msg": "  Skeleton takes 9 damage.",
-    "targetName": "Skeleton"
+    "msg": "  Ooze takes 9 damage.",
+    "targetName": "Ooze"
   },
   {
     "turn": 5,
@@ -261,19 +286,86 @@
   },
   {
     "type": "battler_act",
-    "name": "Skeleton",
-    "hp": 4
+    "name": "Wisp",
+    "hp": 11
   },
   {
     "type": "use_skill",
-    "skillName": "(K)Bone Rush",
-    "msg": "Skeleton uses (K)Bone Rush!",
-    "battlerName": "Skeleton"
+    "skillName": "(W)Soothing Mote",
+    "msg": "Wisp uses (W)Soothing Mote!",
+    "battlerName": "Wisp"
+  },
+  {
+    "type": "heal",
+    "value": 2,
+    "msg": "  Wisp heals 2 HP.",
+    "targetName": "Wisp"
+  },
+  {
+    "type": "battler_act",
+    "name": "Ooze",
+    "hp": 7
+  },
+  {
+    "type": "use_skill",
+    "skillName": "(G)Wind Blade",
+    "msg": "Ooze uses (G)Wind Blade!",
+    "battlerName": "Ooze"
+  },
+  {
+    "type": "damage",
+    "value": 9,
+    "msg": "  Wisp takes 9 damage.",
+    "targetName": "Wisp"
+  },
+  {
+    "turn": 6,
+    "type": "turn_start"
+  },
+  {
+    "type": "battler_act",
+    "name": "Wisp",
+    "hp": 4
   },
   {
     "type": "damage",
     "value": 4,
-    "msg": "  Ooze takes 4 damage.",
+    "isCritical": false,
+    "msg": "Wisp attacks Ooze for 4.",
+    "hpBefore": 7,
+    "hpAfter": 3,
+    "targetName": "Ooze"
+  },
+  {
+    "type": "battler_act",
+    "name": "Ooze",
+    "hp": 3
+  },
+  {
+    "type": "damage",
+    "value": 1,
+    "isCritical": false,
+    "msg": "Ooze attacks Wisp for 1.",
+    "hpBefore": 4,
+    "hpAfter": 3,
+    "targetName": "Wisp"
+  },
+  {
+    "turn": 7,
+    "type": "turn_start"
+  },
+  {
+    "type": "battler_act",
+    "name": "Wisp",
+    "hp": 3
+  },
+  {
+    "type": "damage",
+    "value": 3,
+    "isCritical": false,
+    "msg": "Wisp attacks Ooze for 3.",
+    "hpBefore": 3,
+    "hpAfter": 0,
     "targetName": "Ooze"
   },
   {

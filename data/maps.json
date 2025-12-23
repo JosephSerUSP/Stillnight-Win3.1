@@ -45,8 +45,43 @@
     "recruits": []
   },
   {
-    "title": "Floor 1: Entry Hall",
-    "intro": "You cross the threshold into the dark.",
+    "title": "The Academy",
+    "intro": "A prestigious military school floating in the sky.",
+    "depth": 0,
+    "safe": true,
+    "music": "town1",
+    "image": "TownAlencar.png",
+    "layout": [
+      "###################",
+      "#C...#.......#...H#",
+      "#.T..#.......#...##",
+      "#....#.......#....#",
+      "#.................#",
+      "#.................#",
+      "#..#...........#..#",
+      "#..#...........#..#",
+      "#..#...........#..#",
+      "#..#.....S.....#..#",
+      "#.................#",
+      "#.................#",
+      "#...#.........#...#",
+      "#...#.........#...#",
+      "###################"
+    ],
+    "events": [
+      { "id": "npc_headmaster_cid", "x": 9, "y": 9, "symbol": "C" },
+      { "id": "npc_trepe", "x": 3, "y": 2, "symbol": "T" },
+      { "id": "npc_dincht", "x": 16, "y": 2, "symbol": "Z" },
+      { "id": "npc_academy_shop", "x": 16, "y": 12, "symbol": "$" },
+      { "id": "loc_gate", "x": 9, "y": 14, "symbol": "↓" }
+    ],
+    "treasures": [],
+    "encounters": [],
+    "recruits": []
+  },
+  {
+    "title": "Inferno Cave",
+    "intro": "A cavern filled with flowing lava.",
     "depth": 1,
     "music": "dungeon1",
     "image": "DungeonFloors1.png",
@@ -54,129 +89,122 @@
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 2, "max": 3 },
-      { "id": "recruit", "chance": 0.5 },
       { "id": "treasure", "count": 1 },
       {
           "id": "enemy",
           "count": 1,
-          "behavior": "chase",
-          "symbol": "!",
-          "cssClass": "text-danger",
           "encounters": [
-              { "id": "imp", "weight": 10 }
+              { "id": "ifrit", "count": 1, "role": "Boss" }
           ]
       }
     ],
-    "treasures": ["potion", "antidote"],
+    "treasures": ["hp_tonic", "fire_shard"],
     "encounters": [
-      { "id": "pixie", "weight": 5 },
-      { "id": "skeleton", "weight": 5 },
-      { "id": "imp", "weight": 3 }
+      { "id": "bomb", "weight": 5 },
+      { "id": "bat", "weight": 5 }
     ],
-    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat","candle"]
+    "recruits": []
   },
   {
-    "title": "Floor 2: Chasm Crossing",
-    "intro": "Wind howls across a broken bridge.",
+    "title": "Radio Tower Ruins",
+    "intro": "An old communication tower, now overrun.",
     "depth": 2,
     "music": "dungeon1",
     "image": "DungeonFloors1.png",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 3, "max": 4 },
-      { "id": "shrine_music_box", "chance": 0.3 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "npc_dungeon_merchant", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.6 },
-      { "id": "trap", "min": 1, "max": 2 },
-      { "id": "treasure", "chance": 0.5 }
+      { "id": "enemy", "min": 3, "max": 5 },
+      { "id": "treasure", "chance": 0.5 },
+      {
+          "id": "enemy",
+          "count": 1,
+          "encounters": [
+              { "id": "xatm092", "count": 1, "role": "Boss" }
+          ]
+      }
     ],
-    "treasures": ["hi_potion", "iron_sword"],
     "encounters": [
-      { "id": "skeleton", "weight": 8 },
-      { "id": "imp", "weight": 5 },
-      { "id": "wisp", "weight": 4 },
-      { "id": "ooze", "weight": 3 }
+      { "id": "g_soldier", "weight": 8 },
+      { "id": "elastoid", "weight": 3 }
     ],
-    "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
+    "recruits": []
   },
   {
-    "title": "Floor 3: Rusted Choir",
-    "intro": "Broken bells sway above a dry pit.",
+    "title": "Forest Outpost",
+    "intro": "A hidden resistance base deep in the woods.",
+    "depth": 0,
+    "safe": true,
+    "music": "town1",
+    "image": "TownAlencar.png",
+    "layout": [
+      "#######",
+      "#B...R#",
+      "#.....#",
+      "#.....#",
+      "###E###"
+    ],
+    "events": [
+      { "id": "npc_heartilly", "x": 5, "y": 1, "symbol": "R" },
+      { "id": "npc_bar_owner", "x": 1, "y": 1, "symbol": "B" },
+      { "id": "loc_train_station", "x": 3, "y": 4, "symbol": "E" }
+    ],
+    "treasures": [],
+    "encounters": [],
+    "recruits": []
+  },
+  {
+    "title": "Iron Institute",
+    "intro": "A rival garden, cold and militaristic.",
     "depth": 3,
-    "music": "emotional1_bitSad",
-    "image": "DungeonFloors1.png",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
-    ],
-    "encounters": [
-      { "id": "golem", "weight": 6 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 3 }
-    ],
-    "recruits": ["golem", "demon", "angel", "larva","flauros"]
-  },
-  {
-    "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
-    "depth": 4,
-    "music": "event9_magical",
-    "image": "DungeonFloors1.png",
-    "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 7 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "npc_dungeon_merchant", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "npc_daphne", "count": 1 }
-    ],
-    "encounters": [
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 4 },
-      { "id": "ghoul", "weight": 4 }
-    ],
-    "recruits": ["demon", "angel", "golem","flauros"]
-  },
-  {
-    "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
-    "depth": 5,
     "music": "dungeon1",
     "image": "DungeonFloors1.png",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 8 },
-      { "id": "shrine", "chance": 0.4 },
-      { "id": "recruit", "chance": 0.4 }
+      { "id": "enemy", "min": 4, "max": 6 },
+      { "id": "treasure", "chance": 0.4 },
+      { "id": "npc_eda_projection", "count": 1 }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 2 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
+      { "id": "g_soldier", "weight": 10 },
+      { "id": "elastoid", "weight": 5 },
+      { "id": "geezard", "weight": 5 }
     ],
-    "recruits": ["demon", "angel"]
+    "recruits": []
   },
   {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
-    "depth": 6,
+    "title": "Missile Base",
+    "intro": "A facility preparing to launch destruction.",
+    "depth": 4,
     "music": "event4_darkJester",
     "image": "DungeonFloors1.png",
     "events": [
-      { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
+      { "id": "stairs", "count": 1 },
+      { "id": "enemy", "min": 5, "max": 8 },
+      { "id": "treasure", "chance": 0.3 }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
+      { "id": "g_soldier", "weight": 8 },
+      { "id": "elastoid", "weight": 8 },
+      { "id": "crimsonLord", "weight": 1 }
     ],
+    "recruits": []
+  },
+  {
+    "title": "Sorceress Chamber",
+    "intro": "The final confrontation.",
+    "depth": 5,
+    "music": "event9_magical",
+    "image": "DungeonFloors1.png",
+    "events": [
+        {
+            "id": "enemy",
+            "count": 1,
+            "encounters": [
+                { "id": "sorceress_edea", "count": 1, "role": "Boss" }
+            ]
+        }
+    ],
+    "encounters": [],
     "recruits": []
   }
 ]
