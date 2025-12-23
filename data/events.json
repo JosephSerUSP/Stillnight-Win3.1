@@ -136,6 +136,26 @@
     }
   },
   {
+    "id": "npc_oracle",
+    "type": "npc",
+    "symbol": "O",
+    "cssClass": "tile-npc-oracle",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_oracle" }]
+    }
+  },
+  {
+    "id": "npc_rebel",
+    "type": "npc",
+    "symbol": "B",
+    "cssClass": "tile-npc-rebel",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_rebel" }]
+    }
+  },
+  {
     "id": "trap",
     "type": "trap",
     "symbol": "T",
@@ -170,6 +190,39 @@
     "trigger": "touch",
     "scripts": {
         "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_gambler" }]
+    }
+  },
+  {
+    "id": "boss_ice_lord",
+    "type": "enemy",
+    "symbol": "!",
+    "cssClass": "tile-enemy-boss",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "BATTLE", "encounters": [{ "id": "iceLord", "weight": 10 }] }]
+    }
+  },
+  {
+    "id": "boss_mecha_golem",
+    "type": "enemy",
+    "symbol": "!",
+    "cssClass": "tile-enemy-boss",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "BATTLE", "encounters": [{ "id": "mechaGolem", "weight": 10 }] }]
+    }
+  },
+  {
+    "id": "boss_eternal_warden",
+    "type": "enemy",
+    "symbol": "!",
+    "cssClass": "tile-enemy-boss",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [
+          { "type": "NPC_DIALOGUE", "id": "npc_warden" },
+          { "type": "BATTLE", "encounters": [{ "id": "eternalWarden", "weight": 10 }] }
+        ]
     }
   },
   {

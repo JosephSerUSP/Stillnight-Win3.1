@@ -139,73 +139,65 @@
     "quest_router": {
       "type": "ROUTER",
       "branches": [
-        { "condition": "questStatus:sparkling_gift:completed", "target": "quest_completed_text" },
-        { "condition": "questStatus:sparkling_gift:active", "target": "quest_active_text" }
+        { "condition": "questStatus:new_dawn:completed", "target": "dawn_completed_text" },
+        { "condition": "questStatus:new_dawn:active", "target": "dawn_active_text" },
+        { "condition": "questStatus:true_warden:completed", "target": "dawn_check" },
+        { "condition": "questStatus:angelic_feather:completed", "target": "angel_completed_text" },
+        { "condition": "questStatus:angelic_feather:active", "target": "angel_active_text" },
+        { "condition": "questStatus:frozen_hearts:completed", "target": "angel_check" },
+        { "condition": "questStatus:frozen_hearts:active", "target": "frozen_active_text" },
+        { "condition": "questStatus:sparkling_gift:completed", "target": "frozen_check" },
+        { "condition": "questStatus:sparkling_gift:active", "target": "sparkling_active_text" }
       ],
-      "next": "quest_offer_text"
+      "next": "sparkling_offer_text"
     },
-    "quest_offer_text": {
+
+    "sparkling_offer_text": {
       "type": "TEXT",
       "speaker": "Alicia",
-      "content": "Actually… can I ask a favor? It’s about Laura. I want to give her something special. Something that… shines like she does. There’s a crystal, a ‘Glittering Teardrop’, deep in the dungeon. Would you…?",
-      "next": "quest_offer_choices"
+      "content": "Actually… can I ask a favor? It’s about Laura. I want to give her something special. A 'Glittering Teardrop'. Would you...?",
+      "next": "sparkling_offer_choices"
     },
-    "quest_offer_choices": {
+    "sparkling_offer_choices": {
       "type": "CHOICE",
       "options": [
-        { "label": "I'll find it.", "target": "action_offer_quest" },
-        { "label": "Maybe later.", "target": "talk_menu_text" }
+        { "label": "I'll find it.", "target": "action_offer_sparkling" },
+        { "label": "Later.", "target": "talk_menu_text" }
       ]
     },
-    "action_offer_quest": {
-      "type": "ACTION",
-      "action": "OFFER_QUEST",
-      "questId": "sparkling_gift",
-      "acceptNode": "quest_active_text",
-      "declineNode": "talk_menu_text"
-    },
-    "quest_active_text": {
-      "type": "TEXT",
-      "speaker": "Alicia",
-      "content": "The Glittering Teardrop… please be careful. It’s pretty, but the dungeon is mean. Don’t get hurt for a rock, okay?",
-      "next": "quest_active_router"
-    },
-    "quest_active_router": {
-      "type": "ROUTER",
-      "condition": "hasItem:glittering_teardrop",
-      "trueNode": "quest_turnin_text",
-      "falseNode": "quest_active_choices"
-    },
-    "quest_active_choices": {
-      "type": "CHOICE",
-      "options": [
-        { "label": "I'm still looking.", "target": "talk_menu_text" }
-      ]
-    },
-    "quest_turnin_text": {
-      "type": "TEXT",
-      "speaker": "Alicia",
-      "content": "You… you found it! Oh, look at it! It’s perfect. It catches the light just like her eyes when she’s happy. Thank you! Thank you so much!",
-      "next": "quest_turnin_choices"
-    },
-    "quest_turnin_choices": {
-      "type": "CHOICE",
-      "options": [
-        { "label": "Here you go.", "target": "action_complete_quest" }
-      ]
-    },
-    "action_complete_quest": {
-      "type": "ACTION",
-      "action": "COMPLETE_QUEST",
-      "questId": "sparkling_gift",
-      "completeNode": "quest_completed_text",
-      "takeItem": "glittering_teardrop"
-    },
-    "quest_completed_text": {
-      "type": "TEXT",
-      "speaker": "Alicia",
-      "content": "I’m going to make this into a necklace. Or maybe a ring? No, a necklace. She doesn’t like rings when she works. Thank you again!",
-      "next": "talk_menu_choices"
-    }
+    "action_offer_sparkling": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "sparkling_gift", "acceptNode": "sparkling_active_text", "declineNode": "talk_menu_text" },
+    "sparkling_active_text": { "type": "TEXT", "speaker": "Alicia", "content": "Please be careful looking for the Teardrop.", "next": "sparkling_turnin_check" },
+    "sparkling_turnin_check": { "type": "ROUTER", "condition": "hasItem:glittering_teardrop", "trueNode": "sparkling_turnin_text", "falseNode": "talk_menu_choices" },
+    "sparkling_turnin_text": { "type": "TEXT", "speaker": "Alicia", "content": "You found it! It's perfect! Thank you!", "next": "sparkling_turnin_choices" },
+    "sparkling_turnin_choices": { "type": "CHOICE", "options": [ { "label": "Here you go.", "target": "action_complete_sparkling" } ] },
+    "action_complete_sparkling": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "sparkling_gift", "completeNode": "frozen_check", "takeItem": "glittering_teardrop" },
+
+    "frozen_check": { "type": "ROUTER", "branches": [ { "condition": "level:7", "target": "frozen_offer_text" } ], "next": "talk_menu_choices" },
+    "frozen_offer_text": { "type": "TEXT", "speaker": "Alicia", "content": "The dungeon... it feels so cold lately. Like a freezer left open. I need to study it. Could you bring me Frozen Cores?", "next": "frozen_offer_choices" },
+    "frozen_offer_choices": { "type": "CHOICE", "options": [ { "label": "I'll help.", "target": "action_offer_frozen" }, { "label": "No time.", "target": "talk_menu_text" } ] },
+    "action_offer_frozen": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "frozen_hearts", "acceptNode": "frozen_active_text", "declineNode": "talk_menu_text" },
+    "frozen_active_text": { "type": "TEXT", "speaker": "Alicia", "content": "Be careful of the frost. It bites.", "next": "frozen_turnin_check" },
+    "frozen_turnin_check": { "type": "ROUTER", "condition": "hasItem:frozen_core", "trueNode": "frozen_turnin_text", "falseNode": "talk_menu_choices" },
+    "frozen_turnin_text": { "type": "TEXT", "speaker": "Alicia", "content": "These... they hurt to hold. But they explain so much. Thank you.", "next": "frozen_turnin_choices" },
+    "frozen_turnin_choices": { "type": "CHOICE", "options": [ { "label": "Take them.", "target": "action_complete_frozen" } ] },
+    "action_complete_frozen": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "frozen_hearts", "completeNode": "angel_check", "takeItem": "frozen_core" },
+
+    "angel_check": { "type": "ROUTER", "branches": [ { "condition": "level:13", "target": "angel_offer_text" } ], "next": "talk_menu_choices" },
+    "angel_offer_text": { "type": "TEXT", "speaker": "Alicia", "content": "Do you feel it? The Spire... it feels like a church, but... scary. Can you bring me Angel Feathers? I want to see if they're real.", "next": "angel_offer_choices" },
+    "angel_offer_choices": { "type": "CHOICE", "options": [ { "label": "I will.", "target": "action_offer_angel" }, { "label": "Later.", "target": "talk_menu_text" } ] },
+    "action_offer_angel": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "angelic_feather", "acceptNode": "angel_active_text", "declineNode": "talk_menu_text" },
+    "angel_active_text": { "type": "TEXT", "speaker": "Alicia", "content": "Angels are supposed to be nice. Why are these so mean?", "next": "angel_turnin_check" },
+    "angel_turnin_check": { "type": "ROUTER", "condition": "hasItem:angel_feather", "trueNode": "angel_turnin_text", "falseNode": "talk_menu_choices" },
+    "angel_turnin_text": { "type": "TEXT", "speaker": "Alicia", "content": "They're so soft... but they smell like ozone. Strange.", "next": "angel_turnin_choices" },
+    "angel_turnin_choices": { "type": "CHOICE", "options": [ { "label": "Here.", "target": "action_complete_angel" } ] },
+    "action_complete_angel": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "angelic_feather", "completeNode": "angel_completed_text", "takeItem": "angel_feather" },
+    "angel_completed_text": { "type": "TEXT", "speaker": "Alicia", "content": "Thank you for these feathers. I'll keep them safe.", "next": "talk_menu_choices" },
+
+    "dawn_check": { "type": "ROUTER", "branches": [ { "condition": "questStatus:true_warden:completed", "target": "dawn_offer_text" } ], "next": "talk_menu_choices" },
+    "dawn_offer_text": { "type": "TEXT", "speaker": "Alicia", "content": "You did it! The Spire is quiet! We should celebrate! Talk to everyone!", "next": "dawn_offer_choices" },
+    "dawn_offer_choices": { "type": "CHOICE", "options": [ { "label": "Let's party.", "target": "action_offer_dawn" } ] },
+    "action_offer_dawn": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "new_dawn", "acceptNode": "dawn_active_text", "declineNode": "talk_menu_text" },
+    "dawn_active_text": { "type": "TEXT", "speaker": "Alicia", "content": "Go talk to Laura and Geraldo! Tell them we're safe!", "next": "talk_menu_choices" },
+    "dawn_completed_text": { "type": "TEXT", "speaker": "Alicia", "content": "This is the best day ever!", "next": "talk_menu_choices" }
   }
 }

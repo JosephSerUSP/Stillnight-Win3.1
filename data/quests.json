@@ -3,11 +3,11 @@
     "name": "Sparkling Gesture",
     "giver": "Alicia",
     "portrait": "NPC_Alicia",
-    "summary": "Find a glittering keepsake that Alicia can gift to Laura.",
+    "summary": "Find a glittering keepsake for Laura.",
     "description": "Alicia wants to surprise Laura with a shimmering token. She believes a rare teardrop crystal from the lower tunnels would be perfect.",
     "objectives": [
-      "Locate a Glittering Teardrop in the dungeon.",
-      "Return it to Alicia so she can craft a gift for Laura."
+      "Locate a Glittering Teardrop from Wisps.",
+      "Return it to Alicia."
     ],
     "requirements": {
       "items": [
@@ -25,11 +25,11 @@
     "name": "Golden Promise",
     "giver": "Laura",
     "portrait": "NPC_Laura",
-    "summary": "Secure an ornate ring so Laura can work with new material.",
+    "summary": "Secure an ornate ring for Laura.",
     "description": "Laura needs an unmarked golden band taken from a rare undead. She is willing to pay well for anyone brave enough to retrieve it.",
     "objectives": [
-      "Acquire an Untarnished Signet from the depths.",
-      "Deliver the ring to Laura at her forge."
+      "Acquire an Untarnished Signet from Skeletons.",
+      "Deliver the ring to Laura."
     ],
     "requirements": {
       "items": [
@@ -51,12 +51,254 @@
     "description": "The Gate Guard is worried about a shipment that never arrived. He suspects someone in town might know more.",
     "objectives": [
       "Ask around town about the shipment.",
-      "Speak to Alicia about any strange sightings.",
-      "Return to the Gate Guard with your findings."
+      "Return to the Gate Guard."
     ],
     "rewards": {
       "gold": 50,
       "xp": 100
+    }
+  },
+  "frozen_hearts": {
+    "name": "Frozen Hearts",
+    "giver": "Alicia",
+    "portrait": "NPC_Alicia",
+    "summary": "Collect Frozen Cores from the Ice Floors.",
+    "description": "Alicia needs Frozen Cores to study the sudden temperature drop in the dungeon.",
+    "objectives": [
+      "Collect 3 Frozen Cores from Frost Wisps (Floors 7-9).",
+      "Return to Alicia."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "frozen_core", "qty": 3, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 150,
+      "items": [
+        { "id": "mana_prism", "qty": 2 }
+      ]
+    }
+  },
+  "cold_shoulder": {
+    "name": "The Cold Shoulder",
+    "giver": "Laura",
+    "portrait": "NPC_Laura",
+    "summary": "Hunt Frost Wisps.",
+    "description": "Laura is annoyed by the freezing cold affecting her forge. Thin out the Frost Wisps.",
+    "objectives": [
+      "Defeat 5 Frost Wisps.",
+      "Report back to Laura."
+    ],
+    "rewards": {
+      "gold": 200,
+      "xp": 300
+    }
+  },
+  "lost_scout": {
+    "name": "Lost in the Ice",
+    "giver": "Gate Guard",
+    "portrait": "NPC_Geraldo",
+    "summary": "Find the missing scout.",
+    "description": "A scout went missing in the Frozen Hells. Find their badge.",
+    "objectives": [
+      "Locate the Scout Badge on Floor 8.",
+      "Return to Geraldo."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "lost_scout_badge", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 250,
+      "items": [
+        { "id": "bone_plate", "qty": 1 }
+      ]
+    }
+  },
+  "neon_dreams": {
+    "name": "Neon Dreams",
+    "giver": "The Oracle",
+    "portrait": "NPC_Oracle",
+    "summary": "Collect Cyber Scrap.",
+    "description": "The Oracle speaks of a machine future. Bring her Cyber Scrap from the Hive.",
+    "objectives": [
+      "Collect 5 Cyber Scrap from Cyber Imps (Floors 10-12).",
+      "Return to The Oracle."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "cyber_scrap", "qty": 5, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 400,
+      "items": [
+        { "id": "neural_link", "qty": 1 }
+      ]
+    }
+  },
+  "ghost_machine": {
+    "name": "Ghost in the Machine",
+    "giver": "The Oracle",
+    "portrait": "NPC_Oracle",
+    "summary": "Hunt Cyber Imps.",
+    "description": "The machines are growing too bold. Silence them.",
+    "objectives": [
+      "Defeat 10 Cyber Imps.",
+      "Return to The Oracle."
+    ],
+    "rewards": {
+      "gold": 450,
+      "xp": 600
+    }
+  },
+  "system_error": {
+    "name": "System Error",
+    "giver": "The Rebel",
+    "portrait": "NPC_Rebel",
+    "summary": "Defeat the Mecha Golem.",
+    "description": "The Rebel wants to dismantle the system's enforcer. Destroy the Mecha Golem on Floor 12.",
+    "objectives": [
+      "Defeat the Mecha Golem (Floor 12 Boss).",
+      "Report to The Rebel."
+    ],
+    "rewards": {
+      "gold": 1000,
+      "items": [
+        { "id": "plasma_blade", "qty": 1 }
+      ]
+    }
+  },
+  "angelic_feather": {
+    "name": "Angelic Feathers",
+    "giver": "Alicia",
+    "portrait": "NPC_Alicia",
+    "summary": "Collect Angel Feathers.",
+    "description": "Alicia senses a holy presence. Bring her feathers from the Celestial Spire.",
+    "objectives": [
+      "Collect 3 Angel Feathers from Seraphs (Floors 13-15).",
+      "Return to Alicia."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "angel_feather", "qty": 3, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 600,
+      "items": [
+        { "id": "hp_boost2", "qty": 1 }
+      ]
+    }
+  },
+  "demon_horn": {
+    "name": "The Devil's Due",
+    "giver": "Laura",
+    "portrait": "NPC_Laura",
+    "summary": "Collect Demon Horns.",
+    "description": "Laura needs strong materials for a masterwork. Demon Horns will suffice.",
+    "objectives": [
+      "Collect 3 Demon Horns from Liches (Floors 13-15).",
+      "Return to Laura."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "demon_horn", "qty": 3, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 700,
+      "items": [
+        { "id": "aegis_shield", "qty": 1 }
+      ]
+    }
+  },
+  "the_balance": {
+    "name": "The Balance",
+    "giver": "The Rebel",
+    "portrait": "NPC_Rebel",
+    "summary": "Hunt Seraphs and Chaos Knights.",
+    "description": "Neither order nor chaos should rule. Thin their numbers.",
+    "objectives": [
+      "Defeat 3 Seraphs.",
+      "Defeat 3 Chaos Knights.",
+      "Return to The Rebel."
+    ],
+    "rewards": {
+      "gold": 800,
+      "xp": 1000
+    }
+  },
+  "old_world_tech": {
+    "name": "Old World Tech",
+    "giver": "The Oracle",
+    "portrait": "NPC_Oracle",
+    "summary": "Find the Ancient Drive.",
+    "description": "A piece of the old world lies on Floor 14. Recover it.",
+    "objectives": [
+      "Find the Ancient Drive on Floor 14.",
+      "Return to The Oracle."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "ancient_drive", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 1200,
+      "items": [
+        { "id": "exp_boost", "qty": 1 }
+      ]
+    }
+  },
+  "gatekeeper_key": {
+    "name": "The Gatekeeper's Key",
+    "giver": "Gate Guard",
+    "portrait": "NPC_Geraldo",
+    "summary": "Defeat the Crimson Lord.",
+    "description": "To reach the Warden, the Crimson Gatekeeper must fall.",
+    "objectives": [
+      "Defeat the Crimson Lord (if not already defeated).",
+      "Return to Geraldo."
+    ],
+    "rewards": {
+      "gold": 500,
+      "xp": 500
+    }
+  },
+  "true_warden": {
+    "name": "The True Warden",
+    "giver": "The Oracle",
+    "portrait": "NPC_Oracle",
+    "summary": "Defeat the Eternal Warden.",
+    "description": "The source of the anomaly is at the spire's peak. End it.",
+    "objectives": [
+      "Defeat the Eternal Warden on Floor 16.",
+      "Return to The Oracle."
+    ],
+    "rewards": {
+      "gold": 5000,
+      "items": [
+        { "id": "hp_boost3", "qty": 1 }
+      ]
+    }
+  },
+  "new_dawn": {
+    "name": "A New Dawn",
+    "giver": "Alicia",
+    "portrait": "NPC_Alicia",
+    "summary": "Speak to everyone.",
+    "description": "The spire is clear. Celebrate with your friends.",
+    "objectives": [
+      "Speak to Alicia.",
+      "Speak to Laura.",
+      "Speak to Geraldo."
+    ],
+    "rewards": {
+      "gold": 0,
+      "xp": 0
     }
   }
 }

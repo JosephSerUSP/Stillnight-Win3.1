@@ -410,5 +410,134 @@
     "cost": 0,
     "icon": 218,
     "description": "A heavy golden ring, unmarked and waiting for a new story. Laura can reshape it into something precious."
+  },
+  {
+    "id": "frozen_core",
+    "name": "Frozen Core",
+    "type": "quest",
+    "cost": 0,
+    "icon": 228,
+    "description": "A core of pure ice, radiating a chill that hurts to touch."
+  },
+  {
+    "id": "cyber_scrap",
+    "name": "Cyber Scrap",
+    "type": "quest",
+    "cost": 0,
+    "icon": 172,
+    "description": "Twisted metal and wires, humming with faint energy."
+  },
+  {
+    "id": "angel_feather",
+    "name": "Angel Feather",
+    "type": "quest",
+    "cost": 0,
+    "icon": 184,
+    "description": "A feather that glows with holy light."
+  },
+  {
+    "id": "demon_horn",
+    "name": "Demon Horn",
+    "type": "quest",
+    "cost": 0,
+    "icon": 180,
+    "description": "A jagged horn taken from a high-ranking demon."
+  },
+  {
+    "id": "lost_scout_badge",
+    "name": "Scout Badge",
+    "type": "quest",
+    "cost": 0,
+    "icon": 174,
+    "description": "A badge belonging to a missing scout."
+  },
+  {
+    "id": "ancient_drive",
+    "name": "Ancient Drive",
+    "type": "quest",
+    "cost": 0,
+    "icon": 172,
+    "description": "A data storage device from the Old World."
+  },
+  {
+    "id": "plasma_blade",
+    "name": "Plasma Blade",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 5000,
+    "icon": 71,
+    "description": "A blade of pure energy.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 5
+      },
+      {
+        "code": "CRI",
+        "value": 0.2
+      }
+    ]
+  },
+  {
+    "id": "aegis_shield",
+    "name": "Aegis Shield",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 4000,
+    "icon": 172,
+    "description": "A shield that blocks even the strongest blows.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "def",
+        "value": 5
+      }
+    ]
+  },
+  {
+    "id": "neural_link",
+    "name": "Neural Link",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 6000,
+    "icon": 81,
+    "description": "Enhances reaction time.",
+    "traits": [
+      {
+        "code": "INITIATIVE",
+        "value": 0.1
+      }
+    ]
+  },
+  {
+    "id": "mana_prism",
+    "name": "Mana Prism",
+    "type": "consumable",
+    "cost": 500,
+    "icon": 52,
+    "description": "Restores 50 MP to the Summoner.",
+    "effects": [
+      {
+        "type": "mp_heal",
+        "value": 50
+      }
+    ]
+  },
+  {
+      "id": "obsidian_shard",
+      "name": "Obsidian Shard",
+      "type": "quest",
+      "cost": 0,
+      "icon": 218,
+      "description": "A sharp shard of black glass."
+  },
+  {
+      "id": "melted_wax",
+      "name": "Melted Wax",
+      "type": "quest",
+      "cost": 0,
+      "icon": 228,
+      "description": "Residue from a magical candle."
   }
 ]

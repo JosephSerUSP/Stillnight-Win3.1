@@ -1,0 +1,17 @@
+{
+  "id": "npc_warden",
+  "name": "Eternal Warden",
+  "layout": "terminal",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "type": "TEXT",
+      "content": "ERROR. CONTAINMENT BREACH DETECTED. ANOMALY: SUMMONER. INITIATING PURGE PROTOCOL.",
+      "next": "end"
+    },
+    "end": {
+      "type": "ACTION",
+      "action": "close"
+    }
+  }
+}

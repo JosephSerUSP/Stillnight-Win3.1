@@ -1,0 +1,130 @@
+{
+  "id": "npc_rebel",
+  "name": "The Rebel",
+  "layout": "visual_novel",
+  "portrait": "NPC_Yukio",
+  "initialNode": "root_router",
+  "nodes": {
+    "root_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:the_balance:completed", "target": "endgame_text" },
+        { "condition": "questStatus:the_balance:active", "target": "balance_active_text" },
+        { "condition": "questStatus:system_error:completed", "target": "balance_offer_check" },
+        { "condition": "questStatus:system_error:active", "target": "system_active_text" }
+      ],
+      "next": "intro_text"
+    },
+    "intro_text": {
+      "type": "TEXT",
+      "speaker": "The Rebel",
+      "content": "The Orders... The Machines... They all want control. I want freedom. Do you?",
+      "next": "intro_choices"
+    },
+    "intro_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Who are you?", "target": "about_text" },
+        { "label": "I want loot.", "target": "loot_text" },
+        { "label": "I want freedom.", "target": "system_offer_check" },
+        { "label": "Leave", "action": "close" }
+      ]
+    },
+    "about_text": {
+      "type": "TEXT",
+      "speaker": "The Rebel",
+      "content": "Names are chains. Call me a friend of the downtrodden. Or a Rebel.",
+      "next": "intro_choices"
+    },
+    "loot_text": {
+      "type": "TEXT",
+      "speaker": "The Rebel",
+      "content": "Honest. I like that. I pay well for destruction.",
+      "next": "system_offer_check"
+    },
+    "system_offer_check": {
+        "type": "ROUTER",
+        "branches": [ { "condition": "level:10", "target": "system_offer_text" } ],
+        "next": "not_ready_text"
+    },
+    "not_ready_text": {
+      "type": "TEXT",
+      "speaker": "The Rebel",
+      "content": "You're too weak to dent the system. Come back when you can fight machines (Level 10+).",
+      "next": "close_choice"
+    },
+    "system_offer_text": {
+      "type": "TEXT",
+      "speaker": "The Rebel",
+      "content": "The Hive has an enforcer. A 'Mecha Golem'. It crushes dissent. Crush it back.",
+      "next": "system_offer_choices"
+    },
+    "system_offer_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Consider it scrapped.", "target": "action_system_quest" },
+        { "label": "Too risky.", "action": "close" }
+      ]
+    },
+    "action_system_quest": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "system_error",
+      "acceptNode": "system_active_text",
+      "declineNode": "close_choice"
+    },
+    "system_active_text": {
+      "type": "TEXT",
+      "speaker": "The Rebel",
+      "content": "Floor 12. Tear it apart.",
+      "next": "close_choice"
+    },
+    "close_choice": {
+       "type": "CHOICE",
+       "options": [ { "label": "Leave", "action": "close" } ]
+    },
+    "balance_offer_check": {
+        "type": "ROUTER",
+        "branches": [ { "condition": "level:14", "target": "balance_offer_text" } ],
+        "next": "wait_text"
+    },
+    "wait_text": {
+      "type": "TEXT",
+      "speaker": "The Rebel",
+      "content": "Good work on the Golem. But the Spire is worse. Get stronger.",
+      "next": "close_choice"
+    },
+    "balance_offer_text": {
+      "type": "TEXT",
+      "speaker": "The Rebel",
+      "content": "Angels and Demons... they treat this world like a chessboard. Remove their pieces. Seraphs and Chaos Knights.",
+      "next": "balance_offer_choices"
+    },
+    "balance_offer_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll thin the ranks.", "target": "action_balance_quest" },
+        { "label": "Pass.", "action": "close" }
+      ]
+    },
+    "action_balance_quest": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "the_balance",
+      "acceptNode": "balance_active_text",
+      "declineNode": "close_choice"
+    },
+    "balance_active_text": {
+      "type": "TEXT",
+      "speaker": "The Rebel",
+      "content": "Show them we are not pawns.",
+      "next": "close_choice"
+    },
+    "endgame_text": {
+      "type": "TEXT",
+      "speaker": "The Rebel",
+      "content": "Chaos and Order... both bleeding. Good. The world breathes easier.",
+      "next": "close_choice"
+    }
+  }
+}

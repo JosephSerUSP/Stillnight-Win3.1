@@ -28,7 +28,7 @@
     "default_text": {
       "type": "TEXT",
       "speaker": "Laura",
-      "content": "Well, hello there, darling. Looking for something shiny, or just admiring the view? I’m Laura. Goldsmith. Occasional problem.",
+      "content": "Well, hello there, darling. Looking for something shiny, or just admiring the view?",
       "next": "default_choices"
     },
     "default_choices": {
@@ -48,13 +48,13 @@
     },
     "talk_menu_text": {
        "type": "TEXT",
-       "content": "Go on. Say what you mean. People here talk like they’re trying not to exist.",
+       "content": "Go on. Say what you mean.",
        "next": "talk_menu_choices"
     },
     "talk_menu_choices": {
        "type": "CHOICE",
        "options": [
-          { "label": "Alicia cares about you.", "target": "router_alicia_topic" },
+          { "label": "About Alicia", "target": "router_alicia_topic" },
           { "label": "About Raphael", "target": "talk_raphael" },
           { "label": "About the dungeon", "target": "talk_dungeon" },
           { "label": "Ask about Quest", "target": "quest_router" },
@@ -69,7 +69,7 @@
     },
     "talk_alicia_gift": {
       "type": "TEXT",
-      "content": "She gave me this necklace. It’s… a bit much, isn’t it? But she looked so proud. I didn’t have the heart to tell her it clashes with my apron. I wear it anyway. Underneath.",
+      "content": "She gave me this necklace. It’s… a bit much, isn’t it? But she looked so proud.",
       "next": "talk_alicia_gift_choices"
     },
     "talk_alicia_gift_choices": {
@@ -81,7 +81,7 @@
     },
     "talk_alicia_cares": {
        "type": "TEXT",
-       "content": "I know. That’s the problem, isn’t it? She feels things at full volume. If I’m not careful, I become the whole soundtrack.",
+       "content": "I know. That’s the problem, isn’t it?",
        "next": "talk_alicia_cares_choices"
     },
     "talk_alicia_cares_choices": {
@@ -99,7 +99,7 @@
     },
     "talk_guilty_deflect": {
         "type": "TEXT",
-        "content": "Guilt is for people who pretend they didn’t choose. I choose. Every day. Next question.",
+        "content": "Guilt is for people who pretend they didn’t choose.",
         "next": "talk_guilty_deflect_choices"
     },
     "talk_guilty_deflect_choices": {
@@ -108,7 +108,7 @@
     },
     "talk_guilty_vulnerable": {
         "type": "TEXT",
-        "content": "…Yes. Not in the dramatic way. In the quiet way that sits in your ribs when you’re alone. I don’t want to hurt her. I just… don’t want to be owned by someone else’s need.",
+        "content": "…Yes. Not in the dramatic way. In the quiet way that sits in your ribs when you’re alone.",
         "next": "talk_guilty_vulnerable_choices"
     },
     "talk_guilty_vulnerable_choices": {
@@ -120,7 +120,7 @@
     },
     "talk_guilty_honest": {
         "type": "TEXT",
-        "content": "Honest doesn’t mean kind. But I’m trying. Tell Alicia I said that— and she’ll turn it into a religion, so actually don’t.",
+        "content": "Honest doesn’t mean kind. But I’m trying.",
         "next": "talk_guilty_honest_choices"
     },
     "talk_guilty_honest_choices": {
@@ -129,7 +129,7 @@
     },
     "talk_raphael": {
         "type": "TEXT",
-        "content": "Raphael? We’ve been engaged for seven years. He’s steady. Reliable. Dangerous in the way a smile can be dangerous. He knows how to sound gentle while moving you like furniture.",
+        "content": "Raphael? We’ve been engaged for seven years. He’s steady. Reliable.",
         "next": "talk_raphael_choices"
     },
     "talk_raphael_choices": {
@@ -147,7 +147,7 @@
     },
     "talk_love_deflect": {
         "type": "TEXT",
-        "content": "Love is a big word. We function. That’s worth more than poetry down here.",
+        "content": "Love is a big word. We function.",
         "next": "talk_love_deflect_choices"
     },
     "talk_love_deflect_choices": {
@@ -156,7 +156,7 @@
     },
     "talk_love_vulnerable": {
         "type": "TEXT",
-        "content": "I love the part of him that doesn’t ask questions when I go quiet. I hate the part of him that thinks that means he owns me.",
+        "content": "I love the part of him that doesn’t ask questions when I go quiet.",
         "next": "talk_love_vulnerable_choices"
     },
     "talk_love_vulnerable_choices": {
@@ -165,7 +165,7 @@
     },
     "talk_dungeon": {
         "type": "TEXT",
-        "content": "The dungeon is a wound the town pretends is a mine. People go down for ‘treasure’. But what they bring back is usually… an explanation for their suffering.",
+        "content": "The dungeon is a wound the town pretends is a mine.",
         "next": "talk_dungeon_choices"
     },
     "talk_dungeon_choices": {
@@ -177,7 +177,7 @@
     },
     "talk_dungeon_go": {
         "type": "TEXT",
-        "content": "Sometimes. I’m not a good Summoner. I get distracted. I think about the wrong things. Then my MP runs thin and I start bargaining with myself. I always leave before it takes something I can’t replace.",
+        "content": "Sometimes. I’m not a good Summoner. I get distracted.",
         "next": "talk_dungeon_go_choices"
     },
     "talk_dungeon_go_choices": {
@@ -197,7 +197,7 @@
     },
     "state_alicia_hello": {
         "type": "TEXT",
-        "content": "H-hello! I didn’t mean to interrupt! I just… brought the polish.",
+        "content": "H-hello! I didn’t mean to interrupt!",
         "speakers": [
             { "id": "NPC_Alicia", "active": true, "emotion": "shock" },
             { "id": "NPC_Laura", "active": false, "emotion": "neutral" }
@@ -213,7 +213,7 @@
     },
     "state_alicia_reply": {
         "type": "TEXT",
-        "content": "Just put it on the table, dear. And try not to knock anything over this time, hmm?",
+        "content": "Just put it on the table, dear.",
         "speakers": [
             { "id": "NPC_Alicia", "active": false, "emotion": "shock" },
             { "id": "NPC_Laura", "active": true, "emotion": "approval" }
@@ -245,7 +245,7 @@
     },
     "state_player_be_gentle": {
         "type": "TEXT",
-        "content": "…Fine. Alicia, come here. Look at me. Breathe. You’re not in trouble.",
+        "content": "…Fine. Alicia, come here.",
         "speakers": [
             { "id": "NPC_Laura", "active": true, "emotion": "neutral" },
             { "id": "NPC_Alicia", "active": true, "emotion": "approval" }
@@ -259,14 +259,18 @@
     "quest_router": {
         "type": "ROUTER",
         "branches": [
-            { "condition": "questStatus:golden_promise:completed", "target": "quest_complete_text" },
+            { "condition": "questStatus:demon_horn:completed", "target": "demon_completed_text" },
+            { "condition": "questStatus:demon_horn:active", "target": "demon_active_text" },
+            { "condition": "questStatus:cold_shoulder:completed", "target": "demon_check" },
+            { "condition": "questStatus:cold_shoulder:active", "target": "cold_active_text" },
+            { "condition": "questStatus:golden_promise:completed", "target": "cold_check" },
             { "condition": "questStatus:golden_promise:active", "target": "quest_active_text" }
         ],
         "next": "quest_offer_text"
     },
     "quest_offer_text": {
         "type": "TEXT",
-        "content": "Actually, I need a favor. There’s a rare undead prowling the lower floors… rumor has it it wears a pure gold band. Bring it to me. Raw material for a project. Don’t ask which one.",
+        "content": "Actually, I need a favor. There’s a rare undead prowling the lower floors… an Untarnished Signet. Bring it to me.",
         "next": "quest_offer_choices"
     },
     "quest_offer_choices": {
@@ -285,7 +289,7 @@
     },
     "quest_active_text": {
         "type": "TEXT",
-        "content": "The signet I’m after is pristine gold. If you find an Untarnished Signet, bring it straight to me. And don’t clean it. I want the truth on it.",
+        "content": "If you find an Untarnished Signet, bring it straight to me.",
         "next": "quest_active_router"
     },
     "quest_active_router": {
@@ -296,45 +300,40 @@
     },
     "quest_active_choices": {
         "type": "CHOICE",
-        "options": [
-            { "label": "Remind me", "target": "action_remind_quest" },
-            { "label": "Back", "target": "default_text" }
-        ]
-    },
-    "action_remind_quest": {
-        "type": "ACTION",
-        "action": "OFFER_QUEST",
-        "questId": "golden_promise",
-        "acceptNode": "quest_active_text",
-        "declineNode": "default_text"
+        "options": [ { "label": "Back", "target": "default_text" } ]
     },
     "quest_turnin_text": {
         "type": "TEXT",
-        "content": "You found it. Good. Hand it here— carefully. People think gold is soft. It isn’t. It remembers pressure.",
+        "content": "You found it. Good.",
         "next": "quest_turnin_choices"
     },
     "quest_turnin_choices": {
         "type": "CHOICE",
-        "options": [
-            { "label": "Give the signet", "target": "action_complete_quest" },
-            { "label": "Not yet", "target": "quest_active_choices" }
-        ]
+        "options": [ { "label": "Give the signet", "target": "action_complete_quest" } ]
     },
     "action_complete_quest": {
         "type": "ACTION",
         "action": "COMPLETE_QUEST",
         "questId": "golden_promise",
-        "completeNode": "quest_complete_text",
+        "completeNode": "cold_check",
         "takeItem": "untarnished_signet"
     },
-    "quest_complete_text": {
-        "type": "TEXT",
-        "content": "This will do nicely. Here’s your payment— and my respect. Few bring back what they promise. Fewer come back without bragging about it.",
-        "next": "quest_complete_choices"
-    },
-    "quest_complete_choices": {
-        "type": "CHOICE",
-        "options": [ { "label": "Back", "target": "default_text" } ]
-    }
+
+    "cold_check": { "type": "ROUTER", "branches": [ { "condition": "level:7", "target": "cold_offer_text" } ], "next": "talk_menu_choices" },
+    "cold_offer_text": { "type": "TEXT", "speaker": "Laura", "content": "The forge is too cold. It’s those Frost Wisps. They’re leaking chill into the air. Go break them. Five should do.", "next": "cold_offer_choices" },
+    "cold_offer_choices": { "type": "CHOICE", "options": [ { "label": "Consider it done.", "target": "action_offer_cold" }, { "label": "Later.", "target": "talk_menu_text" } ] },
+    "action_offer_cold": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "cold_shoulder", "acceptNode": "cold_active_text", "declineNode": "talk_menu_text" },
+    "cold_active_text": { "type": "TEXT", "speaker": "Laura", "content": "Kill 5 Frost Wisps.", "next": "talk_menu_choices" },
+
+    "demon_check": { "type": "ROUTER", "branches": [ { "condition": "level:13", "target": "demon_offer_text" } ], "next": "talk_menu_choices" },
+    "demon_offer_text": { "type": "TEXT", "speaker": "Laura", "content": "I need something harder than steel. Demon Horns. From the Liches in the Spire. Don't ask how a skeleton grows horns.", "next": "demon_offer_choices" },
+    "demon_offer_choices": { "type": "CHOICE", "options": [ { "label": "On it.", "target": "action_offer_demon" }, { "label": "Nope.", "target": "talk_menu_text" } ] },
+    "action_offer_demon": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "demon_horn", "acceptNode": "demon_active_text", "declineNode": "talk_menu_text" },
+    "demon_active_text": { "type": "TEXT", "speaker": "Laura", "content": "Bring me 3 Demon Horns.", "next": "demon_turnin_check" },
+    "demon_turnin_check": { "type": "ROUTER", "condition": "hasItem:demon_horn", "trueNode": "demon_turnin_text", "falseNode": "talk_menu_choices" },
+    "demon_turnin_text": { "type": "TEXT", "speaker": "Laura", "content": "Excellent. These will make a fine shield. Here.", "next": "demon_turnin_choices" },
+    "demon_turnin_choices": { "type": "CHOICE", "options": [ { "label": "Take shield.", "target": "action_complete_demon" } ] },
+    "action_complete_demon": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "demon_horn", "completeNode": "demon_completed_text", "takeItem": "demon_horn" },
+    "demon_completed_text": { "type": "TEXT", "speaker": "Laura", "content": "A good day's work. Rare for this town.", "next": "talk_menu_choices" }
   }
 }

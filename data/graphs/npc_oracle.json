@@ -1,0 +1,217 @@
+{
+  "id": "npc_oracle",
+  "name": "The Oracle",
+  "layout": "visual_novel",
+  "portrait": "NPC_Daphne",
+  "initialNode": "root_router",
+  "nodes": {
+    "root_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:true_warden:completed", "target": "endgame_text" },
+        { "condition": "questStatus:true_warden:active", "target": "warden_active_text" },
+        { "condition": "questStatus:gatekeeper_key:completed", "target": "warden_offer_router" },
+        { "condition": "questStatus:old_world_tech:completed", "target": "tech_completed_text" },
+        { "condition": "questStatus:old_world_tech:active", "target": "tech_active_text" },
+        { "condition": "questStatus:ghost_machine:completed", "target": "ghost_completed_router" },
+        { "condition": "questStatus:ghost_machine:active", "target": "ghost_active_text" },
+        { "condition": "questStatus:neon_dreams:completed", "target": "neon_completed_router" },
+        { "condition": "questStatus:neon_dreams:active", "target": "neon_active_text" }
+      ],
+      "next": "intro_text"
+    },
+    "intro_text": {
+      "type": "TEXT",
+      "speaker": "The Oracle",
+      "content": "The circuits hum... do you hear them? The future is not written in stars, but in code.",
+      "next": "intro_choices"
+    },
+    "intro_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Who are you?", "target": "about_text" },
+        { "label": "What code?", "target": "neon_offer_check" },
+        { "label": "Leave", "action": "close" }
+      ]
+    },
+    "about_text": {
+      "type": "TEXT",
+      "speaker": "The Oracle",
+      "content": "I am one who listens to the machine's heartbeat. It grows erratic.",
+      "next": "intro_choices"
+    },
+    "neon_offer_check": {
+      "type": "ROUTER",
+      "branches": [ { "condition": "level:6", "target": "neon_offer_text" } ],
+      "next": "not_ready_text"
+    },
+    "not_ready_text": {
+      "type": "TEXT",
+      "speaker": "The Oracle",
+      "content": "You are not yet attuned. Return when you have seen the deeper layers (Level 6+).",
+      "next": "intro_choices"
+    },
+    "neon_offer_text": {
+      "type": "TEXT",
+      "speaker": "The Oracle",
+      "content": "The Hive... it hungers. I need pieces of it to understand. Bring me Cyber Scrap.",
+      "next": "neon_offer_choices"
+    },
+    "neon_offer_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I will find it.", "target": "action_neon_quest" },
+        { "label": "Not my problem.", "target": "intro_choices" }
+      ]
+    },
+    "action_neon_quest": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "neon_dreams",
+      "acceptNode": "neon_active_text",
+      "declineNode": "intro_choices"
+    },
+    "neon_active_text": {
+      "type": "TEXT",
+      "speaker": "The Oracle",
+      "content": "The scrap lies within the Cyber Imps. They are twisted, half-flesh things.",
+      "next": "close_choice"
+    },
+    "close_choice": {
+       "type": "CHOICE",
+       "options": [ { "label": "Leave", "action": "close" } ]
+    },
+    "neon_completed_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:ghost_machine:completed", "target": "tech_offer_check" },
+        { "condition": "questStatus:ghost_machine:active", "target": "ghost_active_text" }
+      ],
+      "next": "ghost_offer_text"
+    },
+    "ghost_offer_text": {
+      "type": "TEXT",
+      "speaker": "The Oracle",
+      "content": "The scrap... yes. But they multiply. We must prune the network. Silence the Cyber Imps.",
+      "next": "ghost_offer_choices"
+    },
+    "ghost_offer_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll handle them.", "target": "action_ghost_quest" },
+        { "label": "Later.", "action": "close" }
+      ]
+    },
+    "action_ghost_quest": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "ghost_machine",
+      "acceptNode": "ghost_active_text",
+      "declineNode": "intro_choices"
+    },
+    "ghost_active_text": {
+      "type": "TEXT",
+      "speaker": "The Oracle",
+      "content": "Their screams are data. Delete them.",
+      "next": "close_choice"
+    },
+    "ghost_completed_router": {
+      "type": "ROUTER",
+      "branches": [
+         { "condition": "questStatus:old_world_tech:completed", "target": "warden_check" }
+      ],
+      "next": "tech_offer_check"
+    },
+    "tech_offer_check": {
+        "type": "ROUTER",
+        "branches": [ { "condition": "level:12", "target": "tech_offer_text" } ],
+        "next": "wait_for_level_text"
+    },
+    "wait_for_level_text": {
+       "type": "TEXT",
+       "speaker": "The Oracle",
+       "content": "You are strong, but the Zenith requires more. (Level 12+)",
+       "next": "close_choice"
+    },
+    "tech_offer_text": {
+      "type": "TEXT",
+      "speaker": "The Oracle",
+      "content": "Higher... in the Spire. The Old World left a memory. An 'Ancient Drive'. I must have it.",
+      "next": "tech_offer_choices"
+    },
+    "tech_offer_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll retrieve it.", "target": "action_tech_quest" },
+        { "label": "Sounds dangerous.", "action": "close" }
+      ]
+    },
+    "action_tech_quest": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "old_world_tech",
+      "acceptNode": "tech_active_text",
+      "declineNode": "close_choice"
+    },
+    "tech_active_text": {
+      "type": "TEXT",
+      "speaker": "The Oracle",
+      "content": "Floor 14. It calls to me.",
+      "next": "close_choice"
+    },
+    "tech_completed_text": {
+      "type": "TEXT",
+      "speaker": "The Oracle",
+      "content": "This... this is history. This is the truth. Thank you, Summoner.",
+      "next": "warden_check"
+    },
+    "warden_check": {
+       "type": "ROUTER",
+       "branches": [ { "condition": "questStatus:gatekeeper_key:completed", "target": "warden_offer_text" } ],
+       "next": "gatekeeper_hint_text"
+    },
+    "gatekeeper_hint_text": {
+      "type": "TEXT",
+      "speaker": "The Oracle",
+      "content": "The Warden is close. But the Gatekeeper still stands. Speak to the Guard.",
+      "next": "close_choice"
+    },
+    "warden_offer_router": {
+       "type": "ROUTER",
+       "branches": [ { "condition": "questStatus:true_warden:active", "target": "warden_active_text" } ],
+       "next": "warden_offer_text"
+    },
+    "warden_offer_text": {
+      "type": "TEXT",
+      "speaker": "The Oracle",
+      "content": "The path is open. The Eternal Warden waits at the boundary. End the anomaly. Restore the code.",
+      "next": "warden_offer_choices"
+    },
+    "warden_offer_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "It ends now.", "target": "action_warden_quest" },
+        { "label": "I need to prepare.", "action": "close" }
+      ]
+    },
+    "action_warden_quest": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "true_warden",
+      "acceptNode": "warden_active_text",
+      "declineNode": "close_choice"
+    },
+    "warden_active_text": {
+      "type": "TEXT",
+      "speaker": "The Oracle",
+      "content": "Floor 16. Do not hesitate.",
+      "next": "close_choice"
+    },
+    "endgame_text": {
+      "type": "TEXT",
+      "speaker": "The Oracle",
+      "content": "Silence. Beautiful silence. The system is stable. You have done well.",
+      "next": "close_choice"
+    }
+  }
+}
