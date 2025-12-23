@@ -401,7 +401,7 @@
     "type": "quest",
     "cost": 0,
     "icon": 228,
-    "description": "A flawless crystal that catches the faintest light. Alicia believes Laura will love it."
+    "description": "A flawless crystal that catches the faintest light."
   },
   {
     "id": "untarnished_signet",
@@ -409,6 +409,168 @@
     "type": "quest",
     "cost": 0,
     "icon": 218,
-    "description": "A heavy golden ring, unmarked and waiting for a new story. Laura can reshape it into something precious."
+    "description": "A heavy golden ring, unmarked and waiting for a new story."
+  },
+  {
+    "id": "void_stinger",
+    "name": "Void Stinger",
+    "type": "quest",
+    "cost": 0,
+    "icon": 72,
+    "description": "A sharp, vibrating stinger from a Void Wasp."
+  },
+  {
+    "id": "crystal_core",
+    "name": "Crystal Core",
+    "type": "quest",
+    "cost": 0,
+    "icon": 228,
+    "description": "The pulsating heart of a Crystalline Golem."
+  },
+  {
+    "id": "grimoire_page",
+    "name": "Grimoire Page",
+    "type": "quest",
+    "cost": 0,
+    "icon": 64,
+    "description": "A page torn from a forbidden tome."
+  },
+  {
+    "id": "broken_badge",
+    "name": "Broken Badge",
+    "type": "quest",
+    "cost": 0,
+    "icon": 218,
+    "description": "A tarnished badge of a fallen paladin."
+  },
+  {
+    "id": "shadow_essence",
+    "name": "Shadow Essence",
+    "type": "quest",
+    "cost": 0,
+    "icon": 55,
+    "description": "A vial of pure darkness."
+  },
+  {
+    "id": "rusted_blade",
+    "name": "Rusted Blade",
+    "type": "quest",
+    "cost": 0,
+    "icon": 180,
+    "description": "An ancient, rusted sword."
+  },
+  {
+    "id": "mana_mote",
+    "name": "Mana Mote",
+    "type": "quest",
+    "cost": 0,
+    "icon": 228,
+    "description": "A small concentration of raw magic."
+  },
+  {
+    "id": "bat_wing",
+    "name": "Bat Wing",
+    "type": "quest",
+    "cost": 0,
+    "icon": 72,
+    "description": "A leathery wing from a dungeon bat."
+  },
+  {
+    "id": "gold_tooth",
+    "name": "Gold Tooth",
+    "type": "quest",
+    "cost": 0,
+    "icon": 218,
+    "description": "A gold tooth extracted from a ghoul. Gross."
+  },
+  {
+    "id": "angel_feather",
+    "name": "Angel Feather",
+    "type": "quest",
+    "cost": 0,
+    "icon": 64,
+    "description": "A pristine white feather."
+  },
+  {
+    "id": "demon_horn",
+    "name": "Demon Horn",
+    "type": "quest",
+    "cost": 0,
+    "icon": 172,
+    "description": "A curved horn from a lesser demon."
+  },
+  {
+    "id": "lich_skull",
+    "name": "Lich Skull",
+    "type": "quest",
+    "cost": 0,
+    "icon": 172,
+    "description": "The skull of a powerful Lich."
+  },
+  {
+    "id": "ring_of_clarity",
+    "name": "Ring of Clarity",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 500,
+    "icon": 218,
+    "description": "Clears the mind and resists confusion.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "spi", "value": 2 }
+    ]
+  },
+  {
+    "id": "void_slayer_sword",
+    "name": "Void Slayer",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 5000,
+    "icon": 74,
+    "description": "A sword forged to fight the encroaching void.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "atk", "value": 5 },
+      { "code": "ELEMENT_CHANGE", "dataId": "White" }
+    ]
+  },
+  {
+    "id": "paladin_shield",
+    "name": "Paladin Shield",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 2000,
+    "icon": 172,
+    "description": "A heavy shield used by holy knights.",
+    "traits": [
+      { "code": "PARAM_PLUS", "dataId": "def", "value": 3 },
+      { "code": "PARAM_PLUS", "dataId": "vit", "value": 2 }
+    ]
+  },
+  {
+    "id": "shadow_cloak",
+    "name": "Shadow Cloak",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 3000,
+    "icon": 174,
+    "description": "A cloak woven from shadows.",
+    "traits": [
+      { "code": "EVA", "value": 0.2 }
+    ]
+  },
+  {
+    "id": "obsidian_shard",
+    "name": "Obsidian Shard",
+    "type": "quest",
+    "cost": 0,
+    "icon": 228,
+    "description": "A sharp shard of volcanic glass."
+  },
+  {
+    "id": "melted_wax",
+    "name": "Melted Wax",
+    "type": "quest",
+    "cost": 0,
+    "icon": 228,
+    "description": "Residue from a living candle."
   }
 ]

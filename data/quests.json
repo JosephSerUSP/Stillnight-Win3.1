@@ -58,5 +58,271 @@
       "gold": 50,
       "xp": 100
     }
+  },
+  "void_venom": {
+    "name": "Void Venom",
+    "giver": "Gate Guard",
+    "portrait": "NPC_Geraldo",
+    "summary": "Collect Void Stingers for antidote research.",
+    "description": "The Guard has reported attacks by Void Wasps. We need their stingers to develop an antidote.",
+    "objectives": [
+      "Hunt Void Wasps on deeper floors.",
+      "Collect 3 Void Stingers.",
+      "Return them to the Gate Guard."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "void_stinger", "qty": 3, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 100,
+      "items": [
+        { "id": "antidote", "qty": 3 }
+      ]
+    }
+  },
+  "crystal_light": {
+    "name": "Crystal Light",
+    "giver": "Alicia",
+    "portrait": "NPC_Alicia",
+    "summary": "Retrieve a Crystal Core for Alicia's lamp.",
+    "description": "Alicia's shop lamp is fading. She needs a core from a Crystalline Golem to reignite it.",
+    "objectives": [
+      "Find a Crystalline Golem.",
+      "Retrieve its Core.",
+      "Bring it to Alicia."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "crystal_core", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 150,
+      "items": [
+        { "id": "ring_of_clarity", "qty": 1 }
+      ]
+    }
+  },
+  "lost_knowledge": {
+    "name": "Lost Knowledge",
+    "giver": "Scholar",
+    "portrait": "NPC_Scholar",
+    "summary": "Recover a Grimoire Page for the Scholar.",
+    "description": "A scholar in the pub believes the Void Casters possess torn pages of an ancient history.",
+    "objectives": [
+      "Hunt Void Casters.",
+      "Find a Grimoire Page.",
+      "Deliver it to the Scholar."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "grimoire_page", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 200,
+      "xp": 150
+    }
+  },
+  "fallen_hero": {
+    "name": "A Fallen Hero",
+    "giver": "Scholar",
+    "portrait": "NPC_Scholar",
+    "summary": "Retrieve a Broken Badge from a Lost Paladin.",
+    "description": "The Scholar wants to identify a paladin who went missing years ago. His badge should still be on his reanimated corpse.",
+    "objectives": [
+      "Find a Lost Paladin in the deep dungeon.",
+      "Retrieve the Broken Badge.",
+      "Return it to the Scholar."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "broken_badge", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 250,
+      "items": [
+        { "id": "paladin_shield", "qty": 1 }
+      ]
+    }
+  },
+  "shadow_hunt": {
+    "name": "Shadow Hunt",
+    "giver": "Mystic",
+    "portrait": "NPC_Mystic",
+    "summary": "Collect Shadow Essence for the Mystic.",
+    "description": "A strange Mystic in the temple seeks the essence of pure shadow to study the Void.",
+    "objectives": [
+      "Hunt Abyssal Shades.",
+      "Collect 1 Shadow Essence.",
+      "Bring it to the Mystic."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "shadow_essence", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 300,
+      "items": [
+        { "id": "shadow_cloak", "qty": 1 }
+      ]
+    }
+  },
+  "cursed_blade": {
+    "name": "Cursed Blade",
+    "giver": "Laura",
+    "portrait": "NPC_Laura",
+    "summary": "Find a Rusted Blade for Laura to restore.",
+    "description": "Laura believes she can restore an ancient blade if you can find one on the skeletal warriors.",
+    "objectives": [
+      "Find a Rusted Blade from Skeletons.",
+      "Bring it to Laura."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "rusted_blade", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 100,
+      "items": [
+        { "id": "silver_blade", "qty": 1 }
+      ]
+    }
+  },
+  "mana_gathering": {
+    "name": "The Source of Magic",
+    "giver": "Alicia",
+    "portrait": "NPC_Alicia",
+    "summary": "Collect Mana Motes for Alicia.",
+    "description": "Alicia wants to study the raw form of magic found in Wisps.",
+    "objectives": [
+      "Hunt Wisps.",
+      "Collect 3 Mana Motes.",
+      "Bring them to Alicia."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "mana_mote", "qty": 3, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 120,
+      "items": [
+        { "id": "sigil_ink", "qty": 2 }
+      ]
+    }
+  },
+  "rare_delicacy": {
+    "name": "Rare Delicacy",
+    "giver": "Gambler",
+    "portrait": "NPC_Gambler",
+    "summary": "Get a Bat Wing for the Gambler.",
+    "description": "The Gambler claims roasted Bat Wing is a delicacy. Or maybe he just lost a bet.",
+    "objectives": [
+      "Hunt Bats.",
+      "Get 5 Bat Wings.",
+      "Give them to the Gambler."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "bat_wing", "qty": 5, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 200
+    }
+  },
+  "gold_rush": {
+    "name": "Gold Rush",
+    "giver": "Gambler",
+    "portrait": "NPC_Gambler",
+    "summary": "Find a Gold Tooth for the Gambler.",
+    "description": "The Gambler heard Ghouls sometimes have gold teeth. He wants one.",
+    "objectives": [
+      "Hunt Ghouls.",
+      "Find a Gold Tooth.",
+      "Bring it to the Gambler."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "gold_tooth", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 300
+    }
+  },
+  "divine_protection": {
+    "name": "Divine Protection",
+    "giver": "Mystic",
+    "portrait": "NPC_Mystic",
+    "summary": "Acquire an Angel Feather.",
+    "description": "The Mystic needs a feather from an Angel to create a ward against the Void.",
+    "objectives": [
+      "Find an Angel.",
+      "Acquire a Feather.",
+      "Return to the Mystic."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "angel_feather", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 250,
+      "items": [
+        { "id": "light_amulet", "qty": 1 }
+      ]
+    }
+  },
+  "demonic_pact": {
+    "name": "Demonic Pact",
+    "giver": "Scholar",
+    "portrait": "NPC_Scholar",
+    "summary": "Retrieve a Demon Horn.",
+    "description": "The Scholar wants to study the physical composition of demons.",
+    "objectives": [
+      "Hunt Demons.",
+      "Acquire a Horn.",
+      "Return to the Scholar."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "demon_horn", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 300,
+      "items": [
+        { "id": "whispered_lessons", "qty": 1 }
+      ]
+    }
+  },
+  "final_seal": {
+    "name": "The Final Seal",
+    "giver": "Mystic",
+    "portrait": "NPC_Mystic",
+    "summary": "Destroy the Lich and bring its skull.",
+    "description": "The Lich in the deep crypts is anchoring the Void to this world. Destroy it.",
+    "objectives": [
+      "Defeat the Lich.",
+      "Bring the Lich Skull to the Mystic."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "lich_skull", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 1000,
+      "items": [
+        { "id": "void_slayer_sword", "qty": 1 }
+      ]
+    }
   }
 }

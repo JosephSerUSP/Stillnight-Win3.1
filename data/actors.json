@@ -92,7 +92,8 @@
       {
         "itemId": "untarnished_signet",
         "chance": 0.05
-      }
+      },
+      { "itemId": "rusted_blade", "chance": 0.2 }
     ],
     "evolutions": [],
     "initialParty": true,
@@ -121,6 +122,7 @@
     "flavor": "A celestial being tasked with guiding the lost. Its patience is legendary.",
     "expGrowth": 5,
     "gold": 20,
+    "drops": [ { "itemId": "angel_feather", "chance": 0.15 } ],
     "evolutions": [
       {
         "level": 6,
@@ -184,7 +186,8 @@
       {
         "itemId": "silver_blade",
         "chance": 0.1
-      }
+      },
+      { "itemId": "demon_horn", "chance": 0.15 }
     ],
     "evolutions": [
       {
@@ -327,6 +330,7 @@
     "flavor": "An animated statue, slow but incredibly durable.",
     "expGrowth": 8,
     "gold": 40,
+    "drops": [ { "itemId": "gold_tooth", "chance": 0.25 } ],
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": true,
@@ -374,6 +378,7 @@
     ],
     "expGrowth": 3,
     "gold": 8,
+    "drops": [ { "itemId": "bat_wing", "chance": 0.3 } ],
     "evolutions": [],
     "initialParty": true,
     "isRecruitable": true,
@@ -402,7 +407,8 @@
       {
         "itemId": "glittering_teardrop",
         "chance": 0.1
-      }
+      },
+      { "itemId": "mana_mote", "chance": 0.25 }
     ],
     "evolutions": [],
     "initialParty": true,
@@ -561,6 +567,156 @@
     "spriteKey": "ShadowStalker",
     "gold": 14,
     "expGrowth": 10
+  },
+  {
+    "id": "void_wasp",
+    "name": "Void Wasp",
+    "level": 4,
+    "role": "Attacker",
+    "maxHp": 15,
+    "spriteKey": "bee",
+    "passives": ["initiative"],
+    "elements": ["Black", "Green"],
+    "skills": ["needleShot"],
+    "flavor": "A buzzing horror from the void.",
+    "expGrowth": 5,
+    "gold": 20,
+    "drops": [{ "itemId": "void_stinger", "chance": 0.3 }]
+  },
+  {
+    "id": "crystal_golem",
+    "name": "Crystal Golem",
+    "level": 7,
+    "role": "Tank",
+    "maxHp": 40,
+    "spriteKey": "golem",
+    "passives": ["rearGuard"],
+    "elements": ["White", "Blue"],
+    "skills": ["boneRush"],
+    "flavor": "A golem infused with strange crystals.",
+    "expGrowth": 10,
+    "gold": 50,
+    "drops": [{ "itemId": "crystal_core", "chance": 0.4 }]
+  },
+  {
+    "id": "lost_paladin",
+    "name": "Lost Paladin",
+    "level": 8,
+    "role": "Attacker",
+    "maxHp": 45,
+    "spriteKey": "skeleton",
+    "passives": ["undeadFortitude"],
+    "elements": ["Black", "White"],
+    "skills": ["holySmite", "boneRush"],
+    "flavor": "He still thinks he's fighting for the light.",
+    "expGrowth": 12,
+    "gold": 60,
+    "drops": [{ "itemId": "broken_badge", "chance": 1.0 }]
+  },
+  {
+    "id": "void_caster",
+    "name": "Void Caster",
+    "level": 9,
+    "role": "Caster",
+    "maxHp": 30,
+    "spriteKey": "wisp",
+    "passives": [],
+    "elements": ["Black", "Blue"],
+    "skills": ["shadowClaw", "drainKiss"],
+    "flavor": "A mage consumed by the void.",
+    "expGrowth": 15,
+    "gold": 70,
+    "drops": [{ "itemId": "grimoire_page", "chance": 0.5 }]
+  },
+  {
+    "id": "abyssal_shade",
+    "name": "Abyssal Shade",
+    "level": 10,
+    "role": "Debuffer",
+    "maxHp": 35,
+    "spriteKey": "shadowStalker",
+    "passives": ["etherealBody"],
+    "elements": ["Black", "Black"],
+    "skills": ["drainKiss"],
+    "flavor": "Pure darkness given form.",
+    "expGrowth": 18,
+    "gold": 80,
+    "drops": [{ "itemId": "shadow_essence", "chance": 0.5 }]
+  },
+  {
+    "id": "mimic",
+    "name": "Mimic",
+    "level": 5,
+    "role": "Trap",
+    "maxHp": 25,
+    "spriteKey": "chest",
+    "passives": ["initiative"],
+    "elements": [],
+    "skills": ["boneRush"],
+    "flavor": "Surprise!",
+    "expGrowth": 8,
+    "gold": 100,
+    "drops": []
+  },
+  {
+    "id": "lich",
+    "name": "Lich",
+    "level": 15,
+    "role": "Boss",
+    "maxHp": 150,
+    "spriteKey": "lich",
+    "passives": ["undeadFortitude", "etherealBody"],
+    "elements": ["Black", "Black", "Black"],
+    "skills": ["shadowClaw", "drainKiss", "infernalPact"],
+    "flavor": "The master of the crypt.",
+    "expGrowth": 100,
+    "gold": 500,
+    "drops": [{ "itemId": "lich_skull", "chance": 1.0 }]
+  },
+  {
+    "id": "hydra",
+    "name": "Hydra",
+    "level": 12,
+    "role": "Boss",
+    "maxHp": 120,
+    "spriteKey": "snake",
+    "passives": ["symbiosis"],
+    "elements": ["Red", "Green"],
+    "skills": ["boneRush", "needleShot"],
+    "flavor": "Many heads, many problems.",
+    "expGrowth": 80,
+    "gold": 400,
+    "drops": []
+  },
+  {
+    "id": "cerberus",
+    "name": "Cerberus",
+    "level": 14,
+    "role": "Gatekeeper",
+    "maxHp": 130,
+    "spriteKey": "hound",
+    "passives": ["initiative"],
+    "elements": ["Red", "Red"],
+    "skills": ["boneRush", "infernalPact"],
+    "flavor": "The hound of hell.",
+    "expGrowth": 90,
+    "gold": 450,
+    "drops": []
+  },
+  {
+    "id": "void_lord",
+    "name": "Void Lord",
+    "level": 20,
+    "role": "Boss",
+    "maxHp": 300,
+    "spriteKey": "demonLord",
+    "passives": ["etherealBody", "chaosPact"],
+    "elements": ["Black", "Black", "Black", "Red"],
+    "skills": ["shadowClaw", "infernalPact", "drainKiss"],
+    "flavor": "The source of the encroachment.",
+    "expGrowth": 500,
+    "gold": 1000,
+    "drops": []
   },
   {
     "id": "summoner",

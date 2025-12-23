@@ -157,5 +157,18 @@ export const skills = {
             { type: 'hp_drain', formula: '4 + 0.6 * a.level' },
             { type: 'add_status', status: 'sleep', chance: 0.5, duration: 3 }
         ]
+    },
+
+    // New Skills
+    assassinate: {
+        id: 'assassinate',
+        name: 'Assassinate',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "A lethal strike from the dark.",
+        effects: [
+             { type: 'hp_damage', formula: '12 + 2.0 * a.level' },
+             { type: 'add_status', status: 'bleed', chance: 0.8, duration: 3 }
+        ]
     }
 };

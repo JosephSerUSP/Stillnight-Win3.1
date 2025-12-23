@@ -1,0 +1,199 @@
+{
+  "id": "npc_mystic",
+  "name": "Mystic",
+  "layout": "visual_novel",
+  "portrait": "NPC_Mystic",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "type": "TEXT",
+      "content": "The shadows whisper. Do you hear them? Or are you deaf like the others?",
+      "portrait": "NPC_Mystic",
+      "next": "hub_choices"
+    },
+    "hub_choices": {
+      "type": "CHOICE",
+      "content": "...",
+      "options": [
+        { "label": "I hear them.", "target": "talk_shadows" },
+        { "label": "Shadow Hunt (Quest)", "target": "quest_shadow_router" },
+        { "label": "Divine Protection (Quest)", "target": "quest_divine_router" },
+        { "label": "The Final Seal (Quest)", "target": "quest_final_router" },
+        { "label": "Leave", "action": "close" }
+      ]
+    },
+    "talk_shadows": {
+      "type": "TEXT",
+      "content": "Good. Then you know what is coming. The light is but a fleeting dream.",
+      "next": "hub_choices"
+    },
+
+    "quest_shadow_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:shadow_hunt:completed", "target": "quest_shadow_done" },
+        { "condition": "questStatus:shadow_hunt:active", "target": "quest_shadow_active" }
+      ],
+      "next": "quest_shadow_offer"
+    },
+    "quest_shadow_offer": {
+      "type": "TEXT",
+      "content": "To understand the dark, one must hold it. Bring me the essence of an Abyssal Shade. Do not let it touch your skin.",
+      "next": "quest_shadow_choice"
+    },
+    "quest_shadow_choice": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I will retrieve it.", "target": "action_offer_shadow" },
+        { "label": "Too dangerous.", "target": "hub_choices" }
+      ]
+    },
+    "action_offer_shadow": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "shadow_hunt",
+      "acceptNode": "quest_shadow_active",
+      "declineNode": "hub_choices"
+    },
+    "quest_shadow_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:shadow_essence",
+      "trueNode": "quest_shadow_turnin",
+      "falseNode": "quest_shadow_wait"
+    },
+    "quest_shadow_wait": {
+      "type": "TEXT",
+      "content": "The essence... I crave it.",
+      "next": "hub_choices"
+    },
+    "quest_shadow_turnin": {
+      "type": "TEXT",
+      "content": "Yes... cold. Pure. It sings.",
+      "next": "action_complete_shadow"
+    },
+    "action_complete_shadow": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "shadow_hunt",
+      "completeNode": "quest_shadow_done",
+      "takeItem": "shadow_essence"
+    },
+    "quest_shadow_done": {
+      "type": "TEXT",
+      "content": "Take this cloak. It will hide you from what watches.",
+      "next": "hub_choices"
+    },
+
+    "quest_divine_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:divine_protection:completed", "target": "quest_divine_done" },
+        { "condition": "questStatus:divine_protection:active", "target": "quest_divine_active" }
+      ],
+      "next": "quest_divine_offer"
+    },
+    "quest_divine_offer": {
+      "type": "TEXT",
+      "content": "Even shadows fear the light. I need a feather from an Angel. A paradox, yes? Using light to seal the dark.",
+      "next": "quest_divine_choice"
+    },
+    "quest_divine_choice": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll find one.", "target": "action_offer_divine" },
+        { "label": "I won't harm an angel.", "target": "hub_choices" }
+      ]
+    },
+    "action_offer_divine": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "divine_protection",
+      "acceptNode": "quest_divine_active",
+      "declineNode": "hub_choices"
+    },
+    "quest_divine_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:angel_feather",
+      "trueNode": "quest_divine_turnin",
+      "falseNode": "quest_divine_wait"
+    },
+    "quest_divine_wait": {
+      "type": "TEXT",
+      "content": "The feather must be pristine.",
+      "next": "hub_choices"
+    },
+    "quest_divine_turnin": {
+      "type": "TEXT",
+      "content": "It burns... excellent.",
+      "next": "action_complete_divine"
+    },
+    "action_complete_divine": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "divine_protection",
+      "completeNode": "quest_divine_done",
+      "takeItem": "angel_feather"
+    },
+    "quest_divine_done": {
+      "type": "TEXT",
+      "content": "With this, we can endure a little longer.",
+      "next": "hub_choices"
+    },
+
+    "quest_final_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:final_seal:completed", "target": "quest_final_done" },
+        { "condition": "questStatus:final_seal:active", "target": "quest_final_active" }
+      ],
+      "next": "quest_final_offer"
+    },
+    "quest_final_offer": {
+      "type": "TEXT",
+      "content": "The Lich. It is an anchor. It holds the door open. Shatter it. Bring me its skull.",
+      "next": "quest_final_choice"
+    },
+    "quest_final_choice": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "It will be done.", "target": "action_offer_final" },
+        { "label": "I'm not ready.", "target": "hub_choices" }
+      ]
+    },
+    "action_offer_final": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "final_seal",
+      "acceptNode": "quest_final_active",
+      "declineNode": "hub_choices"
+    },
+    "quest_final_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:lich_skull",
+      "trueNode": "quest_final_turnin",
+      "falseNode": "quest_final_wait"
+    },
+    "quest_final_wait": {
+      "type": "TEXT",
+      "content": "The Lich waits. It grows stronger.",
+      "next": "hub_choices"
+    },
+    "quest_final_turnin": {
+      "type": "TEXT",
+      "content": "Silence... at last. The anchor is broken.",
+      "next": "action_complete_final"
+    },
+    "action_complete_final": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "final_seal",
+      "completeNode": "quest_final_done",
+      "takeItem": "lich_skull"
+    },
+    "quest_final_done": {
+      "type": "TEXT",
+      "content": "You have saved us. For now. Take this blade. It has tasted the Void.",
+      "next": "hub_choices"
+    }
+  }
+}

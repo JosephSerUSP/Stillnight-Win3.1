@@ -19,9 +19,9 @@
       "#.###S...R....A##.#",
       "#.###...#.#...###.#",
       "#.................#",
-      "#########....#P#..#",
+      "#########..K.#P#..#",
       "#########....###..#",
-      "########T....###..#",
+      "########T.Y..###..#",
       "#########....###..#",
       "#########....###..#",
       "#.................#",
@@ -38,7 +38,9 @@
       { "id": "npc_gambler", "x": 6, "y": 9 },
       { "id": "loc_pub", "x": 14, "y": 12 },
       { "id": "npc_auction", "x": 10, "y": 13 },
-      { "id": "loc_temple", "x": 8, "y": 14 }
+      { "id": "loc_temple", "x": 8, "y": 14 },
+      { "id": "npc_scholar", "x": 11, "y": 12 },
+      { "id": "npc_mystic", "x": 10, "y": 14 }
     ],
     "treasures": [],
     "encounters": [],
@@ -97,7 +99,8 @@
       { "id": "skeleton", "weight": 8 },
       { "id": "imp", "weight": 5 },
       { "id": "wisp", "weight": 4 },
-      { "id": "ooze", "weight": 3 }
+      { "id": "ooze", "weight": 3 },
+      { "id": "bat", "weight": 4 }
     ],
     "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
   },
@@ -117,7 +120,8 @@
     "encounters": [
       { "id": "golem", "weight": 6 },
       { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 3 }
+      { "id": "angel", "weight": 3 },
+      { "id": "ghoul", "weight": 3 }
     ],
     "recruits": ["golem", "demon", "angel", "larva","flauros"]
   },
@@ -139,7 +143,8 @@
     "encounters": [
       { "id": "demon", "weight": 8 },
       { "id": "highPixie", "weight": 4 },
-      { "id": "ghoul", "weight": 4 }
+      { "id": "ghoul", "weight": 4 },
+      { "id": "void_wasp", "weight": 3 }
     ],
     "recruits": ["demon", "angel", "golem","flauros"]
   },
@@ -159,23 +164,100 @@
     "encounters": [
       { "id": "crimsonLord", "weight": 2 },
       { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
+      { "id": "highPixie", "weight": 5 },
+      { "id": "mimic", "weight": 1 }
     ],
     "recruits": ["demon", "angel"]
   },
   {
     "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
+    "intro": "A presence fills the air.",
     "depth": 6,
     "music": "event4_darkJester",
     "image": "DungeonFloors1.png",
     "events": [
+      { "id": "stairs", "count": 1 },
       { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
+      { "id": "enemy", "min": 3, "max": 5 }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
+      { "id": "crimsonLord", "weight": 5 },
+      { "id": "demon", "weight": 5 },
+      { "id": "cerberus", "weight": 1 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Floor 7: The Crystal Caverns",
+    "intro": "Sharp crystals jut from the walls, humming with energy.",
+    "depth": 7,
+    "music": "event9_magical",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 4, "max": 6 },
+      { "id": "recruit", "chance": 0.3 },
+      { "id": "treasure", "chance": 0.5 }
+    ],
+    "encounters": [
+      { "id": "crystal_golem", "weight": 8 },
+      { "id": "void_wasp", "weight": 6 },
+      { "id": "wisp", "weight": 4 }
+    ],
+    "recruits": ["wisp", "highPixie"]
+  },
+  {
+    "title": "Floor 8: The Silent Halls",
+    "intro": "Dust and silence reign here. The air is heavy.",
+    "depth": 8,
+    "music": "emotional2_sadNostalgic",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.2 },
+      { "id": "enemy", "min": 5, "max": 7 },
+      { "id": "recruit", "chance": 0.2 }
+    ],
+    "encounters": [
+      { "id": "lost_paladin", "weight": 7 },
+      { "id": "void_caster", "weight": 6 },
+      { "id": "skeleton", "weight": 4 }
+    ],
+    "recruits": ["skeleton", "ghost"]
+  },
+  {
+    "title": "Floor 9: The Abyssal Depths",
+    "intro": "Darkness pools in every corner. You are close to the source.",
+    "depth": 9,
+    "music": "event4_darkJester",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.1 },
+      { "id": "enemy", "min": 6, "max": 8 },
+      { "id": "lich_encounter", "type": "enemy", "symbol": "!", "cssClass": "text-danger", "trigger": "touch", "scripts": { "onEnter": [{ "type": "BATTLE", "id": "lich" }] }, "count": 1 }
+    ],
+    "encounters": [
+      { "id": "abyssal_shade", "weight": 8 },
+      { "id": "mimic", "weight": 2 },
       { "id": "demon", "weight": 5 }
+    ],
+    "recruits": ["demon"]
+  },
+  {
+    "title": "Floor 10: The Void Core",
+    "intro": "The source of the corruption is here.",
+    "depth": 10,
+    "music": "battle2",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "recovery", "count": 1 },
+      { "id": "void_lord_encounter", "type": "enemy", "symbol": "Ω", "cssClass": "text-danger", "trigger": "touch", "scripts": { "onEnter": [{ "type": "BATTLE", "id": "void_lord" }] }, "count": 1 }
+    ],
+    "encounters": [
+      { "id": "hydra", "weight": 5 },
+      { "id": "cerberus", "weight": 5 }
     ],
     "recruits": []
   }

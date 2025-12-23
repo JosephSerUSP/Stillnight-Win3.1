@@ -115,6 +115,8 @@
         { "label": "About Shop", "target": "talk_shop" },
         { "label": "About You", "target": "talk_self" },
         { "label": "Ask about Quest", "target": "quest_router" },
+        { "label": "Crystal Light (Quest)", "target": "quest_crystal_router" },
+        { "label": "Mana Gathering (Quest)", "target": "quest_mana_router" },
         { "label": "Back", "target": "default_hub_text" }
       ]
     },
@@ -206,6 +208,108 @@
       "speaker": "Alicia",
       "content": "I’m going to make this into a necklace. Or maybe a ring? No, a necklace. She doesn’t like rings when she works. Thank you again!",
       "next": "talk_menu_choices"
+    },
+
+    "quest_crystal_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:crystal_light:completed", "target": "quest_crystal_done" },
+        { "condition": "questStatus:crystal_light:active", "target": "quest_crystal_active" }
+      ],
+      "next": "quest_crystal_offer"
+    },
+    "quest_crystal_offer": {
+      "type": "TEXT",
+      "content": "The lamp... it's fading. It keeps the shadows away. I need a Crystal Core to reignite it. Please?",
+      "next": "quest_crystal_choice"
+    },
+    "quest_crystal_choice": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll find a Core.", "target": "action_offer_crystal" },
+        { "label": "Not now.", "target": "talk_menu_text" }
+      ]
+    },
+    "action_offer_crystal": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "crystal_light",
+      "acceptNode": "quest_crystal_active",
+      "declineNode": "talk_menu_text"
+    },
+    "quest_crystal_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:crystal_core",
+      "trueNode": "quest_crystal_turnin",
+      "falseNode": "talk_menu_text"
+    },
+    "quest_crystal_turnin": {
+      "type": "TEXT",
+      "content": "You found it! The light... it's so warm.",
+      "next": "action_complete_crystal"
+    },
+    "action_complete_crystal": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "crystal_light",
+      "completeNode": "quest_crystal_done",
+      "takeItem": "crystal_core"
+    },
+    "quest_crystal_done": {
+      "type": "TEXT",
+      "content": "Thank you. Now the shop won't be so dark.",
+      "next": "talk_menu_text"
+    },
+
+    "quest_mana_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:mana_gathering:completed", "target": "quest_mana_done" },
+        { "condition": "questStatus:mana_gathering:active", "target": "quest_mana_active" }
+      ],
+      "next": "quest_mana_offer"
+    },
+    "quest_mana_offer": {
+      "type": "TEXT",
+      "content": "Magic is strange, isn't it? I want to study it. Can you bring me some Mana Motes from the wisps?",
+      "next": "quest_mana_choice"
+    },
+    "quest_mana_choice": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Sure.", "target": "action_offer_mana" },
+        { "label": "Too busy.", "target": "talk_menu_text" }
+      ]
+    },
+    "action_offer_mana": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "mana_gathering",
+      "acceptNode": "quest_mana_active",
+      "declineNode": "talk_menu_text"
+    },
+    "quest_mana_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:mana_mote:3",
+      "trueNode": "quest_mana_turnin",
+      "falseNode": "talk_menu_text"
+    },
+    "quest_mana_turnin": {
+      "type": "TEXT",
+      "content": "They tingle! It's like holding a tiny storm.",
+      "next": "action_complete_mana"
+    },
+    "action_complete_mana": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "mana_gathering",
+      "completeNode": "quest_mana_done",
+      "takeItem": "mana_mote:3"
+    },
+    "quest_mana_done": {
+      "type": "TEXT",
+      "content": "I'll put these in a jar. A very thick jar.",
+      "next": "talk_menu_text"
     }
   }
 }

@@ -58,6 +58,7 @@
           { "label": "About Raphael", "target": "talk_raphael" },
           { "label": "About the dungeon", "target": "talk_dungeon" },
           { "label": "Ask about Quest", "target": "quest_router" },
+          { "label": "Cursed Blade (Quest)", "target": "quest_blade_router" },
           { "label": "Back", "target": "default_text" }
        ]
     },
@@ -335,6 +336,57 @@
     "quest_complete_choices": {
         "type": "CHOICE",
         "options": [ { "label": "Back", "target": "default_text" } ]
+    },
+
+    "quest_blade_router": {
+        "type": "ROUTER",
+        "branches": [
+            { "condition": "questStatus:cursed_blade:completed", "target": "quest_blade_done" },
+            { "condition": "questStatus:cursed_blade:active", "target": "quest_blade_active" }
+        ],
+        "next": "quest_blade_offer"
+    },
+    "quest_blade_offer": {
+        "type": "TEXT",
+        "content": "I've heard tales of rusted blades carried by the dead. Ancient steel. I want to see if I can restore one. Bring me a Rusted Blade.",
+        "next": "quest_blade_choice"
+    },
+    "quest_blade_choice": {
+        "type": "CHOICE",
+        "options": [
+            { "label": "I'll fetch one.", "target": "action_offer_blade" },
+            { "label": "Sounds tedious.", "target": "default_text" }
+        ]
+    },
+    "action_offer_blade": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "cursed_blade",
+        "acceptNode": "quest_blade_active",
+        "declineNode": "default_text"
+    },
+    "quest_blade_active": {
+        "type": "ROUTER",
+        "condition": "hasItem:rusted_blade",
+        "trueNode": "quest_blade_turnin",
+        "falseNode": "default_text"
+    },
+    "quest_blade_turnin": {
+        "type": "TEXT",
+        "content": "Let me see... yes, the core is still good. The rust is just a shell.",
+        "next": "action_complete_blade"
+    },
+    "action_complete_blade": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "cursed_blade",
+        "completeNode": "quest_blade_done",
+        "takeItem": "rusted_blade"
+    },
+    "quest_blade_done": {
+        "type": "TEXT",
+        "content": "I've cleaned it up. It's yours now. A Silver Blade, sharp as new.",
+        "next": "default_text"
     }
   }
 }

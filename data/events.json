@@ -136,6 +136,26 @@
     }
   },
   {
+    "id": "npc_scholar",
+    "type": "npc",
+    "symbol": "K",
+    "cssClass": "tile-npc-scholar",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_scholar" }]
+    }
+  },
+  {
+    "id": "npc_mystic",
+    "type": "npc",
+    "symbol": "Y",
+    "cssClass": "tile-npc-mystic",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_mystic" }]
+    }
+  },
+  {
     "id": "trap",
     "type": "trap",
     "symbol": "T",

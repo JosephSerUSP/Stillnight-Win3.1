@@ -1,0 +1,199 @@
+{
+  "id": "npc_scholar",
+  "name": "Scholar",
+  "layout": "visual_novel",
+  "portrait": "NPC_Scholar",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "type": "TEXT",
+      "content": "Hmm... The timeline doesn't match. If the Void encroachment began twenty years ago, then these ruins... oh! Hello.",
+      "portrait": "NPC_Scholar",
+      "next": "hub_choices"
+    },
+    "hub_choices": {
+      "type": "CHOICE",
+      "content": "Are you interested in history? Or perhaps you have found something?",
+      "options": [
+        { "label": "About the Void", "target": "talk_void" },
+        { "label": "Lost Knowledge (Quest)", "target": "quest_knowledge_router" },
+        { "label": "Fallen Hero (Quest)", "target": "quest_hero_router" },
+        { "label": "Demonic Pact (Quest)", "target": "quest_demon_router" },
+        { "label": "Leave", "action": "close" }
+      ]
+    },
+    "talk_void": {
+      "type": "TEXT",
+      "content": "The Void isn't just empty space. It's a hunger. It eats history. That's why I'm here. To save what I can before it's forgotten.",
+      "next": "hub_choices"
+    },
+
+    "quest_knowledge_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:lost_knowledge:completed", "target": "quest_knowledge_done" },
+        { "condition": "questStatus:lost_knowledge:active", "target": "quest_knowledge_active" }
+      ],
+      "next": "quest_knowledge_offer"
+    },
+    "quest_knowledge_offer": {
+      "type": "TEXT",
+      "content": "I believe the Void Casters in the silent halls carry pages of the Grimoire of Aethelgard. It was lost during the first siege. If you find a page, I must see it.",
+      "next": "quest_knowledge_choice"
+    },
+    "quest_knowledge_choice": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll look for it.", "target": "action_offer_knowledge" },
+        { "label": "Sounds boring.", "target": "hub_choices" }
+      ]
+    },
+    "action_offer_knowledge": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "lost_knowledge",
+      "acceptNode": "quest_knowledge_active",
+      "declineNode": "hub_choices"
+    },
+    "quest_knowledge_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:grimoire_page",
+      "trueNode": "quest_knowledge_turnin",
+      "falseNode": "quest_knowledge_wait"
+    },
+    "quest_knowledge_wait": {
+      "type": "TEXT",
+      "content": "The Void Casters are dangerous. But that knowledge is priceless.",
+      "next": "hub_choices"
+    },
+    "quest_knowledge_turnin": {
+      "type": "TEXT",
+      "content": "You found it! This... this handwriting... it's Grandmaster Thorne's! Incredible!",
+      "next": "action_complete_knowledge"
+    },
+    "action_complete_knowledge": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "lost_knowledge",
+      "completeNode": "quest_knowledge_done",
+      "takeItem": "grimoire_page"
+    },
+    "quest_knowledge_done": {
+      "type": "TEXT",
+      "content": "This page confirms my theory. The Void didn't invade. It was invited.",
+      "next": "hub_choices"
+    },
+
+    "quest_hero_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:fallen_hero:completed", "target": "quest_hero_done" },
+        { "condition": "questStatus:fallen_hero:active", "target": "quest_hero_active" }
+      ],
+      "next": "quest_hero_offer"
+    },
+    "quest_hero_offer": {
+      "type": "TEXT",
+      "content": "A paladin named Garrick went into the depths to find his brother. He never returned. If you find a Lost Paladin... please check for his badge.",
+      "next": "quest_hero_choice"
+    },
+    "quest_hero_choice": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll find him.", "target": "action_offer_hero" },
+        { "label": "Too sad.", "target": "hub_choices" }
+      ]
+    },
+    "action_offer_hero": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "fallen_hero",
+      "acceptNode": "quest_hero_active",
+      "declineNode": "hub_choices"
+    },
+    "quest_hero_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:broken_badge",
+      "trueNode": "quest_hero_turnin",
+      "falseNode": "quest_hero_wait"
+    },
+    "quest_hero_wait": {
+      "type": "TEXT",
+      "content": "Garrick wore a silver badge with a hawk crest. Please.",
+      "next": "hub_choices"
+    },
+    "quest_hero_turnin": {
+      "type": "TEXT",
+      "content": "This is it. Broken... just like his promise. At least now I know.",
+      "next": "action_complete_hero"
+    },
+    "action_complete_hero": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "fallen_hero",
+      "completeNode": "quest_hero_done",
+      "takeItem": "broken_badge"
+    },
+    "quest_hero_done": {
+      "type": "TEXT",
+      "content": "Thank you. Take his shield. He won't need it anymore.",
+      "next": "hub_choices"
+    },
+
+    "quest_demon_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:demonic_pact:completed", "target": "quest_demon_done" },
+        { "condition": "questStatus:demonic_pact:active", "target": "quest_demon_active" }
+      ],
+      "next": "quest_demon_offer"
+    },
+    "quest_demon_offer": {
+      "type": "TEXT",
+      "content": "Demons are fascinating biology. Their horns act as mana conductors. If I could study one...",
+      "next": "quest_demon_choice"
+    },
+    "quest_demon_choice": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll get a horn.", "target": "action_offer_demon" },
+        { "label": "No thanks.", "target": "hub_choices" }
+      ]
+    },
+    "action_offer_demon": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "demonic_pact",
+      "acceptNode": "quest_demon_active",
+      "declineNode": "hub_choices"
+    },
+    "quest_demon_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:demon_horn",
+      "trueNode": "quest_demon_turnin",
+      "falseNode": "quest_demon_wait"
+    },
+    "quest_demon_wait": {
+      "type": "TEXT",
+      "content": "Just saw it off. They won't mind. They'll be dead.",
+      "next": "hub_choices"
+    },
+    "quest_demon_turnin": {
+      "type": "TEXT",
+      "content": "Magnificent! Look at the striations... this will advance my research by years!",
+      "next": "action_complete_demon"
+    },
+    "action_complete_demon": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "demonic_pact",
+      "completeNode": "quest_demon_done",
+      "takeItem": "demon_horn"
+    },
+    "quest_demon_done": {
+      "type": "TEXT",
+      "content": "Here, take these notes. You might find them useful.",
+      "next": "hub_choices"
+    }
+  }
+}

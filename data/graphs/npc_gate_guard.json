@@ -2,6 +2,7 @@
   "id": "npc_gate_guard",
   "name": "Gate Guard",
   "layout": "visual_novel",
+  "portrait": "NPC_Geraldo",
   "initialNode": "default_router",
   "nodes": {
     "default_router": {
@@ -30,6 +31,7 @@
       "type": "CHOICE",
       "options": [
         { "label": "Anything strange happening?", "target": "quest_offer_text", "condition": "questStatus:silent_shipment:inactive" },
+        { "label": "About the Wasps...", "target": "quest_void_venom_offer", "condition": "questStatus:silent_shipment:completed" },
         { "label": "Leave", "action": "close" }
       ]
     },
@@ -87,6 +89,7 @@
         { "label": "Enter Dungeon", "target": "action_teleport" },
         { "label": "Ask about stains.", "target": "allow_pass_stains_text" },
         { "label": "Anything strange?", "target": "quest_offer_text", "condition": "questStatus:silent_shipment:inactive" },
+        { "label": "About the Wasps...", "target": "quest_void_venom_router" },
         { "label": "Leave", "action": "close" }
       ]
     },
@@ -112,6 +115,69 @@
         "options": [
             { "label": "Leave", "action": "close" }
         ]
+    },
+
+    "quest_void_venom_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:void_venom:completed", "target": "quest_void_venom_completed" },
+        { "condition": "questStatus:void_venom:active", "target": "quest_void_venom_active" }
+      ],
+      "next": "quest_void_venom_offer"
+    },
+    "quest_void_venom_offer": {
+      "type": "TEXT",
+      "content": "The Void Wasps are swarming deeper down. Their poison is potent, but if we can harvest their stingers, the alchemists can make a universal antidote. Bring me 3 Void Stingers.",
+      "next": "quest_void_venom_offer_choice"
+    },
+    "quest_void_venom_offer_choice": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll do it.", "target": "action_offer_void_venom" },
+        { "label": "Maybe later.", "target": "allow_pass_choices" }
+      ]
+    },
+    "action_offer_void_venom": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "void_venom",
+      "acceptNode": "quest_void_venom_active",
+      "declineNode": "allow_pass_choices"
+    },
+    "quest_void_venom_active": {
+      "type": "TEXT",
+      "content": "Watch out for the buzzing. Once you hear it, it's usually too late. Bring me those stingers.",
+      "next": "quest_void_venom_active_check"
+    },
+    "quest_void_venom_active_check": {
+      "type": "ROUTER",
+      "condition": "hasItem:void_stinger:3",
+      "trueNode": "quest_void_venom_turnin",
+      "falseNode": "allow_pass_choices"
+    },
+    "quest_void_venom_turnin": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Here are the stingers.", "target": "action_complete_void_venom" },
+        { "label": "Not yet.", "target": "allow_pass_choices" }
+      ]
+    },
+    "action_complete_void_venom": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "void_venom",
+      "completeNode": "quest_void_venom_done_text",
+      "takeItem": "void_stinger:3"
+    },
+    "quest_void_venom_done_text": {
+      "type": "TEXT",
+      "content": "Good. These are... surprisingly heavy. I'll get these to the lab. Here's your cut.",
+      "next": "allow_pass_choices"
+    },
+    "quest_void_venom_completed": {
+      "type": "TEXT",
+      "content": "Thanks to you, we have enough antidote for a siege. Or a plague. Whichever comes first.",
+      "next": "allow_pass_choices"
     }
   }
 }

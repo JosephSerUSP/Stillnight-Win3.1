@@ -8,15 +8,17 @@
         "start": {
             "type": "TEXT",
             "content": "Well met, traveler. I'm a collector of sorts. A collector of... numbers.",
-            "next": "choice1",
+            "next": "hub_choices",
             "portrait": "NPC_Raphael",
             "speakers": [{ "id": "NPC_Raphael", "name": "The Gambler", "active": true }]
         },
-        "choice1": {
+        "hub_choices": {
             "type": "CHOICE",
-            "content": "Would you like to play a little game of chance?",
+            "content": "What brings you to my table?",
             "options": [
-                { "label": "Sure, I'm feeling lucky.", "target": "game_start" },
+                { "label": "Play High/Low", "target": "game_start" },
+                { "label": "About Delicacies", "target": "quest_rare_delicacy_router" },
+                { "label": "About Gold", "target": "quest_gold_rush_router" },
                 { "label": "No thanks.", "target": "end" }
             ]
         },
@@ -76,6 +78,118 @@
             "type": "TEXT",
             "content": "Come back later. Current wins: ${gambler_wins}",
             "next": null
+        },
+
+        "quest_rare_delicacy_router": {
+             "type": "ROUTER",
+             "branches": [
+                 { "condition": "questStatus:rare_delicacy:completed", "target": "quest_delicacy_done" },
+                 { "condition": "questStatus:rare_delicacy:active", "target": "quest_delicacy_active" }
+             ],
+             "next": "quest_delicacy_offer"
+        },
+        "quest_delicacy_offer": {
+             "type": "TEXT",
+             "content": "You travel the deeps, yes? Have you ever tasted roasted bat wing? Exquisite. Crunchy. I'll pay for 5 fresh ones.",
+             "next": "quest_delicacy_choice"
+        },
+        "quest_delicacy_choice": {
+             "type": "CHOICE",
+             "options": [
+                 { "label": "Gross. But okay.", "target": "action_offer_delicacy" },
+                 { "label": "No way.", "target": "hub_choices" }
+             ]
+        },
+        "action_offer_delicacy": {
+             "type": "ACTION",
+             "action": "OFFER_QUEST",
+             "questId": "rare_delicacy",
+             "acceptNode": "quest_delicacy_active",
+             "declineNode": "hub_choices"
+        },
+        "quest_delicacy_active": {
+             "type": "ROUTER",
+             "condition": "hasItem:bat_wing:5",
+             "trueNode": "quest_delicacy_turnin",
+             "falseNode": "quest_delicacy_wait"
+        },
+        "quest_delicacy_wait": {
+             "type": "TEXT",
+             "content": "Five wings. Not four. Not six. Five.",
+             "next": "hub_choices"
+        },
+        "quest_delicacy_turnin": {
+             "type": "TEXT",
+             "content": "Ah, the aroma of impending culinary disaster. Wonderful.",
+             "next": "action_complete_delicacy"
+        },
+        "action_complete_delicacy": {
+             "type": "ACTION",
+             "action": "COMPLETE_QUEST",
+             "questId": "rare_delicacy",
+             "completeNode": "quest_delicacy_done",
+             "takeItem": "bat_wing:5"
+        },
+        "quest_delicacy_done": {
+             "type": "TEXT",
+             "content": "Delicious. Don't look at me like that.",
+             "next": "hub_choices"
+        },
+
+        "quest_gold_rush_router": {
+             "type": "ROUTER",
+             "branches": [
+                 { "condition": "questStatus:gold_rush:completed", "target": "quest_gold_done" },
+                 { "condition": "questStatus:gold_rush:active", "target": "quest_gold_active" }
+             ],
+             "next": "quest_gold_offer"
+        },
+        "quest_gold_offer": {
+             "type": "TEXT",
+             "content": "Ghouls sometimes have gold teeth. Don't ask where they got them. Bring me one. I need a... replacement.",
+             "next": "quest_gold_choice"
+        },
+        "quest_gold_choice": {
+             "type": "CHOICE",
+             "options": [
+                 { "label": "I'll find one.", "target": "action_offer_gold" },
+                 { "label": "Pass.", "target": "hub_choices" }
+             ]
+        },
+        "action_offer_gold": {
+             "type": "ACTION",
+             "action": "OFFER_QUEST",
+             "questId": "gold_rush",
+             "acceptNode": "quest_gold_active",
+             "declineNode": "hub_choices"
+        },
+        "quest_gold_active": {
+             "type": "ROUTER",
+             "condition": "hasItem:gold_tooth",
+             "trueNode": "quest_gold_turnin",
+             "falseNode": "quest_gold_wait"
+        },
+        "quest_gold_wait": {
+             "type": "TEXT",
+             "content": "The tooth? Is it golden? Is it shiny?",
+             "next": "hub_choices"
+        },
+        "quest_gold_turnin": {
+             "type": "TEXT",
+             "content": "Perfect. A bit of polish and it will fit right in.",
+             "next": "action_complete_gold"
+        },
+        "action_complete_gold": {
+             "type": "ACTION",
+             "action": "COMPLETE_QUEST",
+             "questId": "gold_rush",
+             "completeNode": "quest_gold_done",
+             "takeItem": "gold_tooth"
+        },
+        "quest_gold_done": {
+             "type": "TEXT",
+             "content": "You have an eye for value. I appreciate that.",
+             "next": "hub_choices"
         }
     }
 }
