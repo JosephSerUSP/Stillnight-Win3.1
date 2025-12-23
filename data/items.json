@@ -1,414 +1,319 @@
 [
   {
-    "id": "hp_tonic",
-    "name": "HP Tonic",
+    "id": "potion",
+    "name": "Potion",
     "type": "consumable",
-    "cost": 10,
-    "description": "Heals one member to full HP.",
-    "icon": 52,
+    "description": "Restores 20 HP.",
+    "price": 10,
     "effects": [
       {
         "type": "hp",
-        "value": 999
+        "value": 20
       }
-    ]
+    ],
+    "icon": 1
   },
   {
-    "id": "sigil_ink",
-    "name": "Sigil Ink",
+    "id": "hi_potion",
+    "name": "Hi-Potion",
     "type": "consumable",
-    "cost": 20,
-    "description": "+2 max HP to one member.",
-    "icon": 55,
+    "description": "Restores 60 HP.",
+    "price": 50,
     "effects": [
       {
-        "type": "maxHp",
-        "value": 2
+        "type": "hp",
+        "value": 60
       }
-    ]
+    ],
+    "icon": 1
   },
   {
-    "id": "whispered_lessons",
-    "name": "Whispered Lessons",
+    "id": "antidote",
+    "name": "Antidote",
     "type": "consumable",
-    "cost": 64,
-    "description": "+6 XP to one member.",
-    "icon": 64,
+    "description": "Cures Poison.",
+    "price": 8,
     "effects": [
       {
-        "type": "xp",
-        "value": 6
+        "type": "remove_status",
+        "value": "poison"
       }
-    ]
+    ],
+    "icon": 2
   },
   {
-    "id": "silver_blade",
-    "name": "Silver Blade",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 25,
-    "icon": 180,
-    "description": "Sharpened steel blade.",
-    "traits": [
+    "id": "magic_water",
+    "name": "Magic Water",
+    "type": "consumable",
+    "description": "Restores 10 MP.",
+    "price": 50,
+    "effects": [
       {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 1
-      },
-      {
-        "code": "CRI",
-        "value": 0.1
+        "type": "mp",
+        "value": 10
       }
-    ]
+    ],
+    "icon": 3
+  },
+  {
+    "id": "iron_sword",
+    "name": "Iron Sword",
+    "type": "weapon",
+    "description": "A standard iron sword.",
+    "price": 50,
+    "stats": {
+      "atk": 5
+    },
+    "icon": 10
+  },
+  {
+    "id": "steel_sword",
+    "name": "Steel Sword",
+    "type": "weapon",
+    "description": "A well-forged steel blade.",
+    "price": 200,
+    "stats": {
+      "atk": 12
+    },
+    "icon": 10
+  },
+  {
+    "id": "leather_armor",
+    "name": "Leather Armor",
+    "type": "armor",
+    "description": "Simple leather protection.",
+    "price": 40,
+    "stats": {
+      "def": 3
+    },
+    "icon": 20
+  },
+  {
+    "id": "chainmail",
+    "name": "Chainmail",
+    "type": "armor",
+    "description": "Interlocking metal rings.",
+    "price": 150,
+    "stats": {
+      "def": 8
+    },
+    "icon": 20
   },
   {
     "id": "bone_plate",
     "name": "Bone Plate",
-    "type": "equipment",
-    "equipType": "Armor",
-    "cost": 25,
-    "icon": 172,
-    "description": "Sturdy bone harness.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "maxHp",
-        "value": 3
-      }
-    ]
-  },
-  {
-    "id": "wind_charm",
-    "name": "Wind Charm",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 35,
-    "icon": 174,
-    "description": "A charm of rushing air.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 1
-      },
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "maxHp",
-        "value": 1
-      }
-    ]
-  },
-  {
-    "id": "light_amulet",
-    "name": "Light Amulet",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 30,
-    "icon": 174,
-    "description": "Glowing amulet.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "maxHp",
-        "value": 2
-      }
-    ]
-  },
-  {
-    "id": "alert_charm",
-    "name": "Alert Charm",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 150,
-    "icon": 174,
-    "description": "Humming chime.",
-    "traits": [
-      {
-        "code": "INITIATIVE",
-        "value": 0.05
-      }
-    ]
-  },
-  {
-    "id": "rear_mirror",
-    "name": "Rear Mirror",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 200,
-    "icon": 6,
-    "description": "Reflective glass. Prevents sneak attacks if in back row.",
-    "traits": [
-      {
-        "code": "REAR_GUARD",
-        "value": 1
-      }
-    ]
-  },
-  {
-    "id": "mystic_egg",
-    "name": "Mystic Egg",
-    "type": "consumable",
-    "cost": 500,
-    "icon": 184,
-    "description": "A mysterious egg that pulses with life. Use to hatch.",
-    "effects": [
-      {
-        "type": "recruit_egg",
-        "value": "egg"
-      }
-    ]
-  },
-  {
-    "id": "exp_boost",
-    "name": "Golden Egg",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 9999,
-    "icon": 184,
-    "description": "Beautiful golden egg, sought after by many.",
-    "traits": [
-      {
-        "code": "XP_RATE",
-        "value": 1.5
-      }
-    ]
-  },
-  {
-    "id": "hp_boost1",
-    "name": "Vitality Seal 1",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 125,
-    "icon": 174,
-    "description": "+10% Max HP",
-    "traits": [
-      {
-        "code": "PARAM_RATE",
-        "dataId": "maxHp",
-        "value": 1.1
-      }
-    ]
-  },
-  {
-    "id": "hp_boost2",
-    "name": "Vitality Seal 2",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 400,
-    "icon": 174,
-    "description": "+20% Max HP",
-    "traits": [
-      {
-        "code": "PARAM_RATE",
-        "dataId": "maxHp",
-        "value": 1.2
-      }
-    ]
-  },
-  {
-    "id": "hp_boost3",
-    "name": "Vitality Seal 3",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 2800,
-    "icon": 174,
-    "description": "+30% Max HP",
-    "traits": [
-      {
-        "code": "PARAM_RATE",
-        "dataId": "maxHp",
-        "value": 1.3
-      }
-    ]
-  },
-  {
-    "id": "radiant_blade_flavio",
-    "name": "Radiant Blade Flavio",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1995,
-    "icon": 71,
-    "description": "Lucent blade carrying the blessings of the sun.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Red"
-      },
-      {
-        "code": "CRI",
-        "value": 0.2
-      }
-    ]
-  },
-  {
-    "id": "wind_dancer",
-    "name": "Wind Dancer",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1520,
-    "icon": 72,
-    "description": "Leaf-shaped daggers that strike with the speed of wind.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Green"
-      },
-      {
-        "code": "CRI",
-        "value": 0.15
-      }
-    ]
-  },
-  {
-    "id": "water_scepter",
-    "name": "Water Scepter",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1520,
-    "icon": 73,
-    "description": "Leaf-shaped daggers that strike with the speed of wind.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Blue"
-      },
-      {
-        "code": "CRI",
-        "value": 0.15
-      }
-    ]
-  },
-  {
-    "id": "holy_sword_gram",
-    "name": "Holy Sword Gram",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1520,
-    "icon": 74,
-    "description": "Legendary sword wielded by angels of time immemorial.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "White"
-      },
-      {
-        "code": "CRI",
-        "value": 0.15
-      }
-    ]
-  },
-  {
-    "id": "dark_scepter_lucille",
-    "name": "Dark Scepter Lucille",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1666,
-    "icon": 75,
-    "description": "Cursed sceptre. Once wielded by a fallen queen, or so they say.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Black"
-      },
-      {
-        "code": "CRI",
-        "value": 0.1
-      }
-    ]
-  },
-  {
-    "id": "mars_emblem",
-    "name": "Mars Emblem",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 400,
-    "icon": 81,
-    "description": "Its magicked properties imbue the wearer with elemental energy.",
-    "traits": [
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Red"
-      }
-    ]
-  },
-  {
-    "id": "mercury_crest",
-    "name": "Mercury Crest",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 1260,
-    "icon": 83,
-    "description": "Ornate and delicate, its blue sheen is comforting.",
-    "traits": [
-      {
-        "code": "HRG",
-        "value": 0.05
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Blue"
-      }
-    ]
-  },
-  {
-    "id": "hermes_boots",
-    "name": "Hermes' Boots",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 2100,
-    "icon": 82,
-    "description": "Wondrous boots that grant the wearer unimaginable swiftness.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "asp",
-        "value": 2
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Green"
-      }
-    ]
-  },
-  {
-    "id": "glittering_teardrop",
-    "name": "Glittering Teardrop",
-    "type": "quest",
-    "cost": 0,
-    "icon": 228,
-    "description": "A flawless crystal that catches the faintest light. Alicia believes Laura will love it."
+    "type": "material",
+    "description": "A sturdy plate of bone from a skeleton.",
+    "price": 5,
+    "icon": 30
   },
   {
     "id": "untarnished_signet",
     "name": "Untarnished Signet",
-    "type": "quest",
-    "cost": 0,
-    "icon": 218,
-    "description": "A heavy golden ring, unmarked and waiting for a new story. Laura can reshape it into something precious."
+    "type": "key_item",
+    "description": "A golden ring that refuses to rust.",
+    "price": 0,
+    "icon": 31
+  },
+  {
+    "id": "glittering_teardrop",
+    "name": "Glittering Teardrop",
+    "type": "key_item",
+    "description": "A crystal that shines with inner light.",
+    "price": 0,
+    "icon": 32
+  },
+  {
+    "id": "whispered_lessons",
+    "name": "Whispered Lessons",
+    "type": "material",
+    "description": "An imp's notebook. It's full of crude drawings.",
+    "price": 12,
+    "icon": 33
+  },
+  {
+    "id": "light_amulet",
+    "name": "Light Amulet",
+    "type": "accessory",
+    "description": "Increases resistance to Dark damage.",
+    "price": 100,
+    "traits": [
+      { "code": "elementRate", "dataId": 2, "value": 0.8 }
+    ],
+    "icon": 40
+  },
+  {
+    "id": "alert_charm",
+    "name": "Alert Charm",
+    "type": "accessory",
+    "description": "Prevents surprise attacks.",
+    "price": 100,
+    "traits": [
+      { "code": "partyAbility", "value": "alert" }
+    ],
+    "icon": 40
+  },
+  {
+    "id": "obsidian_shard",
+    "name": "Obsidian Shard",
+    "type": "material",
+    "description": "Sharp volcanic glass.",
+    "price": 8,
+    "icon": 30
+  },
+  {
+    "id": "melted_wax",
+    "name": "Melted Wax",
+    "type": "material",
+    "description": "Still warm.",
+    "price": 4,
+    "icon": 30
+  },
+  {
+    "id": "silver_blade",
+    "name": "Silver Blade",
+    "type": "weapon",
+    "description": "Effective against undead and demons.",
+    "price": 350,
+    "stats": {
+      "atk": 15
+    },
+    "traits": [
+        { "code": "elementAmplify", "dataId": 6, "value": 1.2 }
+    ],
+    "icon": 10
+  },
+  {
+    "id": "rare_flower",
+    "name": "Rare Flower",
+    "type": "key_item",
+    "description": "A bloom found only in the Overgrown Forest.",
+    "price": 0,
+    "icon": 33
+  },
+  {
+    "id": "toxic_spore",
+    "name": "Toxic Spore",
+    "type": "material",
+    "description": "Handle with care.",
+    "price": 15,
+    "icon": 33
+  },
+  {
+    "id": "ice_shard",
+    "name": "Ice Shard",
+    "type": "material",
+    "description": "It never melts.",
+    "price": 20,
+    "icon": 32
+  },
+  {
+    "id": "deep_moss",
+    "name": "Deep Moss",
+    "type": "key_item",
+    "description": "Bioluminescent moss from the Sunken Caverns.",
+    "price": 0,
+    "icon": 33
+  },
+  {
+    "id": "clock_gear",
+    "name": "Clock Gear",
+    "type": "material",
+    "description": "A brass gear from a mechanical construct.",
+    "price": 25,
+    "icon": 30
+  },
+  {
+    "id": "void_dust",
+    "name": "Void Dust",
+    "type": "material",
+    "description": "Residue from the edge of reality.",
+    "price": 50,
+    "icon": 34
+  },
+  {
+    "id": "elder_blood",
+    "name": "Elder Blood",
+    "type": "key_item",
+    "description": "Blood of a creature that should not exist.",
+    "price": 0,
+    "icon": 35
+  },
+  {
+    "id": "forest_cloak",
+    "name": "Forest Cloak",
+    "type": "armor",
+    "description": "Camouflage for the woods. Increases Evasion.",
+    "price": 300,
+    "stats": {
+      "def": 10
+    },
+    "traits": [
+      { "code": "EVA", "value": 0.05 }
+    ],
+    "icon": 21
+  },
+  {
+    "id": "frost_brand",
+    "name": "Frost Brand",
+    "type": "weapon",
+    "description": "A sword encased in ice.",
+    "price": 600,
+    "stats": {
+      "atk": 25
+    },
+    "traits": [
+      { "code": "elementAmplify", "dataId": 3, "value": 1.2 }
+    ],
+    "icon": 11
+  },
+  {
+    "id": "chronos_shield",
+    "name": "Chronos Shield",
+    "type": "armor",
+    "description": "A shield that seems to warp time slightly.",
+    "price": 800,
+    "stats": {
+      "def": 15
+    },
+    "traits": [
+      { "code": "GRD", "value": 0.1 }
+    ],
+    "icon": 22
+  },
+  {
+    "id": "void_walker_boots",
+    "name": "Void Walker Boots",
+    "type": "accessory",
+    "description": "Allows safe passage through corrupted lands.",
+    "price": 1000,
+    "traits": [
+       { "code": "TRG", "value": 0.2 }
+    ],
+    "icon": 41
+  },
+  {
+    "id": "ancient_coin",
+    "name": "Ancient Coin",
+    "type": "key_item",
+    "description": "Coinage from a fallen civilization.",
+    "price": 0,
+    "icon": 31
+  },
+  {
+    "id": "mechanism_blueprint",
+    "name": "Mechanism Blueprint",
+    "type": "key_item",
+    "description": "Plans for a complex machine.",
+    "price": 0,
+    "icon": 33
+  },
+  {
+    "id": "shimmering_scale",
+    "name": "Shimmering Scale",
+    "type": "key_item",
+    "description": "A scale from the Leviathan.",
+    "price": 0,
+    "icon": 30
   }
 ]

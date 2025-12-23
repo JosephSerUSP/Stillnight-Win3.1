@@ -54,9 +54,252 @@
       "Speak to Alicia about any strange sightings.",
       "Return to the Gate Guard with your findings."
     ],
+    "requirements": {
+        "flags": ["shipment_investigated"]
+    },
     "rewards": {
       "gold": 50,
       "xp": 100
     }
+  },
+  "cartographers_plea": {
+      "name": "Cartographer's Plea",
+      "giver": "Alicia",
+      "portrait": "NPC_Alicia",
+      "summary": "Map out the third floor of the dungeon.",
+      "description": "The guild needs updated maps of the Rusted Choir (Floor 3). Reach the floor to prove the path is open.",
+      "objectives": [
+          "Reach Floor 3.",
+          "Return to Alicia."
+      ],
+      "requirements": {
+          "flags": ["visited_floor_3"]
+      },
+      "rewards": {
+          "gold": 100
+      }
+  },
+  "bone_collector": {
+      "name": "Bone Collector",
+      "giver": "Laura",
+      "portrait": "NPC_Laura",
+      "summary": "Collect Bone Plates for crafting.",
+      "description": "Laura needs sturdy bone material to reinforce her armors. Skeletons usually carry these.",
+      "objectives": [
+          "Collect 3 Bone Plates from Skeletons.",
+          "Bring them to Laura."
+      ],
+      "requirements": {
+          "items": [
+              { "id": "bone_plate", "qty": 3, "consume": true }
+          ]
+      },
+      "rewards": {
+          "items": [{ "id": "steel_sword", "qty": 1 }]
+      }
+  },
+  "lost_in_the_dark": {
+      "name": "Lost in the Dark",
+      "giver": "Gate Guard",
+      "portrait": "NPC_Geraldo",
+      "summary": "Thin the skeleton population.",
+      "description": "The skeletons on Floor 1 are getting too numerous. Bring back their plates as proof of culling.",
+      "objectives": [
+          "Collect 3 Bone Plates.",
+          "Report to the Gate Guard."
+      ],
+      "requirements": {
+          "items": [{ "id": "bone_plate", "qty": 3, "consume": true }]
+      },
+      "rewards": {
+          "items": [{ "id": "leather_armor", "qty": 1 }]
+      }
+  },
+  "floral_study": {
+      "name": "Floral Study",
+      "giver": "Alicia",
+      "portrait": "NPC_Alicia",
+      "summary": "Retrieve a Rare Flower from the forest.",
+      "description": "Alicia has read about a flower that blooms in the Overgrown Forest. She wants one for her collection.",
+      "objectives": [
+          "Find a Rare Flower on Floor 4 or 5.",
+          "Bring it to Alicia."
+      ],
+      "requirements": {
+          "items": [{ "id": "rare_flower", "qty": 1, "consume": true }]
+      },
+      "rewards": {
+          "items": [{ "id": "magic_water", "qty": 1 }]
+      }
+  },
+  "pest_control": {
+      "name": "Pest Control",
+      "giver": "Gate Guard",
+      "portrait": "NPC_Geraldo",
+      "summary": "Exterminate Giant Spiders.",
+      "description": "Giant Spiders in the forest are a threat. Bring back their toxic spores as proof of their demise.",
+      "objectives": [
+          "Collect 3 Toxic Spores.",
+          "Report to the Gate Guard."
+      ],
+      "requirements": {
+          "items": [{ "id": "toxic_spore", "qty": 3, "consume": true }]
+      },
+      "rewards": {
+          "items": [{ "id": "antidote", "qty": 3 }]
+      }
+  },
+  "natures_wrath": {
+      "name": "Nature's Wrath",
+      "giver": "Laura",
+      "portrait": "NPC_Laura",
+      "summary": "Collect Toxic Spores for coating.",
+      "description": "Laura wants to experiment with poison-resistant coatings. She needs raw material.",
+      "objectives": [
+          "Collect 2 Toxic Spores.",
+          "Bring them to Laura."
+      ],
+      "requirements": {
+          "items": [{ "id": "toxic_spore", "qty": 2, "consume": true }]
+      },
+      "rewards": {
+          "items": [{ "id": "forest_cloak", "qty": 1 }]
+      }
+  },
+  "cold_comfort": {
+      "name": "Cold Comfort",
+      "giver": "Alicia",
+      "portrait": "NPC_Alicia",
+      "summary": "Retrieve Ice Shards.",
+      "description": "The heat in town is unbearable lately. Alicia wants Ice Shards from the Sunken Caverns to cool the tavern.",
+      "objectives": [
+          "Collect 2 Ice Shards from Sahagins.",
+          "Bring them to Alicia."
+      ],
+      "requirements": {
+          "items": [{ "id": "ice_shard", "qty": 2, "consume": true }]
+      },
+      "rewards": {
+          "items": [{ "id": "hi_potion", "qty": 2 }]
+      }
+  },
+  "deep_diver": {
+      "name": "Deep Diver",
+      "giver": "Gate Guard",
+      "portrait": "NPC_Geraldo",
+      "summary": "Hunt Sahagins.",
+      "description": "The fish-men are organizing. Break their ranks and bring back proof.",
+      "objectives": [
+          "Collect 4 Ice Shards from Sahagins.",
+          "Report to the Gate Guard."
+      ],
+      "requirements": {
+          "items": [{ "id": "ice_shard", "qty": 4, "consume": true }]
+      },
+      "rewards": {
+          "items": [{ "id": "frost_brand", "qty": 1 }]
+      }
+  },
+  "the_glow_below": {
+      "name": "The Glow Below",
+      "giver": "Laura",
+      "portrait": "NPC_Laura",
+      "summary": "Find Deep Moss.",
+      "description": "Laura heard of a glowing moss in the Sunken Caverns that can be used for lamp oil.",
+      "objectives": [
+          "Find Deep Moss.",
+          "Bring it to Laura."
+      ],
+      "requirements": {
+          "items": [{ "id": "deep_moss", "qty": 1, "consume": true }]
+      },
+      "rewards": {
+          "gold": 200
+      }
+  },
+  "tick_tock": {
+      "name": "Tick Tock",
+      "giver": "Alicia",
+      "portrait": "NPC_Alicia",
+      "summary": "Bring a Clock Gear.",
+      "description": "Alicia found a broken music box. She needs a specific gear from the Clockwork Spire to fix it.",
+      "objectives": [
+          "Find a Clock Gear from Automatons.",
+          "Bring it to Alicia."
+      ],
+      "requirements": {
+          "items": [{ "id": "clock_gear", "qty": 1, "consume": true }]
+      },
+      "rewards": {
+          "items": [{ "id": "chronos_shield", "qty": 1 }]
+      }
+  },
+  "ghost_in_the_machine": {
+      "name": "Ghost in the Machine",
+      "giver": "Gate Guard",
+      "portrait": "NPC_Geraldo",
+      "summary": "Smash Automatons.",
+      "description": "The ticking noise is driving the guards crazy. Smash the machines.",
+      "objectives": [
+          "Collect 5 Clock Gears.",
+          "Report to the Gate Guard."
+      ],
+      "requirements": {
+          "items": [{ "id": "clock_gear", "qty": 5, "consume": true }]
+      },
+      "rewards": {
+          "items": [{ "id": "ancient_coin", "qty": 1 }]
+      }
+  },
+  "schematic_hunt": {
+      "name": "Schematic Hunt",
+      "giver": "Laura",
+      "portrait": "NPC_Laura",
+      "summary": "Find Mechanism Blueprint.",
+      "description": "Laura believes the constructs are built from ancient plans. Find one so she can study it.",
+      "objectives": [
+          "Find a Mechanism Blueprint from Clockwork Knights.",
+          "Bring it to Laura."
+      ],
+      "requirements": {
+          "items": [{ "id": "mechanism_blueprint", "qty": 1, "consume": true }]
+      },
+      "rewards": {
+          "items": [{ "id": "silver_blade", "qty": 1 }]
+      }
+  },
+  "edge_of_reason": {
+      "name": "Edge of Reason",
+      "giver": "Alicia",
+      "portrait": "NPC_Alicia",
+      "summary": "Collect Void Dust.",
+      "description": "Scholars want to study the void without entering it. Bring them some dust.",
+      "objectives": [
+          "Collect 2 Void Dust.",
+          "Bring them to Alicia."
+      ],
+      "requirements": {
+          "items": [{ "id": "void_dust", "qty": 2, "consume": true }]
+      },
+      "rewards": {
+          "items": [{ "id": "void_walker_boots", "qty": 1 }]
+      }
+  },
+  "ultimate_hunter": {
+      "name": "The Ultimate Hunter",
+      "giver": "Gate Guard",
+      "portrait": "NPC_Geraldo",
+      "summary": "Defeat a Void Eater.",
+      "description": "If you can kill the things in the Void, maybe we have a chance. Prove it.",
+      "objectives": [
+          "Defeat a Void Eater and collect its residue (Void Dust).",
+          "Report to the Gate Guard."
+      ],
+      "requirements": {
+          "items": [{ "id": "void_dust", "qty": 1, "consume": true }]
+      },
+      "rewards": {
+          "items": [{ "id": "elder_blood", "qty": 1 }]
+      }
   }
 }

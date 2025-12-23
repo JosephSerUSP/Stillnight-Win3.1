@@ -105,14 +105,15 @@
     "title": "Floor 3: Rusted Choir",
     "intro": "Broken bells sway above a dry pit.",
     "depth": 3,
-    "music": "emotional1_bitSad",
+    "music": "dungeon1",
     "image": "DungeonFloors1.png",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 4, "max": 6 },
       { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
+      { "id": "recruit", "chance": 0.7 },
+      { "id": "marker_floor_3", "chance": 1.0 }
     ],
     "encounters": [
       { "id": "golem", "weight": 6 },
@@ -122,51 +123,204 @@
     "recruits": ["golem", "demon", "angel", "larva","flauros"]
   },
   {
-    "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
+    "title": "Floor 4: Overgrown Gate",
+    "intro": "Roots choke the ancient stones here.",
     "depth": 4,
     "music": "event9_magical",
     "image": "DungeonFloors1.png",
     "events": [
       { "id": "stairs", "count": 1 },
       { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 7 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "npc_dungeon_merchant", "chance": 0.5 },
+      { "id": "enemy", "min": 4, "max": 6 },
       { "id": "recruit", "chance": 0.5 },
       { "id": "npc_daphne", "count": 1 }
     ],
     "encounters": [
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 4 },
-      { "id": "ghoul", "weight": 4 }
+      { "id": "dryad", "weight": 6 },
+      { "id": "giant_spider", "weight": 4 },
+      { "id": "larva", "weight": 3 }
     ],
-    "recruits": ["demon", "angel", "golem","flauros"]
+    "recruits": ["dryad", "giant_spider", "larva"]
   },
   {
-    "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
+    "title": "Floor 5: Poisoned Canopy",
+    "intro": "The air is thick with toxic spores.",
     "depth": 5,
+    "music": "event9_magical",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.1 },
+      { "id": "enemy", "min": 5, "max": 7 },
+      { "id": "trap", "min": 2, "max": 4 },
+      { "id": "treasure", "chance": 0.6 }
+    ],
+    "treasures": ["antidote", "forest_cloak"],
+    "encounters": [
+      { "id": "giant_spider", "weight": 7 },
+      { "id": "treant", "weight": 3 }
+    ],
+    "recruits": ["giant_spider", "treant"]
+  },
+  {
+    "title": "Floor 6: Heart of the Wood",
+    "intro": "An ancient guardian slumbers here.",
+    "depth": 6,
+    "music": "event9_magical",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "enemy", "min": 1, "max": 2 },
+      { "id": "recovery", "count": 1 }
+    ],
+    "encounters": [
+      { "id": "treant", "weight": 10 },
+      { "id": "dryad", "weight": 5 }
+    ],
+    "recruits": ["dryad"]
+  },
+  {
+    "title": "Floor 7: Sunken Entry",
+    "intro": "Water drips from the ceiling. The air is cold.",
+    "depth": 7,
+    "music": "emotional1_bitSad",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "enemy", "min": 4, "max": 6 },
+      { "id": "recruit", "chance": 0.5 }
+    ],
+    "encounters": [
+      { "id": "sahagin", "weight": 6 },
+      { "id": "ooze", "weight": 4 }
+    ],
+    "recruits": ["ooze"]
+  },
+  {
+    "title": "Floor 8: Frozen Lake",
+    "intro": "The ground is slick with ice.",
+    "depth": 8,
+    "music": "emotional1_bitSad",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "enemy", "min": 5, "max": 8 },
+      { "id": "treasure", "count": 1 }
+    ],
+    "treasures": ["ice_shard", "frost_brand"],
+    "encounters": [
+      { "id": "frost_wolf", "weight": 6 },
+      { "id": "sahagin", "weight": 5 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Floor 9: Abyssal Depths",
+    "intro": "Something massive moves in the water.",
+    "depth": 9,
+    "music": "emotional1_bitSad",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "count": 1 },
+      { "id": "enemy", "min": 1, "max": 1 }
+    ],
+    "encounters": [
+      { "id": "kraken", "weight": 10 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Floor 10: Clockwork Gear",
+    "intro": "The sound of ticking fills the air.",
+    "depth": 10,
     "music": "dungeon1",
     "image": "DungeonFloors1.png",
     "events": [
       { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 8 },
-      { "id": "shrine", "chance": 0.4 },
-      { "id": "recruit", "chance": 0.4 }
+      { "id": "enemy", "min": 4, "max": 6 },
+      { "id": "trap", "min": 2, "max": 3 }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 2 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
+      { "id": "automaton", "weight": 7 },
+      { "id": "golem", "weight": 3 }
     ],
-    "recruits": ["demon", "angel"]
+    "recruits": ["golem"]
   },
   {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
-    "depth": 6,
+    "title": "Floor 11: Steam Vents",
+    "intro": "Hissing steam obscures your vision.",
+    "depth": 11,
+    "music": "dungeon1",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "enemy", "min": 5, "max": 8 },
+      { "id": "treasure", "count": 1 }
+    ],
+    "treasures": ["clock_gear", "chronos_shield"],
+    "encounters": [
+      { "id": "clockwork_knight", "weight": 6 },
+      { "id": "automaton", "weight": 5 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Floor 12: The Mainspring",
+    "intro": "The heart of the machine beats here.",
+    "depth": 12,
+    "music": "dungeon1",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "count": 1 },
+      { "id": "enemy", "min": 3, "max": 5 }
+    ],
+    "encounters": [
+      { "id": "clockwork_knight", "weight": 8 },
+      { "id": "golem", "weight": 4 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Floor 13: Void Horizon",
+    "intro": "Reality begins to fray at the edges.",
+    "depth": 13,
+    "music": "event4_darkJester",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "enemy", "min": 5, "max": 7 }
+    ],
+    "encounters": [
+      { "id": "void_eater", "weight": 6 },
+      { "id": "demon", "weight": 5 }
+    ],
+    "recruits": ["demon"]
+  },
+  {
+    "title": "Floor 14: Null Space",
+    "intro": "There is no up or down here, only hunger.",
+    "depth": 14,
+    "music": "event4_darkJester",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "enemy", "min": 6, "max": 9 },
+      { "id": "treasure", "count": 1 }
+    ],
+    "treasures": ["void_dust", "void_walker_boots"],
+    "encounters": [
+      { "id": "void_eater", "weight": 5 },
+      { "id": "incubus", "weight": 5 },
+      { "id": "crimsonLord", "weight": 3 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Floor 15: The End of All",
+    "intro": "The Null Entity awaits.",
+    "depth": 15,
     "music": "event4_darkJester",
     "image": "DungeonFloors1.png",
     "events": [
@@ -174,8 +328,7 @@
       { "id": "enemy", "min": 1, "max": 1 }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
+      { "id": "null_entity", "weight": 10 }
     ],
     "recruits": []
   }

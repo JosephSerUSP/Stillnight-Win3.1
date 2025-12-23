@@ -114,7 +114,7 @@
         { "label": "About Laura", "target": "talk_laura" },
         { "label": "About Shop", "target": "talk_shop" },
         { "label": "About You", "target": "talk_self" },
-        { "label": "Ask about Quest", "target": "quest_router" },
+        { "label": "Quests", "target": "quest_hub_router" },
         { "label": "Back", "target": "default_hub_text" }
       ]
     },
@@ -136,76 +136,221 @@
       "content": "Me? I’m just Alicia. I like baking. And… I like listening to the rain. The dungeon is scary, but the rain makes it sound like it’s sleeping.",
       "next": "talk_menu_choices"
     },
-    "quest_router": {
+
+    "quest_hub_router": {
       "type": "ROUTER",
       "branches": [
-        { "condition": "questStatus:sparkling_gift:completed", "target": "quest_completed_text" },
-        { "condition": "questStatus:sparkling_gift:active", "target": "quest_active_text" }
+        { "condition": "questStatus:sparkling_gift:active", "target": "q1_active" },
+        { "condition": "questStatus:sparkling_gift:inactive", "target": "q1_offer" },
+        { "condition": "questStatus:cartographers_plea:active", "target": "q_cart_active" },
+        { "condition": "questStatus:cartographers_plea:inactive", "target": "q_cart_offer" },
+        { "condition": "questStatus:floral_study:active", "target": "q_floral_active" },
+        { "condition": "questStatus:floral_study:inactive", "target": "q_floral_offer" },
+        { "condition": "questStatus:cold_comfort:active", "target": "q_cold_active" },
+        { "condition": "questStatus:cold_comfort:inactive", "target": "q_cold_offer" },
+        { "condition": "questStatus:tick_tock:active", "target": "q_tick_active" },
+        { "condition": "questStatus:tick_tock:inactive", "target": "q_tick_offer" },
+        { "condition": "questStatus:edge_of_reason:active", "target": "q_void_active" },
+        { "condition": "questStatus:edge_of_reason:inactive", "target": "q_void_offer" }
       ],
-      "next": "quest_offer_text"
+      "next": "no_more_quests_text"
     },
-    "quest_offer_text": {
+
+    "no_more_quests_text": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "I... I don't have any other favors right now. But thank you for everything!",
+        "next": "talk_menu_choices"
+    },
+
+    "q1_offer": {
       "type": "TEXT",
       "speaker": "Alicia",
       "content": "Actually… can I ask a favor? It’s about Laura. I want to give her something special. Something that… shines like she does. There’s a crystal, a ‘Glittering Teardrop’, deep in the dungeon. Would you…?",
-      "next": "quest_offer_choices"
+      "next": "q1_offer_choices"
     },
-    "quest_offer_choices": {
+    "q1_offer_choices": {
       "type": "CHOICE",
       "options": [
-        { "label": "I'll find it.", "target": "action_offer_quest" },
+        { "label": "I'll find it.", "target": "q1_action" },
         { "label": "Maybe later.", "target": "talk_menu_text" }
       ]
     },
-    "action_offer_quest": {
-      "type": "ACTION",
-      "action": "OFFER_QUEST",
-      "questId": "sparkling_gift",
-      "acceptNode": "quest_active_text",
-      "declineNode": "talk_menu_text"
+    "q1_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "sparkling_gift", "next": "talk_menu_text" },
+    "q1_active": {
+         "type": "ROUTER",
+         "condition": "hasItem:glittering_teardrop",
+         "trueNode": "q1_turnin",
+         "falseNode": "q1_waiting"
     },
-    "quest_active_text": {
-      "type": "TEXT",
-      "speaker": "Alicia",
-      "content": "The Glittering Teardrop… please be careful. It’s pretty, but the dungeon is mean. Don’t get hurt for a rock, okay?",
-      "next": "quest_active_router"
+    "q1_waiting": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "Be careful looking for the teardrop. It's slippery down there.",
+        "next": "talk_menu_choices"
     },
-    "quest_active_router": {
-      "type": "ROUTER",
-      "condition": "hasItem:glittering_teardrop",
-      "trueNode": "quest_turnin_text",
-      "falseNode": "quest_active_choices"
+    "q1_turnin": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "You found it! Oh, it's beautiful. Thank you so much!",
+        "next": "q1_complete"
     },
-    "quest_active_choices": {
-      "type": "CHOICE",
-      "options": [
-        { "label": "I'm still looking.", "target": "talk_menu_text" }
-      ]
+    "q1_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "sparkling_gift", "next": "talk_menu_text" },
+
+
+    "q_cart_offer": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "The Guild needs help. The maps for the Rusted Choir, the third floor... they're old. Can you go there and just... check the paths? Just reaching the floor is enough.",
+        "next": "q_cart_offer_choices"
     },
-    "quest_turnin_text": {
-      "type": "TEXT",
-      "speaker": "Alicia",
-      "content": "You… you found it! Oh, look at it! It’s perfect. It catches the light just like her eyes when she’s happy. Thank you! Thank you so much!",
-      "next": "quest_turnin_choices"
+    "q_cart_offer_choices": {
+        "type": "CHOICE",
+        "options": [{ "label": "Accept", "target": "q_cart_action" }, { "label": "Decline", "target": "talk_menu_text" }]
     },
-    "quest_turnin_choices": {
-      "type": "CHOICE",
-      "options": [
-        { "label": "Here you go.", "target": "action_complete_quest" }
-      ]
+    "q_cart_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "cartographers_plea", "next": "talk_menu_text" },
+    "q_cart_active": {
+        "type": "ROUTER",
+        "condition": "flag:visited_floor_3",
+        "trueNode": "q_cart_turnin",
+        "falseNode": "q_cart_waiting"
     },
-    "action_complete_quest": {
-      "type": "ACTION",
-      "action": "COMPLETE_QUEST",
-      "questId": "sparkling_gift",
-      "completeNode": "quest_completed_text",
-      "takeItem": "glittering_teardrop"
+    "q_cart_waiting": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "Have you reached the third floor yet? Please be careful of the bells.",
+        "next": "talk_menu_choices"
     },
-    "quest_completed_text": {
-      "type": "TEXT",
-      "speaker": "Alicia",
-      "content": "I’m going to make this into a necklace. Or maybe a ring? No, a necklace. She doesn’t like rings when she works. Thank you again!",
-      "next": "talk_menu_choices"
-    }
+    "q_cart_turnin": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "You made it back! The Guild will be so relieved. Here is the payment for the data.",
+        "next": "q_cart_complete"
+    },
+    "q_cart_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "cartographers_plea", "next": "talk_menu_text" },
+
+    "q_floral_offer": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "Uhm, I read about a flower. A 'Rare Flower' that only grows in the Overgrown Forest. It's supposed to smell like memories. Could you... maybe find one?",
+        "next": "q_floral_offer_choices"
+    },
+    "q_floral_offer_choices": {
+        "type": "CHOICE",
+        "options": [{ "label": "Accept", "target": "q_floral_action" }, { "label": "Decline", "target": "talk_menu_text" }]
+    },
+    "q_floral_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "floral_study", "next": "talk_menu_text" },
+    "q_floral_active": {
+        "type": "ROUTER",
+        "condition": "hasItem:rare_flower",
+        "trueNode": "q_floral_turnin",
+        "falseNode": "q_floral_waiting"
+    },
+    "q_floral_waiting": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "The forest is dangerous. Don't worry about the flower if it's too hard.",
+        "next": "talk_menu_choices"
+    },
+    "q_floral_turnin": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "Oh! It's real! It smells like... like my grandmother's kitchen. Thank you. This means a lot.",
+        "next": "q_floral_complete"
+    },
+    "q_floral_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "floral_study", "next": "talk_menu_text" },
+
+    "q_cold_offer": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "It's getting so hot lately. The Sunken Caverns have creatures made of ice... Sahagins carry Ice Shards. Could you bring some back to cool the shop?",
+        "next": "q_cold_offer_choices"
+    },
+    "q_cold_offer_choices": {
+        "type": "CHOICE",
+        "options": [{ "label": "Accept", "target": "q_cold_action" }, { "label": "Decline", "target": "talk_menu_text" }]
+    },
+    "q_cold_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "cold_comfort", "next": "talk_menu_text" },
+    "q_cold_active": {
+        "type": "ROUTER",
+        "condition": "requirementsMet:cold_comfort",
+        "trueNode": "q_cold_turnin",
+        "falseNode": "q_cold_waiting"
+    },
+    "q_cold_waiting": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "Stay warm... or cool? Just stay safe in the caverns.",
+        "next": "talk_menu_choices"
+    },
+    "q_cold_turnin": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "Perfect! I'll put these in the cellar. Here, take some potions for your trouble.",
+        "next": "q_cold_complete"
+    },
+    "q_cold_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "cold_comfort", "next": "talk_menu_text" },
+
+    "q_tick_offer": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "I found this music box, but it's missing a gear. The automatons in the Spire use similar parts. Could you find a pristine Clock Gear?",
+        "next": "q_tick_offer_choices"
+    },
+    "q_tick_offer_choices": {
+        "type": "CHOICE",
+        "options": [{ "label": "Accept", "target": "q_tick_action" }, { "label": "Decline", "target": "talk_menu_text" }]
+    },
+    "q_tick_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "tick_tock", "next": "talk_menu_text" },
+    "q_tick_active": {
+        "type": "ROUTER",
+        "condition": "hasItem:clock_gear",
+        "trueNode": "q_tick_turnin",
+        "falseNode": "q_tick_waiting"
+    },
+    "q_tick_waiting": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "The ticking in that spire is unnerving. Don't let it get to you.",
+        "next": "talk_menu_choices"
+    },
+    "q_tick_turnin": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "It fits! Listen... *musical notes play*. It's beautiful. Thank you.",
+        "next": "q_tick_complete"
+    },
+    "q_tick_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "tick_tock", "next": "talk_menu_text" },
+
+    "q_void_offer": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "The scholars are asking for something dangerous. 'Void Dust'. From the edge of reality. They say it's for science, but... be careful.",
+        "next": "q_void_offer_choices"
+    },
+    "q_void_offer_choices": {
+        "type": "CHOICE",
+        "options": [{ "label": "Accept", "target": "q_void_action" }, { "label": "Decline", "target": "talk_menu_text" }]
+    },
+    "q_void_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "edge_of_reason", "next": "talk_menu_text" },
+    "q_void_active": {
+        "type": "ROUTER",
+        "condition": "requirementsMet:edge_of_reason",
+        "trueNode": "q_void_turnin",
+        "falseNode": "q_void_waiting"
+    },
+    "q_void_waiting": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "The Void... it feels like it's watching us. Hurry back.",
+        "next": "talk_menu_choices"
+    },
+    "q_void_turnin": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "You got it? It's... cold. And heavy. I'll send it to the scholars immediately. Here are some boots they sent for you.",
+        "next": "q_void_complete"
+    },
+    "q_void_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "edge_of_reason", "next": "talk_menu_text" }
   }
 }

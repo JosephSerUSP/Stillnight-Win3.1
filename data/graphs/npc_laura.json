@@ -7,334 +7,272 @@
   "nodes": {
     "root_router": {
       "type": "ROUTER",
-      "condition": "flag:laura_first_met",
-      "trueNode": "default_text",
-      "falseNode": "intro_text"
+      "branches": [
+        { "condition": "questStatus:golden_promise:completed", "target": "talk_menu_text" },
+        { "condition": "questStatus:golden_promise:active", "target": "quest_active_router" },
+        { "condition": "flag:laura_first_met", "target": "default_hub_text" }
+      ],
+      "next": "intro_text"
     },
+
     "intro_text": {
       "type": "TEXT",
       "speaker": "Laura",
-      "content": "Well, hello there. New face. You look like someone who knows when to leave before things get ugly. That’s rare in this town. I’m Laura.",
+      "content": "Don't touch the anvil. It's hot. I'm Laura. If you want steel that won't shatter when a goblin looks at it, you're in the right place.",
       "next": "intro_choices"
     },
     "intro_choices": {
       "type": "CHOICE",
       "options": [
-        { "label": "Browse Accessories", "target": "open_shop", "setFlag": "laura_first_met" },
-        { "label": "Talk", "target": "talk_menu_text", "setFlag": "laura_first_met" },
+        { "label": "Shop", "target": "shop_weapons", "setFlag": "laura_first_met" },
+        { "label": "You look busy.", "target": "intro_busy_text" },
         { "label": "Leave", "action": "close", "setFlag": "laura_first_met" }
       ]
     },
-    "default_text": {
+    "intro_busy_text": {
       "type": "TEXT",
       "speaker": "Laura",
-      "content": "Well, hello there, darling. Looking for something shiny, or just admiring the view? I’m Laura. Goldsmith. Occasional problem.",
-      "next": "default_choices"
+      "content": "Always. The dungeon chews up armor like candy. Someone has to put it back together.",
+      "next": "intro_busy_choices"
     },
-    "default_choices": {
+    "intro_busy_choices": {
       "type": "CHOICE",
       "options": [
-        { "label": "Browse Accessories", "target": "open_shop" },
+        { "label": "Shop", "target": "shop_weapons", "setFlag": "laura_first_met" },
+        { "label": "Leave", "action": "close", "setFlag": "laura_first_met" }
+      ]
+    },
+
+    "default_hub_text": {
+      "type": "TEXT",
+      "speaker": "Laura",
+      "content": "Back again? Did your sword break, or are you just looking for an upgrade?",
+      "next": "default_hub_choices"
+    },
+    "default_hub_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Shop", "target": "shop_weapons" },
         { "label": "Talk", "target": "talk_menu_text" },
-        { "label": "Talk about Alicia", "target": "state_alicia_entry" },
         { "label": "Leave", "action": "close" }
       ]
     },
-    "open_shop": {
-       "type": "ACTION",
-       "action": "OPEN_SHOP",
-       "shopId": "accessories_special",
-       "next": "default_choices"
+    "shop_weapons": {
+      "type": "ACTION",
+      "action": "OPEN_SHOP",
+      "shopId": "weapons_basic",
+      "next": "default_hub_choices"
     },
+
     "talk_menu_text": {
-       "type": "TEXT",
-       "content": "Go on. Say what you mean. People here talk like they’re trying not to exist.",
-       "next": "talk_menu_choices"
+      "type": "TEXT",
+      "speaker": "Laura",
+      "content": "Make it quick. The fire is dying down.",
+      "next": "talk_menu_choices"
     },
     "talk_menu_choices": {
-       "type": "CHOICE",
-       "options": [
-          { "label": "Alicia cares about you.", "target": "router_alicia_topic" },
-          { "label": "About Raphael", "target": "talk_raphael" },
-          { "label": "About the dungeon", "target": "talk_dungeon" },
-          { "label": "Ask about Quest", "target": "quest_router" },
-          { "label": "Back", "target": "default_text" }
-       ]
-    },
-    "router_alicia_topic": {
-      "type": "ROUTER",
-      "condition": "questStatus:sparkling_gift:completed",
-      "trueNode": "talk_alicia_gift",
-      "falseNode": "talk_alicia_cares"
-    },
-    "talk_alicia_gift": {
-      "type": "TEXT",
-      "content": "She gave me this necklace. It’s… a bit much, isn’t it? But she looked so proud. I didn’t have the heart to tell her it clashes with my apron. I wear it anyway. Underneath.",
-      "next": "talk_alicia_gift_choices"
-    },
-    "talk_alicia_gift_choices": {
       "type": "CHOICE",
       "options": [
-          { "label": "That’s sweet.", "target": "talk_guilty_vulnerable" },
-          { "label": "Back", "target": "talk_menu_text" }
+        { "label": "About Alicia", "target": "talk_alicia" },
+        { "label": "About Crafting", "target": "talk_crafting" },
+        { "label": "Quests", "target": "quest_hub_router" },
+        { "label": "Back", "target": "default_hub_text" }
       ]
     },
-    "talk_alicia_cares": {
-       "type": "TEXT",
-       "content": "I know. That’s the problem, isn’t it? She feels things at full volume. If I’m not careful, I become the whole soundtrack.",
-       "next": "talk_alicia_cares_choices"
+    "talk_alicia": {
+      "type": "TEXT",
+      "speaker": "Laura",
+      "content": "Alicia? She's... soft. But the world needs soft things. Otherwise, what are we protecting with all this steel?",
+      "next": "talk_menu_choices"
     },
-    "talk_alicia_cares_choices": {
-        "type": "CHOICE",
-        "options": [
-            { "label": "Do you feel guilty?", "target": "talk_guilty_router" },
-            { "label": "Back", "target": "talk_menu_text" }
-        ]
+    "talk_crafting": {
+      "type": "TEXT",
+      "speaker": "Laura",
+      "content": "It's not just hitting metal. It's knowing how the metal wants to bend. You fight monsters, I fight iron. We both bleed.",
+      "next": "talk_menu_choices"
     },
-    "talk_guilty_router": {
-       "type": "ROUTER",
-       "condition": "flag:laura_vulnerable_unlocked",
-       "trueNode": "talk_guilty_vulnerable",
-       "falseNode": "talk_guilty_deflect"
+
+    "quest_hub_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:golden_promise:active", "target": "q1_active" },
+        { "condition": "questStatus:golden_promise:inactive", "target": "q1_offer" },
+        { "condition": "questStatus:bone_collector:active", "target": "q_bone_active" },
+        { "condition": "questStatus:bone_collector:inactive", "target": "q_bone_offer" },
+        { "condition": "questStatus:natures_wrath:active", "target": "q_nature_active" },
+        { "condition": "questStatus:natures_wrath:inactive", "target": "q_nature_offer" },
+        { "condition": "questStatus:the_glow_below:active", "target": "q_glow_active" },
+        { "condition": "questStatus:the_glow_below:inactive", "target": "q_glow_offer" },
+        { "condition": "questStatus:schematic_hunt:active", "target": "q_scheme_active" },
+        { "condition": "questStatus:schematic_hunt:inactive", "target": "q_scheme_offer" }
+      ],
+      "next": "no_more_quests_text"
     },
-    "talk_guilty_deflect": {
+
+    "no_more_quests_text": {
         "type": "TEXT",
-        "content": "Guilt is for people who pretend they didn’t choose. I choose. Every day. Next question.",
-        "next": "talk_guilty_deflect_choices"
+        "speaker": "Laura",
+        "content": "I've got enough work for now. Come back later.",
+        "next": "talk_menu_choices"
     },
-    "talk_guilty_deflect_choices": {
-        "type": "CHOICE",
-        "options": [ { "label": "Back", "target": "talk_menu_text" } ]
+
+    "q1_offer": {
+      "type": "TEXT",
+      "speaker": "Laura",
+      "content": "I need material that doesn't rust. There's a rumor of an 'Untarnished Signet' carried by the undead deep down. Get it for me, and I'll make it worth your while.",
+      "next": "q1_offer_choices"
     },
-    "talk_guilty_vulnerable": {
+    "q1_offer_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Accept", "target": "q1_action" },
+        { "label": "Decline", "target": "talk_menu_text" }
+      ]
+    },
+    "q1_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "golden_promise", "next": "talk_menu_text" },
+    "q1_active": {
+         "type": "ROUTER",
+         "condition": "hasItem:untarnished_signet",
+         "trueNode": "q1_turnin",
+         "falseNode": "q1_waiting"
+    },
+    "q1_waiting": {
         "type": "TEXT",
-        "content": "…Yes. Not in the dramatic way. In the quiet way that sits in your ribs when you’re alone. I don’t want to hurt her. I just… don’t want to be owned by someone else’s need.",
-        "next": "talk_guilty_vulnerable_choices"
+        "speaker": "Laura",
+        "content": "Still haven't found the ring? Check the skeletons. They like shiny things.",
+        "next": "talk_menu_choices"
     },
-    "talk_guilty_vulnerable_choices": {
-        "type": "CHOICE",
-        "options": [
-            { "label": "That’s honest.", "target": "talk_guilty_honest" },
-            { "label": "Back", "target": "talk_menu_text" }
-        ]
-    },
-    "talk_guilty_honest": {
+    "q1_turnin": {
         "type": "TEXT",
-        "content": "Honest doesn’t mean kind. But I’m trying. Tell Alicia I said that— and she’ll turn it into a religion, so actually don’t.",
-        "next": "talk_guilty_honest_choices"
+        "speaker": "Laura",
+        "content": "This is it. Gold that never fades. Good work.",
+        "next": "q1_complete"
     },
-    "talk_guilty_honest_choices": {
-        "type": "CHOICE",
-        "options": [ { "label": "Back", "target": "talk_menu_text" } ]
-    },
-    "talk_raphael": {
+    "q1_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "golden_promise", "next": "talk_menu_text" },
+
+
+    "q_bone_offer": {
         "type": "TEXT",
-        "content": "Raphael? We’ve been engaged for seven years. He’s steady. Reliable. Dangerous in the way a smile can be dangerous. He knows how to sound gentle while moving you like furniture.",
-        "next": "talk_raphael_choices"
+        "speaker": "Laura",
+        "content": "I'm running low on flux. Bone meal works in a pinch. Bring me 3 Bone Plates from those rattling nuisances on the first few floors.",
+        "next": "q_bone_offer_choices"
     },
-    "talk_raphael_choices": {
+    "q_bone_offer_choices": {
         "type": "CHOICE",
-        "options": [
-            { "label": "Do you love him?", "target": "talk_love_router" },
-            { "label": "Back", "target": "talk_menu_text" }
-        ]
+        "options": [{ "label": "Accept", "target": "q_bone_action" }, { "label": "Decline", "target": "talk_menu_text" }]
     },
-    "talk_love_router": {
+    "q_bone_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "bone_collector", "next": "talk_menu_text" },
+    "q_bone_active": {
         "type": "ROUTER",
-        "condition": "flag:laura_vulnerable_unlocked",
-        "trueNode": "talk_love_vulnerable",
-        "falseNode": "talk_love_deflect"
+        "condition": "requirementsMet:bone_collector",
+        "trueNode": "q_bone_turnin",
+        "falseNode": "q_bone_waiting"
     },
-    "talk_love_deflect": {
+    "q_bone_waiting": {
         "type": "TEXT",
-        "content": "Love is a big word. We function. That’s worth more than poetry down here.",
-        "next": "talk_love_deflect_choices"
+        "speaker": "Laura",
+        "content": "Just smash them and bring the pieces. It's not complicated.",
+        "next": "talk_menu_choices"
     },
-    "talk_love_deflect_choices": {
-         "type": "CHOICE",
-         "options": [ { "label": "Back", "target": "talk_menu_text" } ]
-    },
-    "talk_love_vulnerable": {
+    "q_bone_turnin": {
         "type": "TEXT",
-        "content": "I love the part of him that doesn’t ask questions when I go quiet. I hate the part of him that thinks that means he owns me.",
-        "next": "talk_love_vulnerable_choices"
+        "speaker": "Laura",
+        "content": "These are brittle, but they'll do. Here's a blade I finished earlier.",
+        "next": "q_bone_complete"
     },
-    "talk_love_vulnerable_choices": {
-         "type": "CHOICE",
-         "options": [ { "label": "Back", "target": "talk_menu_text", "setFlag": "laura_vulnerable_unlocked" } ]
-    },
-    "talk_dungeon": {
+    "q_bone_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "bone_collector", "next": "talk_menu_text" },
+
+    "q_nature_offer": {
         "type": "TEXT",
-        "content": "The dungeon is a wound the town pretends is a mine. People go down for ‘treasure’. But what they bring back is usually… an explanation for their suffering.",
-        "next": "talk_dungeon_choices"
+        "speaker": "Laura",
+        "content": "The forest floor is toxic. I want to make armor that resists it. I need Toxic Spores to test the finish. 2 should be enough.",
+        "next": "q_nature_offer_choices"
     },
-    "talk_dungeon_choices": {
+    "q_nature_offer_choices": {
         "type": "CHOICE",
-        "options": [
-            { "label": "You go down too?", "target": "talk_dungeon_go" },
-            { "label": "Back", "target": "talk_menu_text" }
-        ]
+        "options": [{ "label": "Accept", "target": "q_nature_action" }, { "label": "Decline", "target": "talk_menu_text" }]
     },
-    "talk_dungeon_go": {
-        "type": "TEXT",
-        "content": "Sometimes. I’m not a good Summoner. I get distracted. I think about the wrong things. Then my MP runs thin and I start bargaining with myself. I always leave before it takes something I can’t replace.",
-        "next": "talk_dungeon_go_choices"
-    },
-    "talk_dungeon_go_choices": {
-         "type": "CHOICE",
-         "options": [ { "label": "Back", "target": "talk_menu_text" } ]
-    },
-    "state_alicia_entry": {
-        "type": "TEXT",
-        "content": "Alicia? Oh— speak of the devil…",
-        "portrait": "NPC_Laura",
-        "speakers": [ { "id": "NPC_Laura", "active": true, "emotion": "neutral" } ],
-        "next": "state_alicia_entry_choices"
-    },
-    "state_alicia_entry_choices": {
-        "type": "CHOICE",
-        "options": [ { "label": "...", "target": "state_alicia_hello" } ]
-    },
-    "state_alicia_hello": {
-        "type": "TEXT",
-        "content": "H-hello! I didn’t mean to interrupt! I just… brought the polish.",
-        "speakers": [
-            { "id": "NPC_Alicia", "active": true, "emotion": "shock" },
-            { "id": "NPC_Laura", "active": false, "emotion": "neutral" }
-        ],
-        "next": "state_alicia_hello_choices"
-    },
-    "state_alicia_hello_choices": {
-        "type": "CHOICE",
-        "options": [
-            { "label": "Continue", "target": "state_alicia_reply" },
-            { "label": "Step away", "action": "close" }
-        ]
-    },
-    "state_alicia_reply": {
-        "type": "TEXT",
-        "content": "Just put it on the table, dear. And try not to knock anything over this time, hmm?",
-        "speakers": [
-            { "id": "NPC_Alicia", "active": false, "emotion": "shock" },
-            { "id": "NPC_Laura", "active": true, "emotion": "approval" }
-        ],
-        "next": "state_alicia_reply_choices"
-    },
-    "state_alicia_reply_choices": {
-        "type": "CHOICE",
-        "options": [
-            { "label": "Leave them be", "action": "close" },
-            { "label": "Say something", "target": "state_player_says_something" }
-        ]
-    },
-    "state_player_says_something": {
-        "type": "TEXT",
-        "content": "Oh? Do you want to mediate our domestic comedy, Summoner?",
-        "speakers": [
-            { "id": "NPC_Laura", "active": true, "emotion": "neutral" },
-            { "id": "NPC_Alicia", "active": false, "emotion": "shock" }
-        ],
-        "next": "state_player_says_something_choices"
-    },
-    "state_player_says_something_choices": {
-        "type": "CHOICE",
-        "options": [
-            { "label": "Be gentle to Alicia.", "target": "state_player_be_gentle" },
-            { "label": "I’ll leave.", "action": "close" }
-        ]
-    },
-    "state_player_be_gentle": {
-        "type": "TEXT",
-        "content": "…Fine. Alicia, come here. Look at me. Breathe. You’re not in trouble.",
-        "speakers": [
-            { "id": "NPC_Laura", "active": true, "emotion": "neutral" },
-            { "id": "NPC_Alicia", "active": true, "emotion": "approval" }
-        ],
-        "next": "state_player_be_gentle_choices"
-    },
-    "state_player_be_gentle_choices": {
-        "type": "CHOICE",
-        "options": [ { "label": "Leave quietly", "action": "close", "setFlag": "laura_vulnerable_unlocked" } ]
-    },
-    "quest_router": {
+    "q_nature_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "natures_wrath", "next": "talk_menu_text" },
+    "q_nature_active": {
         "type": "ROUTER",
-        "branches": [
-            { "condition": "questStatus:golden_promise:completed", "target": "quest_complete_text" },
-            { "condition": "questStatus:golden_promise:active", "target": "quest_active_text" }
-        ],
-        "next": "quest_offer_text"
+        "condition": "requirementsMet:natures_wrath",
+        "trueNode": "q_nature_turnin",
+        "falseNode": "q_nature_waiting"
     },
-    "quest_offer_text": {
+    "q_nature_waiting": {
         "type": "TEXT",
-        "content": "Actually, I need a favor. There’s a rare undead prowling the lower floors… rumor has it it wears a pure gold band. Bring it to me. Raw material for a project. Don’t ask which one.",
-        "next": "quest_offer_choices"
+        "speaker": "Laura",
+        "content": "Don't breathe the spores in. Just bag them.",
+        "next": "talk_menu_choices"
     },
-    "quest_offer_choices": {
+    "q_nature_turnin": {
+        "type": "TEXT",
+        "speaker": "Laura",
+        "content": "Nasty stuff. Perfect. Take this cloak, it should help you breathe easier.",
+        "next": "q_nature_complete"
+    },
+    "q_nature_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "natures_wrath", "next": "talk_menu_text" },
+
+    "q_glow_offer": {
+        "type": "TEXT",
+        "speaker": "Laura",
+        "content": "My lamps are dim. The Sunken Caverns have a 'Deep Moss' that glows underwater. Bring me a sample.",
+        "next": "q_glow_offer_choices"
+    },
+    "q_glow_offer_choices": {
         "type": "CHOICE",
-        "options": [
-            { "label": "I'll do it", "target": "action_offer_quest" },
-            { "label": "Too dangerous", "target": "default_text" }
-        ]
+        "options": [{ "label": "Accept", "target": "q_glow_action" }, { "label": "Decline", "target": "talk_menu_text" }]
     },
-    "action_offer_quest": {
-        "type": "ACTION",
-        "action": "OFFER_QUEST",
-        "questId": "golden_promise",
-        "acceptNode": "quest_active_text",
-        "declineNode": "default_text"
-    },
-    "quest_active_text": {
-        "type": "TEXT",
-        "content": "The signet I’m after is pristine gold. If you find an Untarnished Signet, bring it straight to me. And don’t clean it. I want the truth on it.",
-        "next": "quest_active_router"
-    },
-    "quest_active_router": {
+    "q_glow_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "the_glow_below", "next": "talk_menu_text" },
+    "q_glow_active": {
         "type": "ROUTER",
-        "condition": "hasItem:untarnished_signet",
-        "trueNode": "quest_turnin_text",
-        "falseNode": "quest_active_choices"
+        "condition": "hasItem:deep_moss",
+        "trueNode": "q_glow_turnin",
+        "falseNode": "q_glow_waiting"
     },
-    "quest_active_choices": {
-        "type": "CHOICE",
-        "options": [
-            { "label": "Remind me", "target": "action_remind_quest" },
-            { "label": "Back", "target": "default_text" }
-        ]
-    },
-    "action_remind_quest": {
-        "type": "ACTION",
-        "action": "OFFER_QUEST",
-        "questId": "golden_promise",
-        "acceptNode": "quest_active_text",
-        "declineNode": "default_text"
-    },
-    "quest_turnin_text": {
+    "q_glow_waiting": {
         "type": "TEXT",
-        "content": "You found it. Good. Hand it here— carefully. People think gold is soft. It isn’t. It remembers pressure.",
-        "next": "quest_turnin_choices"
+        "speaker": "Laura",
+        "content": "It's dark in here. Hurry with that moss.",
+        "next": "talk_menu_choices"
     },
-    "quest_turnin_choices": {
-        "type": "CHOICE",
-        "options": [
-            { "label": "Give the signet", "target": "action_complete_quest" },
-            { "label": "Not yet", "target": "quest_active_choices" }
-        ]
-    },
-    "action_complete_quest": {
-        "type": "ACTION",
-        "action": "COMPLETE_QUEST",
-        "questId": "golden_promise",
-        "completeNode": "quest_complete_text",
-        "takeItem": "untarnished_signet"
-    },
-    "quest_complete_text": {
+    "q_glow_turnin": {
         "type": "TEXT",
-        "content": "This will do nicely. Here’s your payment— and my respect. Few bring back what they promise. Fewer come back without bragging about it.",
-        "next": "quest_complete_choices"
+        "speaker": "Laura",
+        "content": "Bright. Very bright. This will light up the anvil nicely.",
+        "next": "q_glow_complete"
     },
-    "quest_complete_choices": {
+    "q_glow_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "the_glow_below", "next": "talk_menu_text" },
+
+    "q_scheme_offer": {
+        "type": "TEXT",
+        "speaker": "Laura",
+        "content": "Those clockwork things... they move too well. I need to know how. Find a 'Mechanism Blueprint' on a Knight. I want to see their joints.",
+        "next": "q_scheme_offer_choices"
+    },
+    "q_scheme_offer_choices": {
         "type": "CHOICE",
-        "options": [ { "label": "Back", "target": "default_text" } ]
-    }
+        "options": [{ "label": "Accept", "target": "q_scheme_action" }, { "label": "Decline", "target": "talk_menu_text" }]
+    },
+    "q_scheme_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "schematic_hunt", "next": "talk_menu_text" },
+    "q_scheme_active": {
+        "type": "ROUTER",
+        "condition": "hasItem:mechanism_blueprint",
+        "trueNode": "q_scheme_turnin",
+        "falseNode": "q_scheme_waiting"
+    },
+    "q_scheme_waiting": {
+        "type": "TEXT",
+        "speaker": "Laura",
+        "content": "I can hear the grinding from here. Find me that paper.",
+        "next": "talk_menu_choices"
+    },
+    "q_scheme_turnin": {
+        "type": "TEXT",
+        "speaker": "Laura",
+        "content": "Look at this... gears within gears. It's genius. And terrifying. Here, take this blade. It's sharp.",
+        "next": "q_scheme_complete"
+    },
+    "q_scheme_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "schematic_hunt", "next": "talk_menu_text" }
   }
 }

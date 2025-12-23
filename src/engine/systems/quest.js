@@ -77,6 +77,13 @@ export class QuestSystem {
                 }
             }
         }
+        if (requirements.flags) {
+            for (const flag of requirements.flags) {
+                if (!party.storyFlags || !party.storyFlags[flag]) {
+                    return false;
+                }
+            }
+        }
         return true;
     }
 

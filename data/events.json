@@ -136,6 +136,16 @@
     }
   },
   {
+    "id": "npc_dungeon_merchant",
+    "type": "npc",
+    "symbol": "¥",
+    "cssClass": "tile-npc-merchant",
+    "trigger": "touch",
+    "scripts": {
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "npc_dungeon_merchant" }]
+    }
+  },
+  {
     "id": "trap",
     "type": "trap",
     "symbol": "T",
@@ -326,5 +336,17 @@
     "scripts": {
         "onEnter": [{ "type": "TEXT", "text": "The temple is quiet. You feel a sense of peace.", "style": "terminal" }]
     }
+  },
+  {
+      "id": "marker_floor_3",
+      "type": "marker",
+      "symbol": "",
+      "cssClass": "tile-floor",
+      "trigger": "step",
+      "scripts": {
+          "onEnter": [
+              { "type": "SET_FLAG", "flag": "visited_floor_3", "value": true }
+          ]
+      }
   }
 ]

@@ -86,6 +86,7 @@
       "options": [
         { "label": "Enter Dungeon", "target": "action_teleport" },
         { "label": "Ask about stains.", "target": "allow_pass_stains_text" },
+        { "label": "Quests", "target": "quest_hub_router" },
         { "label": "Anything strange?", "target": "quest_offer_text", "condition": "questStatus:silent_shipment:inactive" },
         { "label": "Leave", "action": "close" }
       ]
@@ -112,6 +113,168 @@
         "options": [
             { "label": "Leave", "action": "close" }
         ]
-    }
+    },
+
+    "quest_hub_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:lost_in_the_dark:active", "target": "q_lost_active" },
+        { "condition": "questStatus:lost_in_the_dark:inactive", "target": "q_lost_offer" },
+        { "condition": "questStatus:pest_control:active", "target": "q_pest_active" },
+        { "condition": "questStatus:pest_control:inactive", "target": "q_pest_offer" },
+        { "condition": "questStatus:deep_diver:active", "target": "q_deep_active" },
+        { "condition": "questStatus:deep_diver:inactive", "target": "q_deep_offer" },
+        { "condition": "questStatus:ghost_in_the_machine:active", "target": "q_ghost_active" },
+        { "condition": "questStatus:ghost_in_the_machine:inactive", "target": "q_ghost_offer" },
+        { "condition": "questStatus:ultimate_hunter:active", "target": "q_hunt_active" },
+        { "condition": "questStatus:ultimate_hunter:inactive", "target": "q_hunt_offer" }
+      ],
+      "next": "no_more_quests_text"
+    },
+    "no_more_quests_text": {
+        "type": "TEXT",
+        "content": "Sector is clear. For now.",
+        "next": "allow_pass_choices"
+    },
+
+    "q_lost_offer": {
+        "type": "TEXT",
+        "content": "We're losing rookies on Floor 1. Skeletons. Too many of them. Go cull the herd. Bring me 3 Bone Plates as proof.",
+        "next": "q_lost_offer_choices"
+    },
+    "q_lost_offer_choices": {
+        "type": "CHOICE",
+        "options": [{ "label": "Accept", "target": "q_lost_action" }, { "label": "Decline", "target": "allow_pass_choices" }]
+    },
+    "q_lost_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "lost_in_the_dark", "next": "allow_pass_choices" },
+    "q_lost_active": {
+        "type": "ROUTER",
+        "condition": "requirementsMet:lost_in_the_dark",
+        "trueNode": "q_lost_turnin",
+        "falseNode": "q_lost_waiting"
+    },
+    "q_lost_waiting": {
+        "type": "TEXT",
+        "content": "The skeletons won't kill themselves. Get to it.",
+        "next": "allow_pass_choices"
+    },
+    "q_lost_turnin": {
+        "type": "TEXT",
+        "content": "Good work. Fewer rattling bones means safer patrols. Take this armor.",
+        "next": "q_lost_complete"
+    },
+    "q_lost_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "lost_in_the_dark", "next": "allow_pass_choices" },
+
+    "q_pest_offer": {
+        "type": "TEXT",
+        "content": "Giant Spiders in the forest. Disgusting things. Kill them. Bring me their Toxic Spores so the Alchemists can burn them.",
+        "next": "q_pest_offer_choices"
+    },
+    "q_pest_offer_choices": {
+        "type": "CHOICE",
+        "options": [{ "label": "Accept", "target": "q_pest_action" }, { "label": "Decline", "target": "allow_pass_choices" }]
+    },
+    "q_pest_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "pest_control", "next": "allow_pass_choices" },
+    "q_pest_active": {
+        "type": "ROUTER",
+        "condition": "requirementsMet:pest_control",
+        "trueNode": "q_pest_turnin",
+        "falseNode": "q_pest_waiting"
+    },
+    "q_pest_waiting": {
+        "type": "TEXT",
+        "content": "Don't get bitten. Spider poison rots the nerves.",
+        "next": "allow_pass_choices"
+    },
+    "q_pest_turnin": {
+        "type": "TEXT",
+        "content": "Bagged and tagged. Good. Here, antidotes. You probably need them.",
+        "next": "q_pest_complete"
+    },
+    "q_pest_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "pest_control", "next": "allow_pass_choices" },
+
+    "q_deep_offer": {
+        "type": "TEXT",
+        "content": "Sahagins in the Caverns are organizing raids. We need to break their morale. Kill them and bring their Ice Shards.",
+        "next": "q_deep_offer_choices"
+    },
+    "q_deep_offer_choices": {
+        "type": "CHOICE",
+        "options": [{ "label": "Accept", "target": "q_deep_action" }, { "label": "Decline", "target": "allow_pass_choices" }]
+    },
+    "q_deep_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "deep_diver", "next": "allow_pass_choices" },
+    "q_deep_active": {
+        "type": "ROUTER",
+        "condition": "requirementsMet:deep_diver",
+        "trueNode": "q_deep_turnin",
+        "falseNode": "q_deep_waiting"
+    },
+    "q_deep_waiting": {
+        "type": "TEXT",
+        "content": "They strike from the water. Watch your footing.",
+        "next": "allow_pass_choices"
+    },
+    "q_deep_turnin": {
+        "type": "TEXT",
+        "content": "That's a lot of shards. You thinned them out nicely. Take this blade. It bites cold.",
+        "next": "q_deep_complete"
+    },
+    "q_deep_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "deep_diver", "next": "allow_pass_choices" },
+
+    "q_ghost_offer": {
+        "type": "TEXT",
+        "content": "The Spire... it shouldn't be active. But it is. The Automatons are rebuilding. Smash them. Bring their gears.",
+        "next": "q_ghost_offer_choices"
+    },
+    "q_ghost_offer_choices": {
+        "type": "CHOICE",
+        "options": [{ "label": "Accept", "target": "q_ghost_action" }, { "label": "Decline", "target": "allow_pass_choices" }]
+    },
+    "q_ghost_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "ghost_in_the_machine", "next": "allow_pass_choices" },
+    "q_ghost_active": {
+        "type": "ROUTER",
+        "condition": "requirementsMet:ghost_in_the_machine",
+        "trueNode": "q_ghost_turnin",
+        "falseNode": "q_ghost_waiting"
+    },
+    "q_ghost_waiting": {
+        "type": "TEXT",
+        "content": "Metal is tough. Hit it harder.",
+        "next": "allow_pass_choices"
+    },
+    "q_ghost_turnin": {
+        "type": "TEXT",
+        "content": "Scrap metal. Good. Here's a coin from the old era. Might be worth something.",
+        "next": "q_ghost_complete"
+    },
+    "q_ghost_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "ghost_in_the_machine", "next": "allow_pass_choices" },
+
+    "q_hunt_offer": {
+        "type": "TEXT",
+        "content": "This is it. The Void Eaters are breaching the lower levels. If we don't stop them, the town falls. Kill one. Bring proof.",
+        "next": "q_hunt_offer_choices"
+    },
+    "q_hunt_offer_choices": {
+        "type": "CHOICE",
+        "options": [{ "label": "Accept", "target": "q_hunt_action" }, { "label": "Decline", "target": "allow_pass_choices" }]
+    },
+    "q_hunt_action": { "type": "ACTION", "action": "OFFER_QUEST", "questId": "ultimate_hunter", "next": "allow_pass_choices" },
+    "q_hunt_active": {
+        "type": "ROUTER",
+        "condition": "requirementsMet:ultimate_hunter",
+        "trueNode": "q_hunt_turnin",
+        "falseNode": "q_hunt_waiting"
+    },
+    "q_hunt_waiting": {
+        "type": "TEXT",
+        "content": "Face the Void. Don't blink.",
+        "next": "allow_pass_choices"
+    },
+    "q_hunt_turnin": {
+        "type": "TEXT",
+        "content": "You did it. I didn't think... never mind. You're a true hunter. Take this. It's the blood of an Elder. Don't ask how I got it.",
+        "next": "q_hunt_complete"
+    },
+    "q_hunt_complete": { "type": "ACTION", "action": "COMPLETE_QUEST", "questId": "ultimate_hunter", "next": "allow_pass_choices" }
   }
 }
