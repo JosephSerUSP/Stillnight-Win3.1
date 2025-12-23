@@ -41,7 +41,7 @@ export class Game_Base {
      * The level of the unit.
      * @type {number}
      */
-    this.level = unitData.level;
+    this.level = unitData.level !== undefined ? unitData.level : 1;
 
     /**
      * The elemental affinities of the unit.
