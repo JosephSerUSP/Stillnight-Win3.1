@@ -334,11 +334,18 @@ export class Window_LogPanel extends Window_Base {
             type: 'label',
             props: {
                 tag: 'div',
-                text: msg,
+                // Removed raw text prop since we handle content below
                 className: 'log-message',
                 style: { opacity: priority === 'low' ? '0.5' : '1.0' }
             }
         });
+
+        if (msg instanceof HTMLElement || msg instanceof DocumentFragment) {
+            line.appendChild(msg);
+        } else {
+            line.textContent = msg;
+        }
+
         this.logEl.scrollTop = this.logEl.scrollHeight;
     }
 

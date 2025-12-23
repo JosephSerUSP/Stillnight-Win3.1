@@ -114,7 +114,12 @@ export class Window_Battle extends Window_Base {
 
   appendLog(msg, options = {}) {
     const div = document.createElement("div");
-    div.textContent = msg;
+    if (msg instanceof HTMLElement || msg instanceof DocumentFragment) {
+        div.appendChild(msg);
+    } else {
+        div.textContent = msg;
+    }
+
     if (options.priority === 'low') {
         div.style.opacity = '0.5';
     }
@@ -125,11 +130,23 @@ export class Window_Battle extends Window_Base {
   appendToLastLog(msg, options = {}) {
       if (this.logEl.lastElementChild) {
           const span = document.createElement("span");
-          span.textContent = " " + msg; // Add space separator
+          if (msg instanceof HTMLElement || msg instanceof DocumentFragment) {
+              span.appendChild(msg);
+              // Ensure space before if appending text-like element?
+              // The logic below adds " " before `msg` string.
+              // We should prepend a space to span if possible or assume caller handles spacing.
+              // But standard `appendToLastLog` usually implies " " separator.
+              // We can add a text node " " before span.
+              this.logEl.lastElementChild.appendChild(document.createTextNode(" "));
+              this.logEl.lastElementChild.appendChild(span);
+          } else {
+               span.textContent = " " + msg;
+               this.logEl.lastElementChild.appendChild(span);
+          }
+
           if (options.priority === 'low') {
               span.style.opacity = '0.5';
           }
-          this.logEl.lastElementChild.appendChild(span);
           this.logEl.scrollTop = this.logEl.scrollHeight;
       } else {
           this.appendLog(msg, options);

@@ -2,7 +2,7 @@ import { Scene_Base } from "./base.js";
 import { randInt, pickWeighted, probabilisticRound, random } from "../../core/utils.js";
 import { AudioAdapter } from "../../adapters/audio_adapter.js";
 import { SettingsAdapter } from "../../adapters/settings_adapter.js";
-import { Window_Battle, Window_Victory } from "../windows/index.js";
+import { Window_Battle, Window_Victory, createInteractiveLabel } from "../windows/index.js";
 import { BattleSystem } from "../../engine/systems/battle.js";
 import { BattleAdapter } from "../../adapters/battle_adapter.js";
 import { EncounterAdapter } from "../../adapters/encounter_adapter.js";
@@ -470,8 +470,51 @@ export class Scene_Battle extends Scene_Base {
                 await this.battleWindow.animateBattlerName(event.battler);
             }
 
+            // --- Custom Rich Log Logic ---
+            let logged = false;
             if (event.type === 'use_skill' || event.type === 'use_item') {
-                // Look ahead to see if there is exactly one dependent result (starts with spaces)
+                if (event.item) {
+                     const frag = document.createDocumentFragment();
+                     frag.appendChild(document.createTextNode(`${event.battler.name} uses `));
+
+                     // Use 'skill' or 'item' based on type
+                     const itemType = event.type === 'use_skill' ? 'skill' : 'item';
+                     const label = createInteractiveLabel(event.item, itemType);
+                     // Slightly customize label style for inline flow
+                     label.style.display = "inline-flex";
+                     label.style.verticalAlign = "middle";
+                     label.style.margin = "0 4px";
+
+                     frag.appendChild(label);
+
+                     if (event.type === 'use_item' && event.msg.includes(' on ')) {
+                          // Try to parse target name from msg if target obj not in event (event has battler but target implied)
+                          // Actually event usually has NO target property for 'use_skill' in battle system (checked code).
+                          // Wait, executeSkill/Item does not attach 'target' to the 'use_skill' event object explicitly!
+                          // But msg says "... on Target".
+                          // Let's rely on extracting target name from msg or modifying system again (too risky/churny).
+                          // Or just append the rest of the message.
+                          // "X uses Y!" -> We just replaced "X uses Y".
+                          // "X uses Y on Z." -> We replace "X uses Y".
+                          // Let's verify msg format.
+                          // Skill: `${battler.name} uses ${skillName}!`
+                          // Item: `${subject.name} uses ${item.name} on ${target.name}.`
+
+                          if (event.type === 'use_item') {
+                              const suffix = event.msg.substring(event.msg.indexOf(` on `));
+                              frag.appendChild(document.createTextNode(suffix));
+                          } else {
+                              frag.appendChild(document.createTextNode("!"));
+                          }
+                     } else {
+                          frag.appendChild(document.createTextNode("!"));
+                     }
+
+                     this.battleWindow.appendLog(frag);
+                     logged = true;
+                }
+
+                // Look ahead logic (unchanged)
                 let resultCount = 0;
                 for (let j = i + 1; j < events.length; j++) {
                     const nextEvent = events[j];
@@ -482,8 +525,9 @@ export class Scene_Battle extends Scene_Base {
                 }
                 appendNextResult = (resultCount === 1);
             }
+            // -----------------------------
 
-            if (event.msg) {
+            if (event.msg && !logged) {
                 const isDependentResult = event.msg.startsWith('  ');
                 const priority = isDependentResult ? 'low' : undefined;
                 const trimmedMsg = event.msg.trim();
