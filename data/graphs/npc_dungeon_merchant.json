@@ -6,10 +6,21 @@
   "nodes": {
     "root_router": {
       "type": "ROUTER",
-      "condition": "flag:dungeon_merchant_met",
-      "trueNode": "default_text",
-      "falseNode": "intro_text"
+      "branches": [
+        { "condition": "questStatus:merchants_route:completed", "target": "quest_complete_text" },
+        { "condition": "questStatus:merchants_route:active", "target": "quest_active_router" },
+        { "condition": "flag:dungeon_merchant_met", "target": "default_text" }
+      ],
+      "next": "intro_text"
     },
+
+    "quest_active_router": {
+        "type": "ROUTER",
+        "condition": "floor:>8",
+        "trueNode": "quest_turnin",
+        "falseNode": "default_text"
+    },
+
     "intro_text": {
       "type": "TEXT",
       "content": "Oh— a living one. Don’t startle me like that. Here. I sell necessities. Not hope. Hope’s extra.",
@@ -33,9 +44,52 @@
       "options": [
         { "label": "Show me what you have", "target": "open_shop" },
         { "label": "Any advice?", "target": "advice_text" },
+        { "label": "Business proposition?", "target": "quest_offer", "condition": "questStatus:merchants_route:inactive" },
         { "label": "No thanks", "action": "close" }
       ]
     },
+
+    "quest_offer": {
+        "type": "TEXT",
+        "content": "I'm thinking of expanding my route to the Archives. Floor 9. But I hear the books eat people there. Go there first. If you survive, tell me it's safe.",
+        "next": "quest_offer_choices"
+    },
+    "quest_offer_choices": {
+        "type": "CHOICE",
+        "options": [
+            { "label": "I'll scout it.", "target": "action_offer_quest" },
+            { "label": "Too far.", "target": "default_choices" }
+        ]
+    },
+    "action_offer_quest": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "merchants_route",
+        "acceptNode": "quest_reminder",
+        "declineNode": "default_choices"
+    },
+    "quest_reminder": {
+        "type": "TEXT",
+        "content": "Floor 9. Don't die. I hate losing customers.",
+        "next": "default_choices"
+    },
+    "quest_turnin": {
+        "type": "TEXT",
+        "content": "You made it? And you still have all your limbs? Remarkable. Maybe the Archives are profitable after all.",
+        "next": "quest_complete_action"
+    },
+    "quest_complete_action": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "merchants_route",
+        "completeNode": "quest_complete_text"
+    },
+    "quest_complete_text": {
+        "type": "TEXT",
+        "content": "Here's some ink. Use it to map your way back... or write your will. Heh.",
+        "next": "default_choices"
+    },
+
     "open_shop": {
       "type": "ACTION",
       "action": "OPEN_SHOP",

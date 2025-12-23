@@ -3,8 +3,23 @@
     "name": "The Gambler",
     "layout": "visual_novel",
     "portrait": "NPC_Raphael",
-    "initialNode": "start",
+    "initialNode": "root_router",
     "nodes": {
+        "root_router": {
+            "type": "ROUTER",
+            "branches": [
+                { "condition": "questStatus:gamblers_luck:completed", "target": "quest_complete_hub" },
+                { "condition": "questStatus:gamblers_luck:active", "target": "quest_active_check" },
+                { "condition": "questStatus:gamblers_luck:inactive", "target": "start" }
+            ],
+            "next": "start"
+        },
+        "quest_complete_hub": {
+             "type": "TEXT",
+             "content": "Thanks to you, my luck is back! Care for a game?",
+             "next": "choice1"
+        },
+
         "start": {
             "type": "TEXT",
             "content": "Well met, traveler. I'm a collector of sorts. A collector of... numbers.",
@@ -17,9 +32,55 @@
             "content": "Would you like to play a little game of chance?",
             "options": [
                 { "label": "Sure, I'm feeling lucky.", "target": "game_start" },
+                { "label": "Any work for me?", "target": "quest_offer", "condition": "questStatus:gamblers_luck:inactive" },
                 { "label": "No thanks.", "target": "end" }
             ]
         },
+
+        "quest_offer": {
+            "type": "TEXT",
+            "content": "Work? Well... I did lose my lucky die. It's a 'Probability Die'. It rolled off the table and fell... all the way to Floor 8. The Archives. Can you retrieve it?",
+            "next": "quest_offer_choices"
+        },
+        "quest_offer_choices": {
+            "type": "CHOICE",
+            "options": [
+                { "label": "I'll find it.", "target": "action_offer_quest" },
+                { "label": "Too risky.", "target": "end" }
+            ]
+        },
+        "action_offer_quest": {
+            "type": "ACTION",
+            "action": "OFFER_QUEST",
+            "questId": "gamblers_luck",
+            "acceptNode": "quest_active_remind",
+            "declineNode": "end"
+        },
+
+        "quest_active_check": {
+            "type": "ROUTER",
+            "condition": "hasItem:probability_die",
+            "trueNode": "quest_turnin",
+            "falseNode": "quest_active_remind"
+        },
+        "quest_active_remind": {
+            "type": "TEXT",
+            "content": "My luck is terrible without that die. Please hurry.",
+            "next": "end"
+        },
+        "quest_turnin": {
+            "type": "TEXT",
+            "content": "You found it! Oh, look at it spin. It never stops! Wonderful! Here, take this. It brings... interesting luck.",
+            "next": "quest_complete_action"
+        },
+        "quest_complete_action": {
+            "type": "ACTION",
+            "action": "COMPLETE_QUEST",
+            "questId": "gamblers_luck",
+            "completeNode": "end",
+            "takeItem": "probability_die"
+        },
+
         "game_start": {
             "type": "TEXT",
             "content": "Excellent! I'll pick a number between 1 and 10. You just have to guess if it's high or low.",
@@ -74,7 +135,7 @@
         },
         "end": {
             "type": "TEXT",
-            "content": "Come back later. Current wins: ${gambler_wins}",
+            "content": "Come back later.",
             "next": null
         }
     }

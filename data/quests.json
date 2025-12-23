@@ -58,5 +58,311 @@
       "gold": 50,
       "xp": 100
     }
+  },
+  "geraldo_vigil": {
+    "name": "Geraldo's Vigil",
+    "giver": "Gate Guard",
+    "portrait": "NPC_Geraldo",
+    "summary": "Thin the skeleton population on the first floor.",
+    "description": "Geraldo is concerned about the rising number of undead near the entrance. He needs you to cull their numbers.",
+    "objectives": [
+      "Defeat 5 Skeletons.",
+      "Return to Geraldo."
+    ],
+    "requirements": {
+      "kills": { "skeleton": 5 }
+    },
+    "rewards": {
+      "gold": 100,
+      "items": [{ "id": "hp_tonic", "qty": 3 }]
+    }
+  },
+  "book_of_whispers": {
+    "name": "Book of Whispers",
+    "giver": "Yukio",
+    "portrait": "NPC_Yukio",
+    "summary": "Find a tome that speaks.",
+    "description": "Yukio, the temple keeper, has heard rumors of a book that whispers secrets. He believes it is located in the Shifting Archives (Floor 7).",
+    "objectives": [
+      "Find the Whispering Tome in the Shifting Archives.",
+      "Bring it to Yukio."
+    ],
+    "requirements": {
+      "items": [{ "id": "whispering_tome", "qty": 1, "consume": true }]
+    },
+    "rewards": {
+      "gold": 150,
+      "items": [{ "id": "whispered_lessons", "qty": 2 }]
+    }
+  },
+  "silence_the_noise": {
+    "name": "Silence the Noise",
+    "giver": "Yukio",
+    "portrait": "NPC_Yukio",
+    "summary": "Destroy Silence Wards in the Archives.",
+    "description": "The Silence Wards in the Archives are blocking Yukio's prayers. Destroy them to restore the connection.",
+    "objectives": [
+      "Defeat 5 Silence Wards.",
+      "Return to Yukio."
+    ],
+    "requirements": {
+      "kills": { "silence_ward": 5 }
+    },
+    "rewards": {
+      "gold": 200,
+      "items": [{ "id": "light_amulet", "qty": 1 }]
+    }
+  },
+  "daphne_research": {
+    "name": "Daphne's Research",
+    "giver": "Daphne",
+    "portrait": "NPC_Daphne",
+    "summary": "Collect Void Essence.",
+    "description": "Daphne wants to study the composition of the void. She needs raw essence from the deeper floors.",
+    "objectives": [
+      "Collect Void Essence from Entropy Wisps or chests (Floor 10+).",
+      "Deliver it to Daphne."
+    ],
+    "requirements": {
+      "items": [{ "id": "void_essence", "qty": 1, "consume": true }]
+    },
+    "rewards": {
+      "gold": 300,
+      "items": [{ "id": "mercury_crest", "qty": 1 }]
+    }
+  },
+  "mirrors_edge": {
+    "name": "The Mirror's Edge",
+    "giver": "Daphne",
+    "portrait": "NPC_Daphne",
+    "summary": "Hunt a Mirror Doppelganger.",
+    "description": "Daphne is fascinated by the creatures that mimic reality. Defeat a Doppelganger and return with data.",
+    "objectives": [
+      "Defeat a Mirror Doppelganger (Floor 11).",
+      "Return to Daphne."
+    ],
+    "requirements": {
+      "kills": { "mirror_doppelganger": 1 }
+    },
+    "rewards": {
+      "gold": 400,
+      "items": [{ "id": "prism_ring", "qty": 1 }]
+    }
+  },
+  "gamblers_luck": {
+    "name": "Gambler's Lucky Charm",
+    "giver": "Gambler",
+    "portrait": "NPC_Gambler",
+    "summary": "Find the Probability Die.",
+    "description": "The Gambler lost his lucky die in the Archives. He can't win without it.",
+    "objectives": [
+      "Find the Probability Die (Floor 8).",
+      "Return it to the Gambler."
+    ],
+    "requirements": {
+      "items": [{ "id": "probability_die", "qty": 1, "consume": true }]
+    },
+    "rewards": {
+      "gold": 777,
+      "items": [{ "id": "alert_charm", "qty": 1 }]
+    }
+  },
+  "merchants_route": {
+    "name": "The Lost Route",
+    "giver": "Merchant",
+    "portrait": "NPC_Dungeon_Merchant",
+    "summary": "Scout the Shifting Archives.",
+    "description": "The Merchant wants to expand his trade routes but fears the Archives. Reach Floor 9 to prove it's safe (or at least passable).",
+    "objectives": [
+      "Reach Floor 9.",
+      "Report back to the Merchant."
+    ],
+    "requirements": {
+      "floor": 9
+    },
+    "rewards": {
+      "gold": 500,
+      "items": [{ "id": "sigil_ink", "qty": 3 }]
+    }
+  },
+  "laura_masterpiece": {
+    "name": "Laura's Masterpiece",
+    "giver": "Laura",
+    "portrait": "NPC_Laura",
+    "summary": "Retrieve Star Metal.",
+    "description": "Laura has a vision of a weapon that can cut through the void. She needs Star Metal from the Crystalline Void.",
+    "objectives": [
+      "Find Star Metal (Floor 12).",
+      "Return to Laura."
+    ],
+    "requirements": {
+      "items": [{ "id": "star_metal", "qty": 1, "consume": true }]
+    },
+    "rewards": {
+      "gold": 0,
+      "items": [{ "id": "void_blade", "qty": 1 }]
+    }
+  },
+  "alicia_nightmare": {
+    "name": "Alicia's Nightmare",
+    "giver": "Alicia",
+    "portrait": "NPC_Alicia",
+    "summary": "Defeat the Crimson Lord.",
+    "description": "Alicia has been having nightmares about a presence in the Blood Chapel. Put it to rest.",
+    "objectives": [
+      "Defeat the Crimson Lord on Floor 6.",
+      "Comfort Alicia."
+    ],
+    "requirements": {
+      "kills": { "crimsonLord": 1 }
+    },
+    "rewards": {
+      "gold": 250,
+      "items": [{ "id": "exp_boost", "qty": 1 }]
+    }
+  },
+  "archivist_key": {
+    "name": "The Archivist's Key",
+    "giver": "Yukio",
+    "portrait": "NPC_Yukio",
+    "summary": "Find the Archive Key.",
+    "description": "Yukio needs the key to the Forbidden Library to seal the leaking knowledge.",
+    "objectives": [
+      "Find the Archive Key (Drop from Void Scholar).",
+      "Return to Yukio."
+    ],
+    "requirements": {
+      "items": [{ "id": "archive_key", "qty": 1, "consume": true }]
+    },
+    "rewards": {
+      "gold": 300,
+      "xp": 500
+    }
+  },
+  "crystal_resonance": {
+    "name": "Crystal Resonance",
+    "giver": "Daphne",
+    "portrait": "NPC_Daphne",
+    "summary": "Collect Resonant Shards.",
+    "description": "Daphne needs shards from the Prism Golems to construct a frequency jammer.",
+    "objectives": [
+      "Collect 3 Resonant Shards.",
+      "Return to Daphne."
+    ],
+    "requirements": {
+      "items": [{ "id": "resonant_shard", "qty": 3, "consume": true }]
+    },
+    "rewards": {
+      "gold": 600,
+      "items": [{ "id": "crystal_shield", "qty": 1 }]
+    }
+  },
+  "history_void": {
+    "name": "History of the Void",
+    "giver": "Yukio",
+    "portrait": "NPC_Yukio",
+    "summary": "Collect Lore Pages.",
+    "description": "The history of the void is written on scattered pages. Collect them to understand the threat.",
+    "objectives": [
+      "Collect 3 Lore Pages (Drops from Silence Wards/Chests).",
+      "Return to Yukio."
+    ],
+    "requirements": {
+      "items": [{ "id": "lore_page", "qty": 3, "consume": true }]
+    },
+    "rewards": {
+      "gold": 400,
+      "items": [{ "id": "void_potion", "qty": 5 }]
+    }
+  },
+  "shattered_reflections": {
+    "name": "Shattered Reflections",
+    "giver": "Daphne",
+    "portrait": "NPC_Daphne",
+    "summary": "Collect Mirror Shards.",
+    "description": "The Doppelgangers are made of a unique glass. Daphne wants to study it.",
+    "objectives": [
+      "Collect 3 Mirror Shards.",
+      "Return to Daphne."
+    ],
+    "requirements": {
+      "items": [{ "id": "mirror_shard", "qty": 3, "consume": true }]
+    },
+    "rewards": {
+      "gold": 500,
+      "items": [{ "id": "entropy_cloak", "qty": 1 }]
+    }
+  },
+  "auction_prize": {
+    "name": "The Auction's Prize",
+    "giver": "Auctioneer",
+    "portrait": "NPC_Auction",
+    "summary": "Find the Ancient Idol.",
+    "description": "The Auctioneer has a client looking for a specific idol from the Heart of Entropy.",
+    "objectives": [
+      "Find the Ancient Idol (Floor 13).",
+      "Deliver it to the Auctioneer."
+    ],
+    "requirements": {
+      "items": [{ "id": "ancient_idol", "qty": 1, "consume": true }]
+    },
+    "rewards": {
+      "gold": 5000,
+      "items": [{ "id": "hp_boost3", "qty": 1 }]
+    }
+  },
+  "final_seal": {
+    "name": "The Final Seal",
+    "giver": "Gate Guard",
+    "portrait": "NPC_Geraldo",
+    "summary": "Reach Floor 15.",
+    "description": "The source of the corruption has been located. You must reach the bottom.",
+    "objectives": [
+      "Reach Floor 15.",
+      "Defeat the Avatar of Zero."
+    ],
+    "requirements": {
+      "kills": { "avatar_of_zero": 1 }
+    },
+    "rewards": {
+      "gold": 10000,
+      "xp": 10000
+    }
+  },
+  "wax_collection": {
+    "name": "A Light in the Dark",
+    "giver": "Alicia",
+    "portrait": "NPC_Alicia",
+    "summary": "Collect Melted Wax.",
+    "description": "Alicia wants to make candles to brighten up the shop. She needs wax from the living candles in the dungeon.",
+    "objectives": [
+      "Collect 3 Melted Wax.",
+      "Bring them to Alicia."
+    ],
+    "requirements": {
+      "items": [{ "id": "melted_wax", "qty": 3, "consume": true }]
+    },
+    "rewards": {
+      "gold": 100,
+      "items": [{ "id": "hp_tonic", "qty": 2 }]
+    }
+  },
+  "obsidian_hunt": {
+    "name": "Dark Shards",
+    "giver": "Laura",
+    "portrait": "NPC_Laura",
+    "summary": "Collect Obsidian Shards.",
+    "description": "Laura needs obsidian to temper a new alloy. Flauros demons often carry them.",
+    "objectives": [
+      "Collect 3 Obsidian Shards.",
+      "Bring them to Laura."
+    ],
+    "requirements": {
+      "items": [{ "id": "obsidian_shard", "qty": 3, "consume": true }]
+    },
+    "rewards": {
+      "gold": 250,
+      "items": [{ "id": "silver_blade", "qty": 1 }]
+    }
   }
 }

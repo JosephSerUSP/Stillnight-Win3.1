@@ -2,19 +2,41 @@
   "id": "npc_gate_guard",
   "name": "Gate Guard",
   "layout": "visual_novel",
+  "portrait": "NPC_Geraldo",
   "initialNode": "default_router",
   "nodes": {
     "default_router": {
       "type": "ROUTER",
       "branches": [
-        { "condition": "questStatus:silent_shipment:completed", "target": "quest_complete_text" },
-        { "condition": "questStatus:silent_shipment:active", "target": "quest_active_router" },
-        { "condition": "hasItem:guild_pass", "target": "allow_pass_text" }
+        { "condition": "questStatus:final_seal:completed", "target": "endgame_complete_text" },
+        { "condition": "questStatus:final_seal:active", "target": "quest_final_active_text" },
+        { "condition": "questStatus:geraldo_vigil:completed", "target": "vigil_complete_router" },
+        { "condition": "questStatus:geraldo_vigil:active", "target": "quest_vigil_active" },
+        { "condition": "hasItem:guild_pass", "target": "allow_pass_router" }
       ],
       "next": "deny_pass_text"
     },
 
-    "quest_active_router": {
+    "vigil_complete_router": {
+      "type": "ROUTER",
+      "branches": [
+         { "condition": "floor:>14", "target": "quest_offer_final" },
+         { "condition": "questStatus:silent_shipment:active", "target": "quest_shipment_router" },
+         { "condition": "questStatus:silent_shipment:completed", "target": "allow_pass_text" }
+      ],
+      "next": "allow_pass_text"
+    },
+
+    "allow_pass_router": {
+       "type": "ROUTER",
+       "branches": [
+         { "condition": "questStatus:geraldo_vigil:inactive", "target": "quest_offer_vigil" },
+         { "condition": "questStatus:silent_shipment:active", "target": "quest_shipment_router" }
+       ],
+       "next": "allow_pass_text"
+    },
+
+    "quest_shipment_router": {
       "type": "ROUTER",
       "condition": "flag:shipment_investigated",
       "trueNode": "quest_turn_in_text",
@@ -92,8 +114,8 @@
     },
     "action_teleport": {
       "type": "ACTION",
-      "action": "TELEPORT",
-      "target": "dungeon_floor_1"
+      "action": "TRAVEL",
+      "floorIndex": 1
     },
     "allow_pass_stains_text": {
       "type": "TEXT",
@@ -107,6 +129,102 @@
         { "label": "Leave", "action": "close" }
       ]
     },
+
+    "quest_offer_vigil": {
+      "type": "TEXT",
+      "content": "Hold up. The first floor is swarming with Skeletons today. I need to clear them out before they push up to the gate. You want to earn your keep?",
+      "next": "quest_vigil_choices"
+    },
+    "quest_vigil_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll handle it.", "target": "action_offer_vigil" },
+        { "label": "Not right now.", "target": "allow_pass_text" }
+      ]
+    },
+    "action_offer_vigil": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "geraldo_vigil",
+      "acceptNode": "quest_vigil_active",
+      "declineNode": "allow_pass_text"
+    },
+    "quest_vigil_active": {
+      "type": "ROUTER",
+      "condition": "kills:skeleton:5",
+      "trueNode": "quest_vigil_turnin",
+      "falseNode": "quest_vigil_reminder"
+    },
+    "quest_vigil_reminder": {
+      "type": "TEXT",
+      "content": "Five skeletons. Don't come back until they're dust. Well, more dust.",
+      "next": "allow_pass_choices"
+    },
+    "quest_vigil_turnin": {
+      "type": "TEXT",
+      "content": "Not bad. You move well. Maybe you won't end up as a stain after all. Here.",
+      "next": "quest_vigil_complete_action"
+    },
+    "quest_vigil_complete_action": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "geraldo_vigil",
+      "completeNode": "allow_pass_text"
+    },
+
+    "quest_offer_final": {
+      "type": "ROUTER",
+      "condition": "questStatus:final_seal:inactive",
+      "trueNode": "quest_final_start_text",
+      "falseNode": "allow_pass_text"
+    },
+    "quest_final_start_text": {
+      "type": "TEXT",
+      "content": "Summoner. We have a situation. The void isn't just leaking anymore. It's pouring. The source has been located at the very bottom. Floor 15. The 'Avatar of Zero'.",
+      "next": "quest_final_choices"
+    },
+    "quest_final_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'm ready.", "target": "action_offer_final" },
+        { "label": "I need to prepare.", "target": "allow_pass_text" }
+      ]
+    },
+    "action_offer_final": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "final_seal",
+      "acceptNode": "quest_final_active_text",
+      "declineNode": "allow_pass_text"
+    },
+    "quest_final_active_text": {
+      "type": "ROUTER",
+      "condition": "kills:avatar_of_zero:1",
+      "trueNode": "quest_final_turnin",
+      "falseNode": "quest_final_reminder"
+    },
+    "quest_final_reminder": {
+      "type": "TEXT",
+      "content": "This is it. If you don't stop it, there won't be a Stillnight left to come back to. Go.",
+      "next": "allow_pass_choices"
+    },
+    "quest_final_turnin": {
+      "type": "TEXT",
+      "content": "The shaking stopped. The sky... it looks clearer. You did it. I didn't think anyone could. I... thank you.",
+      "next": "quest_final_complete_action"
+    },
+    "quest_final_complete_action": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "final_seal",
+      "completeNode": "endgame_complete_text"
+    },
+    "endgame_complete_text": {
+      "type": "TEXT",
+      "content": "You're a legend now. Try not to let it go to your head. The gate is open for you, always.",
+      "next": "allow_pass_choices"
+    },
+
     "close_choice": {
         "type": "CHOICE",
         "options": [

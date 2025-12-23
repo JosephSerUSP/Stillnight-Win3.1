@@ -105,7 +105,7 @@
     "talk_menu_text": {
       "type": "TEXT",
       "speaker": "Alicia",
-      "content": "O-okay. What do you want to talk about? I’m not good at… normal conversations.",
+      "content": "O-okay. What do you want to talk about?",
       "next": "talk_menu_choices"
     },
     "talk_menu_choices": {
@@ -136,75 +136,192 @@
       "content": "Me? I’m just Alicia. I like baking. And… I like listening to the rain. The dungeon is scary, but the rain makes it sound like it’s sleeping.",
       "next": "talk_menu_choices"
     },
+
     "quest_router": {
       "type": "ROUTER",
       "branches": [
-        { "condition": "questStatus:sparkling_gift:completed", "target": "quest_completed_text" },
-        { "condition": "questStatus:sparkling_gift:active", "target": "quest_active_text" }
+        { "condition": "questStatus:sparkling_gift:completed", "target": "quest_check_wax" },
+        { "condition": "questStatus:sparkling_gift:active", "target": "quest_sparkling_active" }
       ],
-      "next": "quest_offer_text"
+      "next": "quest_offer_sparkling"
     },
-    "quest_offer_text": {
+
+    "quest_offer_sparkling": {
       "type": "TEXT",
       "speaker": "Alicia",
       "content": "Actually… can I ask a favor? It’s about Laura. I want to give her something special. Something that… shines like she does. There’s a crystal, a ‘Glittering Teardrop’, deep in the dungeon. Would you…?",
-      "next": "quest_offer_choices"
+      "next": "quest_sparkling_choices"
     },
-    "quest_offer_choices": {
+    "quest_sparkling_choices": {
       "type": "CHOICE",
       "options": [
-        { "label": "I'll find it.", "target": "action_offer_quest" },
+        { "label": "I'll find it.", "target": "action_offer_sparkling" },
         { "label": "Maybe later.", "target": "talk_menu_text" }
       ]
     },
-    "action_offer_quest": {
+    "action_offer_sparkling": {
       "type": "ACTION",
       "action": "OFFER_QUEST",
       "questId": "sparkling_gift",
-      "acceptNode": "quest_active_text",
+      "acceptNode": "quest_sparkling_active",
       "declineNode": "talk_menu_text"
     },
-    "quest_active_text": {
+    "quest_sparkling_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:glittering_teardrop",
+      "trueNode": "quest_sparkling_turnin",
+      "falseNode": "quest_sparkling_reminder"
+    },
+    "quest_sparkling_reminder": {
       "type": "TEXT",
       "speaker": "Alicia",
       "content": "The Glittering Teardrop… please be careful. It’s pretty, but the dungeon is mean. Don’t get hurt for a rock, okay?",
-      "next": "quest_active_router"
+      "next": "talk_menu_choices"
     },
-    "quest_active_router": {
-      "type": "ROUTER",
-      "condition": "hasItem:glittering_teardrop",
-      "trueNode": "quest_turnin_text",
-      "falseNode": "quest_active_choices"
-    },
-    "quest_active_choices": {
-      "type": "CHOICE",
-      "options": [
-        { "label": "I'm still looking.", "target": "talk_menu_text" }
-      ]
-    },
-    "quest_turnin_text": {
+    "quest_sparkling_turnin": {
       "type": "TEXT",
       "speaker": "Alicia",
       "content": "You… you found it! Oh, look at it! It’s perfect. It catches the light just like her eyes when she’s happy. Thank you! Thank you so much!",
-      "next": "quest_turnin_choices"
+      "next": "quest_sparkling_complete_action"
     },
-    "quest_turnin_choices": {
-      "type": "CHOICE",
-      "options": [
-        { "label": "Here you go.", "target": "action_complete_quest" }
-      ]
-    },
-    "action_complete_quest": {
+    "quest_sparkling_complete_action": {
       "type": "ACTION",
       "action": "COMPLETE_QUEST",
       "questId": "sparkling_gift",
-      "completeNode": "quest_completed_text",
+      "completeNode": "quest_sparkling_finish",
       "takeItem": "glittering_teardrop"
     },
-    "quest_completed_text": {
+    "quest_sparkling_finish": {
+       "type": "TEXT",
+       "speaker": "Alicia",
+       "content": "I'm going to make this into a necklace! Thank you again!",
+       "next": "talk_menu_choices"
+    },
+
+    "quest_check_wax": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:wax_collection:completed", "target": "quest_check_nightmare" },
+        { "condition": "questStatus:wax_collection:active", "target": "quest_wax_active" }
+      ],
+      "next": "quest_offer_wax"
+    },
+    "quest_offer_wax": {
       "type": "TEXT",
       "speaker": "Alicia",
-      "content": "I’m going to make this into a necklace. Or maybe a ring? No, a necklace. She doesn’t like rings when she works. Thank you again!",
+      "content": "The shop is a bit dark lately, isn't it? I want to make it brighter. The candles in the dungeon... they drop special wax that burns forever. Could you bring me some?",
+      "next": "quest_wax_choices"
+    },
+    "quest_wax_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Sure, I'll get it.", "target": "action_offer_wax" },
+        { "label": "Not right now.", "target": "talk_menu_text" }
+      ]
+    },
+    "action_offer_wax": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "wax_collection",
+      "acceptNode": "quest_wax_reminder",
+      "declineNode": "talk_menu_text"
+    },
+    "quest_wax_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:melted_wax:3",
+      "trueNode": "quest_wax_turnin",
+      "falseNode": "quest_wax_reminder"
+    },
+    "quest_wax_reminder": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "Just a little bit of wax. Be careful not to get burned!",
+      "next": "talk_menu_choices"
+    },
+    "quest_wax_turnin": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "Oh! This is plenty! It's still warm... that's a little spooky, but I can work with it. The shop will be so cozy now!",
+      "next": "quest_wax_complete_action"
+    },
+    "quest_wax_complete_action": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "wax_collection",
+      "completeNode": "quest_wax_finish",
+      "takeItem": "melted_wax",
+      "count": 3
+    },
+    "quest_wax_finish": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "Here, take this tonic. You might need it if you got burned.",
+      "next": "talk_menu_choices"
+    },
+
+    "quest_check_nightmare": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:alicia_nightmare:completed", "target": "quest_all_done" },
+        { "condition": "questStatus:alicia_nightmare:active", "target": "quest_nightmare_active" }
+      ],
+      "next": "quest_offer_nightmare"
+    },
+    "quest_offer_nightmare": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "Um... can I tell you something scary? I've been having nightmares. About a man in red, in a chapel of blood. He... he whispers my name. It feels so real. I think he's on Floor 6.",
+      "next": "quest_nightmare_choices"
+    },
+    "quest_nightmare_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I will defeat him.", "target": "action_offer_nightmare" },
+        { "label": "Just a dream.", "target": "talk_menu_text" }
+      ]
+    },
+    "action_offer_nightmare": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "alicia_nightmare",
+      "acceptNode": "quest_nightmare_reminder",
+      "declineNode": "talk_menu_text"
+    },
+    "quest_nightmare_active": {
+      "type": "ROUTER",
+      "condition": "flag:killed_crimsonLord",
+      "trueNode": "quest_nightmare_turnin",
+      "falseNode": "quest_nightmare_reminder"
+    },
+    "quest_nightmare_reminder": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "I'm scared to sleep... please, if you see the Crimson Lord, stop him.",
+      "next": "talk_menu_choices"
+    },
+    "quest_nightmare_turnin": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "You... you did it? I felt it. The heaviness is gone. I can breathe again. Thank you... you saved me from my dreams.",
+      "next": "quest_nightmare_complete_action"
+    },
+    "quest_nightmare_complete_action": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "alicia_nightmare",
+      "completeNode": "quest_nightmare_finish"
+    },
+    "quest_nightmare_finish": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "I found this... egg? It seems special. Maybe you can use it.",
+      "next": "talk_menu_choices"
+    },
+
+    "quest_all_done": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "You've done so much for me. I don't know how to repay you, except to promise I'll always be here with a smile!",
       "next": "talk_menu_choices"
     }
   }

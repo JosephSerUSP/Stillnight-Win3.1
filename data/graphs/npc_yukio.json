@@ -3,8 +3,21 @@
   "name": "Yukio",
   "layout": "visual_novel",
   "portrait": "NPC_Yukio",
-  "initialNode": "default_text",
+  "initialNode": "root_router",
   "nodes": {
+    "root_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:archivist_key:completed", "target": "quest_check_history" },
+        { "condition": "questStatus:archivist_key:active", "target": "quest_archivist_active" },
+        { "condition": "questStatus:silence_the_noise:completed", "target": "quest_check_archivist" },
+        { "condition": "questStatus:silence_the_noise:active", "target": "quest_silence_active" },
+        { "condition": "questStatus:book_of_whispers:completed", "target": "quest_check_silence" },
+        { "condition": "questStatus:book_of_whispers:active", "target": "quest_book_active" }
+      ],
+      "next": "default_text"
+    },
+
     "default_text": {
       "type": "TEXT",
       "content": "Efficiency is key. Do not waste my time.",
@@ -14,6 +27,7 @@
       "type": "CHOICE",
       "options": [
         { "label": "You’re a Summoner too.", "target": "talk_summoner_text" },
+        { "label": "Ask about Research", "target": "quest_offer_book" },
         { "label": "Leave", "action": "close" }
       ]
     },
@@ -26,7 +40,7 @@
       "type": "CHOICE",
       "options": [
         { "label": "Sounds lonely.", "target": "talk_lonely_text" },
-        { "label": "Back", "target": "default_text" }
+        { "label": "Back", "target": "default_choices" }
       ]
     },
     "talk_lonely_text": {
@@ -36,7 +50,213 @@
     },
     "talk_lonely_choices": {
       "type": "CHOICE",
-      "options": [ { "label": "Back", "target": "default_text" } ]
+      "options": [ { "label": "Back", "target": "default_choices" } ]
+    },
+
+    "quest_offer_book": {
+      "type": "TEXT",
+      "content": "I am cataloging the phenomena of the lower floors. Specifically, the 'Shifting Archives'. There is a book there, the 'Whispering Tome'. It records history before it happens. Retrieve it.",
+      "next": "quest_book_choices"
+    },
+    "quest_book_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll find it.", "target": "action_offer_book" },
+        { "label": "Sounds dangerous.", "target": "default_choices" }
+      ]
+    },
+    "action_offer_book": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "book_of_whispers",
+      "acceptNode": "quest_book_active",
+      "declineNode": "default_choices"
+    },
+    "quest_book_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:whispering_tome",
+      "trueNode": "quest_book_turnin",
+      "falseNode": "quest_book_reminder"
+    },
+    "quest_book_reminder": {
+      "type": "TEXT",
+      "content": "The Tome moves. Check the shelves on Floor 7. And do not listen to what it says.",
+      "next": "default_choices"
+    },
+    "quest_book_turnin": {
+      "type": "TEXT",
+      "content": "You have it. Good. It's... vibrating. Excellent. This data will be invaluable.",
+      "next": "quest_book_complete_action"
+    },
+    "quest_book_complete_action": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "book_of_whispers",
+      "completeNode": "quest_book_finish",
+      "takeItem": "whispering_tome"
+    },
+    "quest_book_finish": {
+      "type": "TEXT",
+      "content": "Take this. Knowledge is power, but XP is functional.",
+      "next": "default_choices"
+    },
+
+    "quest_check_silence": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:silence_the_noise:inactive", "target": "quest_offer_silence" }
+      ],
+      "next": "default_choices"
+    },
+    "quest_offer_silence": {
+      "type": "TEXT",
+      "content": "The 'Silence Wards' in the Archives are interfering with my detection spells. They create a null-field. Destroy 5 of them. I need a clear signal.",
+      "next": "quest_silence_choices"
+    },
+    "quest_silence_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Consider it done.", "target": "action_offer_silence" },
+        { "label": "Not now.", "target": "default_choices" }
+      ]
+    },
+    "action_offer_silence": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "silence_the_noise",
+      "acceptNode": "quest_silence_reminder",
+      "declineNode": "default_choices"
+    },
+    "quest_silence_active": {
+      "type": "ROUTER",
+      "condition": "kills:silence_ward:5",
+      "trueNode": "quest_silence_turnin",
+      "falseNode": "quest_silence_reminder"
+    },
+    "quest_silence_reminder": {
+      "type": "TEXT",
+      "content": "The signal is still fuzzy. Destroy more Wards.",
+      "next": "default_choices"
+    },
+    "quest_silence_turnin": {
+      "type": "TEXT",
+      "content": "Better. The static is clearing. I can hear the hum of the void again. Acceptable work.",
+      "next": "quest_silence_complete_action"
+    },
+    "quest_silence_complete_action": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "silence_the_noise",
+      "completeNode": "default_choices"
+    },
+
+    "quest_check_archivist": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:archivist_key:inactive", "target": "quest_offer_archivist" }
+      ],
+      "next": "default_choices"
+    },
+    "quest_offer_archivist": {
+      "type": "TEXT",
+      "content": "The 'Void Scholars' on Floor 9 carry keys to the Forbidden Library. I need one. There is a specific text I require, locked behind the Archivist's gate.",
+      "next": "quest_archivist_choices"
+    },
+    "quest_archivist_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll get a key.", "target": "action_offer_archivist" },
+        { "label": "Maybe later.", "target": "default_choices" }
+      ]
+    },
+    "action_offer_archivist": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "archivist_key",
+      "acceptNode": "quest_archivist_reminder",
+      "declineNode": "default_choices"
+    },
+    "quest_archivist_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:archive_key",
+      "trueNode": "quest_archivist_turnin",
+      "falseNode": "quest_archivist_reminder"
+    },
+    "quest_archivist_reminder": {
+      "type": "TEXT",
+      "content": "The Scholars are dangerous. Do not let them drain your mind before you find the key.",
+      "next": "default_choices"
+    },
+    "quest_archivist_turnin": {
+      "type": "TEXT",
+      "content": "The key. Cold iron. It feels like despair. Perfect.",
+      "next": "quest_archivist_complete_action"
+    },
+    "quest_archivist_complete_action": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "archivist_key",
+      "completeNode": "default_choices",
+      "takeItem": "archive_key"
+    },
+
+    "quest_check_history": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:history_void:inactive", "target": "quest_offer_history" },
+        { "condition": "questStatus:history_void:active", "target": "quest_history_active" },
+        { "condition": "questStatus:history_void:completed", "target": "quest_all_done" }
+      ],
+      "next": "default_choices"
+    },
+    "quest_offer_history": {
+      "type": "TEXT",
+      "content": "One final task. The history of this place is fragmented. Scattered pages of 'Lore' drift through the Archives. Collect them. We must know how this started to know how it ends.",
+      "next": "quest_history_choices"
+    },
+    "quest_history_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll find them.", "target": "action_offer_history" },
+        { "label": "No more.", "target": "default_choices" }
+      ]
+    },
+    "action_offer_history": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "history_void",
+      "acceptNode": "quest_history_reminder",
+      "declineNode": "default_choices"
+    },
+    "quest_history_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:lore_page:3",
+      "trueNode": "quest_history_turnin",
+      "falseNode": "quest_history_reminder"
+    },
+    "quest_history_reminder": {
+      "type": "TEXT",
+      "content": "Three pages. That is the minimum sample size for a coherent timeline.",
+      "next": "default_choices"
+    },
+    "quest_history_turnin": {
+      "type": "TEXT",
+      "content": "Let me see... 'The Void is not a place, but a hunger.' ...Interesting. You have done well. Here.",
+      "next": "quest_history_complete_action"
+    },
+    "quest_history_complete_action": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "history_void",
+      "completeNode": "quest_all_done",
+      "takeItem": "lore_page",
+      "count": 3
+    },
+
+    "quest_all_done": {
+      "type": "TEXT",
+      "content": "I have enough data for now. You are... adequate. For a human.",
+      "next": "default_choices"
     }
   }
 }

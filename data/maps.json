@@ -170,12 +170,185 @@
     "music": "event4_darkJester",
     "image": "DungeonFloors1.png",
     "events": [
+      { "id": "stairs", "count": 1 },
       { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
+      { "id": "enemy", "min": 2, "max": 3 }
     ],
     "encounters": [
       { "id": "crimsonLord", "weight": 10 },
       { "id": "demon", "weight": 5 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Floor 7: The Shifting Archives I",
+    "intro": "The walls are lined with books that rewrite themselves.",
+    "depth": 7,
+    "music": "event9_magical",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 4, "max": 6 },
+      { "id": "recruit", "chance": 0.5 },
+      { "id": "treasure", "count": 2 }
+    ],
+    "treasures": ["whispering_tome"],
+    "encounters": [
+      { "id": "book_mimic", "weight": 6 },
+      { "id": "silence_ward", "weight": 4 },
+      { "id": "wisp", "weight": 3 }
+    ],
+    "recruits": ["book_mimic", "silence_ward"]
+  },
+  {
+    "title": "Floor 8: The Shifting Archives II",
+    "intro": "Silence hangs heavy here. Knowledge is dangerous.",
+    "depth": 8,
+    "music": "event9_magical",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.2 },
+      { "id": "enemy", "min": 5, "max": 7 },
+      { "id": "npc_dungeon_merchant", "chance": 0.5 },
+      { "id": "treasure", "count": 1 }
+    ],
+    "treasures": ["lore_page", "probability_die"],
+    "encounters": [
+      { "id": "book_mimic", "weight": 5 },
+      { "id": "void_scholar", "weight": 3 },
+      { "id": "silence_ward", "weight": 5 }
+    ],
+    "recruits": ["silence_ward", "void_scholar"]
+  },
+  {
+    "title": "Floor 9: The Forbidden Library",
+    "intro": "The Archivist guards the secrets of the void.",
+    "depth": 9,
+    "music": "event4_darkJester",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "count": 1 },
+      { "id": "enemy", "count": 1, "encounters": [{ "id": "archivist", "weight": 10 }] }
+    ],
+    "encounters": [
+      { "id": "void_scholar", "weight": 5 },
+      { "id": "book_mimic", "weight": 3 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Floor 10: The Crystalline Void I",
+    "intro": "Gravity feels subjective here. Light fractures into sound.",
+    "depth": 10,
+    "music": "dungeon1",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.3 },
+      { "id": "enemy", "min": 5, "max": 8 },
+      { "id": "recruit", "chance": 0.4 },
+      { "id": "treasure", "count": 2 }
+    ],
+    "treasures": ["resonant_shard", "void_essence"],
+    "encounters": [
+      { "id": "prism_golem", "weight": 6 },
+      { "id": "entropy_wisp", "weight": 5 },
+      { "id": "imp", "weight": 2 }
+    ],
+    "recruits": ["prism_golem", "entropy_wisp"]
+  },
+  {
+    "title": "Floor 11: The Crystalline Void II",
+    "intro": "Reflections in the crystal walls move on their own.",
+    "depth": 11,
+    "music": "dungeon1",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.2 },
+      { "id": "enemy", "min": 6, "max": 9 },
+      { "id": "treasure", "count": 1 }
+    ],
+    "treasures": ["mirror_shard"],
+    "encounters": [
+      { "id": "mirror_doppelganger", "weight": 5 },
+      { "id": "prism_golem", "weight": 5 },
+      { "id": "entropy_wisp", "weight": 4 }
+    ],
+    "recruits": ["prism_golem"]
+  },
+  {
+    "title": "Floor 12: The Prism Heart",
+    "intro": "A blinding light emanates from the center.",
+    "depth": 12,
+    "music": "event4_darkJester",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "count": 1 },
+      { "id": "enemy", "count": 1, "encounters": [{ "id": "void_prism", "weight": 10 }] },
+      { "id": "treasure", "count": 1 }
+    ],
+    "treasures": ["star_metal"],
+    "encounters": [
+      { "id": "prism_golem", "weight": 5 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Floor 13: The Heart of Entropy I",
+    "intro": "The world is unraveling at the seams.",
+    "depth": 13,
+    "music": "emotional1_bitSad",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.2 },
+      { "id": "enemy", "min": 6, "max": 10 },
+      { "id": "recruit", "chance": 0.3 },
+      { "id": "treasure", "count": 1 }
+    ],
+    "treasures": ["ancient_idol"],
+    "encounters": [
+      { "id": "entropy_wisp", "weight": 6 },
+      { "id": "mirror_doppelganger", "weight": 5 },
+      { "id": "void_scholar", "weight": 4 }
+    ],
+    "recruits": ["void_scholar"]
+  },
+  {
+    "title": "Floor 14: The Heart of Entropy II",
+    "intro": "Nothing exists here but the end.",
+    "depth": 14,
+    "music": "emotional1_bitSad",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "stairs", "count": 1 },
+      { "id": "recovery", "chance": 0.1 },
+      { "id": "enemy", "min": 7, "max": 12 }
+    ],
+    "encounters": [
+      { "id": "entropy_wisp", "weight": 8 },
+      { "id": "mirror_doppelganger", "weight": 6 },
+      { "id": "crimsonLord", "weight": 4 }
+    ],
+    "recruits": []
+  },
+  {
+    "title": "Floor 15: Zero Point",
+    "intro": "The Avatar of Zero awaits.",
+    "depth": 15,
+    "music": "event4_darkJester",
+    "image": "DungeonFloors1.png",
+    "events": [
+      { "id": "recovery", "count": 1 },
+      { "id": "enemy", "count": 1, "encounters": [{ "id": "avatar_of_zero", "weight": 10 }] }
+    ],
+    "encounters": [
+      { "id": "avatar_of_zero", "weight": 10 }
     ],
     "recruits": []
   }

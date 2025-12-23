@@ -401,7 +401,7 @@
     "type": "quest",
     "cost": 0,
     "icon": 228,
-    "description": "A flawless crystal that catches the faintest light. Alicia believes Laura will love it."
+    "description": "A flawless crystal that catches the faintest light."
   },
   {
     "id": "untarnished_signet",
@@ -409,6 +409,188 @@
     "type": "quest",
     "cost": 0,
     "icon": 218,
-    "description": "A heavy golden ring, unmarked and waiting for a new story. Laura can reshape it into something precious."
+    "description": "A heavy golden ring, unmarked and waiting for a new story."
+  },
+  {
+    "id": "obsidian_shard",
+    "name": "Obsidian Shard",
+    "type": "quest",
+    "cost": 15,
+    "icon": 229,
+    "description": "A sharp, black shard from a Flauros."
+  },
+  {
+    "id": "melted_wax",
+    "name": "Melted Wax",
+    "type": "quest",
+    "cost": 5,
+    "icon": 230,
+    "description": "Warm wax from a living candle."
+  },
+  {
+    "id": "whispering_tome",
+    "name": "Whispering Tome",
+    "type": "quest",
+    "cost": 0,
+    "icon": 195,
+    "description": "A book that murmurs when you're not looking."
+  },
+  {
+    "id": "void_essence",
+    "name": "Void Essence",
+    "type": "quest",
+    "cost": 0,
+    "icon": 240,
+    "description": "A swirling vial of nothingness."
+  },
+  {
+    "id": "probability_die",
+    "name": "Probability Die",
+    "type": "quest",
+    "cost": 0,
+    "icon": 211,
+    "description": "A die with constantly changing numbers."
+  },
+  {
+    "id": "star_metal",
+    "name": "Star Metal",
+    "type": "quest",
+    "cost": 0,
+    "icon": 235,
+    "description": "Ore that feels heavier than it looks."
+  },
+  {
+    "id": "archive_key",
+    "name": "Archive Key",
+    "type": "quest",
+    "cost": 0,
+    "icon": 215,
+    "description": "An old iron key that feels cold."
+  },
+  {
+    "id": "resonant_shard",
+    "name": "Resonant Shard",
+    "type": "quest",
+    "cost": 0,
+    "icon": 227,
+    "description": "A crystal shard that vibrates with sound."
+  },
+  {
+    "id": "lore_page",
+    "name": "Lore Page",
+    "type": "quest",
+    "cost": 0,
+    "icon": 196,
+    "description": "A page torn from a forgotten history."
+  },
+  {
+    "id": "mirror_shard",
+    "name": "Mirror Shard",
+    "type": "quest",
+    "cost": 0,
+    "icon": 231,
+    "description": "A shard of glass that shows no reflection."
+  },
+  {
+    "id": "ancient_idol",
+    "name": "Ancient Idol",
+    "type": "quest",
+    "cost": 0,
+    "icon": 210,
+    "description": "A disturbingly geometric statue."
+  },
+  {
+    "id": "void_blade",
+    "name": "Void Blade",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 4000,
+    "icon": 76,
+    "description": "A sword forged from the essence of emptiness.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 5
+      },
+      {
+        "code": "ELEMENT_CHANGE",
+        "dataId": "Black"
+      },
+      {
+        "code": "CRI",
+        "value": 0.25
+      }
+    ]
+  },
+  {
+    "id": "crystal_shield",
+    "name": "Crystal Shield",
+    "type": "equipment",
+    "equipType": "Armor",
+    "cost": 3500,
+    "icon": 160,
+    "description": "A shield made of resonant crystal.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "def",
+        "value": 4
+      },
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "maxHp",
+        "value": 10
+      }
+    ]
+  },
+  {
+    "id": "void_potion",
+    "name": "Void Potion",
+    "type": "consumable",
+    "cost": 200,
+    "icon": 57,
+    "description": "Restores MP but drains a little HP.",
+    "effects": [
+      {
+        "type": "mp_heal",
+        "value": 100
+      },
+      {
+        "type": "hp",
+        "value": -10
+      }
+    ]
+  },
+  {
+    "id": "prism_ring",
+    "name": "Prism Ring",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 5000,
+    "icon": 218,
+    "description": "Refracts magic damage.",
+    "traits": [
+      {
+        "code": "PARAM_RATE",
+        "dataId": "spi",
+        "value": 1.2
+      }
+    ]
+  },
+  {
+    "id": "entropy_cloak",
+    "name": "Entropy Cloak",
+    "type": "equipment",
+    "equipType": "Armor",
+    "cost": 6000,
+    "icon": 170,
+    "description": "A cloak that shifts with the void.",
+    "traits": [
+      {
+        "code": "EVA",
+        "value": 0.2
+      }
+    ]
   }
 ]

@@ -7,10 +7,27 @@
   "nodes": {
     "root_router": {
       "type": "ROUTER",
-      "condition": "flag:daphne_first_met",
-      "trueNode": "default_text",
-      "falseNode": "intro_text"
+      "branches": [
+        { "condition": "flag:daphne_first_met", "target": "quest_check_router" }
+      ],
+      "next": "intro_text"
     },
+
+    "quest_check_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:shattered_reflections:completed", "target": "quest_all_done" },
+        { "condition": "questStatus:shattered_reflections:active", "target": "quest_shattered_active" },
+        { "condition": "questStatus:crystal_resonance:completed", "target": "quest_check_shattered" },
+        { "condition": "questStatus:crystal_resonance:active", "target": "quest_crystal_active" },
+        { "condition": "questStatus:mirrors_edge:completed", "target": "quest_check_crystal" },
+        { "condition": "questStatus:mirrors_edge:active", "target": "quest_mirror_active" },
+        { "condition": "questStatus:daphne_research:completed", "target": "quest_check_mirror" },
+        { "condition": "questStatus:daphne_research:active", "target": "quest_research_active" }
+      ],
+      "next": "default_text"
+    },
+
     "intro_text": {
       "type": "TEXT",
       "content": "…You’re late.",
@@ -70,6 +87,7 @@
       "options": [
         { "label": "Ask about the dungeon", "target": "talk_dungeon_text" },
         { "label": "Ask about the town", "target": "talk_town_text" },
+        { "label": "Ask about Research", "target": "quest_offer_research" },
         { "label": "Leave", "action": "close" }
       ]
     },
@@ -80,7 +98,7 @@
     },
     "talk_dungeon_choices": {
       "type": "CHOICE",
-      "options": [ { "label": "Back", "target": "default_text" } ]
+      "options": [ { "label": "Back", "target": "default_choices" } ]
     },
     "talk_town_text": {
       "type": "TEXT",
@@ -89,7 +107,207 @@
     },
     "talk_town_choices": {
       "type": "CHOICE",
-      "options": [ { "label": "Back", "target": "default_text" } ]
+      "options": [ { "label": "Back", "target": "default_choices" } ]
+    },
+
+    "quest_offer_research": {
+      "type": "TEXT",
+      "content": "I am studying the composition of 'nothing'. It is thicker than you think. Bring me a sample. 'Void Essence' from the deep floors.",
+      "next": "quest_research_choices"
+    },
+    "quest_research_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll get it.", "target": "action_offer_research" },
+        { "label": "Not interested.", "target": "default_choices" }
+      ]
+    },
+    "action_offer_research": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "daphne_research",
+      "acceptNode": "quest_research_reminder",
+      "declineNode": "default_choices"
+    },
+    "quest_research_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:void_essence",
+      "trueNode": "quest_research_turnin",
+      "falseNode": "quest_research_reminder"
+    },
+    "quest_research_reminder": {
+      "type": "TEXT",
+      "content": "The essence degrades if you hold it too long. Or maybe you degrade. Hurry.",
+      "next": "default_choices"
+    },
+    "quest_research_turnin": {
+      "type": "TEXT",
+      "content": "Pure entropy. Fascinating. It doesn't reflect light, it swallows it.",
+      "next": "quest_research_complete_action"
+    },
+    "quest_research_complete_action": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "daphne_research",
+      "completeNode": "default_choices",
+      "takeItem": "void_essence"
+    },
+
+    "quest_check_mirror": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:mirrors_edge:inactive", "target": "quest_offer_mirror" }
+      ],
+      "next": "default_choices"
+    },
+    "quest_offer_mirror": {
+      "type": "TEXT",
+      "content": "There are things down there that wear your face. 'Doppelgangers'. Kill one. I want to know if they bleed or shatter.",
+      "next": "quest_mirror_choices"
+    },
+    "quest_mirror_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll kill it.", "target": "action_offer_mirror" },
+        { "label": "Too creepy.", "target": "default_choices" }
+      ]
+    },
+    "action_offer_mirror": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "mirrors_edge",
+      "acceptNode": "quest_mirror_reminder",
+      "declineNode": "default_choices"
+    },
+    "quest_mirror_active": {
+      "type": "ROUTER",
+      "condition": "kills:mirror_doppelganger:1",
+      "trueNode": "quest_mirror_turnin",
+      "falseNode": "quest_mirror_reminder"
+    },
+    "quest_mirror_reminder": {
+      "type": "TEXT",
+      "content": "It only mimics your form, not your intent. Strike first.",
+      "next": "default_choices"
+    },
+    "quest_mirror_turnin": {
+      "type": "TEXT",
+      "content": "So it shattered. Like glass. That means we are fragile too. Good data.",
+      "next": "quest_mirror_complete_action"
+    },
+    "quest_mirror_complete_action": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "mirrors_edge",
+      "completeNode": "default_choices"
+    },
+
+    "quest_check_crystal": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:crystal_resonance:inactive", "target": "quest_offer_crystal" }
+      ],
+      "next": "default_choices"
+    },
+    "quest_offer_crystal": {
+      "type": "TEXT",
+      "content": "The Prism Golems hum at a frequency that disrupts the void. I need 'Resonant Shards' from their bodies. I want to build a cage for a ghost.",
+      "next": "quest_crystal_choices"
+    },
+    "quest_crystal_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll get them.", "target": "action_offer_crystal" },
+        { "label": "Ghost cage?", "target": "default_choices" }
+      ]
+    },
+    "action_offer_crystal": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "crystal_resonance",
+      "acceptNode": "quest_crystal_reminder",
+      "declineNode": "default_choices"
+    },
+    "quest_crystal_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:resonant_shard:3",
+      "trueNode": "quest_crystal_turnin",
+      "falseNode": "quest_crystal_reminder"
+    },
+    "quest_crystal_reminder": {
+      "type": "TEXT",
+      "content": "Three shards. Don't drop them, they scream when they hit the floor.",
+      "next": "default_choices"
+    },
+    "quest_crystal_turnin": {
+      "type": "TEXT",
+      "content": "Listen to them... they are singing a funeral dirge for something that hasn't died yet.",
+      "next": "quest_crystal_complete_action"
+    },
+    "quest_crystal_complete_action": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "crystal_resonance",
+      "completeNode": "default_choices",
+      "takeItem": "resonant_shard",
+      "count": 3
+    },
+
+    "quest_check_shattered": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:shattered_reflections:inactive", "target": "quest_offer_shattered" }
+      ],
+      "next": "default_choices"
+    },
+    "quest_offer_shattered": {
+      "type": "TEXT",
+      "content": "One last experiment. The mirrors. They don't just reflect light, they reflect time. Bring me 'Mirror Shards'. I want to see what I looked like before I came here.",
+      "next": "quest_shattered_choices"
+    },
+    "quest_shattered_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll do it.", "target": "action_offer_shattered" },
+        { "label": "That's sad.", "target": "default_choices" }
+      ]
+    },
+    "action_offer_shattered": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "shattered_reflections",
+      "acceptNode": "quest_shattered_reminder",
+      "declineNode": "default_choices"
+    },
+    "quest_shattered_active": {
+      "type": "ROUTER",
+      "condition": "hasItem:mirror_shard:3",
+      "trueNode": "quest_shattered_turnin",
+      "falseNode": "quest_shattered_reminder"
+    },
+    "quest_shattered_reminder": {
+      "type": "TEXT",
+      "content": "The shards. Do you see your own face in them? Try not to.",
+      "next": "default_choices"
+    },
+    "quest_shattered_turnin": {
+      "type": "TEXT",
+      "content": "Here. Let me look... Ah. I look... exactly the same. How disappointing.",
+      "next": "quest_shattered_complete_action"
+    },
+    "quest_shattered_complete_action": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "shattered_reflections",
+      "completeNode": "quest_all_done",
+      "takeItem": "mirror_shard",
+      "count": 3
+    },
+
+    "quest_all_done": {
+      "type": "TEXT",
+      "content": "You have served your purpose. And I have confirmed my hypothesis. We are all just waiting to be broken.",
+      "next": "default_choices"
     }
   }
 }

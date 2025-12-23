@@ -256,10 +256,11 @@
         "type": "CHOICE",
         "options": [ { "label": "Leave quietly", "action": "close", "setFlag": "laura_vulnerable_unlocked" } ]
     },
+
     "quest_router": {
         "type": "ROUTER",
         "branches": [
-            { "condition": "questStatus:golden_promise:completed", "target": "quest_complete_text" },
+            { "condition": "questStatus:golden_promise:completed", "target": "quest_check_obsidian" },
             { "condition": "questStatus:golden_promise:active", "target": "quest_active_text" }
         ],
         "next": "quest_offer_text"
@@ -335,6 +336,125 @@
     "quest_complete_choices": {
         "type": "CHOICE",
         "options": [ { "label": "Back", "target": "default_text" } ]
+    },
+
+    "quest_check_obsidian": {
+        "type": "ROUTER",
+        "branches": [
+          { "condition": "questStatus:obsidian_hunt:completed", "target": "quest_check_masterpiece" },
+          { "condition": "questStatus:obsidian_hunt:active", "target": "quest_obsidian_active" }
+        ],
+        "next": "quest_offer_obsidian"
+    },
+    "quest_offer_obsidian": {
+        "type": "TEXT",
+        "content": "I'm working on a new alloy. Something blacker than night. The Flauros beasts down there... their claws are made of obsidian shards. Bring me some. I want to see if they hold an edge.",
+        "next": "quest_obsidian_choices"
+    },
+    "quest_obsidian_choices": {
+        "type": "CHOICE",
+        "options": [
+            { "label": "Consider it done.", "target": "action_offer_obsidian" },
+            { "label": "Sounds messy.", "target": "talk_menu_text" }
+        ]
+    },
+    "action_offer_obsidian": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "obsidian_hunt",
+        "acceptNode": "quest_obsidian_reminder",
+        "declineNode": "talk_menu_text"
+    },
+    "quest_obsidian_active": {
+        "type": "ROUTER",
+        "condition": "hasItem:obsidian_shard:3",
+        "trueNode": "quest_obsidian_turnin",
+        "falseNode": "quest_obsidian_reminder"
+    },
+    "quest_obsidian_reminder": {
+        "type": "TEXT",
+        "content": "Three shards. That's all I need. Don't chip them.",
+        "next": "talk_menu_choices"
+    },
+    "quest_obsidian_turnin": {
+        "type": "TEXT",
+        "content": "Sharp. Brutal. Excellent. These will melt down beautifully. You have an eye for quality violence.",
+        "next": "quest_obsidian_complete_action"
+    },
+    "quest_obsidian_complete_action": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "obsidian_hunt",
+        "completeNode": "quest_obsidian_finish",
+        "takeItem": "obsidian_shard",
+        "count": 3
+    },
+    "quest_obsidian_finish": {
+        "type": "TEXT",
+        "content": "Take this blade. It's an early prototype. Too light for my taste, but effective.",
+        "next": "talk_menu_choices"
+    },
+
+    "quest_check_masterpiece": {
+        "type": "ROUTER",
+        "branches": [
+            { "condition": "questStatus:laura_masterpiece:completed", "target": "quest_all_done" },
+            { "condition": "questStatus:laura_masterpiece:active", "target": "quest_masterpiece_active" }
+        ],
+        "next": "quest_offer_masterpiece"
+    },
+    "quest_offer_masterpiece": {
+        "type": "TEXT",
+        "content": "There's a rumor of 'Star Metal' in the Crystalline Void. Material that fell from... somewhere else. If I had that, I could forge something that cuts through reality itself. Are you insane enough to find it?",
+        "next": "quest_masterpiece_choices"
+    },
+    "quest_masterpiece_choices": {
+        "type": "CHOICE",
+        "options": [
+            { "label": "I'll find it.", "target": "action_offer_masterpiece" },
+            { "label": "No thanks.", "target": "talk_menu_text" }
+        ]
+    },
+    "action_offer_masterpiece": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "laura_masterpiece",
+        "acceptNode": "quest_masterpiece_reminder",
+        "declineNode": "talk_menu_text"
+    },
+    "quest_masterpiece_active": {
+        "type": "ROUTER",
+        "condition": "hasItem:star_metal",
+        "trueNode": "quest_masterpiece_turnin",
+        "falseNode": "quest_masterpiece_reminder"
+    },
+    "quest_masterpiece_reminder": {
+        "type": "TEXT",
+        "content": "Star Metal. It will look like nothing you've ever seen. Or everything. Just bring it here.",
+        "next": "talk_menu_choices"
+    },
+    "quest_masterpiece_turnin": {
+        "type": "TEXT",
+        "content": "...My god. It's cold. It burns. This is it. This is the work I was born to do.",
+        "next": "quest_masterpiece_complete_action"
+    },
+    "quest_masterpiece_complete_action": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "laura_masterpiece",
+        "completeNode": "quest_masterpiece_finish",
+        "takeItem": "star_metal"
+    },
+    "quest_masterpiece_finish": {
+        "type": "TEXT",
+        "content": "I need to work. Now. Take the Void Blade. I don't need it anymore. I'm making something better.",
+        "next": "talk_menu_choices"
+    },
+
+    "quest_all_done": {
+        "type": "TEXT",
+        "content": "You've proven useful, Summoner. Don't let it go to your head. But... thank you.",
+        "next": "talk_menu_choices"
     }
   }
 }
