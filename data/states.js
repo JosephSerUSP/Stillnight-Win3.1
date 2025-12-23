@@ -68,5 +68,33 @@ export const states = {
             { code: 'PARAM_RATE', dataId: 'def', value: 0.5 },
             { code: 'PARAM_RATE', dataId: 'asp', value: 0.5 }
         ]
+    },
+    poison: {
+        id: 'poison',
+        name: 'Poison',
+        icon: 2,
+        duration: 5,
+        traits: [
+            { code: 'HRG', value: -0.1 }
+        ]
+    },
+    infected: {
+        id: 'infected',
+        name: 'T-Virus Infection',
+        icon: 12,
+        duration: 9999,
+        traits: [
+            { code: 'HRG', value: -0.05 },
+            { code: 'PARAM_RATE', dataId: 'def', value: 0.8 }
+        ]
+    },
+    blind: {
+        id: 'blind',
+        name: 'Blind',
+        icon: 3,
+        duration: 3,
+        traits: [
+            { code: 'PARAM_RATE', dataId: 'hit', value: 0.5 }
+        ]
     }
 };

@@ -38,145 +38,278 @@
       { "id": "npc_gambler", "x": 6, "y": 9 },
       { "id": "loc_pub", "x": 14, "y": 12 },
       { "id": "npc_auction", "x": 10, "y": 13 },
-      { "id": "loc_temple", "x": 8, "y": 14 }
+      { "id": "loc_temple", "x": 8, "y": 14 },
+      {
+          "id": "event_trigger_rpd",
+          "x": 9, "y": 18,
+          "trigger": "step",
+          "scripts": {
+              "onEnter": [
+                  { "type": "SET_FLAG", "flag": "reached_rpd" },
+                  { "type": "LOG", "text": "You see the R.P.D. station ahead." }
+              ]
+          }
+      }
     ],
     "treasures": [],
     "encounters": [],
     "recruits": []
   },
   {
-    "title": "Floor 1: Entry Hall",
-    "intro": "You cross the threshold into the dark.",
+    "title": "Raccoon City Streets",
+    "intro": "The city is in flames. The dead walk the streets.",
     "depth": 1,
     "music": "dungeon1",
     "image": "DungeonFloors1.png",
+    "layout": [
+        "#####S#####",
+        "#.........#",
+        "#.#######.#",
+        "#.#.....#.#",
+        "#.#.....#.#",
+        "#.#.....#.#",
+        "#.#######.#",
+        "#.........#",
+        "#...E.....#",
+        "###########"
+    ],
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 2, "max": 3 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "treasure", "count": 1 },
-      {
-          "id": "enemy",
-          "count": 1,
-          "behavior": "chase",
-          "symbol": "!",
-          "cssClass": "text-danger",
-          "encounters": [
-              { "id": "imp", "weight": 10 }
-          ]
-      }
+        { "id": "stairs", "count": 1 },
+        { "id": "npc_brad", "x": 5, "y": 5 },
+        { "id": "enemy", "min": 3, "max": 5 },
+        {
+            "id": "trigger_rpd_entrance",
+            "trigger": "step",
+            "x": 5, "y": 0,
+            "scripts": {
+                "onEnter": [
+                    { "type": "SET_FLAG", "flag": "reached_rpd" }
+                ]
+            }
+        }
     ],
-    "treasures": ["potion", "antidote"],
     "encounters": [
-      { "id": "pixie", "weight": 5 },
-      { "id": "skeleton", "weight": 5 },
-      { "id": "imp", "weight": 3 }
+        { "id": "zombie_shambler", "weight": 10 },
+        { "id": "zombie_dog", "weight": 3 }
     ],
-    "recruits": ["pixie", "skeleton", "imp", "wisp", "bat","candle"]
+    "treasures": ["green_herb", "handgun_ammo"]
   },
   {
-    "title": "Floor 2: Chasm Crossing",
-    "intro": "Wind howls across a broken bridge.",
+    "title": "R.P.D. Main Hall",
+    "intro": "A grand hall, now a temporary shelter.",
     "depth": 2,
+    "music": "town1",
+    "image": "TownAlencar.png",
+    "layout": [
+        "#####S#####",
+        "#....G....#",
+        "#.........#",
+        "#.#######.#",
+        "#.#M....#.#",
+        "#.#.....#.#",
+        "#.#######.#",
+        "#.........#",
+        "#####D#####"
+    ],
+    "events": [
+        { "id": "stairs", "count": 1 },
+        { "id": "npc_marvin", "x": 3, "y": 4 },
+        { "id": "recovery", "x": 5, "y": 5 },
+        {
+            "id": "trigger_medallion_maiden",
+            "trigger": "touch",
+            "x": 5, "y": 1,
+            "scripts": {
+                "onEnter": [
+                    { "type": "TEXT", "text": "You found the Maiden Medallion!", "style": "terminal" },
+                    { "type": "GIVE_ITEM", "itemId": "maiden_medallion" }
+                ]
+            }
+        }
+    ]
+  },
+  {
+    "title": "R.P.D. West Wing",
+    "intro": "Dark corridors filled with shadows.",
+    "depth": 3,
     "music": "dungeon1",
     "image": "DungeonFloors1.png",
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 3, "max": 4 },
-      { "id": "shrine_music_box", "chance": 0.3 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "npc_dungeon_merchant", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.6 },
-      { "id": "trap", "min": 1, "max": 2 },
-      { "id": "treasure", "chance": 0.5 }
+        { "id": "stairs", "count": 1 },
+        { "id": "enemy", "min": 4, "max": 6 },
+        { "id": "treasure", "min": 2, "max": 3 },
+        { "id": "npc_dungeon_merchant", "chance": 0.2 },
+        {
+            "id": "trigger_medallion_lion",
+            "trigger": "touch",
+            "scripts": {
+                "onEnter": [
+                    { "type": "TEXT", "text": "You found the Lion Medallion!", "style": "terminal" },
+                    { "type": "GIVE_ITEM", "itemId": "lion_medallion" }
+                ]
+            }
+        }
     ],
-    "treasures": ["hi_potion", "iron_sword"],
     "encounters": [
-      { "id": "skeleton", "weight": 8 },
-      { "id": "imp", "weight": 5 },
-      { "id": "wisp", "weight": 4 },
-      { "id": "ooze", "weight": 3 }
+        { "id": "zombie_shambler", "weight": 8 },
+        { "id": "licker", "weight": 2 }
     ],
-    "recruits": ["skeleton", "imp", "ooze", "golem","candle","flauros"]
+    "treasures": ["green_herb", "red_herb", "handgun_ammo", "spade_key"]
   },
   {
-    "title": "Floor 3: Rusted Choir",
-    "intro": "Broken bells sway above a dry pit.",
+    "title": "R.P.D. East Wing",
+    "intro": "The eastern offices are flooded.",
     "depth": 3,
-    "music": "emotional1_bitSad",
+    "music": "dungeon1",
     "image": "DungeonFloors1.png",
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.3 },
-      { "id": "enemy", "min": 4, "max": 6 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
+        { "id": "stairs", "count": 1 },
+        { "id": "enemy", "min": 4, "max": 6 },
+        { "id": "treasure", "min": 2, "max": 3 },
+        {
+            "id": "trigger_elliot_note",
+            "trigger": "touch",
+            "scripts": {
+                "onEnter": [
+                    { "type": "TEXT", "text": "You found Officer Elliot's notebook.", "style": "terminal" },
+                    { "type": "SET_FLAG", "flag": "found_elliot_notebook" }
+                ]
+            }
+        },
+        {
+            "id": "trigger_medallion_unicorn",
+            "trigger": "touch",
+            "scripts": {
+                "onEnter": [
+                    { "type": "TEXT", "text": "You found the Unicorn Medallion!", "style": "terminal" },
+                    { "type": "GIVE_ITEM", "itemId": "unicorn_medallion" }
+                ]
+            }
+        }
     ],
     "encounters": [
-      { "id": "golem", "weight": 6 },
-      { "id": "demon", "weight": 4 },
-      { "id": "angel", "weight": 3 }
+        { "id": "zombie_shambler", "weight": 8 },
+        { "id": "zombie_dog", "weight": 2 }
     ],
-    "recruits": ["golem", "demon", "angel", "larva","flauros"]
+    "treasures": ["handgun_ammo", "shotgun"]
   },
   {
-    "title": "Floor 4: Cryptic Vault",
-    "intro": "Relic pedestals gleam with unnatural light.",
+    "title": "Underground Facility",
+    "intro": "Machinery hums in the darkness.",
     "depth": 4,
-    "music": "event9_magical",
+    "music": "event4_darkJester",
     "image": "DungeonFloors1.png",
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 7 },
-      { "id": "shrine", "chance": 0.5 },
-      { "id": "npc_dungeon_merchant", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.5 },
-      { "id": "npc_daphne", "count": 1 }
+        { "id": "npc_birkin", "count": 1 },
+        { "id": "stairs", "count": 1 }
     ],
     "encounters": [
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 4 },
-      { "id": "ghoul", "weight": 4 }
-    ],
-    "recruits": ["demon", "angel", "golem","flauros"]
+        { "id": "g_mutant", "weight": 10 }
+    ]
   },
   {
-    "title": "Floor 5: Blood Chapel",
-    "intro": "Walls whisper of ancient oaths.",
+    "title": "Sewers",
+    "intro": "The stench is unbearable.",
     "depth": 5,
     "music": "dungeon1",
     "image": "DungeonFloors1.png",
     "events": [
-      { "id": "stairs", "count": 1 },
-      { "id": "recovery", "chance": 0.2 },
-      { "id": "enemy", "min": 5, "max": 8 },
-      { "id": "shrine", "chance": 0.4 },
-      { "id": "recruit", "chance": 0.4 }
+        { "id": "stairs", "count": 1 },
+        { "id": "npc_ada", "count": 1 },
+        { "id": "enemy", "min": 5, "max": 8 },
+        {
+            "id": "trigger_sewer_key",
+            "trigger": "touch",
+            "scripts": {
+                "onEnter": [
+                    { "type": "TEXT", "text": "You found the Sewer Control Key.", "style": "terminal" },
+                    { "type": "SET_FLAG", "flag": "sewer_key_found" }
+                ]
+            }
+        },
+        {
+            "id": "trigger_plugs",
+            "trigger": "touch",
+            "scripts": {
+                "onEnter": [
+                    { "type": "TEXT", "text": "You found the King and Queen Plugs.", "style": "terminal" },
+                    { "type": "SET_FLAG", "flag": "plugs_found" }
+                ]
+            }
+        }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 2 },
-      { "id": "demon", "weight": 8 },
-      { "id": "highPixie", "weight": 5 }
+        { "id": "zombie_shambler", "weight": 5 },
+        { "id": "g_mutant", "weight": 1 },
+        { "id": "licker", "weight": 4 }
     ],
-    "recruits": ["demon", "angel"]
+    "treasures": ["magnum", "mixed_herb"]
   },
   {
-    "title": "Floor 6: Stillnight Sanctum",
-    "intro": "A presence fills the air. The Eternal Warden awaits.",
+    "title": "NEST Lab - North Area",
+    "intro": "Sterile white hallways.",
     "depth": 6,
-    "music": "event4_darkJester",
-    "image": "DungeonFloors1.png",
+    "music": "event9_magical",
+    "image": "TownAlencar.png",
     "events": [
-      { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
+        { "id": "npc_sherry", "count": 1 },
+        { "id": "stairs", "count": 1 },
+        { "id": "recovery", "count": 1 },
+        {
+            "id": "trigger_vaccine_base",
+            "trigger": "touch",
+            "scripts": {
+                "onEnter": [
+                    { "type": "TEXT", "text": "You found the Vaccine Base.", "style": "terminal" },
+                    { "type": "GIVE_ITEM", "itemId": "vaccine_base" }
+                ]
+            }
+        }
     ],
     "encounters": [
-      { "id": "crimsonLord", "weight": 10 },
-      { "id": "demon", "weight": 5 }
+        { "id": "zombie_shambler", "weight": 2 },
+        { "id": "licker", "weight": 3 },
+        { "id": "tyrant_t00", "weight": 1 }
     ],
-    "recruits": []
+    "treasures": ["vaccine_base"]
+  },
+  {
+    "title": "NEST Lab - West Area",
+    "intro": "High security zone.",
+    "depth": 7,
+    "music": "dungeon1",
+    "image": "DungeonFloors1.png",
+    "events": [
+        { "id": "npc_announcer", "count": 1 },
+        { "id": "enemy", "min": 6, "max": 9 }
+    ],
+    "encounters": [
+        { "id": "licker", "weight": 4 },
+        { "id": "tyrant_t00", "weight": 2 },
+        { "id": "zombie_shambler", "weight": 4 }
+    ],
+    "treasures": ["rocket_launcher", "first_aid_spray"]
+  },
+  {
+    "title": "Escape Train",
+    "intro": "The final countdown.",
+    "depth": 8,
+    "music": "event4_darkJester",
+    "image": "TownAlencar.png",
+    "events": [
+        { "id": "npc_nemesis", "count": 1 },
+        {
+            "id": "trigger_platform",
+            "trigger": "step",
+            "scripts": {
+                "onEnter": [
+                    { "type": "SET_FLAG", "flag": "reached_platform" }
+                ]
+            }
+        }
+    ],
+    "encounters": [
+        { "id": "nemesis", "weight": 10 }
+    ]
   }
 ]

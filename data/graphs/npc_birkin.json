@@ -1,0 +1,44 @@
+{
+  "id": "npc_birkin",
+  "name": "William",
+  "layout": "visual_novel",
+  "portrait": "NPC_Birkin",
+  "initialNode": "encounter_start",
+  "nodes": {
+    "encounter_start": {
+      "type": "TEXT",
+      "speaker": "William",
+      "content": "G... G-virus... mine... My life's work...!",
+      "next": "encounter_choice"
+    },
+    "encounter_choice": {
+       "type": "CHOICE",
+       "options": [
+           { "label": "Doctor Birkin?", "target": "birkin_rage" },
+           { "label": "Stand back!", "target": "birkin_rage" }
+       ]
+    },
+    "birkin_rage": {
+      "type": "TEXT",
+      "speaker": "William",
+      "content": "GRAAAAAH! Help me... Sherry... NO! DIE!",
+      "next": "boss_battle"
+    },
+    "boss_battle": {
+        "type": "ACTION",
+        "action": "BATTLE",
+        "enemies": ["g_mutant"],
+        "next": "post_battle"
+    },
+    "post_battle": {
+        "type": "TEXT",
+        "speaker": "System",
+        "content": "The creature falls into the abyss.",
+        "next": "end_interaction"
+    },
+    "end_interaction": {
+        "type": "CHOICE",
+        "options": [{ "label": "Proceed", "action": "close" }]
+    }
+  }
+}

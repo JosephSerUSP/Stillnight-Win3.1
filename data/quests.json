@@ -58,5 +58,234 @@
       "gold": 50,
       "xp": 100
     }
+  },
+  "outbreak": {
+    "name": "1. Outbreak",
+    "giver": "Radio",
+    "portrait": "NPC_Radio",
+    "summary": "Escape your apartment and reach the streets.",
+    "description": "The city is in chaos. You need to leave your building immediately.",
+    "objectives": [
+      "Exit the apartment building.",
+      "Reach the Raccoon City Streets."
+    ],
+    "rewards": {
+      "xp": 50,
+      "items": [{ "id": "handgun", "qty": 1 }]
+    }
+  },
+  "sanctuary": {
+    "name": "2. Sanctuary?",
+    "giver": "Brad",
+    "portrait": "NPC_Brad",
+    "summary": "Make your way to the R.P.D. station.",
+    "description": "Brad Vickers radioed you. The Police Station is the designated shelter.",
+    "objectives": [
+      "Navigate the burning streets.",
+      "Enter the R.P.D. Main Hall."
+    ],
+    "rewards": {
+      "xp": 50,
+      "items": [{ "id": "first_aid_spray", "qty": 1 }]
+    }
+  },
+  "lockdown": {
+    "name": "3. Lockdown",
+    "giver": "Marvin",
+    "portrait": "NPC_Marvin",
+    "summary": "The station is locked down. Find the Spade Key.",
+    "description": "Lieutenant Marvin Branagh is injured. He told you to find a way out. The Spade Key opens the west wing.",
+    "objectives": [
+      "Find the Spade Key in the West Wing office.",
+      "Unlock the West Hall door."
+    ],
+    "rewards": {
+      "xp": 75,
+      "items": [{ "id": "handgun_ammo", "qty": 10 }]
+    }
+  },
+  "lost_officer": {
+    "name": "4. Lost Officer",
+    "giver": "Marvin",
+    "portrait": "NPC_Marvin",
+    "summary": "Find Officer Elliot in the East Wing.",
+    "description": "Elliot went to the East Wing to secure a way out. He hasn't returned.",
+    "objectives": [
+      "Locate Officer Elliot.",
+      "Retrieve his notebook."
+    ],
+    "rewards": {
+      "xp": 75,
+      "items": [{ "id": "shotgun", "qty": 1 }]
+    }
+  },
+  "medallions": {
+    "name": "5. Medallions",
+    "giver": "Statue",
+    "portrait": "NPC_Statue",
+    "summary": "Collect the three medallions to open the secret passage.",
+    "description": "The Goddess Statue in the Main Hall requires three medallions: Lion, Unicorn, and Maiden.",
+    "objectives": [
+      "Find the Lion Medallion.",
+      "Find the Unicorn Medallion.",
+      "Find the Maiden Medallion."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "lion_medallion", "qty": 1 },
+        { "id": "unicorn_medallion", "qty": 1 },
+        { "id": "maiden_medallion", "qty": 1 }
+      ]
+    },
+    "rewards": {
+      "xp": 150
+    }
+  },
+  "underground": {
+    "name": "6. Underground",
+    "giver": "Secret Passage",
+    "portrait": "NPC_Statue",
+    "summary": "Descend into the secret underground facility.",
+    "description": "The statue has moved. The path below is open.",
+    "objectives": [
+      "Take the elevator down.",
+      "Explore the secret machinery room."
+    ],
+    "rewards": {
+      "xp": 100
+    }
+  },
+  "g_virus_confrontation": {
+    "name": "7. G-Virus",
+    "giver": "William",
+    "portrait": "NPC_Birkin",
+    "summary": "Survive the encounter with the mutant.",
+    "description": "A monstrous creature is blocking the path. It seems to be mutating.",
+    "objectives": [
+      "Defeat or escape the G-Mutant.",
+      "Reach the parking garage."
+    ],
+    "rewards": {
+      "xp": 200,
+      "items": [{ "id": "diamond_key", "qty": 1 }]
+    }
+  },
+  "sewer_navigation": {
+    "name": "8. Sewer Navigation",
+    "giver": "Ada",
+    "portrait": "NPC_Ada",
+    "summary": "Navigate the sewers to find the NEST entrance.",
+    "description": "Ada Wong claims she can get you out, but you need to follow her through the sewers.",
+    "objectives": [
+      "Find the Sewer Control Room Key.",
+      "Lower the water bridge."
+    ],
+    "rewards": {
+      "xp": 120
+    }
+  },
+  "alligator": {
+    "name": "9. Alligator",
+    "giver": "Environment",
+    "portrait": "NPC_Ada",
+    "summary": "Survive the giant alligator attack.",
+    "description": "Something huge is moving in the water.",
+    "objectives": [
+      "Run!",
+      "Defeat the Giant Alligator."
+    ],
+    "rewards": {
+      "xp": 300
+    }
+  },
+  "cable_car": {
+    "name": "10. Cable Car",
+    "giver": "Ada",
+    "portrait": "NPC_Ada",
+    "summary": "Power up the cable car to reach the lab.",
+    "description": "The cable car is offline. You need to find the high-voltage plugs.",
+    "objectives": [
+      "Find the King Plug.",
+      "Find the Queen Plug.",
+      "Restore power."
+    ],
+    "rewards": {
+      "xp": 150
+    }
+  },
+  "the_lab": {
+    "name": "11. The Lab",
+    "giver": "System",
+    "portrait": "NPC_Computer",
+    "summary": "Enter the Umbrella NEST facility.",
+    "description": "You have arrived at the source of the outbreak. Proceed with caution.",
+    "objectives": [
+      "Enter the North Area.",
+      "Find a map of the facility."
+    ],
+    "rewards": {
+      "xp": 100
+    }
+  },
+  "security_clearance": {
+    "name": "12. Security Clearance",
+    "giver": "System",
+    "portrait": "NPC_Computer",
+    "summary": "Upgrade your ID wristband to Level 3.",
+    "description": "Access to the West Area is restricted to Senior Staff.",
+    "objectives": [
+      "Find the ID Wristband.",
+      "Upgrade it to Level 2 in the Cafeteria.",
+      "Upgrade it to Level 3 in the Greenhouse."
+    ],
+    "rewards": {
+      "xp": 200,
+      "items": [{ "id": "magnum", "qty": 1 }]
+    }
+  },
+  "antivirus": {
+    "name": "13. Antivirus",
+    "giver": "Sherry",
+    "portrait": "NPC_Sherry",
+    "summary": "Synthesize the G-Vaccine.",
+    "description": "Sherry is infected. You must synthesize a vaccine in the P-4 Lab.",
+    "objectives": [
+      "Obtain the Vaccine Base.",
+      "Use the Synthesis Machine.",
+      "Cool the mixture."
+    ],
+    "rewards": {
+      "xp": 300,
+      "items": [{ "id": "t_antivirus", "qty": 1 }]
+    }
+  },
+  "self_destruct": {
+    "name": "14. Self Destruct",
+    "giver": "Announcer",
+    "portrait": "NPC_System",
+    "summary": "Escape the facility before it explodes.",
+    "description": "The self-destruct sequence has been initiated. You have 10 minutes.",
+    "objectives": [
+      "Reach the cargo elevator.",
+      "Avoid the falling debris."
+    ],
+    "rewards": {
+      "xp": 500
+    }
+  },
+  "nemesis_final": {
+    "name": "15. Nemesis",
+    "giver": "Nemesis",
+    "portrait": "NPC_Nemesis",
+    "summary": "Defeat Nemesis once and for all.",
+    "description": "He won't stop until you are dead. End this.",
+    "objectives": [
+      "Defeat Nemesis.",
+      "Escape on the train."
+    ],
+    "rewards": {
+      "xp": 1000,
+      "items": [{ "id": "rocket_launcher", "qty": 1 }]
+    }
   }
 }
