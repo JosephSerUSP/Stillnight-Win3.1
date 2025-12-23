@@ -42,7 +42,7 @@
     "quest_offer_choice": {
       "type": "CHOICE",
       "options": [
-        { "label": "I'll investigate.", "action": "quest", "questId": "silent_shipment" },
+        { "label": "I'll investigate.", "action": "OFFER_QUEST", "questId": "silent_shipment" },
         { "label": "Not my problem.", "action": "close" }
       ]
     },
