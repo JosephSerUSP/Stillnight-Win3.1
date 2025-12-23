@@ -5,6 +5,12 @@ import { ProgressionSystem } from "../engine/systems/progression.js";
 /**
  * @class Game_Action
  * @description Encapsulates the execution of a battle action (Attack, Skill, Item).
+ *
+ * ARCHITECTURE NOTE:
+ * This class is primarily used for Item Usage in Scene_Map (Exploration).
+ * The BattleSystem (src/engine/systems/battle.js) implements its own execution logic
+ * (`executeAction`) for combat performance and AI handling, which mirrors this logic.
+ * Both pipelines delegate actual state changes to `EffectSystem`.
  */
 export class Game_Action {
     /**
