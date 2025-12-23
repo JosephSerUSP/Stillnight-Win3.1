@@ -63,14 +63,20 @@ export class Game_Party {
 
   /**
    * Gets the list of active (non-null) members.
+   * Includes the Summoner if present.
    * @type {Game_Battler[]}
    */
   get members() {
       return this.slots.filter(m => m !== null);
   }
 
+  /**
+   * Gets the active party members (Slots 0-3 + Summoner at 4).
+   * @type {Game_Battler[]}
+   */
   get activeMembers() {
-      return this.slots.slice(0, 4).filter(m => m !== null);
+      // Changed from slice(0, 4) to slice(0, 5) to include Summoner
+      return this.slots.slice(0, 5).filter(m => m !== null);
   }
 
   get reserveMembers() {
@@ -94,6 +100,9 @@ export class Game_Party {
       const members = [...this.members];
 
       for (const member of members) {
+          // Skip Summoner in this loop to avoid duplicate processing or accidental removal
+          if (member === this.summoner) continue;
+
           if (member.hp <= 0) {
               const permadeathTraits = member.traits.filter(t => t.code === 'ON_PERMADEATH');
 
@@ -180,12 +189,20 @@ export class Game_Party {
    */
   onStep(isSafe = false) {
       const events = [];
+
+      // Filter out summoner for cost calculation if desired, OR keep as is.
+      // Current activeMembers now includes Summoner.
+      // Requirement: "Summoner should not participate in battle like a regular creature... but gain stats..."
+      // Map movement: Logic was "mpCostPerStep = activeCount".
+      // If Summoner is in activeMembers, count is +1.
+      // This implies the Summoner's movement also costs MP. This is consistent.
+
       const activeCount = this.activeMembers.length;
       if (activeCount === 0 || !this.summoner) return events;
 
       // Drain MP (only if not safe)
       if (!isSafe) {
-          const mpCostPerStep = activeCount; // 1 MP per active creature
+          const mpCostPerStep = activeCount; // 1 MP per active creature (including Summoner)
           this.summoner.mp = Math.max(0, this.summoner.mp - mpCostPerStep);
       }
 

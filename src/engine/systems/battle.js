@@ -34,12 +34,21 @@ export class BattleSystem {
 
     // 1. Gather all potential combatants
     const combatants = [];
-    // Defensive check: Ensure party structure
-    const slots = state.participants.party.slots || [];
-    slots.slice(0, 4).forEach((battler, index) => {
-        if (battler) {
-            combatants.push({ battler, index, isEnemy: false });
-        }
+
+    // Use activeMembers (now includes Summoner) but filter Summoner out of turn queue
+    let partyMembers = [];
+    if (state.participants.party.activeMembers) {
+        partyMembers = state.participants.party.activeMembers;
+    } else {
+        // Fallback for mocks
+        partyMembers = (state.participants.party.slots || []).slice(0, 5).filter(b => b);
+    }
+
+    partyMembers.forEach((battler, index) => {
+        // Requirement: Summoner does not participate in the turn queue
+        if (battler.role === 'Summoner') return;
+
+        combatants.push({ battler, index, isEnemy: false });
     });
 
     const enemies = state.participants.enemies || [];
@@ -178,18 +187,11 @@ export class BattleSystem {
       if (isEnemy) {
            // Enemy pov
            opposingTeam = this._getPartyActive(state);
-           if (opposingTeam.length === 0 && state.participants.party.summoner && state.participants.party.summoner.hp > 0) {
-               opposingTeam = [state.participants.party.summoner];
-           }
            myTeam = state.participants.enemies || [];
       } else {
            // Player pov
            opposingTeam = (state.participants.enemies || []).filter(m => m.hp > 0);
            myTeam = this._getPartyActive(state);
-           // Summoner is ally to player creatures
-           if (state.participants.party.summoner && state.participants.party.summoner.hp > 0) {
-               myTeam.push(state.participants.party.summoner);
-           }
       }
 
       // Filter by Scope
@@ -217,10 +219,11 @@ export class BattleSystem {
   }
 
   _getPartyActive(state) {
+      // activeMembers now includes Summoner
       if (state.participants.party.activeMembers) {
           return state.participants.party.activeMembers.filter(m => m.hp > 0);
       }
-      return (state.participants.party.slots || []).slice(0, 4).filter(m => m && m.hp > 0);
+      return (state.participants.party.slots || []).slice(0, 5).filter(m => m && m.hp > 0);
   }
 
   /**
@@ -419,20 +422,11 @@ export class BattleSystem {
 
   _checkBattleEnd(state, events) {
     const enemies = state.participants.enemies || [];
-    // Use activeMembers getter or fallback
-    let party = [];
-    if (state.participants.party.activeMembers) {
-        party = state.participants.party.activeMembers;
-    } else {
-        party = (state.participants.party.slots || []).slice(0, 4).filter(b => b);
-    }
+    // activeMembers includes Summoner now
+    const summoner = state.participants.party.summoner; // Still exists as getter
+    const summonerAlive = summoner ? summoner.hp > 0 : true;
 
     const anyEnemyAlive = enemies.some((e) => e.hp > 0);
-    // const anyPartyAlive = party.some((p) => p.hp > 0);
-    // Usually game over is checked by summoner death or all dead.
-    // Legacy check:
-    const summoner = state.participants.party.summoner;
-    const summonerAlive = summoner ? summoner.hp > 0 : true;
 
     if (!summonerAlive) {
         state.result = { outcome: 'defeat' };
