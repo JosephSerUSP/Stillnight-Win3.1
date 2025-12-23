@@ -1,0 +1,134 @@
+{
+  "id": "npc_celes",
+  "name": "Celes",
+  "layout": "visual_novel",
+  "portrait": "NPC_Celes",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:q_contact:active", "next": "meet_celes" },
+        { "condition": "questStatus:q_contact:completed", "next": "hub" },
+        { "condition": "questStatus:q_leak:active", "next": "leak_status" },
+        { "condition": "questStatus:q_rescue:active", "next": "rescue_status" },
+        { "condition": "questStatus:q_summit:active", "next": "summit_status" }
+      ],
+      "next": "hub"
+    },
+    "meet_celes": {
+      "id": "meet_celes",
+      "type": "TEXT",
+      "text": "Who are you? Did Biggs send you?",
+      "speakers": [
+        { "id": "NPC_Celes", "emotion": "neutral", "active": true }
+      ],
+      "next": "meet_celes_2"
+    },
+    "meet_celes_2": {
+      "id": "meet_celes_2",
+      "type": "TEXT",
+      "text": "I am Celes. If you want to help the Resistance, we have work to do.",
+      "next": "complete_contact"
+    },
+    "complete_contact": {
+      "id": "complete_contact",
+      "type": "ACTION",
+      "action": "complete_quest",
+      "questId": "q_contact",
+      "next": "offer_leak"
+    },
+    "offer_leak": {
+      "id": "offer_leak",
+      "type": "CHOICE",
+      "text": "The Empire is draining the sewers of Aether. It's causing instability.",
+      "choices": [
+        { "text": "I'll investigate.", "action": "OFFER_QUEST", "questId": "q_leak", "next": "hub" },
+        { "text": "Not now.", "next": "goodbye" }
+      ]
+    },
+    "hub": {
+      "id": "hub",
+      "type": "CHOICE",
+      "text": "The Empire must be stopped.",
+      "choices": [
+        { "text": "Any orders?", "next": "check_quests" },
+        { "text": "Goodbye.", "next": "goodbye" }
+      ]
+    },
+    "check_quests": {
+        "id": "check_quests",
+        "type": "ROUTER",
+        "branches": [
+            { "condition": "questStatus:q_leak:completed,questStatus:q_infiltrate:inactive", "next": "offer_infiltrate" },
+            { "condition": "questStatus:q_escape:completed,questStatus:q_summit:inactive", "next": "offer_summit" },
+            { "condition": "questStatus:q_summit:completed,questStatus:q_kefka:inactive", "next": "offer_kefka" },
+            { "condition": "questStatus:q_kefka:completed,questStatus:q_restore:inactive", "next": "offer_restore" }
+        ],
+        "next": "no_quests"
+    },
+    "offer_infiltrate": {
+        "id": "offer_infiltrate",
+        "type": "CHOICE",
+        "text": "We have the codes. It's time to hit the factory.",
+        "choices": [
+            { "text": "I'm ready.", "action": "OFFER_QUEST", "questId": "q_infiltrate", "next": "hub" }
+        ]
+    },
+    "offer_summit": {
+        "id": "offer_summit",
+        "type": "CHOICE",
+        "text": "They've raised the continent! We have to follow them.",
+        "choices": [
+            { "text": "To the skies!", "action": "OFFER_QUEST", "questId": "q_summit", "next": "hub" }
+        ]
+    },
+    "offer_kefka": {
+        "id": "offer_kefka",
+        "type": "CHOICE",
+        "text": "Kefka is at the center of the chaos. He must be stopped.",
+        "choices": [
+            { "text": "I'll handle him.", "action": "OFFER_QUEST", "questId": "q_kefka", "next": "hub" }
+        ]
+    },
+    "offer_restore": {
+        "id": "offer_restore",
+        "type": "CHOICE",
+        "text": "The world is in ruins... but there is hope. We can stabilize the Aether.",
+        "choices": [
+            { "text": "I'll find the cores.", "action": "OFFER_QUEST", "questId": "q_restore", "next": "hub" }
+        ]
+    },
+    "leak_status": {
+        "id": "leak_status",
+        "type": "TEXT",
+        "text": "Check the sewers. Be careful of the rats.",
+        "next": "hub"
+    },
+    "rescue_status": {
+        "id": "rescue_status",
+        "type": "TEXT",
+        "text": "Find the prisoner in the factory.",
+        "next": "hub"
+    },
+    "summit_status": {
+        "id": "summit_status",
+        "type": "TEXT",
+        "text": "The Floating Continent is treacherous.",
+        "next": "hub"
+    },
+    "no_quests": {
+        "id": "no_quests",
+        "type": "TEXT",
+        "text": "Rest for now. We are planning our next move.",
+        "next": "hub"
+    },
+    "goodbye": {
+      "id": "goodbye",
+      "type": "TEXT",
+      "text": "Stay safe.",
+      "next": null
+    }
+  }
+}

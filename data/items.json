@@ -14,6 +14,52 @@
     ]
   },
   {
+    "id": "ether",
+    "name": "Ether",
+    "type": "consumable",
+    "cost": 150,
+    "description": "Restores 50 MP.",
+    "icon": 53,
+    "effects": [
+      {
+        "type": "mp",
+        "value": 50
+      }
+    ]
+  },
+  {
+    "id": "elixir",
+    "name": "Elixir",
+    "type": "consumable",
+    "cost": 1500,
+    "description": "Fully restores HP and MP.",
+    "icon": 54,
+    "effects": [
+      {
+        "type": "hp",
+        "value": 9999
+      },
+      {
+        "type": "mp",
+        "value": 9999
+      }
+    ]
+  },
+  {
+    "id": "phoenix_down",
+    "name": "Phoenix Down",
+    "type": "consumable",
+    "cost": 500,
+    "description": "Revives a fallen ally.",
+    "icon": 55,
+    "effects": [
+      {
+        "type": "revive",
+        "value": 0.5
+      }
+    ]
+  },
+  {
     "id": "sigil_ink",
     "name": "Sigil Ink",
     "type": "consumable",
@@ -42,6 +88,292 @@
     ]
   },
   {
+    "id": "mythril_sword",
+    "name": "Mythril Sword",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 450,
+    "icon": 180,
+    "description": "Finely crafted sword of mythril.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 5
+      }
+    ]
+  },
+  {
+    "id": "magitek_blade",
+    "name": "Magitek Blade",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 1200,
+    "icon": 181,
+    "description": "Infused with raw Aether.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 12
+      },
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "mag",
+        "value": 5
+      }
+    ]
+  },
+  {
+    "id": "sniper_rifle",
+    "name": "Sniper Rifle",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 2500,
+    "icon": 182,
+    "description": "High-precision imperial firearm.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 20
+      },
+      {
+        "code": "CRI",
+        "value": 0.25
+      }
+    ]
+  },
+  {
+    "id": "gravity_rod",
+    "name": "Gravity Rod",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 3000,
+    "icon": 183,
+    "description": "Manipulates the forces of nature.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "mag",
+        "value": 15
+      }
+    ]
+  },
+  {
+    "id": "atmacell_blade",
+    "name": "Atma Blade",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 10000,
+    "icon": 184,
+    "description": "Grows stronger with the wielder's life force.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 30
+      },
+       {
+        "code": "PARAM_RATE",
+        "dataId": "maxHp",
+        "value": 1.5
+      }
+    ]
+  },
+  {
+    "id": "mythril_plate",
+    "name": "Mythril Plate",
+    "type": "equipment",
+    "equipType": "Armor",
+    "cost": 400,
+    "icon": 172,
+    "description": "Lightweight and durable.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "def",
+        "value": 5
+      }
+    ]
+  },
+  {
+    "id": "magitek_suit",
+    "name": "Magitek Suit",
+    "type": "equipment",
+    "equipType": "Armor",
+    "cost": 3500,
+    "icon": 173,
+    "description": "Powered armor used by elite troopers.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "def",
+        "value": 15
+      },
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "mdef",
+        "value": 10
+      }
+    ]
+  },
+  {
+    "id": "force_shield",
+    "name": "Force Shield",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 5000,
+    "icon": 175,
+    "description": "Deflects magical attacks.",
+    "traits": [
+      {
+        "code": "PARAM_RATE",
+        "dataId": "mdef",
+        "value": 1.5
+      }
+    ]
+  },
+  {
+    "id": "sprint_shoes",
+    "name": "Sprint Shoes",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 2000,
+    "icon": 176,
+    "description": "Makes you feel lighter.",
+    "traits": [
+      {
+        "code": "INITIATIVE",
+        "value": 0.2
+      }
+    ]
+  },
+  {
+    "id": "tintinnabulum",
+    "name": "Tintinnabulum",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 8000,
+    "icon": 177,
+    "description": "Heals as you walk.",
+    "traits": [
+      {
+        "code": "HRG",
+        "value": 0.1
+      }
+    ]
+  },
+  {
+    "id": "hero_ring",
+    "name": "Hero Ring",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 9999,
+    "icon": 178,
+    "description": "Boosts physical and magical prowess.",
+    "traits": [
+      {
+        "code": "PARAM_RATE",
+        "dataId": "atk",
+        "value": 1.2
+      },
+      {
+        "code": "PARAM_RATE",
+        "dataId": "mag",
+        "value": 1.2
+      }
+    ]
+  },
+  {
+    "id": "magitek_scrap",
+    "name": "Magitek Scrap",
+    "type": "quest",
+    "cost": 0,
+    "icon": 220,
+    "description": "Salvaged parts from imperial machinery."
+  },
+  {
+    "id": "radio_tube",
+    "name": "Radio Tube",
+    "type": "quest",
+    "cost": 0,
+    "icon": 221,
+    "description": "Vacuum tube needed to repair the resistance radio."
+  },
+  {
+    "id": "encryption_key",
+    "name": "Encryption Key",
+    "type": "quest",
+    "cost": 0,
+    "icon": 222,
+    "description": "Imperial code cypher."
+  },
+  {
+    "id": "imperial_uniform",
+    "name": "Imperial Uniform",
+    "type": "quest",
+    "cost": 0,
+    "icon": 223,
+    "description": "A stolen officer's uniform for disguise."
+  },
+  {
+    "id": "aether_core",
+    "name": "Aether Core",
+    "type": "quest",
+    "cost": 0,
+    "icon": 224,
+    "description": "Refined Aether source, highly unstable."
+  },
+  {
+    "id": "airship_part",
+    "name": "Airship Part",
+    "type": "quest",
+    "cost": 0,
+    "icon": 225,
+    "description": "Vital component for the Blackjack."
+  },
+  {
+    "id": "elemental_core",
+    "name": "Elemental Core",
+    "type": "quest",
+    "cost": 0,
+    "icon": 226,
+    "description": "Pure essence of magic."
+  },
+  {
+    "id": "glittering_teardrop",
+    "name": "Glittering Teardrop",
+    "type": "quest",
+    "cost": 0,
+    "icon": 228,
+    "description": "A flawless crystal."
+  },
+  {
+    "id": "untarnished_signet",
+    "name": "Untarnished Signet",
+    "type": "quest",
+    "cost": 0,
+    "icon": 218,
+    "description": "A heavy golden ring."
+  },
+  {
+    "id": "bone_plate",
+    "name": "Bone Plate",
+    "type": "equipment",
+    "equipType": "Armor",
+    "cost": 25,
+    "icon": 172,
+    "description": "Sturdy bone harness.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "maxHp",
+        "value": 3
+      }
+    ]
+  },
+    {
     "id": "silver_blade",
     "name": "Silver Blade",
     "type": "equipment",
@@ -60,355 +392,5 @@
         "value": 0.1
       }
     ]
-  },
-  {
-    "id": "bone_plate",
-    "name": "Bone Plate",
-    "type": "equipment",
-    "equipType": "Armor",
-    "cost": 25,
-    "icon": 172,
-    "description": "Sturdy bone harness.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "maxHp",
-        "value": 3
-      }
-    ]
-  },
-  {
-    "id": "wind_charm",
-    "name": "Wind Charm",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 35,
-    "icon": 174,
-    "description": "A charm of rushing air.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 1
-      },
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "maxHp",
-        "value": 1
-      }
-    ]
-  },
-  {
-    "id": "light_amulet",
-    "name": "Light Amulet",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 30,
-    "icon": 174,
-    "description": "Glowing amulet.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "maxHp",
-        "value": 2
-      }
-    ]
-  },
-  {
-    "id": "alert_charm",
-    "name": "Alert Charm",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 150,
-    "icon": 174,
-    "description": "Humming chime.",
-    "traits": [
-      {
-        "code": "INITIATIVE",
-        "value": 0.05
-      }
-    ]
-  },
-  {
-    "id": "rear_mirror",
-    "name": "Rear Mirror",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 200,
-    "icon": 6,
-    "description": "Reflective glass. Prevents sneak attacks if in back row.",
-    "traits": [
-      {
-        "code": "REAR_GUARD",
-        "value": 1
-      }
-    ]
-  },
-  {
-    "id": "mystic_egg",
-    "name": "Mystic Egg",
-    "type": "consumable",
-    "cost": 500,
-    "icon": 184,
-    "description": "A mysterious egg that pulses with life. Use to hatch.",
-    "effects": [
-      {
-        "type": "recruit_egg",
-        "value": "egg"
-      }
-    ]
-  },
-  {
-    "id": "exp_boost",
-    "name": "Golden Egg",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 9999,
-    "icon": 184,
-    "description": "Beautiful golden egg, sought after by many.",
-    "traits": [
-      {
-        "code": "XP_RATE",
-        "value": 1.5
-      }
-    ]
-  },
-  {
-    "id": "hp_boost1",
-    "name": "Vitality Seal 1",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 125,
-    "icon": 174,
-    "description": "+10% Max HP",
-    "traits": [
-      {
-        "code": "PARAM_RATE",
-        "dataId": "maxHp",
-        "value": 1.1
-      }
-    ]
-  },
-  {
-    "id": "hp_boost2",
-    "name": "Vitality Seal 2",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 400,
-    "icon": 174,
-    "description": "+20% Max HP",
-    "traits": [
-      {
-        "code": "PARAM_RATE",
-        "dataId": "maxHp",
-        "value": 1.2
-      }
-    ]
-  },
-  {
-    "id": "hp_boost3",
-    "name": "Vitality Seal 3",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 2800,
-    "icon": 174,
-    "description": "+30% Max HP",
-    "traits": [
-      {
-        "code": "PARAM_RATE",
-        "dataId": "maxHp",
-        "value": 1.3
-      }
-    ]
-  },
-  {
-    "id": "radiant_blade_flavio",
-    "name": "Radiant Blade Flavio",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1995,
-    "icon": 71,
-    "description": "Lucent blade carrying the blessings of the sun.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Red"
-      },
-      {
-        "code": "CRI",
-        "value": 0.2
-      }
-    ]
-  },
-  {
-    "id": "wind_dancer",
-    "name": "Wind Dancer",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1520,
-    "icon": 72,
-    "description": "Leaf-shaped daggers that strike with the speed of wind.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Green"
-      },
-      {
-        "code": "CRI",
-        "value": 0.15
-      }
-    ]
-  },
-  {
-    "id": "water_scepter",
-    "name": "Water Scepter",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1520,
-    "icon": 73,
-    "description": "Leaf-shaped daggers that strike with the speed of wind.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Blue"
-      },
-      {
-        "code": "CRI",
-        "value": 0.15
-      }
-    ]
-  },
-  {
-    "id": "holy_sword_gram",
-    "name": "Holy Sword Gram",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1520,
-    "icon": 74,
-    "description": "Legendary sword wielded by angels of time immemorial.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "White"
-      },
-      {
-        "code": "CRI",
-        "value": 0.15
-      }
-    ]
-  },
-  {
-    "id": "dark_scepter_lucille",
-    "name": "Dark Scepter Lucille",
-    "type": "equipment",
-    "equipType": "Weapon",
-    "cost": 1666,
-    "icon": 75,
-    "description": "Cursed sceptre. Once wielded by a fallen queen, or so they say.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "atk",
-        "value": 3
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Black"
-      },
-      {
-        "code": "CRI",
-        "value": 0.1
-      }
-    ]
-  },
-  {
-    "id": "mars_emblem",
-    "name": "Mars Emblem",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 400,
-    "icon": 81,
-    "description": "Its magicked properties imbue the wearer with elemental energy.",
-    "traits": [
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Red"
-      }
-    ]
-  },
-  {
-    "id": "mercury_crest",
-    "name": "Mercury Crest",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 1260,
-    "icon": 83,
-    "description": "Ornate and delicate, its blue sheen is comforting.",
-    "traits": [
-      {
-        "code": "HRG",
-        "value": 0.05
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Blue"
-      }
-    ]
-  },
-  {
-    "id": "hermes_boots",
-    "name": "Hermes' Boots",
-    "type": "equipment",
-    "equipType": "Accessory",
-    "cost": 2100,
-    "icon": 82,
-    "description": "Wondrous boots that grant the wearer unimaginable swiftness.",
-    "traits": [
-      {
-        "code": "PARAM_PLUS",
-        "dataId": "asp",
-        "value": 2
-      },
-      {
-        "code": "ELEMENT_CHANGE",
-        "dataId": "Green"
-      }
-    ]
-  },
-  {
-    "id": "glittering_teardrop",
-    "name": "Glittering Teardrop",
-    "type": "quest",
-    "cost": 0,
-    "icon": 228,
-    "description": "A flawless crystal that catches the faintest light. Alicia believes Laura will love it."
-  },
-  {
-    "id": "untarnished_signet",
-    "name": "Untarnished Signet",
-    "type": "quest",
-    "cost": 0,
-    "icon": 218,
-    "description": "A heavy golden ring, unmarked and waiting for a new story. Laura can reshape it into something precious."
   }
 ]
