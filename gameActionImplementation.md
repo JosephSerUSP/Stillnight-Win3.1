@@ -25,15 +25,18 @@ Target selection logic (`makeTargets`) is now part of `Game_Action`.
 *   **Reasoning**: The scope of an action (Self, Enemy, Ally) is intrinsic to the action itself.
 
 ## Usage
-The `BattleManager` now instantiates `Game_Action` objects instead of plain object literals.
+The `BattleSystem` (Combat AI) and `Scene_Map` (Item Usage) use different instantiation patterns but share the underlying `EffectSystem`.
+
+### 1. Item Usage (Exploration)
 ```javascript
 const action = new Game_Action(battler);
-action.setSkill(skillId, dataManager);
-// or
-action.setAttack();
+action.setItem(item, dataManager);
+const events = action.apply(target, dataManager);
 ```
 
-Execution is triggered via:
+### 2. Combat (BattleSystem)
+`BattleSystem` uses internal optimization and constructs plain action objects, passing them to its own `executeAction` method which mirrors `Game_Action` logic.
 ```javascript
-const events = action.apply(target, dataManager);
+const action = { subject, skillId, target, ... };
+const events = battleSystem.executeAction(state, action);
 ```

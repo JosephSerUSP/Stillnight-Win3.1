@@ -17,6 +17,9 @@ This document outlines the architectural refactor to create a single source of t
 
 The roadmap still aligns with the single source of truth goal. The remaining risk was legacy managers leaking into the presentation layer and effects bypassing the new registry. With the effect pipeline consolidated under `EffectSystem` and scenes now funneled through adapters for audio, settings, and input, the refactor boundaries hold and Phase 7 can close out confidently.
 
+**Known Tech Debt:**
+*   **Action Logic Duplication**: `Game_Action` (Exploration) and `BattleSystem` (Combat) both implement attack/skill/item execution logic. Both use `EffectSystem`, but the wrapping logic (hit rates, element calcs) is duplicated.
+
 ## Target Architecture
 
 ### Engine (pure-ish, testable, serializable)

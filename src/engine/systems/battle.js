@@ -6,6 +6,12 @@ import { randInt, random, elementToAscii } from "../../core/utils.js";
 
 /**
  * Pure-ish system for Battle logic.
+ *
+ * ARCHITECTURE NOTE:
+ * This system implements `executeAction` independently from `Game_Action` class
+ * to manage battle-specific context and AI planning. However, it shares the
+ * underlying `EffectSystem` for state modification.
+ * Logic here should be kept in sync with `src/objects/action.js`.
  */
 export class BattleSystem {
   constructor() {

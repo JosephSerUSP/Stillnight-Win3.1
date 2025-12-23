@@ -25,9 +25,9 @@ There is **no global singleton** for the Game Party or Map state.
 
 ### 2.4. Unified Effect System
 All changes to battler state (Damage, Healing, Buffs, XP) are routed through a unified pipeline:
-1.  **Source**: `Game_Action` (Skill/Item).
-2.  **Resolution**: `EffectManager` (Registry of effects).
-3.  **Application**: `EffectManager.apply`.
+1.  **Source**: `Game_Action` (Skill/Item) or `BattleSystem`.
+2.  **Resolution**: `EffectSystem` (Registry of effects).
+3.  **Application**: `EffectSystem.apply`.
 
 ---
 
@@ -72,7 +72,7 @@ sequenceDiagram
 *   **Key Methods**: `push()`, `pop()`, `currentScene()`.
 *   **Rendering**: Uses `requestAnimationFrame` but delegates logic update to the active scene (often unused).
 
-### 4.2. WindowManager (`src/managers/window_manager.js`)
+### 4.2. WindowManager (`src/presentation/windows/manager.js`)
 *   **Role**: Manages the "Visual Stack" of windows.
 *   **Z-Indexing**: Ensures the top-most window receives input.
 *   **Modals**: Handles "modal" behavior where background windows are non-interactive.
@@ -109,7 +109,7 @@ sequenceDiagram
 
 ## 6. The UI System
 
-### 6.1. Window_Base (`src/windows/base.js`)
+### 6.1. Window_Base (`src/presentation/windows/base.js`)
 The ancestor of all UI components.
 *   **Structure**:
     ```html
@@ -121,7 +121,7 @@ The ancestor of all UI components.
     ```
 *   **Lifecycle**: `open()` / `close()` with CSS-based animations managed by `WindowAnimator`.
 
-### 6.2. UI.build (`src/windows/builder.js`)
+### 6.2. UI.build (`src/presentation/windows/builder.js`)
 A helper utility to construct DOM trees declaratively, similar to `React.createElement` but synchronous and direct.
 
 ```javascript
@@ -136,50 +136,37 @@ UI.build(parent, {
 
 ## 7. Combat System (Scene_Battle)
 
-### 7.1. Conditional Turn-Based (CTB)
-*   **Manager**: `BattleManager` (`src/managers/battle.js`).
+### 7.1. Round-Based Turn System
+*   **System**: `BattleSystem` (`src/engine/systems/battle.js`).
 *   **Logic**:
-    1.  `planRound()`: Calculates the turn order based on Speed (`agi`).
-    2.  `getNextBattler()`: Returns the unit with the lowest "tick".
+    1.  `planRound()`: Calculates the turn order based on Speed (`asp`/`speed`).
+    2.  `turnQueue`: A sorted list of combatants for the current round.
 *   **Flow**:
-    *   Battlers accumulate "Tick" values.
-    *   Tick threshold reached -> Action.
-    *   Action execution resets Tick.
+    *   Each round, all live participants act once.
+    *   Order is determined by Speed (High -> Low).
+    *   AI actions are pre-calculated during the planning phase.
 
-### 7.2. Action Pipeline (`src/objects/action.js`)
-An action is executed in stages:
-1.  **Instantiation**: `new Game_Action(subject)`.
-2.  **Configuration**: `.setItem()` or `.setSkill()`.
-3.  **Targeting**: `.makeTargets()`.
-4.  **Application**: `.apply(target)` -> Returns `Event[]`.
-5.  **Animation**: `Scene_Battle` iterates `Event[]` and plays animations/logs.
+### 7.2. Action Pipeline
+An action is executed in stages.
+*   **Exploration/Items**: Uses `Game_Action` (`src/objects/action.js`).
+*   **Combat/AI**: Uses `BattleSystem` internal execution methods (mirroring `Game_Action`).
 
-```mermaid
-flowchart LR
-    Start([Turn Start]) --> Select{Action Type}
-    Select -->|Attack| Atk[Apply Attack Logic]
-    Select -->|Skill| Skill[Apply Skill Effects]
-    Select -->|Item| Item[Consume & Apply Effects]
-
-    Atk --> Events[Generate Event Log]
-    Skill --> EffectMgr[Call EffectManager]
-    Item --> EffectMgr
-
-    EffectMgr --> Events
-    Events --> UI[Animate in Scene_Battle]
-```
+1.  **Selection**: `BattleSystem.getAIAction()` or User Input.
+2.  **Execution**: `BattleSystem.executeAction(action)` or `Game_Action.apply()`.
+3.  **Resolution**: Both pipelines delegate to `EffectSystem.apply()`.
+4.  **Animation**: `Scene_Battle` iterates `Event[]` and plays animations/logs.
 
 ---
 
 ## 8. Exploration System (Scene_Map)
 
 ### 8.1. Grid Movement
-*   **Engine**: `ExplorationEngine` (`src/managers/exploration.js`).
+*   **System**: `ExplorationSystem` (`src/engine/systems/exploration.js`).
 *   **Input**: Discrete `dx, dy` inputs.
 *   **Resolution**: Returns a result object (e.g., `{ type: 'MOVED' }`, `{ type: 'BLOCKED', reason: 'wall' }`).
 
 ### 8.2. Event Execution
-*   **Interpreter**: `Game_Interpreter` (`src/managers/interpreter.js`).
+*   **Interpreter**: `InterpreterSystem` (`src/engine/systems/interpreter.js`).
 *   **Command Pattern**: Events are lists of commands (`TEXT`, `GIVE_ITEM`, `BATTLE`).
 *   **Async**: `executeSequence` pauses map input until the event chain completes.
 
@@ -193,13 +180,13 @@ When modifying this codebase, strictly adhere to these rules:
 2.  **Respect State Ownership**: Do not look for `window.$gameParty`. Access `this.party` within the context of the current Scene.
 3.  **Use the Action Pipeline**: Do not modify HP directly in battle logic. Create a `Game_Action` and execute it to ensure logs, animations, and side-effects (like reactions) occur.
 4.  **Async/Await Over Update**: If adding a sequence (like a tutorial), write an `async` function and `await` the steps. Do not try to implement a state-machine in an `update()` loop.
-5.  **Data-Driven**: Hardcode as little as possible. Define new items/skills in `data/` JSON files, and new behavior in `EffectManager`.
+5.  **Data-Driven**: Hardcode as little as possible. Define new items/skills in `data/` JSON files, and new behavior in `EffectSystem`.
 
 ---
 
 ## 10. Transitional Architecture Notes
 *While the current implementation is functional, the following areas are in transition toward the ideal architecture:*
 
-*   **Logic Separation**: Some game logic (e.g., loot generation, victory conditions) currently resides in `Scene_Battle`. The goal is to move all such logic to `BattleManager`, leaving `Scene_Battle` purely for View/Animation.
+*   **Logic Separation**: Some game logic (e.g., loot generation, victory conditions) currently resides in `Scene_Battle`. The goal is to move all such logic to `BattleSystem`, leaving `Scene_Battle` purely for View/Animation.
 *   **Data-Driven Maps**: The `Game_Map` class supports procedural generation logic, but the current campaign relies heavily on static definition in `maps.json`. Future updates may Hybridize this.
 *   **Hardcoded Actors**: Some Boss data (e.g., "Eternal Warden" in `Scene_Battle`) is currently instantiated directly. This should be moved to `actors.json`.
