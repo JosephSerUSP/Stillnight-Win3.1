@@ -1,0 +1,296 @@
+{
+  "id": "npc_clan_montblanc",
+  "name": "Montblanc",
+  "layout": "visual_novel",
+  "portrait": "NPC_Geraldo",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "type": "TEXT",
+      "text": "Kupo! Welcome to Clan Centurio! I am Montblanc, the founder.",
+      "speaker": "Montblanc",
+      "next": "hub"
+    },
+    "hub": {
+      "type": "TEXT",
+      "text": "How can I help you, kupo?",
+      "speaker": "Montblanc",
+      "choices": [
+        {
+            "text": "Report: Rogue Tomato",
+            "condition": "questStatus:rogue_tomato:active",
+            "next": "complete_rogue_tomato"
+        },
+        {
+            "text": "Report: Sun-Scorched Wolf",
+            "condition": "questStatus:the_sun_scorched_wolf:active",
+            "next": "complete_wolf"
+        },
+        {
+            "text": "Report: Desert Rose",
+            "condition": "questStatus:desert_rose:active",
+            "next": "complete_desert_rose"
+        },
+        {
+            "text": "Report: Wraith",
+            "condition": "questStatus:wraith_of_sewers:active",
+            "next": "complete_wraith"
+        },
+        {
+            "text": "Report: Cactoid",
+            "condition": "questStatus:flowering_cactoid:active",
+            "next": "complete_cactoid"
+        },
+        {
+            "text": "Report: Nidhogg",
+            "condition": "questStatus:nidhogg:active",
+            "next": "complete_nidhogg"
+        },
+        {
+            "text": "Report: Rock Tortoise",
+            "condition": "questStatus:rock_tortoise:active",
+            "next": "complete_tortoise"
+        },
+        {
+            "text": "Report: Dustia",
+            "condition": "questStatus:dustia:active",
+            "next": "complete_dustia"
+        },
+        {
+            "text": "Report: Ring Wyrm",
+            "condition": "questStatus:ring_wyrm:active",
+            "next": "complete_wyrm"
+        },
+        {
+            "text": "Report: Malboro",
+            "condition": "questStatus:malboro_menace:active",
+            "next": "complete_malboro"
+        },
+        {
+            "text": "Report: White Mousse",
+            "condition": "questStatus:white_mousse:active",
+            "next": "complete_white_mousse"
+        },
+        {
+            "text": "Report: Gil Snapper",
+            "condition": "questStatus:gil_snapper:active",
+            "next": "complete_gil_snapper"
+        },
+        {
+            "text": "Report: Antlion",
+            "condition": "questStatus:antlion_infestation:active",
+            "next": "complete_antlion"
+        },
+        {
+            "text": "Report: Carrot",
+            "condition": "questStatus:carrot:active",
+            "next": "complete_carrot"
+        },
+        {
+            "text": "Report: Yiazmat",
+            "condition": "questStatus:yiazmat:active",
+            "next": "complete_yiazmat"
+        },
+        {
+          "text": "About the Clan",
+          "next": "about"
+        },
+        {
+          "text": "Goodbye",
+          "next": "exit"
+        }
+      ]
+    },
+    "about": {
+      "type": "TEXT",
+      "text": "We are a group of elite hunters, kupo. We take on jobs that the regular guild won't touch.",
+      "speaker": "Montblanc",
+      "next": "hub"
+    },
+    "complete_rogue_tomato": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "rogue_tomato",
+        "next": "done_rogue_tomato"
+    },
+    "done_rogue_tomato": {
+        "type": "TEXT",
+        "text": "Good work on that Tomato, kupo! It was small time, but a start.",
+        "speaker": "Montblanc",
+        "next": "hub"
+    },
+    "complete_wolf": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "the_sun_scorched_wolf",
+        "next": "done_wolf"
+    },
+    "done_wolf": {
+        "type": "TEXT",
+        "text": "That wolf was causing trouble for the caravans. Excellent work.",
+        "speaker": "Montblanc",
+        "next": "hub"
+    },
+    "complete_desert_rose": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "desert_rose",
+        "next": "done_desert_rose"
+    },
+    "done_desert_rose": {
+        "type": "TEXT",
+        "text": "A beautiful flower. The scholar will be pleased.",
+        "speaker": "Montblanc",
+        "next": "hub"
+    },
+    "complete_wraith": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "wraith_of_sewers",
+        "next": "done_wraith"
+    },
+    "done_wraith": {
+        "type": "TEXT",
+        "text": "Spooky stuff! I'm glad it's gone.",
+        "speaker": "Montblanc",
+        "next": "hub"
+    },
+    "complete_cactoid": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "flowering_cactoid",
+        "next": "done_cactoid"
+    },
+    "done_cactoid": {
+        "type": "TEXT",
+        "text": "Fast little buggers, aren't they?",
+        "speaker": "Montblanc",
+        "next": "hub"
+    },
+    "complete_nidhogg": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "nidhogg",
+        "next": "done_nidhogg"
+    },
+    "done_nidhogg": {
+        "type": "TEXT",
+        "text": "A mighty serpent slain! You are moving up in the ranks.",
+        "speaker": "Montblanc",
+        "next": "hub"
+    },
+    "complete_tortoise": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "rock_tortoise",
+        "next": "done_tortoise"
+    },
+    "done_tortoise": {
+        "type": "TEXT",
+        "text": "Hard as a rock, but not hard enough for you!",
+        "speaker": "Montblanc",
+        "next": "hub"
+    },
+    "complete_dustia": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "dustia",
+        "next": "done_dustia"
+    },
+    "done_dustia": {
+        "type": "TEXT",
+        "text": "Dust to dust, kupo.",
+        "speaker": "Montblanc",
+        "next": "hub"
+    },
+    "complete_wyrm": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "ring_wyrm",
+        "next": "done_wyrm"
+    },
+    "done_wyrm": {
+        "type": "TEXT",
+        "text": "The ring is closed. Well fought.",
+        "speaker": "Montblanc",
+        "next": "hub"
+    },
+    "complete_malboro": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "malboro_menace",
+        "next": "done_malboro"
+    },
+    "done_malboro": {
+        "type": "TEXT",
+        "text": "Phew! You smell terrible, but the job is done.",
+        "speaker": "Montblanc",
+        "next": "hub"
+    },
+    "complete_white_mousse": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "white_mousse",
+        "next": "done_white_mousse"
+    },
+    "done_white_mousse": {
+        "type": "TEXT",
+        "text": "A sticky situation resolved.",
+        "speaker": "Montblanc",
+        "next": "hub"
+    },
+    "complete_gil_snapper": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "gil_snapper",
+        "next": "done_gil_snapper"
+    },
+    "done_gil_snapper": {
+        "type": "TEXT",
+        "text": "Look at all that Gil! Don't spend it all in one place.",
+        "speaker": "Montblanc",
+        "next": "hub"
+    },
+    "complete_antlion": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "antlion_infestation",
+        "next": "done_antlion"
+    },
+    "done_antlion": {
+        "type": "TEXT",
+        "text": "The mines are safe again thanks to you.",
+        "speaker": "Montblanc",
+        "next": "hub"
+    },
+    "complete_carrot": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "carrot",
+        "next": "done_carrot"
+    },
+    "done_carrot": {
+        "type": "TEXT",
+        "text": "I never liked vegetables anyway.",
+        "speaker": "Montblanc",
+        "next": "hub"
+    },
+    "complete_yiazmat": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "yiazmat",
+        "next": "done_yiazmat"
+    },
+    "done_yiazmat": {
+        "type": "TEXT",
+        "text": "Unbelievable! You have defeated Yiazmat! You are the greatest hunter in Ivalice!",
+        "speaker": "Montblanc",
+        "next": "hub"
+    },
+    "exit": {
+      "type": "TEXT",
+      "text": "Good hunting, kupo!",
+      "speaker": "Montblanc"
+    }
+  }
+}

@@ -58,5 +58,155 @@
       "gold": 50,
       "xp": 100
     }
+  },
+  "rogue_tomato": {
+    "name": "The Rogue Tomato",
+    "giver": "Tomaj",
+    "portrait": "NPC_Geraldo",
+    "summary": "Hunt down the Rogue Tomato.",
+    "description": "A mutated tomato is terrorizing the desert. Slay it and bring back the Galbana Lily it stole.",
+    "objectives": ["Defeat the Rogue Tomato.", "Return the Galbana Lily."],
+    "requirements": { "items": [{ "id": "galbana_lily", "qty": 1, "consume": true }] },
+    "rewards": { "gold": 300, "items": [{ "id": "potion", "qty": 2 }] }
+  },
+  "the_sun_scorched_wolf": {
+    "name": "The Sun-Scorched Wolf",
+    "giver": "Montblanc",
+    "portrait": "NPC_Geraldo",
+    "summary": "Hunt down the Wolf.",
+    "description": "A wolf pack leader is attacking travelers. Bring back its pelt as proof.",
+    "objectives": ["Defeat the Wolf.", "Return the Wolf Pelt."],
+    "requirements": { "items": [{ "id": "wolf_pelt", "qty": 1, "consume": true }] },
+    "rewards": { "gold": 400, "items": [{ "id": "hi_potion", "qty": 1 }] }
+  },
+  "desert_rose": {
+    "name": "Desert Rose",
+    "giver": "Montblanc",
+    "portrait": "NPC_Geraldo",
+    "summary": "Find a Desert Rose.",
+    "description": "A scholar needs a rare Desert Rose for research.",
+    "objectives": ["Find the Desert Rose in the sands.", "Return it to the clan."],
+    "requirements": { "items": [{ "id": "desert_rose", "qty": 1, "consume": true }] },
+    "rewards": { "gold": 200, "items": [{ "id": "phoenix_down", "qty": 1 }] }
+  },
+  "wraith_of_sewers": {
+    "name": "Wraith of the Sewers",
+    "giver": "Montblanc",
+    "portrait": "NPC_Geraldo",
+    "summary": "Exorcise the Wraith.",
+    "description": "A ghost haunts the waterways. Put it to rest.",
+    "objectives": ["Defeat the Wraith.", "Retrieve the Old Journal."],
+    "requirements": { "items": [{ "id": "old_journal", "qty": 1, "consume": true }] },
+    "rewards": { "gold": 500, "items": [{ "id": "ether", "qty": 2 }] }
+  },
+  "flowering_cactoid": {
+    "name": "Flowering Cactoid",
+    "giver": "Montblanc",
+    "portrait": "NPC_Geraldo",
+    "summary": "Hunt the Cactoid.",
+    "description": "A Cactoid with a rare flower has been spotted.",
+    "objectives": ["Defeat the Cactoid.", "Return the Cactus Flower."],
+    "requirements": { "items": [{ "id": "cactus_flower", "qty": 1, "consume": true }] },
+    "rewards": { "gold": 600, "items": [{ "id": "wind_dancer", "qty": 1 }] }
+  },
+  "nidhogg": {
+    "name": "Nidhogg",
+    "giver": "Montblanc",
+    "portrait": "NPC_Geraldo",
+    "summary": "Slay the Nidhogg.",
+    "description": "A serpent has shed its skin, indicating it is ready to hunt. Slay it first.",
+    "objectives": ["Defeat Nidhogg.", "Return the Snake Skin."],
+    "requirements": { "items": [{ "id": "snake_skin", "qty": 1, "consume": true }] },
+    "rewards": { "gold": 800, "items": [{ "id": "silver_blade", "qty": 1 }] }
+  },
+  "rock_tortoise": {
+    "name": "Rock Tortoise",
+    "giver": "Montblanc",
+    "portrait": "NPC_Geraldo",
+    "summary": "Crack the Rock Tortoise.",
+    "description": "A giant tortoise is blocking the trade route. Its shell is valuable.",
+    "objectives": ["Defeat the Rock Tortoise.", "Return the Heavy Shell."],
+    "requirements": { "items": [{ "id": "heavy_shell", "qty": 1, "consume": true }] },
+    "rewards": { "gold": 1000, "items": [{ "id": "bone_plate", "qty": 1 }] }
+  },
+  "dustia": {
+    "name": "Dustia",
+    "giver": "Montblanc",
+    "portrait": "NPC_Geraldo",
+    "summary": "Banish Dustia.",
+    "description": "An ancient skeleton holds a forbidden tome. Reclaim it.",
+    "objectives": ["Defeat Dustia.", "Retrieve the Book of Orgain."],
+    "requirements": { "items": [{ "id": "book_of_orgain", "qty": 1, "consume": true }] },
+    "rewards": { "gold": 1200, "items": [{ "id": "flame_shield", "qty": 1 }] }
+  },
+  "ring_wyrm": {
+    "name": "Ring Wyrm",
+    "giver": "Montblanc",
+    "portrait": "NPC_Geraldo",
+    "summary": "Hunt the Ring Wyrm.",
+    "description": "A dragon's scale is needed for a legendary armor.",
+    "objectives": ["Defeat the Ring Wyrm.", "Return the Wyrm Scale."],
+    "requirements": { "items": [{ "id": "wyrm_scale", "qty": 1, "consume": true }] },
+    "rewards": { "gold": 1500, "items": [{ "id": "icebrand", "qty": 1 }] }
+  },
+  "malboro_menace": {
+    "name": "Malboro Menace",
+    "giver": "Montblanc",
+    "portrait": "NPC_Geraldo",
+    "summary": "Weed out the Malboro.",
+    "description": "The smell is unbearable. End it.",
+    "objectives": ["Defeat the Malboro.", "Return the Malboro Vine."],
+    "requirements": { "items": [{ "id": "malboro_vine", "qty": 1, "consume": true }] },
+    "rewards": { "gold": 2000, "items": [{ "id": "esuna_scroll", "qty": 1 }] }
+  },
+  "white_mousse": {
+    "name": "White Mousse",
+    "giver": "Montblanc",
+    "portrait": "NPC_Geraldo",
+    "summary": "Clean up the White Mousse.",
+    "description": "A slime has swallowed the key to the sluice gates.",
+    "objectives": ["Defeat the White Mousse.", "Retrieve the Broken Key."],
+    "requirements": { "items": [{ "id": "broken_key", "qty": 1, "consume": true }] },
+    "rewards": { "gold": 2500, "items": [{ "id": "yoichi_bow", "qty": 1 }] }
+  },
+  "gil_snapper": {
+    "name": "Gil Snapper",
+    "giver": "Montblanc",
+    "portrait": "NPC_Geraldo",
+    "summary": "Snap the Gil Snapper.",
+    "description": "Rumors say this turtle guarded a lost fortune.",
+    "objectives": ["Defeat the Gil Snapper.", "Retrieve the Weathered Text."],
+    "requirements": { "items": [{ "id": "weathered_text", "qty": 1, "consume": true }] },
+    "rewards": { "gold": 5000, "items": [{ "id": "thiefs_cuffs", "qty": 1 }] }
+  },
+  "antlion_infestation": {
+    "name": "Antlion Infestation",
+    "giver": "Montblanc",
+    "portrait": "NPC_Geraldo",
+    "summary": "Crush the Antlion.",
+    "description": "The mines are overrun. The leader holds an amber crystal.",
+    "objectives": ["Defeat the Antlion.", "Return the Amber Crystal."],
+    "requirements": { "items": [{ "id": "amber_crystal", "qty": 1, "consume": true }] },
+    "rewards": { "gold": 4000, "items": [{ "id": "bubble_belt", "qty": 1 }] }
+  },
+  "carrot": {
+    "name": "Carrot",
+    "giver": "Montblanc",
+    "portrait": "NPC_Geraldo",
+    "summary": "Uproot Carrot.",
+    "description": "Don't let the name fool you. It's a monster.",
+    "objectives": ["Defeat Carrot.", "Return the Foul Liquid."],
+    "requirements": { "items": [{ "id": "foul_liquid", "qty": 1, "consume": true }] },
+    "rewards": { "gold": 6000, "items": [{ "id": "nihopalaoa", "qty": 1 }] }
+  },
+  "yiazmat": {
+    "name": "Yiazmat",
+    "giver": "Montblanc",
+    "portrait": "NPC_Geraldo",
+    "summary": "Farewell to a Legend.",
+    "description": "The ultimate mark. Defeat Yiazmat.",
+    "objectives": ["Defeat Yiazmat.", "Return the God Slayer Badge."],
+    "requirements": { "items": [{ "id": "god_slayer_badge", "qty": 1, "consume": true }] },
+    "rewards": { "gold": 50000, "items": [{ "id": "wyrmhero_blade", "qty": 1 }] }
   }
 }

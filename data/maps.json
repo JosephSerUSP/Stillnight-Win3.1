@@ -38,7 +38,9 @@
       { "id": "npc_gambler", "x": 6, "y": 9 },
       { "id": "loc_pub", "x": 14, "y": 12 },
       { "id": "npc_auction", "x": 10, "y": 13 },
-      { "id": "loc_temple", "x": 8, "y": 14 }
+      { "id": "loc_temple", "x": 8, "y": 14 },
+      { "id": "npc_clan_montblanc", "x": 5, "y": 15, "symbol": "C" },
+      { "id": "npc_hunt_board", "x": 6, "y": 15, "symbol": "B" }
     ],
     "treasures": [],
     "encounters": [],
@@ -65,7 +67,8 @@
           "encounters": [
               { "id": "imp", "weight": 10 }
           ]
-      }
+      },
+      { "id": "enemy", "symbol": "🍅", "condition": "questStatus:rogue_tomato:active", "encounters": [{ "id": "rogue_tomato", "weight": 1 }] }
     ],
     "treasures": ["potion", "antidote"],
     "encounters": [
@@ -90,7 +93,9 @@
       { "id": "npc_dungeon_merchant", "chance": 0.5 },
       { "id": "recruit", "chance": 0.6 },
       { "id": "trap", "min": 1, "max": 2 },
-      { "id": "treasure", "chance": 0.5 }
+      { "id": "treasure", "chance": 0.5 },
+      { "id": "enemy", "symbol": "🐺", "condition": "questStatus:the_sun_scorched_wolf:active", "encounters": [{ "id": "wolf", "weight": 1 }] },
+      { "id": "enemy", "symbol": "🌵", "condition": "questStatus:flowering_cactoid:active", "encounters": [{ "id": "cactoid", "weight": 1 }] }
     ],
     "treasures": ["hi_potion", "iron_sword"],
     "encounters": [
@@ -112,7 +117,9 @@
       { "id": "recovery", "chance": 0.3 },
       { "id": "enemy", "min": 4, "max": 6 },
       { "id": "shrine", "chance": 0.5 },
-      { "id": "recruit", "chance": 0.7 }
+      { "id": "recruit", "chance": 0.7 },
+      { "id": "enemy", "symbol": "👻", "condition": "questStatus:wraith_of_sewers:active", "encounters": [{ "id": "ghost", "weight": 1 }] },
+      { "id": "enemy", "symbol": "🐢", "condition": "questStatus:rock_tortoise:active", "encounters": [{ "id": "rock_tortoise", "weight": 1 }] }
     ],
     "encounters": [
       { "id": "golem", "weight": 6 },
@@ -134,7 +141,9 @@
       { "id": "shrine", "chance": 0.5 },
       { "id": "npc_dungeon_merchant", "chance": 0.5 },
       { "id": "recruit", "chance": 0.5 },
-      { "id": "npc_daphne", "count": 1 }
+      { "id": "npc_daphne", "count": 1 },
+      { "id": "enemy", "symbol": "🐍", "condition": "questStatus:nidhogg:active", "encounters": [{ "id": "nidhogg", "weight": 1 }] },
+      { "id": "enemy", "symbol": "💀", "condition": "questStatus:dustia:active", "encounters": [{ "id": "dustia", "weight": 1 }] }
     ],
     "encounters": [
       { "id": "demon", "weight": 8 },
@@ -154,7 +163,13 @@
       { "id": "recovery", "chance": 0.2 },
       { "id": "enemy", "min": 5, "max": 8 },
       { "id": "shrine", "chance": 0.4 },
-      { "id": "recruit", "chance": 0.4 }
+      { "id": "recruit", "chance": 0.4 },
+      { "id": "enemy", "symbol": "🐲", "condition": "questStatus:ring_wyrm:active", "encounters": [{ "id": "ring_wyrm", "weight": 1 }] },
+      { "id": "enemy", "symbol": "🌿", "condition": "questStatus:malboro_menace:active", "encounters": [{ "id": "malboro", "weight": 1 }] },
+      { "id": "enemy", "symbol": "🍮", "condition": "questStatus:white_mousse:active", "encounters": [{ "id": "white_mousse", "weight": 1 }] },
+      { "id": "enemy", "symbol": "🐢", "condition": "questStatus:gil_snapper:active", "encounters": [{ "id": "gil_snapper", "weight": 1 }] },
+      { "id": "enemy", "symbol": "🐜", "condition": "questStatus:antlion_infestation:active", "encounters": [{ "id": "antlion", "weight": 1 }] },
+      { "id": "enemy", "symbol": "🥕", "condition": "questStatus:carrot:active", "encounters": [{ "id": "carrot", "weight": 1 }] }
     ],
     "encounters": [
       { "id": "crimsonLord", "weight": 2 },
@@ -171,7 +186,8 @@
     "image": "DungeonFloors1.png",
     "events": [
       { "id": "recovery", "count": 1 },
-      { "id": "enemy", "min": 1, "max": 1 }
+      { "id": "enemy", "min": 1, "max": 1 },
+      { "id": "enemy", "symbol": "🐉", "condition": "questStatus:yiazmat:active", "encounters": [{ "id": "yiazmat", "weight": 1 }] }
     ],
     "encounters": [
       { "id": "crimsonLord", "weight": 10 },

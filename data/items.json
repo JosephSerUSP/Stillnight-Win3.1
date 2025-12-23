@@ -410,5 +410,190 @@
     "cost": 0,
     "icon": 218,
     "description": "A heavy golden ring, unmarked and waiting for a new story. Laura can reshape it into something precious."
+  },
+  {
+    "id": "potion",
+    "name": "Potion",
+    "type": "consumable",
+    "cost": 50,
+    "description": "Restores 30 HP.",
+    "icon": 176,
+    "effects": [{ "type": "hp", "value": 30 }]
+  },
+  {
+    "id": "hi_potion",
+    "name": "Hi-Potion",
+    "type": "consumable",
+    "cost": 200,
+    "description": "Restores 150 HP.",
+    "icon": 176,
+    "effects": [{ "type": "hp", "value": 150 }]
+  },
+  {
+    "id": "phoenix_down",
+    "name": "Phoenix Down",
+    "type": "consumable",
+    "cost": 500,
+    "description": "Revives a fallen ally.",
+    "icon": 183,
+    "effects": [{ "type": "revive", "value": 1 }, { "type": "hp", "value": 10 }]
+  },
+  {
+    "id": "galbana_lily",
+    "name": "Galbana Lily",
+    "type": "quest",
+    "cost": 0,
+    "icon": 224,
+    "description": "A rare flower found in the sands."
+  },
+  {
+    "id": "wolf_pelt",
+    "name": "Wolf Pelt",
+    "type": "quest",
+    "cost": 10,
+    "icon": 226,
+    "description": "Pelt from a desert wolf."
+  },
+  {
+    "id": "desert_rose",
+    "name": "Desert Rose",
+    "type": "quest",
+    "cost": 0,
+    "icon": 224,
+    "description": "A beautiful red flower that blooms in the desert."
+  },
+  {
+    "id": "old_journal",
+    "name": "Old Journal",
+    "type": "quest",
+    "cost": 0,
+    "icon": 208,
+    "description": "A water-damaged journal from the sewers."
+  },
+  {
+    "id": "cactus_flower",
+    "name": "Cactus Flower",
+    "type": "quest",
+    "cost": 20,
+    "icon": 224,
+    "description": "A pink flower from a cactus."
+  },
+  {
+    "id": "snake_skin",
+    "name": "Snake Skin",
+    "type": "quest",
+    "cost": 50,
+    "icon": 226,
+    "description": "Shed skin of a giant serpent."
+  },
+  {
+    "id": "heavy_shell",
+    "name": "Heavy Shell",
+    "type": "quest",
+    "cost": 60,
+    "icon": 194,
+    "description": "Hard shell from a rock tortoise."
+  },
+  {
+    "id": "book_of_orgain",
+    "name": "Book of Orgain",
+    "type": "quest",
+    "cost": 0,
+    "icon": 209,
+    "description": "An ancient tome held by a skeleton."
+  },
+  {
+    "id": "wyrm_scale",
+    "name": "Wyrm Scale",
+    "type": "quest",
+    "cost": 100,
+    "icon": 225,
+    "description": "Scale from a Ring Wyrm."
+  },
+  {
+    "id": "malboro_vine",
+    "name": "Malboro Vine",
+    "type": "quest",
+    "cost": 80,
+    "icon": 226,
+    "description": "Tentacle from a Malboro."
+  },
+  {
+    "id": "broken_key",
+    "name": "Broken Key",
+    "type": "quest",
+    "cost": 0,
+    "icon": 210,
+    "description": "Key found inside a flan."
+  },
+  {
+    "id": "weathered_text",
+    "name": "Weathered Text",
+    "type": "quest",
+    "cost": 0,
+    "icon": 208,
+    "description": "A text recovered from a giant turtle."
+  },
+  {
+    "id": "amber_crystal",
+    "name": "Amber Crystal",
+    "type": "quest",
+    "cost": 500,
+    "icon": 228,
+    "description": "A crystal harvested from an Antlion."
+  },
+  {
+    "id": "foul_liquid",
+    "name": "Foul Liquid",
+    "type": "quest",
+    "cost": 20,
+    "icon": 176,
+    "description": "Disgusting fluid from a super Malboro."
+  },
+  {
+    "id": "god_slayer_badge",
+    "name": "God Slayer Badge",
+    "type": "quest",
+    "cost": 99999,
+    "icon": 218,
+    "description": "Proof of defeating the ultimate mark."
+  },
+  {
+    "id": "mythril_sword",
+    "name": "Mythril Sword",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 1200,
+    "icon": 180,
+    "description": "A sword forged from mythril.",
+    "traits": [{ "code": "PARAM_PLUS", "dataId": "atk", "value": 6 }]
+  },
+  {
+    "id": "kotetsu",
+    "name": "Kotetsu",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 2400,
+    "icon": 180,
+    "description": "A katana with a long blade.",
+    "traits": [{ "code": "PARAM_PLUS", "dataId": "atk", "value": 9 }, { "code": "CRI", "value": 0.2 }]
+  },
+  {
+    "id": "bronze_armor",
+    "name": "Bronze Armor",
+    "type": "equipment",
+    "equipType": "Armor",
+    "cost": 800,
+    "icon": 172,
+    "description": "Simple bronze plate.",
+    "traits": [{ "code": "PARAM_PLUS", "dataId": "def", "value": 2 }]
+  },
+  {
+    "id": "clan_insignia",
+    "name": "Clan Insignia",
+    "type": "quest",
+    "cost": 0,
+    "icon": 219,
+    "description": "A badge of membership in the Centurio Clan."
   }
 ]

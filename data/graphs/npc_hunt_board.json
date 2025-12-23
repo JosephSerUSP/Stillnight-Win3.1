@@ -1,0 +1,187 @@
+{
+  "id": "npc_hunt_board",
+  "name": "Hunt Board",
+  "layout": "terminal",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "type": "TEXT",
+      "text": "The board is covered in bounty notices.",
+      "choices": [
+        {
+          "text": "Hunt: Rogue Tomato (Rank E)",
+          "condition": "questStatus:rogue_tomato:inactive",
+          "next": "accept_rogue_tomato"
+        },
+        {
+          "text": "Hunt: Sun-Scorched Wolf (Rank E)",
+          "condition": "questStatus:the_sun_scorched_wolf:inactive",
+          "next": "accept_wolf"
+        },
+        {
+          "text": "Request: Desert Rose",
+          "condition": "questStatus:desert_rose:inactive",
+          "next": "accept_desert_rose"
+        },
+        {
+          "text": "Hunt: Wraith (Rank D)",
+          "condition": "questStatus:wraith_of_sewers:inactive",
+          "next": "accept_wraith"
+        },
+        {
+          "text": "Hunt: Flowering Cactoid (Rank D)",
+          "condition": "questStatus:flowering_cactoid:inactive",
+          "next": "accept_cactoid"
+        },
+        {
+          "text": "Hunt: Nidhogg (Rank C)",
+          "condition": "questStatus:nidhogg:inactive",
+          "next": "accept_nidhogg"
+        },
+        {
+          "text": "Hunt: Rock Tortoise (Rank C)",
+          "condition": "questStatus:rock_tortoise:inactive",
+          "next": "accept_tortoise"
+        },
+        {
+          "text": "Hunt: Dustia (Rank B)",
+          "condition": "questStatus:dustia:inactive",
+          "next": "accept_dustia"
+        },
+        {
+          "text": "Hunt: Ring Wyrm (Rank B)",
+          "condition": "questStatus:ring_wyrm:inactive",
+          "next": "accept_wyrm"
+        },
+        {
+          "text": "Hunt: Malboro (Rank A)",
+          "condition": "questStatus:malboro_menace:inactive",
+          "next": "accept_malboro"
+        },
+        {
+          "text": "Hunt: White Mousse (Rank A)",
+          "condition": "questStatus:white_mousse:inactive",
+          "next": "accept_white_mousse"
+        },
+        {
+          "text": "Hunt: Gil Snapper (Rank S)",
+          "condition": "questStatus:gil_snapper:inactive",
+          "next": "accept_gil_snapper"
+        },
+        {
+          "text": "Hunt: Antlion (Rank S)",
+          "condition": "questStatus:antlion_infestation:inactive",
+          "next": "accept_antlion"
+        },
+        {
+          "text": "Hunt: Carrot (Rank H)",
+          "condition": "questStatus:carrot:inactive",
+          "next": "accept_carrot"
+        },
+        {
+          "text": "Hunt: Yiazmat (Rank X)",
+          "condition": "questStatus:yiazmat:inactive",
+          "next": "accept_yiazmat"
+        },
+        {
+          "text": "Leave",
+          "next": "exit"
+        }
+      ]
+    },
+    "accept_rogue_tomato": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "rogue_tomato",
+        "next": "start"
+    },
+    "accept_wolf": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "the_sun_scorched_wolf",
+        "next": "start"
+    },
+    "accept_desert_rose": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "desert_rose",
+        "next": "start"
+    },
+    "accept_wraith": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "wraith_of_sewers",
+        "next": "start"
+    },
+    "accept_cactoid": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "flowering_cactoid",
+        "next": "start"
+    },
+    "accept_nidhogg": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "nidhogg",
+        "next": "start"
+    },
+    "accept_tortoise": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "rock_tortoise",
+        "next": "start"
+    },
+    "accept_dustia": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "dustia",
+        "next": "start"
+    },
+    "accept_wyrm": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "ring_wyrm",
+        "next": "start"
+    },
+    "accept_malboro": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "malboro_menace",
+        "next": "start"
+    },
+    "accept_white_mousse": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "white_mousse",
+        "next": "start"
+    },
+    "accept_gil_snapper": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "gil_snapper",
+        "next": "start"
+    },
+    "accept_antlion": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "antlion_infestation",
+        "next": "start"
+    },
+    "accept_carrot": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "carrot",
+        "next": "start"
+    },
+    "accept_yiazmat": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "yiazmat",
+        "next": "start"
+    },
+    "exit": {
+      "type": "TEXT",
+      "text": "You leave the board."
+    }
+  }
+}
