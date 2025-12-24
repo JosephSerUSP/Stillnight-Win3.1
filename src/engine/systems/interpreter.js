@@ -328,6 +328,7 @@ export class InterpreterSystem {
     _handleChoice(state, command, session) {
         const events = [{
             type: 'SHOW_CHOICES',
+            text: command.text, // Pass text through
             options: command.options
         }];
         state.waitMode = 'input';

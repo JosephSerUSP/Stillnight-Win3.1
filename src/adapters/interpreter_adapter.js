@@ -189,7 +189,7 @@ export class InterpreterAdapter {
              // Fallback if no text preceded
              this.scene.hudManager.eventWindow.show({
                  title: "Choice",
-                 description: "Make a choice:",
+                 description: e.text || "Make a choice:",
                  style: 'terminal',
                  choices: choices
              });
