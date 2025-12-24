@@ -336,7 +336,7 @@
     "cssClass": "tile-pub",
     "trigger": "touch",
     "scripts": {
-        "onEnter": [{ "type": "TEXT", "text": "The pub is lively with patrons sharing stories.", "style": "terminal" }]
+        "onEnter": [{ "type": "NPC_DIALOGUE", "id": "loc_pub" }]
     }
   },
   {
