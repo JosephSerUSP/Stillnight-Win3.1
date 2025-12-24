@@ -11,11 +11,11 @@ This document outlines the architectural refactor to create a single source of t
 *   **Interpreter**: Migrated to `InterpreterSystem` and `InterpreterAdapter`. Legacy `managers/interpreter.js` deleted.
 *   **UI Decoupling**: Windows now use `Adapters` (Audio, Settings, Effect) and `Selectors`. Direct manager imports removed from key windows.
 *   **Save/Load**: Wired into `Scene_Boot` and `Scene_Map` via `SessionSerializer`.
-*   **Cleanup**: `src/objects/objects.js` retired. `src/legacy/` created.
+*   **Cleanup**: `src/objects/objects.js` retired. `src/legacy/` deleted.
 
 ## Assessment
 
-The roadmap still aligns with the single source of truth goal. The remaining risk was legacy managers leaking into the presentation layer and effects bypassing the new registry. With the effect pipeline consolidated under `EffectSystem` and scenes now funneled through adapters for audio, settings, and input, the refactor boundaries hold and Phase 7 can close out confidently.
+The roadmap is largely complete, with most systems migrated to the new architecture. However, `TraitManager` and `EncounterManager` remain active and are used by `Game_Battler` and `DungeonGenerator` respectively. These should be migrated to `TraitRules` and `EncounterSystem` (or similar) in a future pass to complete the "Remove remaining legacy knot" phase.
 
 ## Target Architecture
 
@@ -75,9 +75,11 @@ The roadmap still aligns with the single source of truth goal. The remaining ris
 *   `Scene_Map` accepts and resumes session.
 *   `Registry` populated in boot.
 
-## Phase 7 — Remove the remaining legacy knot (Complete)
+## Phase 7 — Remove the remaining legacy knot (Partial)
 **Goal:** Final cleanups.
 *   Retire `src/objects/objects.js` barrel (Complete).
 *   Replace `window.*` debug globals with `DebugTools` (Complete - via `exposeGlobals`).
 *   Migrate `EffectManager` to `EffectSystem` (Complete — EffectManager removed; Game_Action and systems use EffectSystem with injected context).
 *   Migrate remaining infrastructure managers (`Sound`, `Input`, `Config`) to pure Ports/Adapters structure (Complete — presentation routes through adapters for audio, settings, and input).
+*   **Remaining**: Migrate `TraitManager` to `TraitRules` or similar.
+*   **Remaining**: Migrate `EncounterManager` to `EncounterSystem` (if applicable) or Refactor into pure functions.

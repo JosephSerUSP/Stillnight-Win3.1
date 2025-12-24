@@ -47,7 +47,7 @@ export class TransitionLogic {
             case 'questCompleted':
                 return QuestSystem.getStatus(session.quests, parts[1]) === 'completed';
 
-            case 'var':
+            case 'var': {
                 // Format: var:variableName:operator:value
                 // e.g., var:trust:>:10, var:faction:==:mages
                 if (parts.length < 4) return false;
@@ -69,11 +69,13 @@ export class TransitionLogic {
                     case '!=': return val != targetVal;
                     default: return false;
                 }
+            }
 
-            case 'random':
+            case 'random': {
                 // Format: random:0.5 (50% chance)
                 const chance = parseFloat(parts[1]);
                 return Math.random() < chance;
+            }
 
             default:
                 console.warn(`TransitionLogic: Unknown condition type '${type}'`);
