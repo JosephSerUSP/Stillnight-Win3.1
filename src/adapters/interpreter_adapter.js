@@ -127,6 +127,9 @@ export class InterpreterAdapter {
                 case 'DESCEND':
                     this._descendStairs();
                     break;
+                case 'ASCEND':
+                    this._ascendStairs();
+                    break;
                 case 'WALL_BROKEN':
                     this._resolveBrokenWall(e.x, e.y);
                     break;
@@ -204,6 +207,22 @@ export class InterpreterAdapter {
         floor.visited[y][x] = true;
         this.scene.updateGrid();
         this.scene.updateAll();
+    }
+
+    _ascendStairs() {
+        if (this.map.floorIndex - 1 < 0) {
+            this.scene.logMessage("You are on the highest floor.");
+            return;
+        }
+        this.map.floorIndex--;
+        const f = this.map.floors[this.map.floorIndex];
+        this.map.playerX = f.startX;
+        this.map.playerY = f.startY;
+        this.map.revealAroundPlayer();
+        this.scene.logMessage(`[Floor] You ascend to: ${f.title}`);
+        this.scene.setStatus("Ascending.");
+        this.scene.updateAll();
+        this.scene.checkMusic();
     }
 
     _descendStairs() {
