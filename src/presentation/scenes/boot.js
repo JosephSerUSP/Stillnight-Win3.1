@@ -46,7 +46,7 @@ export class Scene_Boot extends Scene_Base {
         // In a real implementation, we might check for a 'continue' flag or show a Title Screen first.
         // For now, we auto-load if save exists, else new game.
         // Or better: Scene_Map handles the "New Game" logic if session is fresh.
-        const savedData = localStorage.getItem('stillnight_save');
+        const savedData = localStorage.getItem('stillnight_save_data');
         if (savedData) {
             try {
                 session = SessionSerializer.fromJSON(JSON.parse(savedData));

@@ -18,6 +18,7 @@ import { selectInventory } from "../selectors/inventory.js";
 import { selectBattlerDetails } from "../selectors/details.js";
 import { selectQuestLog } from "../selectors/quest.js";
 import { QuestLogState } from "../../engine/session/quest_state.js";
+import { SessionSerializer } from "../../engine/session/serializer.js";
 
 /**
  * @class Scene_Map
@@ -195,8 +196,10 @@ export class Scene_Map extends Scene_Base {
   addEventListeners() {
     this.hud.menuNewGame?.addEventListener("click", () => this.confirmNewGame());
     this.hud.menuNewRun?.addEventListener("click", () => this.confirmNewRun());
-    this.hud.menuSaveGame?.addEventListener("click", () => this.showStubMessage("Save Game coming soon."));
-    this.hud.menuLoadGame?.addEventListener("click", () => this.showStubMessage("Load Game coming soon."));
+    this.hud.menuSaveGame?.addEventListener("click", () => this.saveGameLocal());
+    this.hud.menuLoadGame?.addEventListener("click", () => this.loadGameLocal());
+    this.hud.menuSaveFile?.addEventListener("click", () => this.saveGameFile());
+    this.hud.menuLoadFile?.addEventListener("click", () => this.loadGameFile());
     this.hud.menuGameInfo?.addEventListener("click", () => this.openInfo("game"));
     this.hud.menuAbout?.addEventListener("click", () => this.showStubMessage("About screen coming soon."));
 
@@ -914,6 +917,86 @@ export class Scene_Map extends Scene_Base {
       ];
       this.hudManager.audioWindow.setup(options);
       this.windowManager.push(this.hudManager.audioWindow);
+  }
+
+  saveGameLocal() {
+      try {
+          const data = SessionSerializer.toJSON(this.session);
+          localStorage.setItem('stillnight_save_data', JSON.stringify(data));
+          this.logMessage("[System] Game saved successfully.");
+          AudioAdapter.play('UI_SELECT');
+      } catch (e) {
+          console.error(e);
+          this.logMessage("[System] Failed to save game.", 'low');
+          AudioAdapter.play('UI_ERROR');
+      }
+  }
+
+  loadGameLocal() {
+      try {
+          const jsonStr = localStorage.getItem('stillnight_save_data');
+          if (!jsonStr) {
+              this.logMessage("[System] No saved game found.", 'low');
+              AudioAdapter.play('UI_ERROR');
+              return;
+          }
+          const session = SessionSerializer.fromJSON(JSON.parse(jsonStr));
+          this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager, session));
+          // Note: SceneManager.push will unmount the current scene, so we don't need to manually cleanup.
+          AudioAdapter.play('UI_SELECT');
+      } catch (e) {
+          console.error(e);
+          this.logMessage("[System] Failed to load game.", 'low');
+          AudioAdapter.play('UI_ERROR');
+      }
+  }
+
+  saveGameFile() {
+      try {
+          const data = SessionSerializer.toJSON(this.session);
+          const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `stillnight_save_${Date.now()}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+
+          this.logMessage("[System] Save file generated.");
+          AudioAdapter.play('UI_SELECT');
+      } catch (e) {
+          console.error(e);
+          this.logMessage("[System] Failed to generate save file.", 'low');
+          AudioAdapter.play('UI_ERROR');
+      }
+  }
+
+  loadGameFile() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+              try {
+                  const session = SessionSerializer.fromJSON(JSON.parse(event.target.result));
+                  this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager, session));
+                  AudioAdapter.play('UI_SELECT');
+              } catch (err) {
+                  console.error(err);
+                  this.logMessage("[System] Failed to load save file.", 'low');
+                  AudioAdapter.play('UI_ERROR');
+              }
+          };
+          reader.readAsText(file);
+      };
+      input.click();
   }
 
   showStubMessage(message) {
