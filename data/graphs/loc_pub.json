@@ -21,7 +21,6 @@
     "bartender_start": {
         "type": "TEXT",
         "content": "The bartender nods at you as he wipes a glass with a rag that's seen better days. 'What can I get you?'",
-        "speakers": [{ "name": "Bartender", "active": true }],
         "next": "bartender_choices"
     },
     "bartender_choices": {

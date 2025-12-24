@@ -91,7 +91,7 @@
     "allow_pass_choices": {
       "type": "CHOICE",
       "options": [
-        { "label": "Enter Dungeon", "target": "action_teleport" },
+        { "label": "Enter Dungeon", "target": "action_teleport", "setFlag": "dungeon_entered" },
         { "label": "Ask about stains.", "target": "allow_pass_stains_text" },
         { "label": "Anything strange?", "target": "quest_offer_text", "condition": "questStatus:silent_shipment:inactive" },
         { "label": "Leave", "action": "close" }
@@ -99,10 +99,8 @@
     },
     "action_teleport": {
       "type": "ACTION",
-      "script": [
-          { "type": "SET_FLAG", "flag": "dungeon_entered", "value": true },
-          { "type": "TELEPORT", "target": "dungeon_floor_1" }
-      ]
+      "action": "TELEPORT",
+      "target": "dungeon_floor_1"
     },
     "allow_pass_stains_text": {
       "type": "TEXT",
@@ -112,7 +110,7 @@
     "allow_pass_stains_choices": {
       "type": "CHOICE",
       "options": [
-        { "label": "Enter Dungeon", "target": "action_teleport" },
+        { "label": "Enter Dungeon", "target": "action_teleport", "setFlag": "dungeon_entered" },
         { "label": "Leave", "action": "close" }
       ]
     },
