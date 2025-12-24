@@ -242,6 +242,13 @@ export class RandomWalkGenerator extends DungeonGenerator {
 
         const events = this._populateEvents(meta, eventDefs, floorCells.filter(c => c[0] !== startPos[0] || c[1] !== startPos[1]), npcData, party, actors);
 
+        if (index > 0) {
+            const stairsUpDef = eventDefs.find(e => e.id === 'stairs_up');
+            if (stairsUpDef) {
+                events.push(new Game_Event(startPos[0], startPos[1], stairsUpDef));
+            }
+        }
+
         return {
             id: "F" + (index + 1),
             title: meta.title,
@@ -306,6 +313,21 @@ export class FixedLayoutGenerator extends DungeonGenerator {
         // Exclude start pos from random spawns
         const spawnCells = floorCells.filter(c => c[0] !== startX || c[1] !== startY);
         const events = this._populateEvents(meta, eventDefs, spawnCells, npcData, party, actors);
+
+        // Add Stairs Up for floors > 0 (Dungeon floors)
+        // Fixed Layout might already have them defined in meta.events?
+        // If so, we shouldn't duplicate.
+        // But usually Fixed Layouts rely on 'S' for start.
+        // If it's Floor 1+ (index > 0), we want stairs up at S.
+        if (index > 0) {
+             const existing = events.find(e => e.x === startX && e.y === startY);
+             if (!existing) {
+                 const stairsUpDef = eventDefs.find(e => e.id === 'stairs_up');
+                 if (stairsUpDef) {
+                     events.push(new Game_Event(startX, startY, stairsUpDef));
+                 }
+             }
+        }
 
         return {
             id: "F" + (index + 1),
