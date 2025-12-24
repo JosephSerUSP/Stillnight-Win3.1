@@ -164,14 +164,19 @@ export class Scene_Map extends Scene_Base {
   }
 
   promptNewRun(message, title = "Confirm New Run") {
-    if (this.sceneManager.currentScene() !== this) return;
     this.hud.closeMenus();
+    this.showConfirm(message, title, () => this.startNewRun());
+  }
+
+  showConfirm(message, title, onConfirm) {
+    if (this.sceneManager.currentScene() !== this) return;
     this.hudManager.confirmWindow.titleEl.textContent = title;
     this.hudManager.confirmWindow.messageEl.textContent = message;
     this.windowManager.push(this.hudManager.confirmWindow);
+
     this.hudManager.confirmWindow.btnOk.onclick = () => {
         this.windowManager.close(this.hudManager.confirmWindow);
-        this.startNewRun();
+        onConfirm();
     };
     this.hudManager.confirmWindow.btnCancel.onclick = () => {
         this.windowManager.close(this.hudManager.confirmWindow);
@@ -933,22 +938,29 @@ export class Scene_Map extends Scene_Base {
   }
 
   loadGameLocal() {
-      try {
-          const jsonStr = localStorage.getItem('stillnight_save_data');
-          if (!jsonStr) {
-              this.logMessage("[System] No saved game found.", 'low');
-              AudioAdapter.play('UI_ERROR');
-              return;
-          }
-          const session = SessionSerializer.fromJSON(JSON.parse(jsonStr));
-          this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager, session));
-          // Note: SceneManager.push will unmount the current scene, so we don't need to manually cleanup.
-          AudioAdapter.play('UI_SELECT');
-      } catch (e) {
-          console.error(e);
-          this.logMessage("[System] Failed to load game.", 'low');
+      const jsonStr = localStorage.getItem('stillnight_save_data');
+      if (!jsonStr) {
+          this.logMessage("[System] No saved game found.", 'low');
           AudioAdapter.play('UI_ERROR');
+          return;
       }
+
+      this.hud.closeMenus();
+      this.showConfirm(
+          "Overwrite current game? Unsaved progress will be lost.",
+          "Load Game",
+          () => {
+              try {
+                  const session = SessionSerializer.fromJSON(JSON.parse(jsonStr));
+                  this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager, session));
+                  AudioAdapter.play('UI_SELECT');
+              } catch (e) {
+                  console.error(e);
+                  this.logMessage("[System] Failed to load game.", 'low');
+                  AudioAdapter.play('UI_ERROR');
+              }
+          }
+      );
   }
 
   saveGameFile() {
@@ -975,28 +987,35 @@ export class Scene_Map extends Scene_Base {
   }
 
   loadGameFile() {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.json';
-      input.onchange = (e) => {
-          const file = e.target.files[0];
-          if (!file) return;
+      this.hud.closeMenus();
+      this.showConfirm(
+          "Overwrite current game? Unsaved progress will be lost.",
+          "Load Game File",
+          () => {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = '.json';
+              input.onchange = (e) => {
+                  const file = e.target.files[0];
+                  if (!file) return;
 
-          const reader = new FileReader();
-          reader.onload = (event) => {
-              try {
-                  const session = SessionSerializer.fromJSON(JSON.parse(event.target.result));
-                  this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager, session));
-                  AudioAdapter.play('UI_SELECT');
-              } catch (err) {
-                  console.error(err);
-                  this.logMessage("[System] Failed to load save file.", 'low');
-                  AudioAdapter.play('UI_ERROR');
-              }
-          };
-          reader.readAsText(file);
-      };
-      input.click();
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                      try {
+                          const session = SessionSerializer.fromJSON(JSON.parse(event.target.result));
+                          this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager, session));
+                          AudioAdapter.play('UI_SELECT');
+                      } catch (err) {
+                          console.error(err);
+                          this.logMessage("[System] Failed to load save file.", 'low');
+                          AudioAdapter.play('UI_ERROR');
+                      }
+                  };
+                  reader.readAsText(file);
+              };
+              input.click();
+          }
+      );
   }
 
   showStubMessage(message) {
