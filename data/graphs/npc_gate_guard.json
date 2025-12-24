@@ -7,11 +7,18 @@
     "default_router": {
       "type": "ROUTER",
       "branches": [
-        { "condition": "questStatus:silent_shipment:completed", "target": "quest_complete_text" },
         { "condition": "questStatus:silent_shipment:active", "target": "quest_active_router" },
+        { "condition": "flag:dungeon_entered, hasItem:guild_pass", "target": "quick_entry_text" },
+        { "condition": "questStatus:silent_shipment:completed", "target": "quest_complete_text" },
         { "condition": "hasItem:guild_pass", "target": "allow_pass_text" }
       ],
       "next": "deny_pass_text"
+    },
+
+    "quick_entry_text": {
+        "type": "TEXT",
+        "content": "Ready to descend again? Don't make me carry your body out.",
+        "next": "allow_pass_choices"
     },
 
     "quest_active_router": {
@@ -92,8 +99,10 @@
     },
     "action_teleport": {
       "type": "ACTION",
-      "action": "TELEPORT",
-      "target": "dungeon_floor_1"
+      "script": [
+          { "type": "SET_FLAG", "flag": "dungeon_entered", "value": true },
+          { "type": "TELEPORT", "target": "dungeon_floor_1" }
+      ]
     },
     "allow_pass_stains_text": {
       "type": "TEXT",

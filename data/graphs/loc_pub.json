@@ -1,0 +1,99 @@
+{
+  "id": "loc_pub",
+  "name": "The Rusty Tankard",
+  "layout": "visual_novel",
+  "initialNode": "start",
+  "nodes": {
+    "start": {
+      "type": "TEXT",
+      "content": "The air in The Rusty Tankard is thick with the smell of cheap ale and roasted meat. Laughter and hushed whispers compete with the clinking of glasses.",
+      "next": "hub_choices"
+    },
+    "hub_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Approach the Bartender", "target": "bartender_start" },
+        { "label": "Look for a table", "target": "look_around" },
+        { "label": "Leave", "action": "close" }
+      ]
+    },
+
+    "bartender_start": {
+        "type": "TEXT",
+        "content": "The bartender nods at you as he wipes a glass with a rag that's seen better days. 'What can I get you?'",
+        "speakers": [{ "name": "Bartender", "active": true }],
+        "next": "bartender_choices"
+    },
+    "bartender_choices": {
+        "type": "CHOICE",
+        "options": [
+            { "label": "Buy a drink", "target": "shop_drink" },
+            { "label": "Any news?", "target": "bartender_gossip" },
+            { "label": "Back", "target": "hub_choices" }
+        ]
+    },
+    "shop_drink": {
+        "type": "ACTION",
+        "action": "OPEN_SHOP",
+        "shopId": "pub_drinks",
+        "next": "bartender_choices"
+    },
+    "bartender_gossip": {
+        "type": "TEXT",
+        "content": "News? The dungeon's deep, the monsters are hungry, and the beer is cold. That's all the news that matters.",
+        "next": "bartender_choices"
+    },
+
+    "look_around": {
+        "type": "ROUTER",
+        "branches": [
+            { "condition": "random:0.4", "target": "find_gambler" },
+            { "condition": "random:0.3", "target": "find_mercenary" },
+            { "default": true, "target": "find_nobody" }
+        ]
+    },
+    "find_gambler": {
+        "type": "TEXT",
+        "content": "In a dimly lit corner, you spot a familiar figure shuffling a deck of cards with practiced ease.",
+        "next": "interact_gambler"
+    },
+    "interact_gambler": {
+        "type": "CHOICE",
+        "options": [
+            { "label": "Approach the Gambler", "target": "trigger_gambler" },
+            { "label": "Ignore him", "target": "hub_choices" }
+        ]
+    },
+    "trigger_gambler": {
+        "type": "ACTION",
+        "action": "NPC_DIALOGUE",
+        "id": "npc_gambler",
+        "next": "hub_choices"
+    },
+
+    "find_mercenary": {
+        "type": "TEXT",
+        "content": "An old mercenary sits by the fire, staring into the flames. He looks like he has stories to tell.",
+        "next": "interact_mercenary"
+    },
+    "interact_mercenary": {
+        "type": "CHOICE",
+        "options": [
+            { "label": "Sit with him", "target": "trigger_mercenary" },
+            { "label": "Leave him be", "target": "hub_choices" }
+        ]
+    },
+    "trigger_mercenary": {
+        "type": "ACTION",
+        "action": "NPC_DIALOGUE",
+        "id": "npc_geraldo",
+        "next": "hub_choices"
+    },
+
+    "find_nobody": {
+        "type": "TEXT",
+        "content": "You find an empty table. It's nice to sit down for a moment, but there's no one interesting nearby right now.",
+        "next": "hub_choices"
+    }
+  }
+}

@@ -35,7 +35,6 @@
       { "id": "loc_abandoned_house", "x": 4, "y": 8 },
       { "id": "recovery", "x": 9, "y": 9 },
       { "id": "npc_alicia", "x": 14, "y": 9 },
-      { "id": "npc_gambler", "x": 6, "y": 9 },
       { "id": "loc_pub", "x": 14, "y": 12 },
       { "id": "npc_auction", "x": 10, "y": 13 },
       { "id": "loc_temple", "x": 8, "y": 14 }
