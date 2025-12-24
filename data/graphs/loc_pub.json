@@ -46,6 +46,31 @@
     "look_around": {
         "type": "ROUTER",
         "branches": [
+            { "condition": "flag:alicia_visits_pub", "target": "find_alicia" },
+            { "default": true, "target": "look_around_random" }
+        ]
+    },
+    "find_alicia": {
+        "type": "TEXT",
+        "content": "You notice Alicia sitting by herself at a small table, nervously sipping a cup of tea. It's unusual to see her outside her shop.",
+        "next": "interact_alicia"
+    },
+    "interact_alicia": {
+        "type": "CHOICE",
+        "options": [
+            { "label": "Approach her", "target": "trigger_alicia_dialogue" },
+            { "label": "Leave her be", "target": "hub_choices" }
+        ]
+    },
+    "trigger_alicia_dialogue": {
+        "type": "ACTION",
+        "action": "NPC_DIALOGUE",
+        "id": "pub_alicia",
+        "next": "hub_choices"
+    },
+    "look_around_random": {
+        "type": "ROUTER",
+        "branches": [
             { "condition": "random:0.4", "target": "find_gambler" },
             { "condition": "random:0.3", "target": "find_mercenary" },
             { "default": true, "target": "find_nobody" }
