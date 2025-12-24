@@ -139,8 +139,8 @@
     "quest_router": {
       "type": "ROUTER",
       "branches": [
-        { "condition": "questStatus:sparkling_gift:completed", "target": "quest_completed_text" },
-        { "condition": "questStatus:sparkling_gift:active", "target": "quest_active_text" }
+        { "condition": "questStatus:sparkling_gift:completed", "target": "quest_gift_done" },
+        { "condition": "questStatus:sparkling_gift:active", "target": "quest_gift_active_text" }
       ],
       "next": "quest_offer_text"
     },
@@ -161,51 +161,264 @@
       "type": "ACTION",
       "action": "OFFER_QUEST",
       "questId": "sparkling_gift",
-      "acceptNode": "quest_active_text",
+      "acceptNode": "quest_gift_active_text",
       "declineNode": "talk_menu_text"
     },
-    "quest_active_text": {
+    "quest_gift_active_text": {
       "type": "TEXT",
       "speaker": "Alicia",
       "content": "The Glittering Teardrop… please be careful. It’s pretty, but the dungeon is mean. Don’t get hurt for a rock, okay?",
-      "next": "quest_active_router"
+      "next": "quest_gift_active_router"
     },
-    "quest_active_router": {
+    "quest_gift_active_router": {
       "type": "ROUTER",
       "condition": "hasItem:glittering_teardrop",
-      "trueNode": "quest_turnin_text",
-      "falseNode": "quest_active_choices"
+      "trueNode": "quest_gift_turnin_text",
+      "falseNode": "quest_gift_active_choices"
     },
-    "quest_active_choices": {
+    "quest_gift_active_choices": {
       "type": "CHOICE",
       "options": [
         { "label": "I'm still looking.", "target": "talk_menu_text" }
       ]
     },
-    "quest_turnin_text": {
+    "quest_gift_turnin_text": {
       "type": "TEXT",
       "speaker": "Alicia",
       "content": "You… you found it! Oh, look at it! It’s perfect. It catches the light just like her eyes when she’s happy. Thank you! Thank you so much!",
-      "next": "quest_turnin_choices"
+      "next": "quest_gift_turnin_choices"
     },
-    "quest_turnin_choices": {
+    "quest_gift_turnin_choices": {
       "type": "CHOICE",
       "options": [
-        { "label": "Here you go.", "target": "action_complete_quest" }
+        { "label": "Here you go.", "target": "action_complete_gift" }
       ]
     },
-    "action_complete_quest": {
+    "action_complete_gift": {
       "type": "ACTION",
       "action": "COMPLETE_QUEST",
       "questId": "sparkling_gift",
-      "completeNode": "quest_completed_text",
+      "completeNode": "quest_gift_completed_text",
       "takeItem": "glittering_teardrop"
     },
-    "quest_completed_text": {
+    "quest_gift_completed_text": {
       "type": "TEXT",
       "speaker": "Alicia",
       "content": "I’m going to make this into a necklace. Or maybe a ring? No, a necklace. She doesn’t like rings when she works. Thank you again!",
       "next": "talk_menu_choices"
+    },
+    "quest_gift_done": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:alicia_midnight_snack:completed", "target": "quest_snack_done" },
+        { "condition": "questStatus:alicia_midnight_snack:active", "target": "quest_snack_active_text" }
+      ],
+      "next": "quest_snack_offer_text"
+    },
+    "quest_snack_offer_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "So, um... the necklace was a hit! She smiled! A real smile, not the polite one. But... now I want to make her dinner. A surprise dinner! I need Midnight Herbs from Floor 3. They taste like moonlight!",
+      "next": "quest_snack_offer_choices"
+    },
+    "quest_snack_offer_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll get them.", "target": "action_offer_snack" },
+        { "label": "Later.", "target": "talk_menu_text" }
+      ]
+    },
+    "action_offer_snack": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "alicia_midnight_snack",
+      "acceptNode": "quest_snack_active_text",
+      "declineNode": "talk_menu_text"
+    },
+    "quest_snack_active_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "The herbs only grow in the dark. Please hurry... I have the dough rising!",
+      "next": "quest_snack_active_router"
+    },
+    "quest_snack_active_router": {
+      "type": "ROUTER",
+      "condition": "hasItem:midnight_herbs",
+      "trueNode": "quest_snack_turnin_text",
+      "falseNode": "quest_gift_active_choices"
+    },
+    "quest_snack_turnin_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "You got them! Smell that? It's like... cold peppermint and dreams. This is going to be the best pie ever! Thank you!",
+      "next": "quest_snack_turnin_choices"
+    },
+    "quest_snack_turnin_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Enjoy the dinner.", "target": "action_complete_snack" }
+      ]
+    },
+    "action_complete_snack": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "alicia_midnight_snack",
+      "completeNode": "quest_snack_completed_text",
+      "takeItem": "midnight_herbs"
+    },
+    "quest_snack_completed_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "Here, take this tonic! I made extra. Just in case you get hungry in the dungeon. Wait, don't drink it if you're hungry. It's for wounds. Please don't drink it for fun.",
+      "next": "talk_menu_choices"
+    },
+    "quest_snack_done": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:alicia_lost_letter:completed", "target": "quest_letter_done" },
+        { "condition": "questStatus:alicia_lost_letter:active", "target": "quest_letter_active_text" }
+      ],
+      "next": "quest_letter_offer_text"
+    },
+    "quest_letter_offer_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "Oh... oh no. Oh no no no. I did something stupid. I wrote... a letter. To Laura. Just feelings! But I lost it near the entrance. If someone finds it... I'll die! I'll literally evaporate!",
+      "next": "quest_letter_offer_choices"
+    },
+    "quest_letter_offer_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Calm down. I'll find it.", "target": "action_offer_letter" },
+        { "label": "Later.", "target": "talk_menu_text" }
+      ]
+    },
+    "action_offer_letter": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "alicia_lost_letter",
+      "acceptNode": "quest_letter_active_text",
+      "declineNode": "talk_menu_text"
+    },
+    "quest_letter_active_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "Please find it before the goblins read it! Do goblins read? Oh god, what if they read it out loud?!",
+      "next": "quest_letter_active_router"
+    },
+    "quest_letter_active_router": {
+      "type": "ROUTER",
+      "condition": "hasItem:love_letter_fragment",
+      "trueNode": "quest_letter_turnin_text",
+      "falseNode": "quest_gift_active_choices"
+    },
+    "quest_letter_turnin_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "Is that it? Is that the paper? Oh, thank the stars! Thank you! I... I didn't sign it, but... the handwriting is so bubbly. She would have known.",
+      "next": "quest_letter_turnin_choices"
+    },
+    "quest_letter_turnin_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Be more careful.", "target": "action_complete_letter" }
+      ]
+    },
+    "action_complete_letter": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "alicia_lost_letter",
+      "completeNode": "quest_letter_completed_text",
+      "takeItem": "love_letter_fragment"
+    },
+    "quest_letter_completed_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "I'm going to burn this. And then eat the ashes. Just to be safe. You're a lifesaver.",
+      "next": "talk_menu_choices"
+    },
+    "quest_letter_done": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:alicia_proposal:completed", "target": "quest_proposal_done" },
+        { "condition": "questStatus:alicia_proposal:active", "target": "quest_proposal_active_text" }
+      ],
+      "next": "quest_rescue_check"
+    },
+    "quest_rescue_check": {
+        "type": "ROUTER",
+        "condition": "flag:alicia_rescued",
+        "trueNode": "quest_proposal_offer_text",
+        "falseNode": "quest_waiting_for_rescue"
+    },
+    "quest_waiting_for_rescue": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "I've been thinking... I need to be stronger. For her. Maybe I should go train in the dungeon myself? ...No, that's scary.",
+        "next": "talk_menu_choices"
+    },
+    "quest_proposal_offer_text": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "I'm back! That was... terrifying. But I realized something down there. Life is short. I'm going to ask her. To marry me. I need a ring. A real one. Can you help me?",
+        "next": "quest_proposal_offer_choices"
+    },
+    "quest_proposal_offer_choices": {
+        "type": "CHOICE",
+        "options": [
+            { "label": "Let's do this.", "target": "action_offer_proposal" },
+            { "label": "Too soon?", "target": "talk_menu_text" }
+        ]
+    },
+    "action_offer_proposal": {
+        "type": "ACTION",
+        "action": "OFFER_QUEST",
+        "questId": "alicia_proposal",
+        "acceptNode": "quest_proposal_active_text",
+        "declineNode": "talk_menu_text"
+    },
+    "quest_proposal_active_text": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "I need a Proposal Ring. I heard there's a pattern to craft one, or maybe one lost in the deep. I just need it to be perfect.",
+        "next": "quest_proposal_active_router"
+    },
+    "quest_proposal_active_router": {
+        "type": "ROUTER",
+        "condition": "hasItem:proposal_ring",
+        "trueNode": "quest_proposal_turnin_text",
+        "falseNode": "quest_gift_active_choices"
+    },
+    "quest_proposal_turnin_text": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "This is it. It's... beautiful. I'm shaking. Look at my hands! I'm going to drop it. Okay, deep breaths. I'm going to do it. Tonight.",
+        "next": "quest_proposal_turnin_choices"
+    },
+    "quest_proposal_turnin_choices": {
+        "type": "CHOICE",
+        "options": [
+            { "label": "Good luck.", "target": "action_complete_proposal" }
+        ]
+    },
+    "action_complete_proposal": {
+        "type": "ACTION",
+        "action": "COMPLETE_QUEST",
+        "questId": "alicia_proposal",
+        "completeNode": "quest_proposal_completed_text",
+        "takeItem": "proposal_ring"
+    },
+    "quest_proposal_completed_text": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "Thank you for everything. No matter what she says... I'm glad I tried. I'm glad I met you.",
+        "next": "talk_menu_choices"
+    },
+    "quest_proposal_done": {
+        "type": "TEXT",
+        "speaker": "Alicia",
+        "content": "She... she said she needs time. But she didn't say no! She held my hand. That's good, right? That's good.",
+        "next": "talk_menu_choices"
     }
   }
 }

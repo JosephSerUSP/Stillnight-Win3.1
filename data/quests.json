@@ -6,7 +6,7 @@
     "summary": "Find a glittering keepsake that Alicia can gift to Laura.",
     "description": "Alicia wants to surprise Laura with a shimmering token. She believes a rare teardrop crystal from the lower tunnels would be perfect.",
     "objectives": [
-      "Locate a Glittering Teardrop in the dungeon.",
+      "Locate a Glittering Teardrop in the dungeon (Floors 1-2).",
       "Return it to Alicia so she can craft a gift for Laura."
     ],
     "requirements": {
@@ -19,6 +19,94 @@
       "items": [
         { "id": "light_amulet", "qty": 1 }
       ]
+    },
+    "next": "alicia_midnight_snack"
+  },
+  "alicia_midnight_snack": {
+    "name": "Midnight Snack",
+    "giver": "Alicia",
+    "portrait": "NPC_Alicia",
+    "summary": "Gather ingredients for a romantic dinner.",
+    "description": "Alicia is planning a surprise dinner for Laura. She needs rare herbs that only grow in the dark.",
+    "objectives": [
+      "Find Midnight Herbs on Floor 3.",
+      "Bring them back to Alicia."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "midnight_herbs", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 60,
+      "items": [
+        { "id": "hp_tonic", "qty": 2 }
+      ]
+    },
+    "next": "alicia_lost_letter"
+  },
+  "alicia_lost_letter": {
+    "name": "Lost Words",
+    "giver": "Alicia",
+    "portrait": "NPC_Alicia",
+    "summary": "Retrieve a lost letter from the dungeon.",
+    "description": "Alicia wrote a confession letter but lost it while gathering supplies near the entrance. She is terrified someone else will find it.",
+    "objectives": [
+      "Find the Love Letter Fragment on Floor 1 or 2.",
+      "Return it to Alicia before anyone reads it."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "love_letter_fragment", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 80,
+      "xp": 100
+    },
+    "next": "alicia_rescue"
+  },
+  "alicia_rescue": {
+    "name": "Damsel in Distress",
+    "giver": "Laura",
+    "portrait": "NPC_Laura",
+    "summary": "Rescue Alicia from the dungeon.",
+    "description": "Alicia went into the dungeon to prove she's strong enough for Laura, but she hasn't returned. Laura is frantic.",
+    "objectives": [
+      "Find Alicia on Floor 4.",
+      "Escort her back to town safely."
+    ],
+    "requirements": {
+      "flags": ["alicia_rescued"]
+    },
+    "rewards": {
+      "gold": 200,
+      "items": [
+        { "id": "ring_of_affection", "qty": 1 }
+      ]
+    },
+    "next": "alicia_proposal"
+  },
+  "alicia_proposal": {
+    "name": "The Proposal",
+    "giver": "Alicia",
+    "portrait": "NPC_Alicia",
+    "summary": "Help Alicia prepare for the big question.",
+    "description": "Alicia is ready to propose. She needs a ring that matches her feelings.",
+    "objectives": [
+      "Obtain a Proposal Ring (Craft or Find).",
+      "Give it to Alicia."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "proposal_ring", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 500,
+      "items": [
+        { "id": "exp_boost", "qty": 1 }
+      ]
     }
   },
   "golden_promise": {
@@ -28,7 +116,7 @@
     "summary": "Secure an ornate ring so Laura can work with new material.",
     "description": "Laura needs an unmarked golden band taken from a rare undead. She is willing to pay well for anyone brave enough to retrieve it.",
     "objectives": [
-      "Acquire an Untarnished Signet from the depths.",
+      "Acquire an Untarnished Signet from Skeletons (Floor 2+).",
       "Deliver the ring to Laura at her forge."
     ],
     "requirements": {
@@ -40,6 +128,71 @@
       "gold": 80,
       "items": [
         { "id": "alert_charm", "qty": 1 }
+      ]
+    },
+    "next": "laura_summoning_supplies"
+  },
+  "laura_summoning_supplies": {
+    "name": "Secret Arts",
+    "giver": "Laura",
+    "portrait": "NPC_Laura",
+    "summary": "Retrieve Laura's hidden summoning supplies.",
+    "description": "Laura reveals she is a summoner but hides it. She needs her special chalk from a cache she left on Floor 3.",
+    "objectives": [
+      "Find the Summoning Chalk on Floor 3.",
+      "Bring it to Laura discreetly."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "summoning_chalk", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 120,
+      "items": [
+        { "id": "sigil_ink", "qty": 2 }
+      ]
+    },
+    "next": "laura_sealed_message"
+  },
+  "laura_sealed_message": {
+    "name": "Sealed Lips",
+    "giver": "Laura",
+    "portrait": "NPC_Laura",
+    "summary": "Deliver a sealed scroll to a contact.",
+    "description": "Laura needs a message delivered to a contact in the dungeon. Do not open it.",
+    "objectives": [
+      "Take the Sealed Scroll to the Dungeon Merchant on Floor 4.",
+      "Return to Laura."
+    ],
+    "requirements": {
+      "flags": ["scroll_delivered"]
+    },
+    "rewards": {
+      "gold": 150,
+      "items": [
+        { "id": "summoners_cowl", "qty": 1 }
+      ]
+    },
+    "next": "laura_breakup"
+  },
+  "laura_breakup": {
+    "name": "The Fallout",
+    "giver": "Laura",
+    "portrait": "NPC_Laura",
+    "summary": "Help Laura deal with the aftermath.",
+    "description": "Things with Raphael are tense. Laura needs space and time to think. Clear the area near her favorite spot.",
+    "objectives": [
+      "Defeat 5 Enemies on Floor 5.",
+      "Report back to Laura."
+    ],
+    "requirements": {
+      "killCount": { "floor": 5, "count": 5 }
+    },
+    "rewards": {
+      "gold": 300,
+      "items": [
+        { "id": "hp_boost2", "qty": 1 }
       ]
     }
   },
@@ -57,6 +210,173 @@
     "rewards": {
       "gold": 50,
       "xp": 100
+    },
+    "next": "geraldo_security"
+  },
+  "geraldo_security": {
+    "name": "Security Breach",
+    "giver": "Gate Guard",
+    "portrait": "NPC_Geraldo",
+    "summary": "Eliminate a threat near the entrance.",
+    "description": "A powerful monster has been sighted near the upper floors. Geraldo needs it gone.",
+    "objectives": [
+      "Defeat the Crimson Lord on Floor 5 (or a high-level threat).",
+      "Report success to Geraldo."
+    ],
+    "requirements": {
+      "flags": ["security_threat_cleared"]
+    },
+    "rewards": {
+      "gold": 200,
+      "items": [
+        { "id": "guardians_shield", "qty": 1 }
+      ]
+    },
+    "next": "geraldo_badge"
+  },
+  "geraldo_badge": {
+    "name": "Old Badge",
+    "giver": "Gate Guard",
+    "portrait": "NPC_Geraldo",
+    "summary": "Find Geraldo's old service badge.",
+    "description": "Geraldo lost his old badge years ago in the dungeon. It means a lot to him.",
+    "objectives": [
+      "Find the Broken Badge on Floor 6.",
+      "Return it to Geraldo."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "broken_badge", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 500,
+      "items": [
+        { "id": "hp_boost3", "qty": 1 }
+      ]
+    }
+  },
+  "yukio_challenge": {
+    "name": "The Challenge",
+    "giver": "Yukio",
+    "portrait": "NPC_Yukio",
+    "summary": "Prove your worth to your rival.",
+    "description": "Yukio challenges you to reach Floor 6 before he does.",
+    "objectives": [
+      "Reach Floor 6.",
+      "Find Yukio there."
+    ],
+    "requirements": {
+      "flags": ["met_yukio_floor6"]
+    },
+    "rewards": {
+      "gold": 0,
+      "xp": 200
+    },
+    "next": "yukio_alliance"
+  },
+  "yukio_alliance": {
+    "name": "Uneasy Alliance",
+    "giver": "Yukio",
+    "portrait": "NPC_Yukio",
+    "summary": "Defeat a common enemy.",
+    "description": "A powerful entity blocks the path. Yukio suggests a temporary truce.",
+    "objectives": [
+      "Defeat the Floor 8 Boss.",
+      "Speak to Yukio afterwards."
+    ],
+    "requirements": {
+      "flags": ["floor8_boss_defeated"]
+    },
+    "rewards": {
+      "gold": 1000,
+      "items": [
+        { "id": "yukios_charm", "qty": 1 }
+      ]
+    }
+  },
+  "daphne_memory": {
+    "name": "Lost Memories",
+    "giver": "Daphne",
+    "portrait": "NPC_Daphne",
+    "summary": "Help Daphne remember who she is.",
+    "description": "Daphne feels incomplete. She remembers a locket she lost.",
+    "objectives": [
+      "Find the Rusted Locket on Floor 4.",
+      "Return it to Daphne."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "daphne_locket", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 100,
+      "items": [
+        { "id": "sigil_ink", "qty": 1 }
+      ]
+    },
+    "next": "daphne_truth"
+  },
+  "daphne_truth": {
+    "name": "The Truth",
+    "giver": "Daphne",
+    "portrait": "NPC_Daphne",
+    "summary": "Uncover the truth about Daphne's existence.",
+    "description": "Daphne's locket didn't open. She needs you to find the key in the deeper abyss.",
+    "objectives": [
+      "Find the Truth Key on Floor 9.",
+      "Unlock Daphne's memories."
+    ],
+    "requirements": {
+      "flags": ["daphne_truth_revealed"]
+    },
+    "rewards": {
+      "gold": 0,
+      "xp": 500
+    }
+  },
+  "blacksmith_ore": {
+    "name": "Rare Ore",
+    "giver": "Blacksmith",
+    "portrait": "NPC_WeaponShop",
+    "summary": "Fetch Mithril Ore for Kael.",
+    "description": "The blacksmith Kael needs Mithril Ore to forge a new line of weapons.",
+    "objectives": [
+      "Find Mithril Ore on Floor 7.",
+      "Deliver it to Kael."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "mithril_ore", "qty": 3, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 300,
+      "items": [
+        { "id": "silver_blade", "qty": 1 }
+      ]
+    },
+    "next": "blacksmith_masterpiece"
+  },
+  "blacksmith_masterpiece": {
+    "name": "Masterpiece",
+    "giver": "Blacksmith",
+    "portrait": "NPC_WeaponShop",
+    "summary": "Assist in creating a legendary weapon.",
+    "description": "Kael is ready to create his masterpiece. He needs the heart of a golem.",
+    "objectives": [
+      "Defeat a Golem King.",
+      "Bring the Core to Kael."
+    ],
+    "requirements": {
+      "flags": ["golem_core_delivered"]
+    },
+    "rewards": {
+      "gold": 1000,
+      "items": [
+        { "id": "radiant_blade_flavio", "qty": 1 }
+      ]
     }
   }
 }

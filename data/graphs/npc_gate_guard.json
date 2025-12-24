@@ -7,6 +7,10 @@
     "default_router": {
       "type": "ROUTER",
       "branches": [
+        { "condition": "questStatus:geraldo_badge:completed", "target": "quest_badge_done" },
+        { "condition": "questStatus:geraldo_badge:active", "target": "quest_badge_active_text" },
+        { "condition": "questStatus:geraldo_security:completed", "target": "quest_security_done" },
+        { "condition": "questStatus:geraldo_security:active", "target": "quest_security_active_text" },
         { "condition": "questStatus:silent_shipment:completed", "target": "quest_complete_text" },
         { "condition": "questStatus:silent_shipment:active", "target": "quest_active_router" },
         { "condition": "hasItem:guild_pass", "target": "allow_pass_text" }
@@ -87,6 +91,7 @@
         { "label": "Enter Dungeon", "target": "action_teleport" },
         { "label": "Ask about stains.", "target": "allow_pass_stains_text" },
         { "label": "Anything strange?", "target": "quest_offer_text", "condition": "questStatus:silent_shipment:inactive" },
+        { "label": "Security work?", "target": "quest_security_offer_check", "condition": "questStatus:silent_shipment:completed" },
         { "label": "Leave", "action": "close" }
       ]
     },
@@ -112,6 +117,124 @@
         "options": [
             { "label": "Leave", "action": "close" }
         ]
+    },
+    "quest_security_offer_check": {
+      "type": "ROUTER",
+      "condition": "questStatus:geraldo_security:inactive",
+      "trueNode": "quest_security_offer_text",
+      "falseNode": "allow_pass_text"
+    },
+    "quest_security_offer_text": {
+      "type": "TEXT",
+      "content": "Actually... there is something. A Crimson Lord has been sighted on Floor 5. It's getting too close to the surface. It needs to be removed.",
+      "next": "quest_security_offer_choices"
+    },
+    "quest_security_offer_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Consider it done.", "target": "action_offer_security" },
+        { "label": "Too dangerous.", "target": "allow_pass_text" }
+      ]
+    },
+    "action_offer_security": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "geraldo_security",
+      "acceptNode": "quest_security_active_text",
+      "declineNode": "allow_pass_text"
+    },
+    "quest_security_active_text": {
+      "type": "TEXT",
+      "content": "Floor 5. Crimson Lord. Don't underestimate it. It drinks blood to heal.",
+      "next": "quest_security_active_router"
+    },
+    "quest_security_active_router": {
+      "type": "ROUTER",
+      "condition": "flag:security_threat_cleared",
+      "trueNode": "quest_security_turnin_text",
+      "falseNode": "close_choice"
+    },
+    "quest_security_turnin_text": {
+      "type": "TEXT",
+      "content": "You're back. And you're covered in... well, never mind. It's dead? Good.",
+      "next": "quest_security_turnin_choices"
+    },
+    "quest_security_turnin_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "It won't bother you again.", "target": "action_complete_security" }
+      ]
+    },
+    "action_complete_security": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "geraldo_security",
+      "completeNode": "quest_security_done"
+    },
+    "quest_security_done": {
+       "type": "ROUTER",
+       "branches": [
+         { "condition": "questStatus:geraldo_badge:inactive", "target": "quest_badge_offer_text" }
+       ],
+       "next": "quest_security_done_text"
+    },
+    "quest_security_done_text": {
+      "type": "TEXT",
+      "content": "You fight like a veteran. Rare to see that these days. Most just run.",
+      "next": "allow_pass_choices"
+    },
+    "quest_badge_offer_text": {
+      "type": "TEXT",
+      "content": "Since you're heading deep... I lost something. Years ago. Floor 6. My old badge. It's worthless to you, but... it matters to me.",
+      "next": "quest_badge_offer_choices"
+    },
+    "quest_badge_offer_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I'll find it.", "target": "action_offer_badge" },
+        { "label": "I'm busy.", "target": "allow_pass_text" }
+      ]
+    },
+    "action_offer_badge": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "geraldo_badge",
+      "acceptNode": "quest_badge_active_text",
+      "declineNode": "allow_pass_text"
+    },
+    "quest_badge_active_text": {
+      "type": "TEXT",
+      "content": "Floor 6. It's probably rusted by now. Just... bring it back if you see it.",
+      "next": "quest_badge_active_router"
+    },
+    "quest_badge_active_router": {
+      "type": "ROUTER",
+      "condition": "hasItem:broken_badge",
+      "trueNode": "quest_badge_turnin_text",
+      "falseNode": "close_choice"
+    },
+    "quest_badge_turnin_text": {
+      "type": "TEXT",
+      "content": "You... found it. It's bent. Scratched. ...It's exactly as I left it. Thank you.",
+      "next": "quest_badge_turnin_choices"
+    },
+    "quest_badge_turnin_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Glad to help.", "target": "action_complete_badge" }
+      ]
+    },
+    "action_complete_badge": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "geraldo_badge",
+      "completeNode": "quest_badge_done",
+      "takeItem": "broken_badge"
+    },
+    "quest_badge_done": {
+      "type": "TEXT",
+      "content": "I owe you. Seriously. This badge... it reminds me of when we thought we could win. Here. Take this.",
+      "next": "allow_pass_choices"
     }
   }
 }
