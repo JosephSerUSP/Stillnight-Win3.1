@@ -154,6 +154,57 @@ export class DungeonGenerator {
 
         return eventData;
     }
+
+    _addStairsUp(floor, eventDefs) {
+        // Find valid neighbor
+        const dirs = [
+            [0, 1], [0, -1], [1, 0], [-1, 0]
+        ];
+
+        // Shuffle dirs to avoid bias
+        for (let i = dirs.length - 1; i > 0; i--) {
+            const j = randInt(0, i);
+            [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+        }
+
+        let placed = false;
+        for (const [dx, dy] of dirs) {
+            const tx = floor.startX + dx;
+            const ty = floor.startY + dy;
+
+            // Check bounds
+            if (ty < 0 || ty >= this.MAX_H || tx < 0 || tx >= this.MAX_W) continue;
+
+            // Check tile type (must be floor)
+            if (floor.tiles[ty][tx] !== '.') continue;
+
+            // Check if occupied by another event
+            if (floor.events.some(e => e.x === tx && e.y === ty)) continue;
+
+            // Place stairs up
+            // We need definition from eventDefs?
+            // Usually we have access to eventDefs in generate.
+            // But here we are passing it.
+
+            const def = eventDefs.find(e => e.id === 'stairs_up');
+            if (!def) {
+                console.warn("stairs_up definition not found");
+                break;
+            }
+
+            const eventData = { ...def, x: tx, y: ty };
+            floor.events.push(new Game_Event(tx, ty, eventData));
+            placed = true;
+            break;
+        }
+
+        if (!placed) {
+             console.warn("Could not place stairs_up next to player.");
+             // Fallback: Place under player if absolutely necessary?
+             // Or just skip. Request was "next to player".
+             // If impossible, we skip.
+        }
+    }
 }
 
 /**
@@ -242,7 +293,7 @@ export class RandomWalkGenerator extends DungeonGenerator {
 
         const events = this._populateEvents(meta, eventDefs, floorCells.filter(c => c[0] !== startPos[0] || c[1] !== startPos[1]), npcData, party, actors);
 
-        return {
+        const floor = {
             id: "F" + (index + 1),
             title: meta.title,
             depth: meta.depth,
@@ -259,6 +310,12 @@ export class RandomWalkGenerator extends DungeonGenerator {
             startY: startPos[1],
             discovered: false,
         };
+
+        if (index > 0) {
+            this._addStairsUp(floor, eventDefs);
+        }
+
+        return floor;
     }
 }
 
@@ -307,7 +364,7 @@ export class FixedLayoutGenerator extends DungeonGenerator {
         const spawnCells = floorCells.filter(c => c[0] !== startX || c[1] !== startY);
         const events = this._populateEvents(meta, eventDefs, spawnCells, npcData, party, actors);
 
-        return {
+        const floor = {
             id: "F" + (index + 1),
             title: meta.title,
             depth: meta.depth,
@@ -324,5 +381,11 @@ export class FixedLayoutGenerator extends DungeonGenerator {
             startY,
             discovered: false
         };
+
+        if (index > 0) {
+            this._addStairsUp(floor, eventDefs);
+        }
+
+        return floor;
     }
 }

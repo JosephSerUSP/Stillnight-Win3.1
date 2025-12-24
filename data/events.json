@@ -16,6 +16,22 @@
     }
   },
   {
+    "id": "stairs_up",
+    "type": "stairs",
+    "symbol": "S",
+    "cssClass": "tile-stairs-up",
+    "trigger": "step",
+    "scripts": {
+        "onEnter": [
+            { "type": "TEXT", "text": "Go back up?", "style": "terminal" },
+            { "type": "CHOICE", "options": [
+                { "label": "Yes", "script": [{ "type": "ASCEND" }] },
+                { "label": "No", "script": [{ "type": "LOG", "text": "You decide to stay." }] }
+            ]}
+        ]
+    }
+  },
+  {
     "id": "recovery",
     "type": "recovery",
     "symbol": "R",
