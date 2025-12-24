@@ -1,0 +1,16 @@
+[
+  {
+    "id": "wall",
+    "char": "#",
+    "symbol": " ",
+    "cssClass": "tile-wall",
+    "description": "A solid wall."
+  },
+  {
+    "id": "floor",
+    "char": ".",
+    "symbol": " ",
+    "cssClass": "",
+    "description": "Open floor."
+  }
+]
