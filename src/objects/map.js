@@ -16,6 +16,7 @@ export class Game_Map {
     this.maxReachedFloorIndex = 0;
     this.playerX = 0;
     this.playerY = 0;
+    this.lastEventPosition = null;
   }
 
   /**

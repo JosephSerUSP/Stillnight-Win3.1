@@ -245,6 +245,7 @@ export class RandomWalkGenerator extends DungeonGenerator {
         if (index > 0) {
             const stairsUpDef = eventDefs.find(e => e.id === 'stairs_up');
             if (stairsUpDef) {
+                let stairsPlaced = false;
                 const [sx, sy] = startPos;
                 const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]]; // N, S, W, E
 
@@ -267,7 +268,20 @@ export class RandomWalkGenerator extends DungeonGenerator {
 
                     const eventData = { ...stairsUpDef };
                     events.push(new Game_Event(nx, ny, eventData));
+                    stairsPlaced = true;
                     break;
+                }
+
+                if (!stairsPlaced) {
+                    const potentialCells = floorCells.filter(c => c[0] !== startPos[0] || c[1] !== startPos[1]);
+                    for (const [x, y] of potentialCells) {
+                        const isOccupied = events.some(e => e.x === x && e.y === y);
+                        if (!isOccupied) {
+                            const eventData = { ...stairsUpDef };
+                            events.push(new Game_Event(x, y, eventData));
+                            break;
+                        }
+                    }
                 }
             }
         }

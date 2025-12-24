@@ -210,6 +210,7 @@ export class InterpreterAdapter {
     }
 
     _descendStairs() {
+        this.map.lastEventPosition = { x: this.map.playerX, y: this.map.playerY };
         if (this.map.floorIndex + 1 >= this.map.floors.length) {
             this.scene.logMessage("[Floor] You find no further descent. The run ends here.");
             this.scene.runActive = false;
@@ -237,10 +238,52 @@ export class InterpreterAdapter {
         if (this.map.floorIndex - 1 < 0) {
             return;
         }
+
         this.map.floorIndex--;
         const f = this.map.floors[this.map.floorIndex];
-        this.map.playerX = f.startX;
-        this.map.playerY = f.startY;
+        let playerPlaced = false;
+
+        if (this.map.lastEventPosition) {
+            const { x, y } = this.map.lastEventPosition;
+            const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+
+            for (const [dx, dy] of dirs) {
+                const nx = x + dx;
+                const ny = y + dy;
+
+                if (nx < 0 || nx >= this.map.MAX_W || ny < 0 || ny >= this.map.MAX_H) {
+                    continue;
+                }
+
+                if (f.tiles[ny][nx] !== '.') {
+                    continue;
+                }
+
+                const isOccupied = f.events.some(e => e.x === nx && e.y === ny);
+                if (isOccupied) {
+                    continue;
+                }
+
+                this.map.playerX = nx;
+                this.map.playerY = ny;
+                playerPlaced = true;
+                break;
+            }
+
+            if (!playerPlaced) {
+                 if (f.tiles[y][x] === '.') {
+                    this.map.playerX = x;
+                    this.map.playerY = y;
+                    playerPlaced = true;
+                 }
+            }
+        }
+
+        if (!playerPlaced) {
+            this.map.playerX = f.startX;
+            this.map.playerY = f.startY;
+        }
+
         this.map.revealAroundPlayer();
         this.scene.logMessage(`[Floor] You ascend to: ${f.title}`);
         this.scene.setStatus("Ascending.");
