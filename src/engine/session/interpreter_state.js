@@ -20,6 +20,14 @@ export class InterpreterState {
         this.waitMode = null;
     }
 
+    /**
+     * Pushes a new sequence onto the stack (subroutine call).
+     * @param {Array} sequence - The new list of commands to execute.
+     */
+    push(sequence) {
+        this.stack.push({ commands: sequence, pc: 0 });
+    }
+
     get currentFrame() {
         return this.stack[this.stack.length - 1];
     }
