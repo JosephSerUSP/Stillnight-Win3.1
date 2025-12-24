@@ -1,4 +1,4 @@
-import { DataManager, SceneManager } from "./managers/index.js";
+import { DataManager, SceneManager, TransitionManager } from "./managers/index.js";
 import { Scene_Boot } from "./presentation/scenes/scenes.js";
 import { WindowManager } from "./presentation/windows/index.js";
 import { exposeGlobals } from "./debug_tools.js";
@@ -12,7 +12,11 @@ import { exposeGlobals } from "./debug_tools.js";
  */
 async function main() {
   const gameContainer = document.getElementById("game-container");
-  const sceneManager = new SceneManager(gameContainer);
+
+  // Initialize TransitionManager first (creates overlay)
+  const transitionManager = new TransitionManager();
+
+  const sceneManager = new SceneManager(gameContainer, transitionManager);
   const dataManager = new DataManager();
   const windowManager = new WindowManager();
   const initialScene = new Scene_Boot(dataManager, sceneManager, windowManager);

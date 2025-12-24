@@ -97,7 +97,8 @@ export class Scene_Map extends Scene_Base {
   startBattle(x, y, encounterData = null, isSneakAttack = false, isPlayerFirstStrike = false) {
       this.setStatus("Enemy encountered!");
       this.logMessage("[Battle] Shapes uncoil from the dark.");
-      this.sceneManager.push(new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.battleManager, this.windowLayer, this.map, x, y, this.getSharedWindows(), encounterData, isSneakAttack, isPlayerFirstStrike));
+      const battleScene = new Scene_Battle(this.dataManager, this.sceneManager, this.windowManager, this.party, this.battleManager, this.windowLayer, this.map, x, y, this.getSharedWindows(), encounterData, isSneakAttack, isPlayerFirstStrike);
+      this.sceneManager.switchScene(battleScene, 'BATTLE');
   }
 
   getSharedWindows() {
@@ -549,18 +550,20 @@ export class Scene_Map extends Scene_Base {
    */
   updateCardList() {
     const onSelect = (idx) => {
-        this.map.floorIndex = idx;
-        const floor = this.map.floors[this.map.floorIndex];
-        this.map.playerX = floor.startX;
-        this.map.playerY = floor.startY;
-        this.map.revealAroundPlayer();
-        this.logMessage(`[Navigate] You flip to card ${idx + 1} (${floor.title}).`);
-        AudioAdapter.play('STAIRS');
-        this.updateAll();
-        this.checkMusic();
-        if (this.hudManager.cardListWindow) {
-            this.windowManager.close(this.hudManager.cardListWindow);
-        }
+        this.sceneManager.executeMapTransition(() => {
+            this.map.floorIndex = idx;
+            const floor = this.map.floors[this.map.floorIndex];
+            this.map.playerX = floor.startX;
+            this.map.playerY = floor.startY;
+            this.map.revealAroundPlayer();
+            this.logMessage(`[Navigate] You flip to card ${idx + 1} (${floor.title}).`);
+            AudioAdapter.play('STAIRS');
+            this.updateAll();
+            this.checkMusic();
+            if (this.hudManager.cardListWindow) {
+                this.windowManager.close(this.hudManager.cardListWindow);
+            }
+        });
     };
 
     this.hud.updateCardList(

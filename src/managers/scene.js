@@ -2,18 +2,25 @@
  * @class SceneManager
  * @description Manages the scene stack and the main game loop.
  * Scenes are pushed onto a stack, and only the top scene is updated and rendered.
+ * Now supports Visual Transitions via TransitionManager.
  */
 export class SceneManager {
   /**
    * Creates a new SceneManager.
    * @param {HTMLElement} container - The container element for the game.
+   * @param {import("./transition_manager.js").TransitionManager} transitionManager - The transition manager.
    */
-  constructor(container) {
+  constructor(container, transitionManager) {
     /**
      * The DOM container for the game.
      * @type {HTMLElement}
      */
     this.container = container;
+
+    /**
+     * @type {import("./transition_manager.js").TransitionManager}
+     */
+    this.transitionManager = transitionManager;
 
     /**
      * The stack of active scenes.
@@ -65,6 +72,73 @@ export class SceneManager {
     }
     this._currentScene = scene;
     scene.start();
+  }
+
+  /**
+   * Performs a visual transition and switches to the new scene.
+   * @param {import("../presentation/scenes/scenes.js").Scene_Base} scene - The new scene.
+   * @param {string} type - 'BATTLE' or 'MAP'.
+   */
+  async switchScene(scene, type) {
+      if (type === 'BATTLE') {
+          // 1. Swirl Out
+          if (this.transitionManager) {
+              await this.transitionManager.runBattleTransition();
+          }
+
+          // 2. Switch Logic
+          this.push(scene);
+
+          // 3. Battle Intro (Reveal)
+          if (this.transitionManager) {
+              await this.transitionManager.runBattleIntro();
+          }
+      } else if (type === 'MAP') {
+          // 1. Map Wipe Out
+          if (this.transitionManager) {
+              await this.transitionManager.runMapTransitionOut();
+          }
+
+          // 2. Switch Logic (Pop or Push, usually Map transfer is push or re-init)
+          // Actually map transfer is just changing state within Scene_Map usually, or pushing new Scene_Map?
+          // If called with a *new* scene instance, we push it.
+          // If scene is null, we assume the caller handles the logic (e.g. map.startNewRun or same scene teleport).
+          // But here we are passed a scene.
+
+          if (scene) {
+              // If popping (e.g. back to map from shop), handle differently?
+              // Assuming this method is for Pushing new scenes.
+              this.push(scene);
+          } else {
+             // If no scene passed, we assume state changed in background.
+          }
+
+          // 3. Map Wipe In
+          if (this.transitionManager) {
+              await this.transitionManager.runMapTransitionIn();
+          }
+      } else {
+          this.push(scene);
+      }
+  }
+
+  /**
+   * Special wrapper for Map Transfers (same scene, new location).
+   * @param {Function} callback - The function that updates the map state.
+   */
+  async executeMapTransition(callback) {
+      if (this.transitionManager) {
+          await this.transitionManager.runMapTransitionOut();
+      }
+
+      callback();
+
+      // Wait a frame for render?
+      await new Promise(res => requestAnimationFrame(res));
+
+      if (this.transitionManager) {
+          await this.transitionManager.runMapTransitionIn();
+      }
   }
 
   /**
