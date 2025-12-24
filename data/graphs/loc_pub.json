@@ -13,13 +13,23 @@
       "type": "CHOICE",
       "options": [
         { "label": "Approach the Bartender", "target": "bartender_start" },
+        { "label": "Speak to the Drunkard", "target": "drunkard_start" },
         { "label": "Look for a table", "target": "look_around" },
         { "label": "Leave", "action": "close" }
       ]
     },
 
+    "drunkard_start": {
+        "type": "ACTION",
+        "action": "NPC_DIALOGUE",
+        "id": "npc_drunkard",
+        "next": "hub_choices"
+    },
+
     "bartender_start": {
         "type": "TEXT",
+        "portrait": "NPC_Barkeep",
+        "speakers": [{ "id": "NPC_Barkeep", "active": true }],
         "content": "The bartender nods at you as he wipes a glass with a rag that's seen better days. 'What can I get you?'",
         "next": "bartender_choices"
     },
