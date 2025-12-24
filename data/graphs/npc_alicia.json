@@ -85,14 +85,14 @@
     "default_hub_text": {
       "type": "TEXT",
       "speaker": "Alicia",
-      "content": "Oh! H-hello there! I… I didn’t see you coming! Uhm… welcome! Please look around. And— uh— drink water. People forget.",
+      "content": "Oh! H-hello there! It's good to see you again. Please, look around. And— uh— drink water. People forget.",
       "next": "default_hub_choices"
     },
     "default_hub_choices": {
       "type": "CHOICE",
       "options": [
         { "label": "Buy Consumables", "target": "shop_consumables" },
-        { "label": "Talk", "target": "talk_menu_text" },
+        { "label": "Talk", "target": "talk_hub" },
         { "label": "Leave", "action": "close" }
       ]
     },
@@ -102,10 +102,10 @@
       "shopId": "consumables_basic",
       "next": "default_hub_choices"
     },
-    "talk_menu_text": {
+    "talk_hub": {
       "type": "TEXT",
       "speaker": "Alicia",
-      "content": "O-okay. What do you want to talk about? I’m not good at… normal conversations.",
+      "content": "(She fiddles with a loose thread on her apron, waiting for you to speak.)",
       "next": "talk_menu_choices"
     },
     "talk_menu_choices": {
@@ -115,26 +115,33 @@
         { "label": "About Shop", "target": "talk_shop" },
         { "label": "About You", "target": "talk_self" },
         { "label": "Ask about Quest", "target": "quest_router" },
-        { "label": "Back", "target": "default_hub_text" }
+        { "label": "That's enough talk for now.", "target": "default_hub_choices" }
       ]
     },
     "talk_laura": {
       "type": "TEXT",
       "speaker": "Alicia",
       "content": "Laura? She’s… she’s amazing. She’s strong, and beautiful, and… and she smells like vanilla and iron. Is that weird? That’s weird. Forget I said that.",
-      "next": "talk_menu_choices"
+      "next": "talk_buffer_choices"
     },
     "talk_shop": {
       "type": "TEXT",
       "speaker": "Alicia",
       "content": "I sell things that keep you alive! It makes me happy. Watching people leave with full bags… it means they might come back. That’s nice.",
-      "next": "talk_menu_choices"
+      "next": "talk_buffer_choices"
     },
     "talk_self": {
       "type": "TEXT",
       "speaker": "Alicia",
       "content": "Me? I’m just Alicia. I like baking. And… I like listening to the rain. The dungeon is scary, but the rain makes it sound like it’s sleeping.",
-      "next": "talk_menu_choices"
+      "next": "talk_buffer_choices"
+    },
+    "talk_buffer_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Ask about something else.", "target": "talk_hub" },
+        { "label": "I should get going.", "target": "default_hub_choices" }
+      ]
     },
     "quest_router": {
       "type": "ROUTER",
@@ -154,7 +161,7 @@
       "type": "CHOICE",
       "options": [
         { "label": "I'll find it.", "target": "action_offer_quest" },
-        { "label": "Maybe later.", "target": "talk_menu_text" }
+        { "label": "Maybe later.", "target": "talk_hub" }
       ]
     },
     "action_offer_quest": {
@@ -162,7 +169,7 @@
       "action": "OFFER_QUEST",
       "questId": "sparkling_gift",
       "acceptNode": "quest_active_text",
-      "declineNode": "talk_menu_text"
+      "declineNode": "talk_hub"
     },
     "quest_active_text": {
       "type": "TEXT",
@@ -179,7 +186,7 @@
     "quest_active_choices": {
       "type": "CHOICE",
       "options": [
-        { "label": "I'm still looking.", "target": "talk_menu_text" }
+        { "label": "I'm still looking.", "target": "talk_hub" }
       ]
     },
     "quest_turnin_text": {
@@ -205,7 +212,7 @@
       "type": "TEXT",
       "speaker": "Alicia",
       "content": "I’m going to make this into a necklace. Or maybe a ring? No, a necklace. She doesn’t like rings when she works. Thank you again!",
-      "next": "talk_menu_choices"
+      "next": "talk_hub"
     }
   }
 }
