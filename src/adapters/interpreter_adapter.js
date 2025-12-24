@@ -473,6 +473,9 @@ export class InterpreterAdapter {
         }
         this._activeNpc = null;
         this.scene.updateAll();
+
+        // Ensure any pending input wait is resolved (e.g., if closed via Esc)
+        this.resumeInput();
     }
 
     _getQuestDefinition(questId) {
