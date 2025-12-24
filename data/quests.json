@@ -58,5 +58,212 @@
       "gold": 50,
       "xp": 100
     }
+  },
+  "scholar_request": {
+    "name": "A Scholar's Plea",
+    "giver": "Scholar Aris",
+    "portrait": "NPC_Aris",
+    "summary": "Recover an ancient tome from the sunken city.",
+    "description": "Scholar Aris believes knowledge of the world's past lies in the Sunken City. He seeks an Old Tome.",
+    "objectives": [
+      "Reach Floor 7.",
+      "Find the Old Tome.",
+      "Return to Aris."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "old_tome", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 150,
+      "items": [{ "id": "sigil_ink", "qty": 3 }]
+    }
+  },
+  "geraldo_collection": {
+    "name": "Geraldo's Rare Find",
+    "giver": "Geraldo",
+    "portrait": "NPC_Geraldo",
+    "summary": "Find an Obsidian Shard for Geraldo.",
+    "description": "Geraldo has heard of a rare volcanic glass found deep in the Magma Core.",
+    "objectives": [
+      "Hunt Flauros or search the Magma Core.",
+      "Obtain an Obsidian Shard.",
+      "Bring it to Geraldo."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "obsidian_shard", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 500,
+      "items": [{ "id": "hp_boost2", "qty": 1 }]
+    }
+  },
+  "lost_ring": {
+    "name": "The Lost Wedding Ring",
+    "giver": "Laura",
+    "portrait": "NPC_Laura",
+    "summary": "Recover the ring Laura made.",
+    "description": "Laura finished the ring for Raphael, but she lost it during a summoning mishap in the dungeon.",
+    "objectives": [
+      "Search Floor 4 for the Lost Ring.",
+      "Return it to Laura."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "lost_ring", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 0,
+      "items": [{ "id": "hp_boost1", "qty": 1 }]
+    }
+  },
+  "alicia_anxiety": {
+    "name": "Fraying Nerves",
+    "giver": "Alicia",
+    "portrait": "NPC_Alicia",
+    "summary": "Help Alicia calm down.",
+    "description": "Alicia is spiraling. She needs reassurance and perhaps a calming tea.",
+    "objectives": [
+      "Talk to Alicia.",
+      "Find Calming Herbs in the dungeon (Drop from Plant type?).",
+      "Brew tea (automatic upon return)."
+    ],
+    "requirements": {
+      "items": [{ "id": "calming_herb", "qty": 1, "consume": true }]
+    },
+    "rewards": {
+      "items": [{ "id": "hp_tonic", "qty": 5 }]
+    }
+  },
+  "beast_depths": {
+    "name": "The Beast of the Depths",
+    "giver": "Gate Guard",
+    "portrait": "NPC_Geraldo",
+    "summary": "Slay the Naga matriarch.",
+    "description": "A powerful Naga is terrorizing the lower levels. Put an end to it.",
+    "objectives": [
+      "Kill the Naga Matriarch on Floor 9."
+    ],
+    "rewards": {
+      "gold": 300,
+      "items": [{ "id": "water_scepter", "qty": 1 }]
+    }
+  },
+  "magma_core": {
+    "name": "Heart of Fire",
+    "giver": "Weapon Shop",
+    "portrait": "NPC_WeaponShop",
+    "summary": "Retrieve a Magma Core.",
+    "description": "The blacksmith needs a Magma Core to forge a legendary weapon.",
+    "objectives": [
+      "Defeat Salamanders in the Magma Core.",
+      "Obtain a Magma Core.",
+      "Bring it to the Weapon Shop."
+    ],
+    "requirements": {
+      "items": [{ "id": "magma_core", "qty": 1, "consume": true }]
+    },
+    "rewards": {
+      "items": [{ "id": "radiant_blade_flavio", "qty": 1 }]
+    }
+  },
+  "yukio_duel": {
+    "name": "The Rivalry",
+    "giver": "Yukio",
+    "portrait": "NPC_Yukio",
+    "summary": "Defeat Yukio.",
+    "description": "Yukio has challenged you to a duel to prove who is the superior summoner.",
+    "objectives": [
+      "Meet Yukio in the Arena (Event).",
+      "Defeat him."
+    ],
+    "rewards": {
+      "xp": 500,
+      "items": [{ "id": "mystic_egg", "qty": 1 }]
+    }
+  },
+  "daphne_memory": {
+    "name": "Faded Memories",
+    "giver": "Daphne",
+    "portrait": "NPC_Daphne",
+    "summary": "Help Daphne remember.",
+    "description": "Daphne feels she has forgotten something important. A locket, perhaps?",
+    "objectives": [
+      "Find the Old Locket on Floor 4.",
+      "Show it to Daphne."
+    ],
+    "requirements": {
+      "items": [{ "id": "old_locket", "qty": 1, "consume": true }]
+    },
+    "rewards": {
+      "items": [{ "id": "whispered_lessons", "qty": 2 }]
+    }
+  },
+  "void_whispers": {
+    "name": "Void Whispers",
+    "giver": "Scholar Aris",
+    "portrait": "NPC_Aris",
+    "summary": "Investigate the Silent Void.",
+    "description": "Aris hears whispers from below the Magma Core. Investigate Floor 13.",
+    "objectives": [
+      "Reach Floor 13.",
+      "Collect a Void Essence.",
+      "Return to Aris."
+    ],
+    "requirements": {
+      "items": [{ "id": "void_essence", "qty": 1, "consume": true }]
+    },
+    "rewards": {
+      "items": [{ "id": "exp_boost", "qty": 1 }]
+    }
+  },
+  "dragon_slayer": {
+    "name": "Dragon Slayer",
+    "giver": "Gate Guard",
+    "portrait": "NPC_Geraldo",
+    "summary": "Slay the Ancient Dragon.",
+    "description": "The dragon on Floor 12 has awoken. It must be stopped before it breaches the surface.",
+    "objectives": [
+      "Kill the Red Dragon (Floor 12)."
+    ],
+    "rewards": {
+      "gold": 1000,
+      "items": [{ "id": "holy_sword_gram", "qty": 1 }]
+    }
+  },
+  "traitor_town": {
+    "name": "The Traitor",
+    "giver": "Scholar Aris",
+    "portrait": "NPC_Aris",
+    "summary": "Expose the traitor.",
+    "description": "Someone is feeding information to the cultists. Find proof.",
+    "objectives": [
+      "Find the Incriminating Note in the Gambling Den.",
+      "Confront the Gambler."
+    ],
+    "requirements": {
+      "items": [{ "id": "incriminating_note", "qty": 1, "consume": true }]
+    },
+    "rewards": {
+      "gold": 200
+    }
+  },
+  "final_descent": {
+    "name": "The Final Descent",
+    "giver": "Scholar Aris",
+    "portrait": "NPC_Aris",
+    "summary": "End the nightmare.",
+    "description": "The source of the corruption lies at the bottom. The Void King must fall.",
+    "objectives": [
+      "Reach Floor 15.",
+      "Defeat the Void King."
+    ],
+    "rewards": {
+      "items": [{ "id": "hp_boost3", "qty": 1 }]
+    }
   }
 }

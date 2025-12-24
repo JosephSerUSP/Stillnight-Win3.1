@@ -410,5 +410,93 @@
     "cost": 0,
     "icon": 218,
     "description": "A heavy golden ring, unmarked and waiting for a new story. Laura can reshape it into something precious."
+  },
+  {
+    "id": "pearl",
+    "name": "Abyssal Pearl",
+    "type": "quest",
+    "cost": 0,
+    "icon": 224,
+    "description": "A dark pearl found in the sunken city."
+  },
+  {
+    "id": "magma_core",
+    "name": "Magma Core",
+    "type": "quest",
+    "cost": 0,
+    "icon": 223,
+    "description": "A burning heart of a salamander."
+  },
+  {
+    "id": "dragon_scale",
+    "name": "Dragon Scale",
+    "type": "quest",
+    "cost": 0,
+    "icon": 222,
+    "description": "A scale from the ancient red dragon."
+  },
+  {
+    "id": "obsidian_shard",
+    "name": "Obsidian Shard",
+    "type": "quest",
+    "cost": 0,
+    "icon": 220,
+    "description": "A shard of sharp volcanic glass."
+  },
+  {
+    "id": "melted_wax",
+    "name": "Melted Wax",
+    "type": "quest",
+    "cost": 0,
+    "icon": 221,
+    "description": "Residue from a living candle."
+  },
+  {
+    "id": "old_tome",
+    "name": "Old Tome",
+    "type": "quest",
+    "cost": 0,
+    "icon": 230,
+    "description": "An ancient book with damp pages, detailing the town's history."
+  },
+  {
+    "id": "lost_ring",
+    "name": "Lost Ring",
+    "type": "quest",
+    "cost": 0,
+    "icon": 218,
+    "description": "The ring Laura lost. It feels heavy."
+  },
+  {
+    "id": "calming_herb",
+    "name": "Calming Herb",
+    "type": "quest",
+    "cost": 0,
+    "icon": 190,
+    "description": "A fragrant herb that soothes the nerves."
+  },
+  {
+    "id": "old_locket",
+    "name": "Old Locket",
+    "type": "quest",
+    "cost": 0,
+    "icon": 225,
+    "description": "A tarnished locket containing a faded portrait."
+  },
+  {
+    "id": "void_essence",
+    "name": "Void Essence",
+    "type": "quest",
+    "cost": 0,
+    "icon": 226,
+    "description": "A contained mote of pure nothingness."
+  },
+  {
+    "id": "incriminating_note",
+    "name": "Incriminating Note",
+    "type": "quest",
+    "cost": 0,
+    "icon": 231,
+    "description": "A letter detailing supply routes to the cultists."
   }
 ]
