@@ -14,7 +14,7 @@ Unlike many HTML5 games that rely on `<canvas>` for rendering UI, this project e
 ### 2.2. Async & Event-Driven Logic
 The game **does not** rely on a central "Update Loop" for game logic.
 *   **Exploration**: Driven by Input Events (`keydown`, `click`). Movement and interaction happen only when triggered.
-*   **Combat**: Driven by an `async/await` flow in `Scene_Battle.resolveBattleRound`. The game waits for animations (`await delay()`) rather than counting frames in an `update()` method.
+*   **Combat**: Driven by an `async/await` flow in `Scene_Battle` (via `BattleAdapter` and `BattleSystem`). The game waits for animations (`await delay()`) rather than counting frames in an `update()` method.
 *   **SceneManager**: While it has an `update()` method, it is primarily for global hooks. Most Scenes (`Scene_Map`) do not implement `update()`.
 
 ### 2.3. Scene-Owned State
@@ -26,8 +26,8 @@ There is **no global singleton** for the Game Party or Map state.
 ### 2.4. Unified Effect System
 All changes to battler state (Damage, Healing, Buffs, XP) are routed through a unified pipeline:
 1.  **Source**: `Game_Action` (Skill/Item).
-2.  **Resolution**: `EffectManager` (Registry of effects).
-3.  **Application**: `EffectManager.apply`.
+2.  **Logic**: `EffectSystem` (Pure Logic).
+3.  **Application**: `EffectSystem.apply`.
 
 ---
 
@@ -65,26 +65,26 @@ sequenceDiagram
 
 ---
 
-## 4. Manager Architecture
+## 4. System & Adapter Architecture (The Engine)
+The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. Core logic resides in `src/engine/` and communicates with the UI via `src/adapters/`.
 
-### 4.1. SceneManager (`src/managers/scene.js`)
-*   **Role**: Stack-based State Machine.
-*   **Key Methods**: `push()`, `pop()`, `currentScene()`.
-*   **Rendering**: Uses `requestAnimationFrame` but delegates logic update to the active scene (often unused).
+### 4.1. Core Engine (`src/engine/systems/`)
+*   **BattleSystem**: Pure logic for Turn Order, AI decisions, and Round resolution.
+*   **ExplorationSystem**: Logic for grid movement and collisions.
+*   **InterpreterSystem**: Logic for event command execution and state management.
+*   **EffectSystem** (`src/engine/rules/effects.js`): Pure registry of effect handlers.
 
-### 4.2. WindowManager (`src/managers/window_manager.js`)
-*   **Role**: Manages the "Visual Stack" of windows.
-*   **Z-Indexing**: Ensures the top-most window receives input.
-*   **Modals**: Handles "modal" behavior where background windows are non-interactive.
+### 4.2. Adapters (`src/adapters/`)
+*   **BattleAdapter**: Connects `Scene_Battle` (UI) to `BattleSystem`.
+*   **ExplorationAdapter**: Connects `Scene_Map` to `ExplorationSystem`.
+*   **InterpreterAdapter**: Connects `Scene_Map` events to `InterpreterSystem` and handles UI side-effects (Show Text, Quest Offers).
 
-### 4.3. DataManager (`src/managers/data.js`)
-*   **Role**: Loads and holds static assets (`actors.json`, `items.json`) and dynamic code modules (`skills.js`).
-*   **Access**: Global singleton used by Game Objects to look up templates.
-
-### 4.4. EffectSystem (`src/engine/rules/effects.js`)
-*   **Role**: Pure-ish registry of effect handlers used by Game_Action and BattleSystem.
-*   **Function**: Maps string keys (e.g., `'hp_heal'`, `'add_status'`, `'xp'`) to execution logic and previews.
-*   **Decoupling**: `Game_Action` does not know *how* to heal; it asks `EffectSystem` to do it with injected context.
+### 4.3. Infrastructure Managers (`src/managers/`)
+*   **SceneManager**: Stack-based State Machine.
+*   **WindowManager**: Visual Stack management.
+*   **DataManager**: Static asset loader.
+*   **TraitManager** (*Legacy*): Handles parameter calculations. Scheduled for migration to `src/engine/rules/`.
+*   **EncounterManager** (*Legacy*): Generates enemies. Scheduled for migration.
 
 ---
 
@@ -97,19 +97,18 @@ sequenceDiagram
 
 ### 5.2. Game_Battler (`src/objects/battler.js`)
 *   **Composition**: Combines `actorData` (Static Template) with instance state (`hp`, `level`, `equipment`).
-*   **Stats**: Calculates parameters dynamically based on Base + Traits.
-*   **Traits**: Aggregates traits from Actor, Class, Equipment, and Passives.
+*   **Stats**: Calculates parameters dynamically using `TraitManager` (*Legacy*).
 
 ### 5.3. Game_Map (`src/objects/map.js`)
 *   **Grid**: 2D array of tiles.
-*   **State**: Tracks `visited` (Fog of War) and `events` per floor.
-*   **Procedural**: Supports floor generation (though currently heavily data-driven via `maps.json`).
+*   **State**: Tracks `visited` (Fog of War) and `events`.
+*   **Role**: Mostly a data container now; logic has moved to `ExplorationSystem`.
 
 ---
 
 ## 6. The UI System
 
-### 6.1. Window_Base (`src/windows/base.js`)
+### 6.1. Window_Base (`src/presentation/windows/base.js`)
 The ancestor of all UI components.
 *   **Structure**:
     ```html
@@ -119,10 +118,10 @@ The ancestor of all UI components.
       <div class="window-footer">...</div>
     </div>
     ```
-*   **Lifecycle**: `open()` / `close()` with CSS-based animations managed by `WindowAnimator`.
+*   **Lifecycle**: `open()` / `close()` with CSS-based animations.
 
-### 6.2. UI.build (`src/windows/builder.js`)
-A helper utility to construct DOM trees declaratively, similar to `React.createElement` but synchronous and direct.
+### 6.2. UI.build (`src/presentation/windows/builder.js`)
+A helper utility to construct DOM trees declaratively.
 
 ```javascript
 UI.build(parent, {
@@ -136,22 +135,21 @@ UI.build(parent, {
 
 ## 7. Combat System (Scene_Battle)
 
-### 7.1. Conditional Turn-Based (CTB)
-*   **Manager**: `BattleManager` (`src/managers/battle.js`).
+### 7.1. Round-Based Turn System
+*   **System**: `BattleSystem` (`src/engine/systems/battle.js`).
 *   **Logic**:
-    1.  `planRound()`: Calculates the turn order based on Speed (`agi`).
-    2.  `getNextBattler()`: Returns the unit with the lowest "tick".
+    1.  `planRound()`: Sorts participants by Speed (`agi`).
+    2.  `resolveRound()`: Iterates through the sorted queue.
 *   **Flow**:
-    *   Battlers accumulate "Tick" values.
-    *   Tick threshold reached -> Action.
-    *   Action execution resets Tick.
+    *   Pre-round: Command Input.
+    *   Execution: Actions execute sequentially.
 
 ### 7.2. Action Pipeline (`src/objects/action.js`)
 An action is executed in stages:
 1.  **Instantiation**: `new Game_Action(subject)`.
 2.  **Configuration**: `.setItem()` or `.setSkill()`.
-3.  **Targeting**: `.makeTargets()`.
-4.  **Application**: `.apply(target)` -> Returns `Event[]`.
+3.  **Application**: `.apply(target, dataManager)` -> Returns `Event[]`.
+4.  **Effect Resolution**: Delegates to `EffectSystem.apply()`.
 5.  **Animation**: `Scene_Battle` iterates `Event[]` and plays animations/logs.
 
 ```mermaid
@@ -162,10 +160,10 @@ flowchart LR
     Select -->|Item| Item[Consume & Apply Effects]
 
     Atk --> Events[Generate Event Log]
-    Skill --> EffectMgr[Call EffectManager]
-    Item --> EffectMgr
+    Skill --> EffectSys[Call EffectSystem]
+    Item --> EffectSys
 
-    EffectMgr --> Events
+    EffectSys --> Events
     Events --> UI[Animate in Scene_Battle]
 ```
 
@@ -174,12 +172,13 @@ flowchart LR
 ## 8. Exploration System (Scene_Map)
 
 ### 8.1. Grid Movement
-*   **Engine**: `ExplorationEngine` (`src/managers/exploration.js`).
+*   **System**: `ExplorationSystem` (`src/engine/systems/exploration.js`).
 *   **Input**: Discrete `dx, dy` inputs.
 *   **Resolution**: Returns a result object (e.g., `{ type: 'MOVED' }`, `{ type: 'BLOCKED', reason: 'wall' }`).
 
 ### 8.2. Event Execution
-*   **Interpreter**: `Game_Interpreter` (`src/managers/interpreter.js`).
+*   **System**: `InterpreterSystem` (`src/engine/systems/interpreter.js`).
+*   **Adapter**: `InterpreterAdapter` (`src/adapters/interpreter_adapter.js`).
 *   **Command Pattern**: Events are lists of commands (`TEXT`, `GIVE_ITEM`, `BATTLE`).
 *   **Async**: `executeSequence` pauses map input until the event chain completes.
 
@@ -190,16 +189,16 @@ flowchart LR
 When modifying this codebase, strictly adhere to these rules:
 
 1.  **NO Canvas Drawing**: Never try to draw UI on a canvas. Create a `Window_X` class extending `Window_Base` and use DOM elements.
-2.  **Respect State Ownership**: Do not look for `window.$gameParty`. Access `this.party` within the context of the current Scene.
+2.  **Respect State Ownership**: Do not look for `window.$gameParty`. Access `this.party` within the context of the current Scene or Adapter.
 3.  **Use the Action Pipeline**: Do not modify HP directly in battle logic. Create a `Game_Action` and execute it to ensure logs, animations, and side-effects (like reactions) occur.
 4.  **Async/Await Over Update**: If adding a sequence (like a tutorial), write an `async` function and `await` the steps. Do not try to implement a state-machine in an `update()` loop.
-5.  **Data-Driven**: Hardcode as little as possible. Define new items/skills in `data/` JSON files, and new behavior in `EffectManager`.
+5.  **Data-Driven**: Hardcode as little as possible. Define new items/skills in `data/` JSON files, and new behavior in `EffectSystem` or `TraitManager`.
 
 ---
 
 ## 10. Transitional Architecture Notes
 *While the current implementation is functional, the following areas are in transition toward the ideal architecture:*
 
-*   **Logic Separation**: Some game logic (e.g., loot generation, victory conditions) currently resides in `Scene_Battle`. The goal is to move all such logic to `BattleManager`, leaving `Scene_Battle` purely for View/Animation.
-*   **Data-Driven Maps**: The `Game_Map` class supports procedural generation logic, but the current campaign relies heavily on static definition in `maps.json`. Future updates may Hybridize this.
-*   **Hardcoded Actors**: Some Boss data (e.g., "Eternal Warden" in `Scene_Battle`) is currently instantiated directly. This should be moved to `actors.json`.
+*   **Trait Logic**: `TraitManager` handles parameter calculations but is slated for migration to `TraitRules`.
+*   **Encounter Logic**: `EncounterManager` is active but will eventually move to `EncounterSystem`.
+*   **Logic Separation**: The migration of Battle, Exploration, and Interpreter logic to `src/engine/` is complete. The focus is now on cleaning up remaining coupling in `Game_Battler` and `DungeonGenerator`.

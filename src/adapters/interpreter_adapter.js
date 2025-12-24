@@ -443,9 +443,6 @@ export class InterpreterAdapter {
                 this.closeEvent();
                 this._descendStairs();
             } else if (node.action === 'OFFER_QUEST') {
-                // Bridge Graph to System Command which then emits UI event?
-                // Actually, Graph Action is executing here directly from Director.
-                // We should use the same UI flow as the command.
                 this._openQuestOffer(node.questId, {
                     nextState: node.next,
                     acceptState: node.acceptNode,
