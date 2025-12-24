@@ -7,7 +7,12 @@ export const SettingsAdapter = {
     get masterVolume() { return ConfigManager.masterVolume; },
     get sfxVolume() { return ConfigManager.sfxVolume; },
     get musicVolume() { return ConfigManager.musicVolume; },
-    get windowAnimations() { return ConfigManager.windowAnimations; },
+    get windowAnimations() {
+        if (typeof window !== 'undefined' && window.location && window.location.search.includes("test=true")) {
+            return false;
+        }
+        return ConfigManager.windowAnimations;
+    },
     get autoBattle() { return ConfigManager.autoBattle; },
 
     setMasterVolume(val) { ConfigManager.masterVolume = val; ConfigManager.save(); },
