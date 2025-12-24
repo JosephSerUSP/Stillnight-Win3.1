@@ -53,6 +53,9 @@ export class ThemeManager {
     for (const [key, value] of Object.entries(colors)) {
       root.style.setProperty(`--${key}`, value);
     }
+
+    // Set data-theme attribute for CSS selectors (e.g. background overrides)
+    document.body.setAttribute('data-theme', themeId);
   }
 
   /**

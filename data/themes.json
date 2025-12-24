@@ -1061,5 +1061,43 @@
       "tooltip-bg": "#2e2a3b",
       "tooltip-text": "#d8d4e7"
     }
+  },
+  {
+    "id": "hub",
+    "name": "Hub (Pearlescent)",
+    "colors": {
+      "desktop-bg": "#2b0033",
+      "window-bg": "#100510",
+      "window-text": "#00ffcc",
+      "window-border": "#00ffcc",
+      "window-header-bg-start": "#2b0033",
+      "window-header-bg-end": "#100510",
+      "window-header-text": "#00ffcc",
+      "button-bg": "#100510",
+      "terminal-bg": "#050505",
+      "terminal-text": "#00ffcc",
+      "tile-bg": "#050505",
+      "tile-fog-bg": "#100020",
+      "tile-fog-text": "#300040",
+      "tile-player-bg": "#00ffcc",
+      "text-danger": "#ff0066",
+      "text-highlight": "#00ffcc",
+      "text-success": "#00ffcc",
+      "text-mystic": "#d400ff",
+      "text-warning": "#ffff00",
+      "text-special": "#ff00cc",
+      "text-info": "#00ffcc",
+      "selection-bg": "#00ffcc",
+      "selection-text": "#100510",
+      "content-bg": "#100510",
+      "gauge-hp": "#00ffcc",
+      "gauge-bg": "#2b0033",
+      "text-functional": "#00ffcc",
+      "bezel-light": "#00ffcc",
+      "bezel-shadow": "#2b0033",
+      "bezel-dark": "#000000",
+      "tooltip-bg": "#100510",
+      "tooltip-text": "#00ffcc"
+    }
   }
 ]
