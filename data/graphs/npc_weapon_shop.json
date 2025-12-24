@@ -2,6 +2,7 @@
   "id": "npc_weapon_shop",
   "name": "Weaponsmith",
   "layout": "visual_novel",
+  "portrait": "NPC_Weapon_Shop",
   "initialNode": "default_text",
   "nodes": {
     "default_text": {

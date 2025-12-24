@@ -2,15 +2,15 @@
     "id": "npc_gambler",
     "name": "The Gambler",
     "layout": "visual_novel",
-    "portrait": "NPC_Raphael",
+    "portrait": "NPC_Gambler",
     "initialNode": "start",
     "nodes": {
         "start": {
             "type": "TEXT",
             "content": "Well met, traveler. I'm a collector of sorts. A collector of... numbers.",
             "next": "choice1",
-            "portrait": "NPC_Raphael",
-            "speakers": [{ "id": "NPC_Raphael", "name": "The Gambler", "active": true }]
+            "portrait": "NPC_Gambler",
+            "speakers": [{ "id": "NPC_Gambler", "name": "The Gambler", "active": true }]
         },
         "choice1": {
             "type": "CHOICE",

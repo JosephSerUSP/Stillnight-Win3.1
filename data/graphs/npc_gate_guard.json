@@ -2,6 +2,7 @@
   "id": "npc_gate_guard",
   "name": "Gate Guard",
   "layout": "visual_novel",
+  "portrait": "NPC_Gate_Guard",
   "initialNode": "default_router",
   "nodes": {
     "default_router": {
