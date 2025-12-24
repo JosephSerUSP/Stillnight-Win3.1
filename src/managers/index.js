@@ -6,3 +6,4 @@ export { ThemeManager } from "./theme.js";
 export { ConfigManager } from "./config.js";
 export { TraitManager } from "./trait_manager.js";
 export { MidiParser, MidiPlayer } from "./midi.js";
+export { TransitionManager } from "./transition_manager.js";
