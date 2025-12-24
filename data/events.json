@@ -6,7 +6,13 @@
     "cssClass": "tile-stairs",
     "trigger": "step",
     "scripts": {
-        "onEnter": [ { "type": "DESCEND" } ]
+        "onEnter": [
+            { "type": "TEXT", "text": "Go down the stairs?", "style": "terminal" },
+            { "type": "CHOICE", "options": [
+                { "label": "Yes", "script": [{ "type": "DESCEND" }] },
+                { "label": "No", "script": [{ "type": "LOG", "text": "You decide to stay." }] }
+            ]}
+        ]
     }
   },
   {
