@@ -7,11 +7,14 @@
     "trigger": "step",
     "scripts": {
         "onEnter": [
-            { "type": "TEXT", "text": "Go down the stairs?", "style": "terminal" },
-            { "type": "CHOICE", "options": [
-                { "label": "Yes", "script": [{ "type": "DESCEND" }] },
-                { "label": "No", "script": [{ "type": "LOG", "text": "You decide to stay." }] }
-            ]}
+            {
+                "type": "CHOICE",
+                "text": "Go down the stairs?",
+                "options": [
+                    { "label": "Yes", "script": [{ "type": "DESCEND" }] },
+                    { "label": "No", "script": [{ "type": "LOG", "text": "You decide to stay." }] }
+                ]
+            }
         ]
     }
   },
@@ -23,11 +26,14 @@
     "trigger": "step",
     "scripts": {
         "onEnter": [
-            { "type": "TEXT", "text": "Go back up?", "style": "terminal" },
-            { "type": "CHOICE", "options": [
-                { "label": "Yes", "script": [{ "type": "ASCEND" }] },
-                { "label": "No", "script": [{ "type": "LOG", "text": "You decide to stay." }] }
-            ]}
+            {
+                "type": "CHOICE",
+                "text": "Go back up?",
+                "options": [
+                    { "label": "Yes", "script": [{ "type": "ASCEND" }] },
+                    { "label": "No", "script": [{ "type": "LOG", "text": "You decide to stay." }] }
+                ]
+            }
         ]
     }
   },
