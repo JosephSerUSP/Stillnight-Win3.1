@@ -18,7 +18,8 @@
       "gold": 45,
       "items": [
         { "id": "light_amulet", "qty": 1 }
-      ]
+      ],
+      "flags": ["alicia_visits_pub"]
     }
   },
   "golden_promise": {
