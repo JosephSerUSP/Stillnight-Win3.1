@@ -8,6 +8,8 @@
     "root_router": {
       "type": "ROUTER",
       "branches": [
+         { "condition": "questStatus:alicia_anxiety:active", "target": "quest_anxiety_router" },
+         { "condition": "questStatus:sparkling_gift:active", "target": "quest_gift_router" },
          { "condition": "questStatus:silent_shipment:active", "target": "quest_shipment_router" },
          { "condition": "flag:alicia_first_met", "target": "default_hub_text" }
       ],
@@ -50,7 +52,7 @@
       "type": "CHOICE",
       "options": [
         { "label": "Buy Consumables", "target": "shop_consumables", "setFlag": "alicia_first_met" },
-        { "label": "You’re kind.", "target": "intro_kind_text" },
+        { "label": "You’re kind.", "target": "intro_kind_text", "setFlag": "alicia_first_met" },
         { "label": "Leave", "action": "close", "setFlag": "alicia_first_met" }
       ]
     },
@@ -64,8 +66,8 @@
       "type": "CHOICE",
       "options": [
         { "label": "Not weird.", "target": "intro_not_weird_text" },
-        { "label": "Buy Consumables", "target": "shop_consumables", "setFlag": "alicia_first_met" },
-        { "label": "Leave", "action": "close", "setFlag": "alicia_first_met" }
+        { "label": "Buy Consumables", "target": "shop_consumables" },
+        { "label": "Leave", "action": "close" }
       ]
     },
     "intro_not_weird_text": {
@@ -77,9 +79,9 @@
     "intro_not_weird_choices": {
       "type": "CHOICE",
       "options": [
-        { "label": "Buy Consumables", "target": "shop_consumables", "setFlag": "alicia_first_met" },
-        { "label": "Talk", "target": "talk_menu_text", "setFlag": "alicia_first_met" },
-        { "label": "Leave", "action": "close", "setFlag": "alicia_first_met" }
+        { "label": "Buy Consumables", "target": "shop_consumables" },
+        { "label": "Talk", "target": "talk_menu_text" },
+        { "label": "Leave", "action": "close" }
       ]
     },
     "default_hub_text": {
@@ -136,15 +138,26 @@
       "content": "Me? I’m just Alicia. I like baking. And… I like listening to the rain. The dungeon is scary, but the rain makes it sound like it’s sleeping.",
       "next": "talk_menu_choices"
     },
+
     "quest_router": {
       "type": "ROUTER",
       "branches": [
-        { "condition": "questStatus:sparkling_gift:completed", "target": "quest_completed_text" },
-        { "condition": "questStatus:sparkling_gift:active", "target": "quest_active_text" }
+        { "condition": "questStatus:alicia_anxiety:completed", "target": "quest_anxiety_completed_text" },
+        { "condition": "questStatus:alicia_anxiety:active", "target": "quest_anxiety_router" },
+        { "condition": "questStatus:sparkling_gift:completed", "target": "quest_gift_router_complete" },
+        { "condition": "questStatus:sparkling_gift:active", "target": "quest_gift_router" }
       ],
-      "next": "quest_offer_text"
+      "next": "quest_offer_gift"
     },
-    "quest_offer_text": {
+
+    "quest_gift_router_complete": {
+      "type": "ROUTER",
+      "condition": "flag:alicia_anxiety_seen",
+      "trueNode": "quest_completed_text",
+      "falseNode": "quest_offer_anxiety"
+    },
+
+    "quest_offer_gift": {
       "type": "TEXT",
       "speaker": "Alicia",
       "content": "Actually… can I ask a favor? It’s about Laura. I want to give her something special. Something that… shines like she does. There’s a crystal, a ‘Glittering Teardrop’, deep in the dungeon. Would you…?",
@@ -161,40 +174,34 @@
       "type": "ACTION",
       "action": "OFFER_QUEST",
       "questId": "sparkling_gift",
-      "acceptNode": "quest_active_text",
+      "acceptNode": "quest_gift_active_text",
       "declineNode": "talk_menu_text"
     },
-    "quest_active_text": {
+    "quest_gift_router": {
+      "type": "ROUTER",
+      "condition": "hasItem:glittering_teardrop",
+      "trueNode": "quest_gift_turnin_text",
+      "falseNode": "quest_gift_active_text"
+    },
+    "quest_gift_active_text": {
       "type": "TEXT",
       "speaker": "Alicia",
       "content": "The Glittering Teardrop… please be careful. It’s pretty, but the dungeon is mean. Don’t get hurt for a rock, okay?",
-      "next": "quest_active_router"
+      "next": "talk_menu_choices"
     },
-    "quest_active_router": {
-      "type": "ROUTER",
-      "condition": "hasItem:glittering_teardrop",
-      "trueNode": "quest_turnin_text",
-      "falseNode": "quest_active_choices"
-    },
-    "quest_active_choices": {
-      "type": "CHOICE",
-      "options": [
-        { "label": "I'm still looking.", "target": "talk_menu_text" }
-      ]
-    },
-    "quest_turnin_text": {
+    "quest_gift_turnin_text": {
       "type": "TEXT",
       "speaker": "Alicia",
       "content": "You… you found it! Oh, look at it! It’s perfect. It catches the light just like her eyes when she’s happy. Thank you! Thank you so much!",
-      "next": "quest_turnin_choices"
+      "next": "quest_gift_turnin_choices"
     },
-    "quest_turnin_choices": {
+    "quest_gift_turnin_choices": {
       "type": "CHOICE",
       "options": [
-        { "label": "Here you go.", "target": "action_complete_quest" }
+        { "label": "Here you go.", "target": "action_complete_quest_gift" }
       ]
     },
-    "action_complete_quest": {
+    "action_complete_quest_gift": {
       "type": "ACTION",
       "action": "COMPLETE_QUEST",
       "questId": "sparkling_gift",
@@ -205,6 +212,64 @@
       "type": "TEXT",
       "speaker": "Alicia",
       "content": "I’m going to make this into a necklace. Or maybe a ring? No, a necklace. She doesn’t like rings when she works. Thank you again!",
+      "next": "talk_menu_choices"
+    },
+
+    "quest_offer_anxiety": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "H-hey... I, uhm. Sorry. I'm just... shaking a little. Laura's late. She's never late. What if the dungeon took her? What if she's cold?",
+      "next": "quest_offer_anxiety_choices"
+    },
+    "quest_offer_anxiety_choices": {
+      "type": "CHOICE",
+      "options": [
+         { "label": "Calm down, Alicia.", "target": "action_offer_anxiety" },
+         { "label": "I'm sure she's fine.", "target": "talk_menu_text" }
+      ]
+    },
+    "action_offer_anxiety": {
+       "type": "ACTION",
+       "action": "OFFER_QUEST",
+       "questId": "alicia_anxiety",
+       "acceptNode": "quest_anxiety_active_text",
+       "declineNode": "talk_menu_text"
+    },
+    "quest_anxiety_router": {
+      "type": "ROUTER",
+      "condition": "hasItem:calming_herb",
+      "trueNode": "quest_anxiety_turnin_text",
+      "falseNode": "quest_anxiety_active_text"
+    },
+    "quest_anxiety_active_text": {
+       "type": "TEXT",
+       "speaker": "Alicia",
+       "content": "I can't... breathe right. I need tea. But I'm out of Calming Herbs. They grow near the damp spots in the dungeon. Please?",
+       "next": "talk_menu_choices"
+    },
+    "quest_anxiety_turnin_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "You found them... *She inhales deeply.* Okay. Okay. I'll make tea. Just... the smell helps. Thank you. You really... you saved me from my own head.",
+      "next": "quest_anxiety_turnin_choices"
+    },
+    "quest_anxiety_turnin_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Drink the tea.", "target": "action_complete_quest_anxiety" }
+      ]
+    },
+    "action_complete_quest_anxiety": {
+       "type": "ACTION",
+       "action": "COMPLETE_QUEST",
+       "questId": "alicia_anxiety",
+       "completeNode": "quest_anxiety_completed_text",
+       "takeItem": "calming_herb"
+    },
+    "quest_anxiety_completed_text": {
+      "type": "TEXT",
+      "speaker": "Alicia",
+      "content": "I'm better now. Laura will be back. She has to be. Thank you for the herbs.",
       "next": "talk_menu_choices"
     }
   }

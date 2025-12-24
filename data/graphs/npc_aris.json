@@ -1,0 +1,216 @@
+{
+  "id": "npc_aris",
+  "name": "Scholar Aris",
+  "layout": "visual_novel",
+  "portrait": "NPC_Aris",
+  "initialNode": "root_router",
+  "nodes": {
+    "root_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:final_descent:active", "target": "quest_final_router" },
+        { "condition": "questStatus:void_whispers:completed", "target": "quest_void_complete_router" },
+        { "condition": "questStatus:void_whispers:active", "target": "quest_void_router" },
+        { "condition": "questStatus:scholar_request:completed", "target": "quest_request_complete_router" },
+        { "condition": "questStatus:scholar_request:active", "target": "quest_request_router" }
+      ],
+      "next": "intro_text"
+    },
+    "intro_text": {
+      "type": "TEXT",
+      "speaker": "Aris",
+      "content": "The history of Alencar is written in water and blood. Mostly blood. I am Aris. I study what lies beneath.",
+      "next": "talk_menu_choices"
+    },
+    "talk_menu_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "What lies beneath?", "target": "talk_lore" },
+        { "label": "Do you need help?", "target": "quest_router" },
+        { "label": "Leave", "action": "close" }
+      ]
+    },
+    "talk_lore": {
+      "type": "TEXT",
+      "speaker": "Aris",
+      "content": "Long ago, this town was a seal. A lid on a jar of horrors. But seals crack. And now, the jar is leaking.",
+      "next": "talk_menu_choices"
+    },
+
+    "quest_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "questStatus:scholar_request:completed", "target": "quest_void_offer_check" },
+        { "condition": "questStatus:scholar_request:active", "target": "quest_request_router" }
+      ],
+      "next": "quest_offer_request"
+    },
+
+    "quest_offer_request": {
+      "type": "TEXT",
+      "speaker": "Aris",
+      "content": "I seek knowledge lost to the flood. In the Sunken City, Floor 7, there lies an Old Tome. It contains the first seals. Retrieve it for me.",
+      "next": "quest_request_choices"
+    },
+    "quest_request_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "I will find it.", "target": "action_offer_request" },
+        { "label": "I'm busy.", "target": "talk_menu_choices" }
+      ]
+    },
+    "action_offer_request": {
+      "type": "ACTION",
+      "action": "OFFER_QUEST",
+      "questId": "scholar_request",
+      "acceptNode": "quest_request_active_text",
+      "declineNode": "talk_menu_choices"
+    },
+    "quest_request_router": {
+      "type": "ROUTER",
+      "condition": "hasItem:old_tome",
+      "trueNode": "quest_request_turnin_text",
+      "falseNode": "quest_request_active_text"
+    },
+    "quest_request_active_text": {
+      "type": "TEXT",
+      "speaker": "Aris",
+      "content": "The Sunken City is treacherous. The Naga guard their secrets jealously.",
+      "next": "talk_menu_choices"
+    },
+    "quest_request_turnin_text": {
+      "type": "TEXT",
+      "speaker": "Aris",
+      "content": "Ah... the pages are damp, but legible. 'And the Void looked back.' Fascinating. Here is your payment.",
+      "next": "quest_request_turnin_choices"
+    },
+    "quest_request_turnin_choices": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Receive Reward.", "target": "action_complete_request" }
+      ]
+    },
+    "action_complete_request": {
+      "type": "ACTION",
+      "action": "COMPLETE_QUEST",
+      "questId": "scholar_request",
+      "completeNode": "quest_request_completed_text",
+      "takeItem": "old_tome"
+    },
+    "quest_request_completed_text": {
+      "type": "TEXT",
+      "speaker": "Aris",
+      "content": "This tome speaks of a deeper corruption. A 'Void King'. We must be vigilant.",
+      "next": "talk_menu_choices"
+    },
+    "quest_request_complete_router": {
+       "type": "ROUTER",
+       "next": "quest_void_offer_check"
+    },
+
+    "quest_void_offer_check": {
+       "type": "ROUTER",
+       "condition": "flag:reached_floor_10",
+       "trueNode": "quest_offer_void",
+       "falseNode": "quest_request_completed_text"
+    },
+    "quest_offer_void": {
+       "type": "TEXT",
+       "speaker": "Aris",
+       "content": "You have reached the Magma Core, yes? I can smell the sulfur on you. But below the fire... there is silence. I need a sample. A 'Void Essence' from Floor 13.",
+       "next": "quest_void_choices"
+    },
+    "quest_void_choices": {
+       "type": "CHOICE",
+       "options": [
+          { "label": "I'll go deeper.", "target": "action_offer_void" },
+          { "label": "Too dangerous.", "target": "talk_menu_choices" }
+       ]
+    },
+    "action_offer_void": {
+       "type": "ACTION",
+       "action": "OFFER_QUEST",
+       "questId": "void_whispers",
+       "acceptNode": "quest_void_active_text",
+       "declineNode": "talk_menu_choices"
+    },
+    "quest_void_router": {
+       "type": "ROUTER",
+       "condition": "hasItem:void_essence",
+       "trueNode": "quest_void_turnin_text",
+       "falseNode": "quest_void_active_text"
+    },
+    "quest_void_active_text": {
+       "type": "TEXT",
+       "speaker": "Aris",
+       "content": "The Void Wisp... it is a fragment of the King. Capture its essence.",
+       "next": "talk_menu_choices"
+    },
+    "quest_void_turnin_text": {
+       "type": "TEXT",
+       "speaker": "Aris",
+       "content": "It's cold. Terribly cold. It absorbs the light around it. This confirms my fears. The seal is broken.",
+       "next": "quest_void_turnin_choices"
+    },
+    "quest_void_turnin_choices": {
+       "type": "CHOICE",
+       "options": [
+          { "label": "What now?", "target": "action_complete_void" }
+       ]
+    },
+    "action_complete_void": {
+       "type": "ACTION",
+       "action": "COMPLETE_QUEST",
+       "questId": "void_whispers",
+       "completeNode": "quest_void_completed_text",
+       "takeItem": "void_essence"
+    },
+    "quest_void_completed_text": {
+       "type": "TEXT",
+       "speaker": "Aris",
+       "content": "There is only one path. You must descend to the bottom. Floor 15. The Void King must be destroyed, or Alencar will fall.",
+       "next": "quest_offer_final"
+    },
+    "quest_void_complete_router": {
+       "type": "ROUTER",
+       "next": "quest_offer_final"
+    },
+    "quest_offer_final": {
+       "type": "TEXT",
+       "speaker": "Aris",
+       "content": "Are you ready? The final descent awaits. Kill the Void King.",
+       "next": "quest_final_choices"
+    },
+    "quest_final_choices": {
+       "type": "CHOICE",
+       "options": [
+          { "label": "I am ready.", "target": "action_offer_final" }
+       ]
+    },
+    "action_offer_final": {
+       "type": "ACTION",
+       "action": "OFFER_QUEST",
+       "questId": "final_descent",
+       "acceptNode": "quest_final_active_text",
+       "declineNode": "talk_menu_choices"
+    },
+    "quest_final_router": {
+       "type": "ROUTER",
+       "condition": "flag:killed_void_king",
+       "trueNode": "quest_final_turnin_text",
+       "falseNode": "quest_final_active_text"
+    },
+    "quest_final_active_text": {
+       "type": "TEXT",
+       "speaker": "Aris",
+       "content": "Go. Fate awaits at the bottom.",
+       "next": "talk_menu_choices"
+    },
+    "quest_final_turnin_text": {
+       "type": "TEXT",
+       "speaker": "Aris",
+       "content": "The trembling has stopped. The void recedes... for now. You have done the impossible, Summoner.",
+       "next": "talk_menu_choices"
+    }
+  }
+}

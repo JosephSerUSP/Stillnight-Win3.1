@@ -60,6 +60,9 @@
     "flavor": "A pixie that has attained a higher state of being.",
     "expGrowth": 3,
     "gold": 30,
+    "drops": [
+       { "itemId": "calming_herb", "chance": 0.25 }
+    ],
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": false,
@@ -91,7 +94,7 @@
       },
       {
         "itemId": "untarnished_signet",
-        "chance": 0.05
+        "chance": 0.1
       }
     ],
     "evolutions": [],
@@ -184,6 +187,10 @@
       {
         "itemId": "silver_blade",
         "chance": 0.1
+      },
+      {
+        "itemId": "lost_ring",
+        "chance": 0.1
       }
     ],
     "evolutions": [
@@ -273,10 +280,8 @@
     "expGrowth": 3,
     "gold": 12,
     "drops": [
-      {
-        "itemId": "whispered_lessons",
-        "chance": 0.2
-      }
+      { "itemId": "whispered_lessons", "chance": 0.2 },
+      { "itemId": "incriminating_note", "chance": 0.1 }
     ],
     "evolutions": [],
     "initialParty": true,
@@ -327,6 +332,9 @@
     "flavor": "An animated statue, slow but incredibly durable.",
     "expGrowth": 8,
     "gold": 40,
+    "drops": [
+      { "itemId": "old_locket", "chance": 0.2 }
+    ],
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": true,
@@ -350,6 +358,9 @@
     ],
     "expGrowth": 5,
     "gold": 10,
+    "drops": [
+       { "itemId": "calming_herb", "chance": 0.25 }
+    ],
     "evolutions": [],
     "initialParty": true,
     "isRecruitable": true,
@@ -401,8 +412,7 @@
     "drops": [
       {
         "itemId": "glittering_teardrop",
-        "chance": 0.1
-      }
+        "chance": 0.1 }
     ],
     "evolutions": [],
     "initialParty": true,
@@ -521,7 +531,7 @@
       "flavor": "A savage leopard demon. It smells of brimstone and burnt hair.",
       "expGrowth": 6,
       "gold": 35,
-      "drops": [{ "itemId": "obsidian_shard", "chance": 0.15 }],
+      "drops": [{ "itemId": "obsidian_shard", "chance": 0.2 }],
       "evolutions": [],
       "initialParty": false,
       "isRecruitable": true,
@@ -547,6 +557,24 @@
       "isEvolved": false
   },
   {
+      "id": "lantern",
+      "name": "Lantern",
+      "level": 8,
+      "role": "Support",
+      "maxHp": 14,
+      "spriteKey": "lantern",
+      "passives": ["nightVision"],
+      "elements": ["Red", "White", "White"],
+      "skills": ["soothingMote", "divineFavor", "holySmite"],
+      "flavor": "A brightly burning lantern that repels the darkness.",
+      "expGrowth": 4,
+      "gold": 20,
+      "evolutions": [],
+      "initialParty": false,
+      "isRecruitable": false,
+      "isEvolved": true
+  },
+  {
     "id": "shadowStalker",
     "name": "Shadow Stalker",
     "level": 12,
@@ -561,6 +589,185 @@
     "spriteKey": "ShadowStalker",
     "gold": 14,
     "expGrowth": 10
+  },
+  {
+    "id": "naga",
+    "name": "Naga",
+    "level": 7,
+    "role": "Attacker",
+    "maxHp": 28,
+    "spriteKey": "naga",
+    "passives": ["aquatic"],
+    "elements": ["Blue", "Blue", "Black"],
+    "skills": ["hydroPump", "poisonBite"],
+    "flavor": "A serpent-humanoid that dwells in the sunken depths.",
+    "expGrowth": 8,
+    "gold": 45,
+    "drops": [
+        { "itemId": "pearl", "chance": 0.1 },
+        { "itemId": "old_tome", "chance": 0.1 }
+    ],
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false
+  },
+  {
+    "id": "aquan",
+    "name": "Aquan",
+    "level": 7,
+    "role": "Healer",
+    "maxHp": 22,
+    "spriteKey": "aquan",
+    "passives": ["aquatic"],
+    "elements": ["Blue", "White"],
+    "skills": ["soothingMote", "healingRain"],
+    "flavor": "A gentle water spirit.",
+    "expGrowth": 7,
+    "gold": 40,
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false
+  },
+  {
+    "id": "salamander",
+    "name": "Salamander",
+    "level": 10,
+    "role": "Attacker",
+    "maxHp": 35,
+    "spriteKey": "salamander",
+    "passives": ["fireSkin"],
+    "elements": ["Red", "Red"],
+    "skills": ["flameBreath", "heatWave"],
+    "flavor": "A lizard bathed in perpetual flame.",
+    "expGrowth": 10,
+    "gold": 60,
+    "drops": [{ "itemId": "magma_core", "chance": 0.05 }],
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false
+  },
+  {
+    "id": "efreet",
+    "name": "Efreet",
+    "level": 12,
+    "role": "Caster",
+    "maxHp": 30,
+    "spriteKey": "efreet",
+    "passives": ["fireSkin"],
+    "elements": ["Red", "Red", "Black"],
+    "skills": ["fireball", "inferno"],
+    "flavor": "A powerful genie of fire.",
+    "expGrowth": 12,
+    "gold": 80,
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false
+  },
+  {
+    "id": "voidWisp",
+    "name": "Void Wisp",
+    "level": 13,
+    "role": "Debuffer",
+    "maxHp": 25,
+    "spriteKey": "voidWisp",
+    "passives": [
+      "etherealBody",
+      "voidTouch"],
+    "elements": ["Black", "Black"],
+    "skills": ["voidRay", "silence"],
+    "flavor": "A fragment of the encroaching nothingness.",
+    "expGrowth": 12,
+    "gold": 50,
+    "drops": [{ "itemId": "void_essence", "chance": 0.2 }],
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false
+  },
+  {
+    "id": "lich",
+    "name": "Lich",
+    "level": 14,
+    "role": "Caster",
+    "maxHp": 40,
+    "spriteKey": "lich",
+    "passives": [
+      "undeadFortitude",
+      "manaRegen"],
+    "elements": [
+      "Black",
+      "Black",
+      "Black"],
+    "skills": ["deathTouch", "raiseDead"],
+    "flavor": "A sorcerer who refused to die.",
+    "expGrowth": 15,
+    "gold": 120,
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false
+  },
+  {
+    "id": "dragon",
+    "name": "Red Dragon",
+    "level": 15,
+    "role": "Boss",
+    "maxHp": 150,
+    "spriteKey": "dragon",
+    "passives": ["scales", "fireSkin"],
+    "elements": [
+      "Red",
+      "Red",
+      "Red"],
+    "skills": ["flameBreath", "tailSwipe", "roar"],
+    "flavor": "The ancient guardian of the depths.",
+    "expGrowth": 50,
+    "gold": 500,
+    "drops": [{ "itemId": "dragon_scale", "chance": 1.0 }],
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": false,
+    "isEvolved": true
+  },
+  {
+    "id": "voidKing",
+    "name": "Void King",
+    "level": 20,
+    "role": "Boss",
+    "maxHp": 300,
+    "spriteKey": "voidKing",
+    "passives": ["voidShield", "entropy"],
+    "elements": [
+      "Black",
+      "Black",
+      "Black",
+      "Black"],
+    "skills": ["voidCollapse", "eraseExistence", "summonVoid"],
+    "flavor": "The end of all things.",
+    "expGrowth": 100,
+    "gold": 1000,
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": false,
+    "isEvolved": true
+  },
+  {
+      "id": "summoner_yukio",
+      "name": "Yukio",
+      "level": 10,
+      "role": "Summoner",
+      "maxHp": 50,
+      "maxMp": 999,
+      "spriteKey": "NPC_Yukio",
+      "elements": [],
+      "skills": ["windBlade", "fireball"],
+      "flavor": "Your rival.",
+      "expGrowth": 50,
+      "gold": 200
   },
   {
     "id": "summoner",

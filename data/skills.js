@@ -157,5 +157,188 @@ export const skills = {
             { type: 'hp_drain', formula: '4 + 0.6 * a.level' },
             { type: 'add_status', status: 'sleep', chance: 0.5, duration: 3 }
         ]
+    },
+
+    // New Skills for Expansion
+    // Naga
+    hydroPump: {
+        id: 'hydroPump',
+        name: 'Hydro Pump',
+        target: 'enemy-any',
+        element: 'Blue',
+        description: "Blasts the target with high-pressure water.",
+        effects: [
+            { type: 'hp_damage', formula: '10 + 1.5 * a.level' }
+        ]
+    },
+    poisonBite: {
+        id: 'poisonBite',
+        name: 'Poison Bite',
+        target: 'enemy-any',
+        element: 'Green',
+        description: "A venomous bite.",
+        effects: [
+            { type: 'hp_damage', formula: '8 + 1.2 * a.level' },
+            { type: 'add_status', status: 'poison', chance: 0.6, duration: 3 }
+        ]
+    },
+
+    // Aquan
+    healingRain: {
+        id: 'healingRain',
+        name: 'Healing Rain',
+        target: 'ally-all',
+        element: 'Blue',
+        description: "Restores HP to all allies.",
+        effects: [
+            { type: 'hp_heal', formula: '5 + 1.0 * a.level' }
+        ]
+    },
+
+    // Salamander
+    flameBreath: {
+        id: 'flameBreath',
+        name: 'Flame Breath',
+        target: 'enemy-all',
+        element: 'Red',
+        description: "Exhales scorching fire on all enemies.",
+        effects: [
+            { type: 'hp_damage', formula: '8 + 1.1 * a.level' }
+        ]
+    },
+    heatWave: {
+        id: 'heatWave',
+        name: 'Heat Wave',
+        target: 'enemy-all',
+        element: 'Red',
+        description: "A wave of intense heat.",
+        effects: [
+            { type: 'hp_damage', formula: '5 + 1.0 * a.level' }
+        ]
+    },
+
+    // Efreet
+    fireball: {
+        id: 'fireball',
+        name: 'Fireball',
+        target: 'enemy-any',
+        element: 'Red',
+        description: "Hurls a massive ball of fire.",
+        effects: [
+            { type: 'hp_damage', formula: '15 + 1.8 * a.level' }
+        ]
+    },
+    inferno: {
+        id: 'inferno',
+        name: 'Inferno',
+        target: 'enemy-all',
+        element: 'Red',
+        description: "Engulfs the battlefield in flames.",
+        effects: [
+            { type: 'hp_damage', formula: '12 + 1.5 * a.level' }
+        ]
+    },
+
+    // Void Wisp
+    voidRay: {
+        id: 'voidRay',
+        name: 'Void Ray',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "A beam of pure darkness.",
+        effects: [
+            { type: 'hp_damage', formula: '10 + 1.6 * a.level' }
+        ]
+    },
+    silence: {
+        id: 'silence',
+        name: 'Silence',
+        target: 'enemy-any',
+        element: 'White',
+        description: "Prevents the target from using magic.",
+        effects: [
+            { type: 'add_status', status: 'silence', chance: 0.8, duration: 3 }
+        ]
+    },
+
+    // Lich
+    deathTouch: {
+        id: 'deathTouch',
+        name: 'Death Touch',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "Drains life force.",
+        effects: [
+            { type: 'hp_drain', formula: '10 + 1.0 * a.level' }
+        ]
+    },
+    raiseDead: {
+        id: 'raiseDead',
+        name: 'Raise Dead',
+        target: 'self',
+        element: 'Black',
+        description: "Summons a skeleton (Flavor only for now).",
+        effects: [] // Not implemented fully, mostly for flavor/text
+    },
+
+    // Bosses
+    tailSwipe: {
+        id: 'tailSwipe',
+        name: 'Tail Swipe',
+        target: 'enemy-all',
+        element: 'White',
+        description: "A sweeping physical attack.",
+        effects: [
+            { type: 'hp_damage', formula: '15 + 1.5 * a.level' }
+        ]
+    },
+    roar: {
+        id: 'roar',
+        name: 'Roar',
+        target: 'enemy-all',
+        element: 'White',
+        description: "Terrifies enemies, lowering their defense.",
+        effects: [
+            { type: 'add_status', status: 'weak', chance: 0.7, duration: 3 }
+        ]
+    },
+    voidCollapse: {
+        id: 'voidCollapse',
+        name: 'Void Collapse',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "Crushes the target with gravity.",
+        effects: [
+            { type: 'hp_damage', formula: '50 + 2.0 * a.level' }
+        ]
+    },
+    eraseExistence: {
+        id: 'eraseExistence',
+        name: 'Erase Existence',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "Attempts to instantly kill the target.",
+        effects: [
+             { type: 'hp_damage', formula: '999', chance: 0.1 },
+             { type: 'hp_damage', formula: '20 + 2.0 * a.level' }
+        ]
+    },
+    summonVoid: {
+        id: 'summonVoid',
+        name: 'Summon Void',
+        target: 'self',
+        element: 'Black',
+        description: "Calls forth void creatures.",
+        effects: []
+    },
+    assassinate: {
+        id: 'assassinate',
+        name: 'Assassinate',
+        target: 'enemy-any',
+        element: 'Black',
+        description: "A lethal strike from the shadows.",
+        effects: [
+            { type: 'hp_damage', formula: '25 + 2.5 * a.level' }
+        ]
     }
 };
