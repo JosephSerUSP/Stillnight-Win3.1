@@ -16,6 +16,16 @@
     }
   },
   {
+    "id": "stairs_up",
+    "type": "stairs",
+    "symbol": "<",
+    "cssClass": "tile-stairs",
+    "trigger": "step",
+    "scripts": {
+        "onEnter": [ { "type": "ASCEND" } ]
+    }
+  },
+  {
     "id": "recovery",
     "type": "recovery",
     "symbol": "R",

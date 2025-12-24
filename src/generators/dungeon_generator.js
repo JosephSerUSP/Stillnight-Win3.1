@@ -242,6 +242,36 @@ export class RandomWalkGenerator extends DungeonGenerator {
 
         const events = this._populateEvents(meta, eventDefs, floorCells.filter(c => c[0] !== startPos[0] || c[1] !== startPos[1]), npcData, party, actors);
 
+        if (index > 0) {
+            const stairsUpDef = eventDefs.find(e => e.id === 'stairs_up');
+            if (stairsUpDef) {
+                const [sx, sy] = startPos;
+                const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]]; // N, S, W, E
+
+                for (const [dx, dy] of dirs) {
+                    const nx = sx + dx;
+                    const ny = sy + dy;
+
+                    if (nx < 0 || nx >= this.MAX_W || ny < 0 || ny >= this.MAX_H) {
+                        continue;
+                    }
+
+                    if (tiles[ny][nx] !== '.') {
+                        continue;
+                    }
+
+                    const isOccupied = events.some(e => e.x === nx && e.y === ny);
+                    if (isOccupied) {
+                        continue;
+                    }
+
+                    const eventData = { ...stairsUpDef };
+                    events.push(new Game_Event(nx, ny, eventData));
+                    break;
+                }
+            }
+        }
+
         return {
             id: "F" + (index + 1),
             title: meta.title,
