@@ -6,7 +6,27 @@
     "cssClass": "tile-stairs",
     "trigger": "step",
     "scripts": {
-        "onEnter": [ { "type": "DESCEND" } ]
+        "onEnter": [
+            { "type": "CHOICE", "options": [
+                { "label": "Descend Stairs", "script": [{ "type": "DESCEND" }] },
+                { "label": "Stay", "script": [{ "type": "LOG", "text": "You stay." }] }
+            ]}
+        ]
+    }
+  },
+  {
+    "id": "stairs_up",
+    "type": "stairs",
+    "symbol": "S",
+    "cssClass": "tile-stairs",
+    "trigger": "step",
+    "scripts": {
+        "onEnter": [
+            { "type": "CHOICE", "options": [
+                { "label": "Ascend Stairs", "script": [{ "type": "ASCEND" }] },
+                { "label": "Stay", "script": [{ "type": "LOG", "text": "You stay." }] }
+            ]}
+        ]
     }
   },
   {

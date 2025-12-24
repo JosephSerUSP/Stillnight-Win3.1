@@ -17,6 +17,7 @@ export class InterpreterSystem {
             'RECRUIT': this._handleRecruit,
             'NPC_DIALOGUE': this._handleNpcDialogue,
             'DESCEND': this._handleDescend,
+            'ASCEND': this._handleAscend,
             'HEAL_PARTY': this._handleHealParty,
             'DAMAGE_PARTY': this._handleDamageParty,
             'GIVE_GOLD': this._handleGiveGold,
@@ -134,6 +135,10 @@ export class InterpreterSystem {
 
     _handleDescend(state, command, session) {
         return [{ type: 'DESCEND' }, { type: 'PLAY_SOUND', name: 'STAIRS' }];
+    }
+
+    _handleAscend(state, command, session) {
+        return [{ type: 'ASCEND' }, { type: 'PLAY_SOUND', name: 'STAIRS' }];
     }
 
     _handleHealParty(state, command, session) {

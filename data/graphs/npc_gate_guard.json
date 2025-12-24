@@ -84,10 +84,22 @@
     "allow_pass_choices": {
       "type": "CHOICE",
       "options": [
-        { "label": "Enter Dungeon", "target": "action_teleport" },
+        { "label": "Enter Dungeon", "target": "confirm_enter_text" },
         { "label": "Ask about stains.", "target": "allow_pass_stains_text" },
         { "label": "Anything strange?", "target": "quest_offer_text", "condition": "questStatus:silent_shipment:inactive" },
         { "label": "Leave", "action": "close" }
+      ]
+    },
+    "confirm_enter_text": {
+      "type": "TEXT",
+      "content": "Are you ready to descend?",
+      "next": "confirm_enter_choice"
+    },
+    "confirm_enter_choice": {
+      "type": "CHOICE",
+      "options": [
+        { "label": "Yes", "target": "action_teleport" },
+        { "label": "No", "action": "close" }
       ]
     },
     "action_teleport": {
@@ -103,7 +115,7 @@
     "allow_pass_stains_choices": {
       "type": "CHOICE",
       "options": [
-        { "label": "Enter Dungeon", "target": "action_teleport" },
+        { "label": "Enter Dungeon", "target": "confirm_enter_text" },
         { "label": "Leave", "action": "close" }
       ]
     },

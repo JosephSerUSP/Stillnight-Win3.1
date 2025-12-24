@@ -224,23 +224,55 @@ export class RandomWalkGenerator extends DungeonGenerator {
 
         // Start position is the last cell generated
         const startPos = floorCells[floorCells.length - 1];
-        // Mark start as used? _populateEvents does its own tracking.
-        // But we want to ensure we don't spawn on top of start if possible?
-        // Actually, start position is just where player spawns.
-        // For random walk, it's safer to exclude startPos from spawn candidates if we want.
-        // The previous code did: const used = [...floorCells.slice(-1)];
-        // Let's replicate that logic in _populateEvents or here?
-        // I'll filter floorCells passed to _populateEvents to exclude startPos if desired,
-        // OR just pass startPos as 'used' in a more robust way?
-        // _populateEvents now manages 'usedSet'.
-        // I'll rely on luck or just let it spawn there?
-        // Better: Pre-seed usedSet with startPos. But _populateEvents doesn't take 'usedSet'.
-        // I'll temporarily remove startPos from floorCells passed to it?
-        // Or better, let's just accept that _populateEvents handles it.
-        // Wait, I changed _populateEvents to NOT take 'used' array.
-        // I should probably manually exclude startPos.
 
-        const events = this._populateEvents(meta, eventDefs, floorCells.filter(c => c[0] !== startPos[0] || c[1] !== startPos[1]), npcData, party, actors);
+        // Find a valid neighbor for spawn to place stairs at startPos but spawn next to it
+        let spawnPos = startPos;
+        let stairsPos = startPos;
+
+        // Only look for a neighbor if this is a deeper dungeon floor (index > 0)
+        // Floor 0 is usually town, but if RandomWalk is used for Floor 0, we might want stairs back too if applicable.
+        // Usually index > 0 means we came from somewhere.
+        const neighbors = [
+            [startPos[0] + 1, startPos[1]],
+            [startPos[0] - 1, startPos[1]],
+            [startPos[0], startPos[1] + 1],
+            [startPos[0], startPos[1] - 1]
+        ].filter(([nx, ny]) => {
+            // Check bounds and if tile is floor
+            return nx >= 0 && nx < this.MAX_W && ny >= 0 && ny < this.MAX_H && tiles[ny][nx] === '.';
+        });
+
+        if (neighbors.length > 0) {
+            spawnPos = neighbors[0]; // Pick first valid neighbor
+        }
+
+        // Add stairs_up event at original startPos
+        // We always add stairs_up for dungeon floors (RandomWalk) to allow returning to previous floor/town
+        const extraEvents = [];
+        if (index >= 0) {
+             extraEvents.push({
+                 id: 'stairs_up',
+                 x: stairsPos[0],
+                 y: stairsPos[1]
+             });
+        }
+
+        // Filter out both stairsPos and spawnPos from random event generation to avoid blocking path or stacking
+        const events = this._populateEvents(meta, eventDefs, floorCells.filter(c =>
+            (c[0] !== stairsPos[0] || c[1] !== stairsPos[1]) &&
+            (c[0] !== spawnPos[0] || c[1] !== spawnPos[1])
+        ), npcData, party, actors);
+
+        // Add explicit events
+        extraEvents.forEach(e => {
+            // Find def if needed, or just push raw config if Game_Event handles it
+            // Game_Event needs full data. _populateEvents does the merge.
+            // We should use _createEventData-like logic or just fetch def manually.
+            const def = eventDefs.find(def => def.id === e.id);
+            if (def) {
+                 events.push(new Game_Event(e.x, e.y, { ...def, ...e }));
+            }
+        });
 
         return {
             id: "F" + (index + 1),
@@ -255,8 +287,8 @@ export class RandomWalkGenerator extends DungeonGenerator {
             tiles,
             events,
             visited,
-            startX: startPos[0],
-            startY: startPos[1],
+            startX: spawnPos[0],
+            startY: spawnPos[1],
             discovered: false,
         };
     }
