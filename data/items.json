@@ -410,5 +410,141 @@
     "cost": 0,
     "icon": 218,
     "description": "A heavy golden ring, unmarked and waiting for a new story. Laura can reshape it into something precious."
+  },
+  {
+    "id": "midnight_herbs",
+    "name": "Midnight Herbs",
+    "type": "quest",
+    "cost": 0,
+    "icon": 122,
+    "description": "Rare herbs that only bloom in complete darkness. Perfect for a special dish."
+  },
+  {
+    "id": "love_letter_fragment",
+    "name": "Love Letter Fragment",
+    "type": "quest",
+    "cost": 0,
+    "icon": 210,
+    "description": "A torn piece of paper with heartfelt words scribbled on it."
+  },
+  {
+    "id": "proposal_ring",
+    "name": "Proposal Ring",
+    "type": "quest",
+    "cost": 0,
+    "icon": 218,
+    "description": "A beautiful ring crafted with hope and desperation."
+  },
+  {
+    "id": "summoning_chalk",
+    "name": "Summoning Chalk",
+    "type": "quest",
+    "cost": 0,
+    "icon": 137,
+    "description": "Special chalk used for drawing summoning circles. Laura needs this."
+  },
+  {
+    "id": "sealed_scroll",
+    "name": "Sealed Scroll",
+    "type": "quest",
+    "cost": 0,
+    "icon": 212,
+    "description": "A scroll sealed with wax. The contents are meant for Raphael's eyes only."
+  },
+  {
+    "id": "broken_badge",
+    "name": "Broken Badge",
+    "type": "quest",
+    "cost": 0,
+    "icon": 226,
+    "description": "An old, rusted guard's badge. It has seen better days."
+  },
+  {
+    "id": "cerberus_collar",
+    "name": "Cerberus Collar",
+    "type": "quest",
+    "cost": 0,
+    "icon": 150,
+    "description": "A spiked collar. It feels warm to the touch."
+  },
+  {
+    "id": "mithril_ore",
+    "name": "Mithril Ore",
+    "type": "quest",
+    "cost": 0,
+    "icon": 161,
+    "description": "A chunk of lightweight, durable metal. Ideal for crafting."
+  },
+  {
+    "id": "daphne_locket",
+    "name": "Rusted Locket",
+    "type": "quest",
+    "cost": 0,
+    "icon": 216,
+    "description": "A locket found in the deep. It won't open."
+  },
+  {
+    "id": "ring_of_affection",
+    "name": "Ring of Affection",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 500,
+    "icon": 218,
+    "description": "A ring given with love. Slightly increases defense.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "def",
+        "value": 2
+      }
+    ]
+  },
+  {
+    "id": "summoners_cowl",
+    "name": "Summoner's Cowl",
+    "type": "equipment",
+    "equipType": "Armor",
+    "cost": 800,
+    "icon": 142,
+    "description": "A cowl that helps focus mental energy.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "maxMp",
+        "value": 50
+      }
+    ]
+  },
+  {
+    "id": "guardians_shield",
+    "name": "Guardian's Shield",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 1000,
+    "icon": 133,
+    "description": "A heavy shield crest. Boosts defense significantly.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "def",
+        "value": 5
+      }
+    ]
+  },
+  {
+    "id": "yukios_charm",
+    "name": "Yukio's Charm",
+    "type": "equipment",
+    "equipType": "Accessory",
+    "cost": 2000,
+    "icon": 202,
+    "description": "A charm from a rival. Increases skill damage.",
+    "traits": [
+      {
+        "code": "PARAM_RATE",
+        "dataId": "atk",
+        "value": 1.1
+      }
+    ]
   }
 ]
