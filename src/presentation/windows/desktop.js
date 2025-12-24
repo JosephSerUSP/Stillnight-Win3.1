@@ -466,6 +466,8 @@ export class Window_Desktop extends Window_Base {
                     { id: 'menu-item-new-game', label: 'New Game', testId: 'menu-new-game' },
                     { id: 'menu-item-save-game', label: 'Save Game', testId: 'menu-save-game' },
                     { id: 'menu-item-load-game', label: 'Load Game', testId: 'menu-load-game' },
+                    { id: 'menu-item-save-file', label: 'Save Game File', testId: 'menu-save-file' },
+                    { id: 'menu-item-load-file', label: 'Load Game File', testId: 'menu-load-file' },
                     { id: 'menu-item-game-info', label: 'Info', testId: 'menu-game-info' },
                     { id: 'menu-item-about', label: 'About', testId: 'menu-about' }
                 ]
@@ -554,6 +556,8 @@ export class Window_Desktop extends Window_Base {
     get menuNewGame() { return this.menuEntries?.['menu-item-new-game']; }
     get menuSaveGame() { return this.menuEntries?.['menu-item-save-game']; }
     get menuLoadGame() { return this.menuEntries?.['menu-item-load-game']; }
+    get menuSaveFile() { return this.menuEntries?.['menu-item-save-file']; }
+    get menuLoadFile() { return this.menuEntries?.['menu-item-load-file']; }
     get menuGameInfo() { return this.menuEntries?.['menu-item-game-info']; }
     get menuAbout() { return this.menuEntries?.['menu-item-about']; }
     get menuNewRun() { return this.menuEntries?.['menu-item-new-run']; }
