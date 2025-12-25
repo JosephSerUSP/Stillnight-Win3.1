@@ -78,7 +78,7 @@
       "type": "CHOICE",
       "options": [
         { "label": "Buy Consumables", "target": "shop_consumables", "setFlag": "alicia_first_met" },
-        { "label": "Talk", "target": "talk_menu_text", "setFlag": "alicia_first_met" },
+        { "label": "Talk", "target": "talk_hub", "setFlag": "alicia_first_met" },
         { "label": "Leave", "action": "close", "setFlag": "alicia_first_met" }
       ]
     },

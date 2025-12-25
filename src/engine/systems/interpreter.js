@@ -26,6 +26,8 @@ export class InterpreterSystem {
             'GIVE_XP': this._handleGiveXp,
             'MESSAGE': this._handleMessage,
             'TEXT': this._handleMessage, // Alias
+            'PLAY_SOUND': this._handlePlaySound,
+            'ASCEND': this._handleAscend,
             'BREAKABLE_WALL': this._handleBreakableWall,
             'WAIT': this._handleWait,
             'RANDOM_EVENT': this._handleRandomEvent,
@@ -134,6 +136,14 @@ export class InterpreterSystem {
 
     _handleDescend(state, command, session) {
         return [{ type: 'DESCEND' }, { type: 'PLAY_SOUND', name: 'STAIRS' }];
+    }
+
+    _handleAscend(state, command, session) {
+        return [{ type: 'ASCEND' }, { type: 'PLAY_SOUND', name: 'STAIRS' }];
+    }
+
+    _handlePlaySound(state, command, session) {
+        return [{ type: 'PLAY_SOUND', name: command.name }];
     }
 
     _handleHealParty(state, command, session) {
