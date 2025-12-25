@@ -94,6 +94,7 @@
       "options": [
         { "label": "Enter Dungeon", "target": "action_teleport", "setFlag": "dungeon_entered" },
         { "label": "Ask about stains.", "target": "allow_pass_stains_text" },
+        { "label": "Report Progress", "target": "report_progress_router" },
         { "label": "Anything strange?", "target": "quest_offer_text", "condition": "questStatus:silent_shipment:inactive" },
         { "label": "Leave", "action": "close" }
       ]
@@ -106,15 +107,33 @@
     "allow_pass_stains_text": {
       "type": "TEXT",
       "content": "People come back talking about ‘treasure’. Then they stop sleeping. Then they stop talking. Then we stop calling them by name. Go.",
-      "next": "allow_pass_stains_choices"
+      "next": "allow_pass_choices"
     },
-    "allow_pass_stains_choices": {
-      "type": "CHOICE",
-      "options": [
-        { "label": "Enter Dungeon", "target": "action_teleport", "setFlag": "dungeon_entered" },
-        { "label": "Leave", "action": "close" }
+
+    "report_progress_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "flag:boss_killed_floor_6", "target": "report_floor_6" },
+        { "condition": "flag:boss_killed_floor_3", "target": "report_floor_3" },
+        { "default": true, "target": "report_nothing" }
       ]
     },
+    "report_floor_6": {
+      "type": "TEXT",
+      "content": "You... you cleared the Sanctum? The air feels lighter today. Maybe it's not a coincidence. You're making history, Summoner.",
+      "next": "allow_pass_choices"
+    },
+    "report_floor_3": {
+      "type": "TEXT",
+      "content": "The Rusted Choir is silent? Good. Those bells were driving the dogs mad. Keep pushing deeper.",
+      "next": "allow_pass_choices"
+    },
+    "report_nothing": {
+      "type": "TEXT",
+      "content": "Still alive. That's progress enough for today.",
+      "next": "allow_pass_choices"
+    },
+
     "close_choice": {
         "type": "CHOICE",
         "options": [
