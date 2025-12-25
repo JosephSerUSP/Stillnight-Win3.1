@@ -127,6 +127,9 @@ export class InterpreterAdapter {
                 case 'DESCEND':
                     this._descendStairs();
                     break;
+                case 'ASCEND':
+                    this._ascendStairs();
+                    break;
                 case 'WALL_BROKEN':
                     this._resolveBrokenWall(e.x, e.y);
                     break;
@@ -226,6 +229,58 @@ export class InterpreterAdapter {
         this.scene.logMessage(`[Floor] You descend to: ${f.title}`);
         this.scene.logMessage(`[Floor] ${f.intro}`);
         this.scene.setStatus("Descending.");
+        this.scene.updateAll();
+        this.scene.checkMusic();
+    }
+
+    _ascendStairs() {
+        if (this.map.floorIndex <= 0) {
+            this.scene.logMessage("[Floor] You are already at the entrance.");
+            return;
+        }
+
+        this.map.floorIndex--;
+        const f = this.map.floors[this.map.floorIndex];
+        f.discovered = true;
+
+        // Find connection to current (deeper) floor to spawn near it
+        // We look for 'stairs' or 'descend' events
+        // Default to start if not found
+        let spawnX = f.startX;
+        let spawnY = f.startY;
+
+        if (f.events) {
+            // Find stairs down (that lead to the floor we just came from)
+            const stairsDown = f.events.find(e => e.id === 'stairs' || e.type === 'stairs');
+            if (stairsDown) {
+                // Find valid adjacent tile
+                const adj = [
+                    { x: stairsDown.x + 1, y: stairsDown.y },
+                    { x: stairsDown.x - 1, y: stairsDown.y },
+                    { x: stairsDown.x, y: stairsDown.y + 1 },
+                    { x: stairsDown.x, y: stairsDown.y - 1 }
+                ];
+
+                // Filter for valid floor tiles
+                const valid = adj.filter(pos => {
+                    if (pos.x < 0 || pos.x >= this.map.config.MAX_W || pos.y < 0 || pos.y >= this.map.config.MAX_H) return false;
+                    const tile = f.tiles[pos.y][pos.x];
+                    return tile !== '#';
+                });
+
+                if (valid.length > 0) {
+                    const chosen = valid[0]; // Pick first valid
+                    spawnX = chosen.x;
+                    spawnY = chosen.y;
+                }
+            }
+        }
+
+        this.map.playerX = spawnX;
+        this.map.playerY = spawnY;
+        this.map.revealAroundPlayer();
+        this.scene.logMessage(`[Floor] You ascend to: ${f.title}`);
+        this.scene.setStatus("Ascending.");
         this.scene.updateAll();
         this.scene.checkMusic();
     }
