@@ -1,4 +1,4 @@
-import { TRAIT_DEFINITIONS } from "../../../data/traits.js";
+import { TRAIT_DEFINITIONS } from "../../engine/rules/trait_definitions.js";
 
 /**
  * Generates a human-readable description for a trait.

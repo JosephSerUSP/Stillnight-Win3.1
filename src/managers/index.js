@@ -4,5 +4,4 @@ export { SoundManager } from "./sound.js";
 export { SceneManager } from "./scene.js";
 export { ThemeManager } from "./theme.js";
 export { ConfigManager } from "./config.js";
-export { TraitManager } from "./trait_manager.js";
 export { MidiParser, MidiPlayer } from "./midi.js";
