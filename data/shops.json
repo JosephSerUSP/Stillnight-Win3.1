@@ -3,7 +3,8 @@
     "items": [
       { "id": "hp_tonic" },
       { "id": "sigil_ink", "condition": "level:2" },
-      { "id": "whispered_lessons", "condition": "level:5" }
+      { "id": "whispered_lessons", "condition": "level:5" },
+      { "id": "elixir_of_insight", "condition": "flag:alicia_trust_earned" }
     ]
   },
   "weapons_basic": {
@@ -14,7 +15,9 @@
       { "id": "wind_dancer", "condition": "level:3" },
       { "id": "water_scepter", "condition": "level:3" },
       { "id": "holy_sword_gram", "condition": "level:10" },
-      { "id": "dark_scepter_lucille", "condition": "level:10" }
+      { "id": "dark_scepter_lucille", "condition": "level:10" },
+      { "id": "shattered_edge_reforged", "condition": "flag:shattered_blade_reforged" },
+      { "id": "meteorite_plate", "condition": "flag:shattered_blade_reforged" }
     ]
   },
   "accessories_special": {
@@ -36,6 +39,13 @@
       { "id": "untarnished_signet" },
       { "id": "exp_boost", "condition": "gold:5000" },
       { "id": "hermes_boots", "condition": "level:10" }
+    ]
+  },
+  "pub_drinks": {
+    "items": [
+      { "id": "ale_mug" },
+      { "id": "stout_pint" },
+      { "id": "wine_glass", "condition": "level:5" }
     ]
   },
   "dungeon_merchant": {

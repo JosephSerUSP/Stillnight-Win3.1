@@ -42,6 +42,20 @@
     ]
   },
   {
+    "id": "elixir_of_insight",
+    "name": "Elixir of Insight",
+    "type": "consumable",
+    "cost": 100,
+    "description": "Grant a small amount of XP to the party.",
+    "icon": 65,
+    "effects": [
+      {
+        "type": "xp",
+        "value": 50
+      }
+    ]
+  },
+  {
     "id": "silver_blade",
     "name": "Silver Blade",
     "type": "equipment",
@@ -410,5 +424,100 @@
     "cost": 0,
     "icon": 218,
     "description": "A heavy golden ring, unmarked and waiting for a new story. Laura can reshape it into something precious."
+  },
+  {
+    "id": "shattered_blade",
+    "name": "Shattered Blade",
+    "type": "quest",
+    "cost": 0,
+    "icon": 180,
+    "description": "The rusted, broken remains of a blade that once held great power. The Weaponsmith might be interested."
+  },
+  {
+    "id": "shattered_edge_reforged",
+    "name": "Shattered Edge",
+    "type": "equipment",
+    "equipType": "Weapon",
+    "cost": 4000,
+    "icon": 180,
+    "description": "A masterwork blade reforged from ancient scraps. It hums with latent energy.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "atk",
+        "value": 5
+      },
+      {
+        "code": "CRI",
+        "value": 0.25
+      }
+    ]
+  },
+  {
+    "id": "meteorite_plate",
+    "name": "Meteorite Plate",
+    "type": "equipment",
+    "equipType": "Armor",
+    "cost": 3500,
+    "icon": 172,
+    "description": "Heavy armor forged from star-metal. Incredibly dense.",
+    "traits": [
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "maxHp",
+        "value": 10
+      },
+      {
+        "code": "PARAM_PLUS",
+        "dataId": "def",
+        "value": 2
+      }
+    ]
+  },
+  {
+    "id": "ale_mug",
+    "name": "Mug of Ale",
+    "type": "consumable",
+    "cost": 5,
+    "icon": 220,
+    "description": "Cheap, frothy ale. Refreshes the spirit.",
+    "effects": [
+      {
+        "type": "mp_heal",
+        "value": 10
+      }
+    ]
+  },
+  {
+    "id": "stout_pint",
+    "name": "Pint of Stout",
+    "type": "consumable",
+    "cost": 12,
+    "icon": 221,
+    "description": "Dark, heavy stout. A meal in a glass.",
+    "effects": [
+      {
+        "type": "mp_heal",
+        "value": 25
+      }
+    ]
+  },
+  {
+    "id": "wine_glass",
+    "name": "Glass of Wine",
+    "type": "consumable",
+    "cost": 25,
+    "icon": 222,
+    "description": "A surprisingly decent vintage.",
+    "effects": [
+      {
+        "type": "mp_heal",
+        "value": 50
+      },
+      {
+        "type": "remove_status",
+        "value": "weakened"
+      }
+    ]
   }
 ]

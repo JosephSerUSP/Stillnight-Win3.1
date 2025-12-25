@@ -19,7 +19,7 @@
       "items": [
         { "id": "light_amulet", "qty": 1 }
       ],
-      "flags": ["alicia_visits_pub"]
+      "flags": ["alicia_visits_pub", "alicia_trust_earned"]
     }
   },
   "golden_promise": {
@@ -58,6 +58,26 @@
     "rewards": {
       "gold": 50,
       "xp": 100
+    }
+  },
+  "shattered_blade_recovery": {
+    "name": "The Broken Legend",
+    "giver": "Weaponsmith",
+    "portrait": "NPC_Weapon_Shop",
+    "summary": "Retrieve the Shattered Blade for the Weaponsmith.",
+    "description": "The Weaponsmith has heard rumors of a 'Shattered Blade' in the Cryptic Vault (Floor 4/5). He believes he can reforge it into a masterpiece.",
+    "objectives": [
+      "Find the Shattered Blade in the Cryptic Vault.",
+      "Bring the blade to the Weaponsmith."
+    ],
+    "requirements": {
+      "items": [
+        { "id": "shattered_blade", "qty": 1, "consume": true }
+      ]
+    },
+    "rewards": {
+      "gold": 250,
+      "xp": 500
     }
   }
 }

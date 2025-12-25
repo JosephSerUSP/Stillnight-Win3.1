@@ -37,7 +37,7 @@
         "type": "CHOICE",
         "options": [
             { "label": "Buy a drink", "target": "shop_drink" },
-            { "label": "Any news?", "target": "bartender_gossip" },
+            { "label": "Any news?", "target": "bartender_gossip_router" },
             { "label": "Back", "target": "hub_choices" }
         ]
     },
@@ -47,7 +47,38 @@
         "shopId": "pub_drinks",
         "next": "bartender_choices"
     },
-    "bartender_gossip": {
+
+    "bartender_gossip_router": {
+      "type": "ROUTER",
+      "branches": [
+        { "condition": "random:0.2", "target": "gossip_weather" },
+        { "condition": "random:0.2", "target": "gossip_dungeon_1" },
+        { "condition": "random:0.2", "target": "gossip_dungeon_2" },
+        { "condition": "random:0.2", "target": "gossip_alicia" },
+        { "default": true, "target": "gossip_default" }
+      ]
+    },
+    "gossip_weather": {
+        "type": "TEXT",
+        "content": "Rain's coming. My knee aches. Means the slimes on the first floor will be extra sticky.",
+        "next": "bartender_choices"
+    },
+    "gossip_dungeon_1": {
+        "type": "TEXT",
+        "content": "Some fool said he saw a golden egg on the third floor. Probably just a trick of the light, or a trap.",
+        "next": "bartender_choices"
+    },
+    "gossip_dungeon_2": {
+        "type": "TEXT",
+        "content": "If you see a statue that looks like it's crying, don't touch it. Unless you like curses.",
+        "next": "bartender_choices"
+    },
+    "gossip_alicia": {
+        "type": "TEXT",
+        "content": "Alicia's been baking again. Smells like burnt cinnamon. Poor girl tries hard, though.",
+        "next": "bartender_choices"
+    },
+    "gossip_default": {
         "type": "TEXT",
         "content": "News? The dungeon's deep, the monsters are hungry, and the beer is cold. That's all the news that matters.",
         "next": "bartender_choices"
