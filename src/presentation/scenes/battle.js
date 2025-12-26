@@ -126,6 +126,20 @@ export class Scene_Battle extends Scene_Base {
     if (this.sceneManager.previous().hud) {
         this.sceneManager.previous().hud.setMode("Battle");
     }
+
+    // Battle Intro Animation
+    const allBattlers = [
+        ...this.party.activeMembers,
+        ...enemies
+    ];
+    if (this.party.summoner) allBattlers.push(this.party.summoner);
+    // Use async IIFE to avoid blocking start() logic if strict timing isn't required,
+    // but usually we want to see it before actions.
+    // However, start() is not async. We can float the promise or just let it run.
+    // To ensure AutoBattle waits for it, we might need a flag or delay.
+    // But intro animation is purely visual.
+    this.battleWindow.playIntroAnimation(allBattlers.filter(b => b));
+
     AudioAdapter.play('BATTLE_START');
     AudioAdapter.playMusic('battle1');
 
@@ -330,9 +344,7 @@ export class Scene_Battle extends Scene_Base {
         const action = battlerContext.action;
 
         if (action) {
-             // Animate action preview consumption before execution
-             await this.battleWindow.animateActionConsumption(battlerContext.battler);
-
+             // Action consumption is now handled inside animateEvents in parallel with name animation
              const actionEvents = this.battleManager.executeAction(action);
              await this.animateEvents(actionEvents);
         }
@@ -467,7 +479,15 @@ export class Scene_Battle extends Scene_Base {
             const event = events[i];
 
             if (event.battler && event.battler.name) {
-                await this.battleWindow.animateBattlerName(event.battler);
+                const promises = [this.battleWindow.animateBattlerName(event.battler)];
+
+                // If this is the start of an action (use_skill/item), consume the preview simultaneously.
+                if (event.type === 'use_skill' || event.type === 'use_item') {
+                    // Match duration of animateBattlerName (15 frames * 50ms = 750ms)
+                    promises.push(this.battleWindow.animateActionConsumption(event.battler, 750));
+                }
+
+                await Promise.all(promises);
             }
 
             // --- Custom Rich Log Logic ---
