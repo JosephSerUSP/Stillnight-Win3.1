@@ -10,14 +10,14 @@
   },
   {
     "type": "use_skill",
-    "skillName": "Attack",
-    "msg": "Bat uses Attack!",
+    "skillName": "(K)Bone Rush",
+    "msg": "Bat uses (K)Bone Rush!",
     "battlerName": "Bat"
   },
   {
     "type": "damage",
-    "value": 3,
-    "msg": "  Ooze takes 3 damage.",
+    "value": 10,
+    "msg": "  Ooze takes 10 damage.",
     "targetName": "Ooze"
   },
   {
@@ -27,20 +27,20 @@
   },
   {
     "type": "use_skill",
-    "skillName": "(K)Bone Rush",
-    "msg": "Skeleton uses (K)Bone Rush!",
+    "skillName": "Attack",
+    "msg": "Skeleton uses Attack!",
     "battlerName": "Skeleton"
   },
   {
     "type": "damage",
-    "value": 15,
-    "msg": "  Ooze takes 15 damage.",
+    "value": 5,
+    "msg": "  Ooze takes 5 damage.",
     "targetName": "Ooze"
   },
   {
     "type": "battler_act",
     "name": "Ooze",
-    "hp": 15
+    "hp": 8
   },
   {
     "type": "use_skill",
@@ -50,14 +50,14 @@
   },
   {
     "type": "damage",
-    "value": 8,
-    "msg": "  Alex takes 8 damage.",
-    "targetName": "Alex"
+    "value": 9,
+    "msg": "  Skeleton takes 9 damage.",
+    "targetName": "Skeleton"
   },
   {
     "type": "battler_act",
     "name": "Ooze",
-    "hp": 3
+    "hp": 13
   },
   {
     "type": "use_skill",
@@ -82,20 +82,20 @@
   },
   {
     "type": "use_skill",
-    "skillName": "Attack",
-    "msg": "Bat uses Attack!",
+    "skillName": "(K)Bone Rush",
+    "msg": "Bat uses (K)Bone Rush!",
     "battlerName": "Bat"
   },
   {
     "type": "damage",
-    "value": 3,
-    "msg": "  Ooze takes 3 damage.",
+    "value": 10,
+    "msg": "  Ooze takes 10 damage.",
     "targetName": "Ooze"
   },
   {
     "type": "battler_act",
     "name": "Skeleton",
-    "hp": 26
+    "hp": 17
   },
   {
     "type": "use_skill",
@@ -105,26 +105,26 @@
   },
   {
     "type": "damage",
-    "value": 3,
-    "msg": "  Ooze takes 3 damage.",
+    "value": 8,
+    "msg": "  Ooze takes 8 damage.",
     "targetName": "Ooze"
   },
   {
     "type": "battler_act",
     "name": "Ooze",
-    "hp": 12
+    "hp": 3
   },
   {
     "type": "use_skill",
-    "skillName": "Attack",
-    "msg": "Ooze uses Attack!",
+    "skillName": "(G)Wind Blade",
+    "msg": "Ooze uses (G)Wind Blade!",
     "battlerName": "Ooze"
   },
   {
     "type": "damage",
-    "value": 1,
-    "msg": "  Skeleton takes 1 damage.",
-    "targetName": "Skeleton"
+    "value": 8,
+    "msg": "  Alex takes 8 damage.",
+    "targetName": "Alex"
   },
   {
     "turn": 3,
@@ -143,25 +143,8 @@
   },
   {
     "type": "damage",
-    "value": 10,
-    "msg": "  Ooze takes 10 damage.",
-    "targetName": "Ooze"
-  },
-  {
-    "type": "battler_act",
-    "name": "Skeleton",
-    "hp": 25
-  },
-  {
-    "type": "use_skill",
-    "skillName": "(K)Bone Rush",
-    "msg": "Skeleton uses (K)Bone Rush!",
-    "battlerName": "Skeleton"
-  },
-  {
-    "type": "damage",
-    "value": 2,
-    "msg": "  Ooze takes 2 damage.",
+    "value": 3,
+    "msg": "  Ooze takes 3 damage.",
     "targetName": "Ooze"
   },
   {

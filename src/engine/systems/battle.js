@@ -94,7 +94,7 @@ export class BattleSystem {
       if (!entry || !entry.action) return null;
 
       const action = entry.action;
-      let actionName = "Attack"; // Default fallback logic
+      let actionName = "Action";
 
       if (action.skillId) {
           const skill = Registry.getSkill(action.skillId);
@@ -131,15 +131,12 @@ export class BattleSystem {
   getAIAction(state, battlerContext) {
       const { battler, isEnemy } = battlerContext;
 
-      // AI Logic: 60% Other Skills, 40% Attack
       const skills = battler.skills || [];
-
-      const otherSkills = skills.filter(s => s !== 'attack');
-      let skillId = 'attack';
-
-      if (otherSkills.length > 0 && random() < 0.6) {
-          skillId = otherSkills[randInt(0, otherSkills.length - 1)];
+      if (skills.length === 0) {
+          return null; // Do nothing if no skills
       }
+
+      const skillId = skills[randInt(0, skills.length - 1)];
 
       let action = {
           subject: battler,
@@ -155,19 +152,15 @@ export class BattleSystem {
            action.item = skill; // Attach data for convenience
            scope = skill.target || 'enemy';
       } else {
-           // Fallback
-           action.skillId = 'attack';
-           const atkSkill = Registry.getSkill('attack');
-           if (atkSkill) {
-               action.item = atkSkill;
-               scope = atkSkill.target || 'enemy';
-           }
+           // Skill defined in actor but not in registry?
+           // Fallback to null (wait)
+           return null;
       }
 
       const validTargets = this._getValidTargets(state, battler, scope);
 
       if (validTargets.length > 0) {
-          // Smart targeting for healing: prefer lowest HP percentage
+          // Smart targeting for healing
           if (scope.includes('ally') && action.item && action.item.effects.some(e => e.type === 'hp_heal' || e.type === 'hp')) {
               action.target = validTargets.reduce((prev, curr) => {
                   return (curr.hp / curr.maxHp) < (prev.hp / prev.maxHp) ? curr : prev;
