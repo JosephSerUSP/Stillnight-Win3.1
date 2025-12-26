@@ -15,6 +15,7 @@
       "Green"
     ],
     "skills": [
+      "attack",
       "windBlade",
       "soothingMote"
     ],
@@ -53,6 +54,7 @@
       "White"
     ],
     "skills": [
+      "attack",
       "windBlade",
       "soothingMote",
       "holySmite"
@@ -79,6 +81,7 @@
       "Black"
     ],
     "skills": [
+      "attack",
       "boneRush"
     ],
     "flavor": "A reanimated corpse that just wants to go back to sleep.",
@@ -115,6 +118,7 @@
       "Blue"
     ],
     "skills": [
+      "attack",
       "holySmite",
       "divineFavor"
     ],
@@ -147,6 +151,7 @@
       "Blue"
     ],
     "skills": [
+      "attack",
       "holySmite",
       "divineFavor",
       "soothingMote"
@@ -174,6 +179,7 @@
       "Black"
     ],
     "skills": [
+      "attack",
       "shadowClaw",
       "infernalPact"
     ],
@@ -213,6 +219,7 @@
       "Blue"
     ],
     "skills": [
+      "attack",
       "shadowClaw",
       "infernalPact",
       "drainKiss"
@@ -240,6 +247,7 @@
       "Black"
     ],
     "skills": [
+      "attack",
       "needleShot",
       "fieldSurgery"
     ],
@@ -267,6 +275,7 @@
       "Red"
     ],
     "skills": [
+      "attack",
       "shadowClaw"
     ],
     "flavor": "A mischievous lesser demon that enjoys playing pranks.",
@@ -296,6 +305,7 @@
     ],
     "elements": [],
     "skills": [
+      "attack",
       "boneRush"
     ],
     "flavor": "An animated statue, slow but incredibly durable.",
@@ -322,6 +332,7 @@
       "Black"
     ],
     "skills": [
+      "attack",
       "boneRush"
     ],
     "flavor": "An animated statue, slow but incredibly durable.",
@@ -346,6 +357,7 @@
       "Green"
     ],
     "skills": [
+      "attack",
       "windBlade"
     ],
     "expGrowth": 5,
@@ -370,6 +382,7 @@
       "Black"
     ],
     "skills": [
+      "attack",
       "boneRush"
     ],
     "expGrowth": 3,
@@ -394,6 +407,7 @@
       "Blue"
     ],
     "skills": [
+      "attack",
       "soothingMote"
     ],
     "expGrowth": 4,
@@ -418,6 +432,7 @@
     "spriteKey": "egg",
     "elements": [],
     "skills": [
+      "attack",
       "wait"
     ],
     "expGrowth": 1,
@@ -447,6 +462,7 @@
       "White"
     ],
     "skills": [
+      "attack",
       "flameRebirth",
       "divineFavor"
     ],
@@ -470,7 +486,9 @@
     "elements": [
       "Red"
     ],
-    "skills": [],
+    "skills": [
+      "attack"
+    ],
     "flavor": "It's eating your rations. And your tank.",
     "expGrowth": 2,
     "gold": 5,
@@ -497,6 +515,7 @@
       "Black"
     ],
     "skills": [
+      "attack",
       "shadowClaw",
       "infernalPact"
     ],
@@ -509,42 +528,77 @@
     "isEvolved": true
   },
   {
-      "id": "flauros",
-      "name": "Flauros",
-      "level": 3,
-      "role": "Attacker",
-      "maxHp": 19,
-      "spriteKey": "flauros",
-      "passives": ["initiative", "chaosPact"],
-      "elements": ["Red", "Red", "Black"],
-      "skills": ["shadowClaw", "infernalPact"],
-      "flavor": "A savage leopard demon. It smells of brimstone and burnt hair.",
-      "expGrowth": 6,
-      "gold": 35,
-      "drops": [{ "itemId": "obsidian_shard", "chance": 0.15 }],
-      "evolutions": [],
-      "initialParty": false,
-      "isRecruitable": true,
-      "isEvolved": false
+    "id": "flauros",
+    "name": "Flauros",
+    "level": 3,
+    "role": "Attacker",
+    "maxHp": 19,
+    "spriteKey": "flauros",
+    "passives": [
+      "initiative",
+      "chaosPact"
+    ],
+    "elements": [
+      "Red",
+      "Red",
+      "Black"
+    ],
+    "skills": [
+      "attack",
+      "shadowClaw",
+      "infernalPact"
+    ],
+    "flavor": "A savage leopard demon. It smells of brimstone and burnt hair.",
+    "expGrowth": 6,
+    "gold": 35,
+    "drops": [
+      {
+        "itemId": "obsidian_shard",
+        "chance": 0.15
+      }
+    ],
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false
   },
   {
-      "id": "candle",
-      "name": "Candle",
-      "level": 1,
-      "role": "Support",
-      "maxHp": 7,
-      "spriteKey": "candle",
-      "passives": ["nightVision"],
-      "elements": ["Red", "White"],
-      "skills": ["soothingMote", "divineFavor"],
-      "flavor": "A simple wax candle given life. Ideally, keep it away from the library.",
-      "expGrowth": 2,
-      "gold": 8,
-      "drops": [{ "itemId": "melted_wax", "chance": 0.4 }],
-      "evolutions": [{ "level": 8, "evolvesTo": "lantern" }],
-      "initialParty": false,
-      "isRecruitable": true,
-      "isEvolved": false
+    "id": "candle",
+    "name": "Candle",
+    "level": 1,
+    "role": "Support",
+    "maxHp": 7,
+    "spriteKey": "candle",
+    "passives": [
+      "nightVision"
+    ],
+    "elements": [
+      "Red",
+      "White"
+    ],
+    "skills": [
+      "attack",
+      "soothingMote",
+      "divineFavor"
+    ],
+    "flavor": "A simple wax candle given life. Ideally, keep it away from the library.",
+    "expGrowth": 2,
+    "gold": 8,
+    "drops": [
+      {
+        "itemId": "melted_wax",
+        "chance": 0.4
+      }
+    ],
+    "evolutions": [
+      {
+        "level": 8,
+        "evolvesTo": "lantern"
+      }
+    ],
+    "initialParty": false,
+    "isRecruitable": true,
+    "isEvolved": false
   },
   {
     "id": "shadowStalker",
@@ -552,11 +606,23 @@
     "level": 12,
     "maxHp": 40,
     "role": "Assassin",
-    "elements": ["Shadow"],
-    "skills": ["shadowClaw", "assassinate"],
+    "elements": [
+      "Shadow"
+    ],
+    "skills": [
+      "attack",
+      "shadowClaw",
+      "assassinate"
+    ],
     "traits": [
-        { "code": "EVA", "value": 0.15 },
-        { "code": "CRI", "value": 0.1 }
+      {
+        "code": "EVA",
+        "value": 0.15
+      },
+      {
+        "code": "CRI",
+        "value": 0.1
+      }
     ],
     "spriteKey": "ShadowStalker",
     "gold": 14,
@@ -570,7 +636,9 @@
     "maxMp": 820,
     "role": "Summoner",
     "elements": [],
-    "skills": [],
+    "skills": [
+      "attack"
+    ],
     "traits": [],
     "spriteKey": "egg",
     "gold": 0,

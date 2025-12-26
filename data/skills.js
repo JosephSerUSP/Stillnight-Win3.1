@@ -159,3 +159,21 @@ export const skills = {
         ]
     }
 };
+
+// Appended Attack Skill
+skills.attack = {
+    id: 'attack',
+    name: 'Attack',
+    target: 'enemy',
+    element: null,
+    description: "A basic physical attack.",
+    spCost: 0,
+    mpCost: 0,
+    speed: 0,
+    effects: [
+        {
+            type: 'hp_damage',
+            formula: 'a.atk'
+        }
+    ]
+};
