@@ -95,17 +95,21 @@ export class BattleSystem {
 
       const action = entry.action;
       let actionName = "Action";
+      let item = null;
 
       if (action.skillId) {
           const skill = Registry.getSkill(action.skillId);
           actionName = skill ? skill.name : "Skill";
+          item = skill;
       } else if (action._item) { // Legacy Game_Action property
           actionName = action._item.name;
+          item = action._item;
       }
 
       return {
           actionName,
-          target: action.target
+          target: action.target,
+          item
       };
   }
 
@@ -184,6 +188,15 @@ export class BattleSystem {
       if (isEnemy) {
            // Enemy pov
            opposingTeam = this._getPartyActive(state);
+
+           // If single target (not 'all'), deprioritize Summoner
+           if (!scope.includes('all')) {
+               const creatures = opposingTeam.filter(m => m.role !== 'Summoner' && m.hp > 0);
+               if (creatures.length > 0) {
+                   opposingTeam = creatures;
+               }
+           }
+
            myTeam = state.participants.enemies || [];
       } else {
            // Player pov
@@ -267,7 +280,7 @@ export class BattleSystem {
       if (!skill) return;
 
       const skillName = skill.element ? `${elementToAscii(skill.element)}${skill.name}` : skill.name;
-      events.push({ type: 'use_skill', battler, skillName, msg: `${battler.name} uses ${skillName}!` });
+      events.push({ type: 'use_skill', battler, skillName, item: skill, msg: `${battler.name} uses ${skillName}!` });
 
       let boost = 1;
       // Element Boost (Self)
@@ -324,7 +337,7 @@ export class BattleSystem {
             if (idx !== -1) subject.inventory.splice(idx, 1);
       }
 
-      events.push({ type: 'use_item', battler: subject, itemName: item.name, msg: `${subject.name} uses ${item.name} on ${target.name}.` });
+      events.push({ type: 'use_item', battler: subject, itemName: item.name, item: item, msg: `${subject.name} uses ${item.name} on ${target.name}.` });
 
       if (item.effects) {
           item.effects.forEach(effect => {

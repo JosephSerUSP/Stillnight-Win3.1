@@ -487,25 +487,9 @@ export class Scene_Battle extends Scene_Base {
 
                      frag.appendChild(label);
 
-                     if (event.type === 'use_item' && event.msg.includes(' on ')) {
-                          // Try to parse target name from msg if target obj not in event (event has battler but target implied)
-                          // Actually event usually has NO target property for 'use_skill' in battle system (checked code).
-                          // Wait, executeSkill/Item does not attach 'target' to the 'use_skill' event object explicitly!
-                          // But msg says "... on Target".
-                          // Let's rely on extracting target name from msg or modifying system again (too risky/churny).
-                          // Or just append the rest of the message.
-                          // "X uses Y!" -> We just replaced "X uses Y".
-                          // "X uses Y on Z." -> We replace "X uses Y".
-                          // Let's verify msg format.
-                          // Skill: `${battler.name} uses ${skillName}!`
-                          // Item: `${subject.name} uses ${item.name} on ${target.name}.`
-
-                          if (event.type === 'use_item') {
-                              const suffix = event.msg.substring(event.msg.indexOf(` on `));
-                              frag.appendChild(document.createTextNode(suffix));
-                          } else {
-                              frag.appendChild(document.createTextNode("!"));
-                          }
+                     if (event.msg.includes(' on ')) {
+                          const suffix = event.msg.substring(event.msg.indexOf(` on `));
+                          frag.appendChild(document.createTextNode(suffix));
                      } else {
                           frag.appendChild(document.createTextNode("!"));
                      }
