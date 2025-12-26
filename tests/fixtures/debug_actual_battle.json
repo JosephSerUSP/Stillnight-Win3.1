@@ -1,0 +1,269 @@
+[
+  {
+    "turn": 1,
+    "type": "turn_start"
+  },
+  {
+    "type": "battler_act",
+    "name": "Bat",
+    "hp": 10
+  },
+  {
+    "type": "use_skill",
+    "skillName": "(K)Bone Rush",
+    "item": {
+      "id": "boneRush",
+      "name": "Bone Rush",
+      "target": "enemy-any",
+      "element": "Black",
+      "description": "A reckless charge.",
+      "effects": [
+        {
+          "type": "hp_damage",
+          "formula": "7 + 1.2 * a.level"
+        }
+      ]
+    },
+    "msg": "Bat uses (K)Bone Rush!",
+    "battlerName": "Bat"
+  },
+  {
+    "type": "damage",
+    "value": 10,
+    "msg": "  Ooze takes 10 damage.",
+    "targetName": "Ooze"
+  },
+  {
+    "type": "battler_act",
+    "name": "Skeleton",
+    "hp": 26
+  },
+  {
+    "type": "use_skill",
+    "skillName": "Attack",
+    "item": {
+      "id": "attack",
+      "name": "Attack",
+      "target": "enemy",
+      "element": null,
+      "description": "A basic physical attack.",
+      "spCost": 0,
+      "mpCost": 0,
+      "speed": 0,
+      "effects": [
+        {
+          "type": "hp_damage",
+          "formula": "a.atk"
+        }
+      ]
+    },
+    "msg": "Skeleton uses Attack!",
+    "battlerName": "Skeleton"
+  },
+  {
+    "type": "damage",
+    "value": 5,
+    "msg": "  Ooze takes 5 damage.",
+    "targetName": "Ooze"
+  },
+  {
+    "type": "battler_act",
+    "name": "Ooze",
+    "hp": 8
+  },
+  {
+    "type": "use_skill",
+    "skillName": "(G)Wind Blade",
+    "item": {
+      "id": "windBlade",
+      "name": "Wind Blade",
+      "target": "enemy-any",
+      "element": "Green",
+      "description": "Strikes a foe with a blade of wind.",
+      "effects": [
+        {
+          "type": "hp_damage",
+          "formula": "6 + 1.2 * a.level"
+        }
+      ]
+    },
+    "msg": "Ooze uses (G)Wind Blade!",
+    "battlerName": "Ooze"
+  },
+  {
+    "type": "damage",
+    "value": 9,
+    "msg": "  Bat takes 9 damage.",
+    "targetName": "Bat"
+  },
+  {
+    "type": "battler_act",
+    "name": "Ooze",
+    "hp": 13
+  },
+  {
+    "type": "use_skill",
+    "skillName": "Attack",
+    "item": {
+      "id": "attack",
+      "name": "Attack",
+      "target": "enemy",
+      "element": null,
+      "description": "A basic physical attack.",
+      "spCost": 0,
+      "mpCost": 0,
+      "speed": 0,
+      "effects": [
+        {
+          "type": "hp_damage",
+          "formula": "a.atk"
+        }
+      ]
+    },
+    "msg": "Ooze uses Attack!",
+    "battlerName": "Ooze"
+  },
+  {
+    "type": "damage",
+    "value": 1,
+    "msg": "  Skeleton takes 1 damage.",
+    "targetName": "Skeleton"
+  },
+  {
+    "turn": 2,
+    "type": "turn_start"
+  },
+  {
+    "type": "battler_act",
+    "name": "Bat",
+    "hp": 1
+  },
+  {
+    "type": "use_skill",
+    "skillName": "(K)Bone Rush",
+    "item": {
+      "id": "boneRush",
+      "name": "Bone Rush",
+      "target": "enemy-any",
+      "element": "Black",
+      "description": "A reckless charge.",
+      "effects": [
+        {
+          "type": "hp_damage",
+          "formula": "7 + 1.2 * a.level"
+        }
+      ]
+    },
+    "msg": "Bat uses (K)Bone Rush!",
+    "battlerName": "Bat"
+  },
+  {
+    "type": "damage",
+    "value": 10,
+    "msg": "  Ooze takes 10 damage.",
+    "targetName": "Ooze"
+  },
+  {
+    "type": "battler_act",
+    "name": "Skeleton",
+    "hp": 25
+  },
+  {
+    "type": "use_skill",
+    "skillName": "(K)Bone Rush",
+    "item": {
+      "id": "boneRush",
+      "name": "Bone Rush",
+      "target": "enemy-any",
+      "element": "Black",
+      "description": "A reckless charge.",
+      "effects": [
+        {
+          "type": "hp_damage",
+          "formula": "7 + 1.2 * a.level"
+        }
+      ]
+    },
+    "msg": "Skeleton uses (K)Bone Rush!",
+    "battlerName": "Skeleton"
+  },
+  {
+    "type": "damage",
+    "value": 8,
+    "msg": "  Ooze takes 8 damage.",
+    "targetName": "Ooze"
+  },
+  {
+    "type": "battler_act",
+    "name": "Ooze",
+    "hp": 3
+  },
+  {
+    "type": "use_skill",
+    "skillName": "(G)Wind Blade",
+    "item": {
+      "id": "windBlade",
+      "name": "Wind Blade",
+      "target": "enemy-any",
+      "element": "Green",
+      "description": "Strikes a foe with a blade of wind.",
+      "effects": [
+        {
+          "type": "hp_damage",
+          "formula": "6 + 1.2 * a.level"
+        }
+      ]
+    },
+    "msg": "Ooze uses (G)Wind Blade!",
+    "battlerName": "Ooze"
+  },
+  {
+    "type": "damage",
+    "value": 8,
+    "msg": "  Skeleton takes 8 damage.",
+    "targetName": "Skeleton"
+  },
+  {
+    "turn": 3,
+    "type": "turn_start"
+  },
+  {
+    "type": "battler_act",
+    "name": "Bat",
+    "hp": 1
+  },
+  {
+    "type": "use_skill",
+    "skillName": "(K)Bone Rush",
+    "item": {
+      "id": "boneRush",
+      "name": "Bone Rush",
+      "target": "enemy-any",
+      "element": "Black",
+      "description": "A reckless charge.",
+      "effects": [
+        {
+          "type": "hp_damage",
+          "formula": "7 + 1.2 * a.level"
+        }
+      ]
+    },
+    "msg": "Bat uses (K)Bone Rush!",
+    "battlerName": "Bat"
+  },
+  {
+    "type": "damage",
+    "value": 3,
+    "msg": "  Ooze takes 3 damage.",
+    "targetName": "Ooze"
+  },
+  {
+    "type": "end",
+    "result": "victory",
+    "msg": "Victory!"
+  },
+  {
+    "type": "battle_end",
+    "victory": true
+  }
+]
