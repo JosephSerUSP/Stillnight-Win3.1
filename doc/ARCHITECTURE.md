@@ -26,7 +26,7 @@ There is **no global singleton** for the Game Party or Map state.
 ### 2.4. Unified Effect System
 All changes to battler state (Damage, Healing, Buffs, XP) are routed through a unified pipeline:
 1.  **Source**: `Game_Action` (Skill/Item).
-2.  **Logic**: `EffectSystem` (Pure Logic).
+2.  **Logic**: `EffectSystem` (Pure Logic, located in `src/engine/rules/effects.js`).
 3.  **Application**: `EffectSystem.apply`.
 
 ---
@@ -72,19 +72,28 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **BattleSystem**: Pure logic for Turn Order, AI decisions, and Round resolution.
 *   **ExplorationSystem**: Logic for grid movement and collisions.
 *   **InterpreterSystem**: Logic for event command execution and state management.
-*   **EffectSystem** (`src/engine/rules/effects.js`): Pure registry of effect handlers.
+*   **ProgressionSystem**: Logic for leveling, experience, and evolution.
+*   **DirectorSystem**: Logic for the node-based dialogue graph system.
+*   **QuestSystem**: Logic for quest management.
 
 ### 4.2. Adapters (`src/adapters/`)
 *   **BattleAdapter**: Connects `Scene_Battle` (UI) to `BattleSystem`.
 *   **ExplorationAdapter**: Connects `Scene_Map` to `ExplorationSystem`.
 *   **InterpreterAdapter**: Connects `Scene_Map` events to `InterpreterSystem` and handles UI side-effects (Show Text, Quest Offers).
+*   **EncounterAdapter**: Generates enemies for battles.
+*   **AudioAdapter**: Wraps `SoundManager` for engine use.
+*   **InputAdapter**: Wraps `InputController` for engine use.
+*   **SettingsAdapter**: Provides access to configuration settings.
+*   **EffectAdapter**: Provides hooks for effect visualization.
 
 ### 4.3. Infrastructure Managers (`src/managers/`)
 *   **SceneManager**: Stack-based State Machine.
 *   **WindowManager**: Visual Stack management.
 *   **DataManager**: Static asset loader.
-*   **TraitManager** (*Legacy*): Handles parameter calculations. Scheduled for migration to `src/engine/rules/`.
-*   **EncounterManager** (*Legacy*): Generates enemies. Scheduled for migration.
+*   **EncounterManager** (*Legacy*): Used by `DungeonGenerator`. Scheduled for migration to `EncounterSystem`.
+
+*Note: `TraitManager` has been fully migrated to `TraitRules` (`src/engine/rules/traits.js`).*
+*Note: `EffectManager` has been fully migrated to `EffectSystem` (`src/engine/rules/effects.js`).*
 
 ---
 
@@ -97,7 +106,7 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 
 ### 5.2. Game_Battler (`src/objects/battler.js`)
 *   **Composition**: Combines `actorData` (Static Template) with instance state (`hp`, `level`, `equipment`).
-*   **Stats**: Calculates parameters dynamically using `TraitManager` (*Legacy*).
+*   **Stats**: Calculates parameters dynamically using `TraitRules` (`src/engine/rules/traits.js`).
 
 ### 5.3. Game_Map (`src/objects/map.js`)
 *   **Grid**: 2D array of tiles.
@@ -192,13 +201,12 @@ When modifying this codebase, strictly adhere to these rules:
 2.  **Respect State Ownership**: Do not look for `window.$gameParty`. Access `this.party` within the context of the current Scene or Adapter.
 3.  **Use the Action Pipeline**: Do not modify HP directly in battle logic. Create a `Game_Action` and execute it to ensure logs, animations, and side-effects (like reactions) occur.
 4.  **Async/Await Over Update**: If adding a sequence (like a tutorial), write an `async` function and `await` the steps. Do not try to implement a state-machine in an `update()` loop.
-5.  **Data-Driven**: Hardcode as little as possible. Define new items/skills in `data/` JSON files, and new behavior in `EffectSystem` or `TraitManager`.
+5.  **Data-Driven**: Hardcode as little as possible. Define new items/skills in `data/` JSON files, and new behavior in `EffectSystem`.
 
 ---
 
 ## 10. Transitional Architecture Notes
 *While the current implementation is functional, the following areas are in transition toward the ideal architecture:*
 
-*   **Trait Logic**: `TraitManager` handles parameter calculations but is slated for migration to `TraitRules`.
-*   **Encounter Logic**: `EncounterManager` is active but will eventually move to `EncounterSystem`.
 *   **Logic Separation**: The migration of Battle, Exploration, and Interpreter logic to `src/engine/` is complete. The focus is now on cleaning up remaining coupling in `Game_Battler` and `DungeonGenerator`.
+*   **Encounters**: `EncounterManager` is active but will eventually move to `EncounterSystem`.
