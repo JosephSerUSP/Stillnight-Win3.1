@@ -5,39 +5,42 @@
   },
   {
     "type": "battler_act",
-    "name": "Skeleton",
-    "hp": 13
+    "name": "Bat",
+    "hp": 10
+  },
+  {
+    "type": "use_skill",
+    "skillName": "Attack",
+    "msg": "Bat uses Attack!",
+    "battlerName": "Bat"
   },
   {
     "type": "damage",
-    "value": 4,
-    "isCritical": false,
-    "msg": "Skeleton attacks Ooze for 4.",
-    "hpBefore": 18,
-    "hpAfter": 14,
+    "value": 3,
+    "msg": "  Ooze takes 3 damage.",
     "targetName": "Ooze"
   },
   {
     "type": "battler_act",
-    "name": "Wisp",
-    "hp": 22
+    "name": "Skeleton",
+    "hp": 26
   },
   {
     "type": "use_skill",
-    "skillName": "(W)Soothing Mote",
-    "msg": "Wisp uses (W)Soothing Mote!",
-    "battlerName": "Wisp"
+    "skillName": "(K)Bone Rush",
+    "msg": "Skeleton uses (K)Bone Rush!",
+    "battlerName": "Skeleton"
   },
   {
-    "type": "heal",
-    "value": 0,
-    "msg": "  Skeleton heals 0 HP.",
-    "targetName": "Skeleton"
+    "type": "damage",
+    "value": 15,
+    "msg": "  Ooze takes 15 damage.",
+    "targetName": "Ooze"
   },
   {
     "type": "battler_act",
     "name": "Ooze",
-    "hp": 14
+    "hp": 15
   },
   {
     "type": "use_skill",
@@ -48,21 +51,24 @@
   {
     "type": "damage",
     "value": 8,
-    "msg": "  Skeleton takes 8 damage.",
-    "targetName": "Skeleton"
+    "msg": "  Alex takes 8 damage.",
+    "targetName": "Alex"
   },
   {
     "type": "battler_act",
     "name": "Ooze",
-    "hp": 18
+    "hp": 3
+  },
+  {
+    "type": "use_skill",
+    "skillName": "Attack",
+    "msg": "Ooze uses Attack!",
+    "battlerName": "Ooze"
   },
   {
     "type": "damage",
-    "value": 2,
-    "isCritical": false,
-    "msg": "Ooze attacks Alex for 2.",
-    "hpBefore": 18,
-    "hpAfter": 16,
+    "value": 1,
+    "msg": "  Alex takes 1 damage.",
     "targetName": "Alex"
   },
   {
@@ -71,8 +77,25 @@
   },
   {
     "type": "battler_act",
+    "name": "Bat",
+    "hp": 10
+  },
+  {
+    "type": "use_skill",
+    "skillName": "Attack",
+    "msg": "Bat uses Attack!",
+    "battlerName": "Bat"
+  },
+  {
+    "type": "damage",
+    "value": 3,
+    "msg": "  Ooze takes 3 damage.",
+    "targetName": "Ooze"
+  },
+  {
+    "type": "battler_act",
     "name": "Skeleton",
-    "hp": 5
+    "hp": 26
   },
   {
     "type": "use_skill",
@@ -82,51 +105,26 @@
   },
   {
     "type": "damage",
-    "value": 10,
-    "msg": "  Ooze takes 10 damage.",
-    "targetName": "Ooze"
-  },
-  {
-    "type": "battler_act",
-    "name": "Wisp",
-    "hp": 22
-  },
-  {
-    "type": "damage",
-    "value": 4,
-    "isCritical": false,
-    "msg": "Wisp attacks Ooze for 4.",
-    "hpBefore": 18,
-    "hpAfter": 14,
+    "value": 3,
+    "msg": "  Ooze takes 3 damage.",
     "targetName": "Ooze"
   },
   {
     "type": "battler_act",
     "name": "Ooze",
-    "hp": 4
+    "hp": 12
+  },
+  {
+    "type": "use_skill",
+    "skillName": "Attack",
+    "msg": "Ooze uses Attack!",
+    "battlerName": "Ooze"
   },
   {
     "type": "damage",
     "value": 1,
-    "isCritical": false,
-    "msg": "Ooze attacks Alex for 1.",
-    "hpBefore": 16,
-    "hpAfter": 15,
-    "targetName": "Alex"
-  },
-  {
-    "type": "battler_act",
-    "name": "Ooze",
-    "hp": 14
-  },
-  {
-    "type": "damage",
-    "value": 1,
-    "isCritical": false,
-    "msg": "Ooze attacks Wisp for 1.",
-    "hpBefore": 22,
-    "hpAfter": 21,
-    "targetName": "Wisp"
+    "msg": "  Skeleton takes 1 damage.",
+    "targetName": "Skeleton"
   },
   {
     "turn": 3,
@@ -134,14 +132,14 @@
   },
   {
     "type": "battler_act",
-    "name": "Skeleton",
-    "hp": 5
+    "name": "Bat",
+    "hp": 10
   },
   {
     "type": "use_skill",
     "skillName": "(K)Bone Rush",
-    "msg": "Skeleton uses (K)Bone Rush!",
-    "battlerName": "Skeleton"
+    "msg": "Bat uses (K)Bone Rush!",
+    "battlerName": "Bat"
   },
   {
     "type": "damage",
@@ -151,62 +149,28 @@
   },
   {
     "type": "battler_act",
-    "name": "Wisp",
-    "hp": 21
+    "name": "Skeleton",
+    "hp": 25
   },
   {
     "type": "use_skill",
-    "skillName": "(W)Soothing Mote",
-    "msg": "Wisp uses (W)Soothing Mote!",
-    "battlerName": "Wisp"
-  },
-  {
-    "type": "heal",
-    "value": 8,
-    "msg": "  Skeleton heals 8 HP.",
-    "targetName": "Skeleton"
-  },
-  {
-    "type": "battler_act",
-    "name": "Ooze",
-    "hp": 4
-  },
-  {
-    "type": "use_skill",
-    "skillName": "(G)Wind Blade",
-    "msg": "Ooze uses (G)Wind Blade!",
-    "battlerName": "Ooze"
+    "skillName": "(K)Bone Rush",
+    "msg": "Skeleton uses (K)Bone Rush!",
+    "battlerName": "Skeleton"
   },
   {
     "type": "damage",
-    "value": 9,
-    "msg": "  Alex takes 9 damage.",
-    "targetName": "Alex"
-  },
-  {
-    "type": "battler_act",
-    "name": "Ooze",
-    "hp": 4
-  },
-  {
-    "type": "use_skill",
-    "skillName": "(G)Wind Blade",
-    "msg": "Ooze uses (G)Wind Blade!",
-    "battlerName": "Ooze"
-  },
-  {
-    "type": "damage",
-    "value": 6,
-    "msg": "  Alex takes 6 damage.",
-    "targetName": "Alex"
+    "value": 2,
+    "msg": "  Ooze takes 2 damage.",
+    "targetName": "Ooze"
   },
   {
     "type": "end",
-    "result": "defeat",
-    "msg": "The Commander has fallen!"
+    "result": "victory",
+    "msg": "Victory!"
   },
   {
     "type": "battle_end",
-    "victory": false
+    "victory": true
   }
 ]

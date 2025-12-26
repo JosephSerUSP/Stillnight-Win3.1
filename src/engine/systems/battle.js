@@ -94,9 +94,8 @@ export class BattleSystem {
       if (!entry || !entry.action) return null;
 
       const action = entry.action;
-      let actionName = "Attack";
+      let actionName = "Attack"; // Default fallback logic
 
-      // Handle both pure action structure and legacy Game_Action wrapper
       if (action.skillId) {
           const skill = Registry.getSkill(action.skillId);
           actionName = skill ? skill.name : "Skill";
@@ -132,32 +131,37 @@ export class BattleSystem {
   getAIAction(state, battlerContext) {
       const { battler, isEnemy } = battlerContext;
 
-      // AI Logic: 60% Skill, 40% Attack
+      // AI Logic: 60% Other Skills, 40% Attack
       const skills = battler.skills || [];
-      const skillId = (skills.length > 0 && random() < 0.6)
-          ? skills[randInt(0, skills.length - 1)]
-          : null;
+
+      const otherSkills = skills.filter(s => s !== 'attack');
+      let skillId = 'attack';
+
+      if (otherSkills.length > 0 && random() < 0.6) {
+          skillId = otherSkills[randInt(0, otherSkills.length - 1)];
+      }
 
       let action = {
           subject: battler,
           speed: battler.asp || 0
       };
 
+      const skill = Registry.getSkill(skillId);
       let scope = 'enemy';
 
-      if (skillId) {
-          const skill = Registry.getSkill(skillId);
-          if (skill) {
-               action.skillId = skillId;
-               action.isAttack = false;
-               action.speed += (skill.speed || 0);
-               action.item = skill; // Attach data for convenience
-               scope = skill.target || 'enemy';
-          } else {
-               action.isAttack = true;
-          }
+      if (skill) {
+           action.skillId = skillId;
+           action.speed += (skill.speed || 0);
+           action.item = skill; // Attach data for convenience
+           scope = skill.target || 'enemy';
       } else {
-          action.isAttack = true;
+           // Fallback
+           action.skillId = 'attack';
+           const atkSkill = Registry.getSkill('attack');
+           if (atkSkill) {
+               action.item = atkSkill;
+               scope = atkSkill.target || 'enemy';
+           }
       }
 
       const validTargets = this._getValidTargets(state, battler, scope);
@@ -210,8 +214,6 @@ export class BattleSystem {
       if (!scope.includes('dead')) {
           targets = targets.filter(b => b.hp > 0);
       } else {
-          // If scope targets dead (revive), filter for hp <= 0
-          // Not implemented fully yet but placeholder logic
           targets = targets.filter(b => b.hp <= 0);
       }
 
@@ -219,7 +221,6 @@ export class BattleSystem {
   }
 
   _getPartyActive(state) {
-      // activeMembers now includes Summoner
       if (state.participants.party.activeMembers) {
           return state.participants.party.activeMembers.filter(m => m.hp > 0);
       }
@@ -244,7 +245,6 @@ export class BattleSystem {
       if (!target || target.hp <= 0) {
            let scope = 'enemy';
            if (action.item) scope = action.item.target || 'enemy';
-           else if (action.isAttack) scope = 'enemy';
 
            const targets = this._getValidTargets(state, subject, scope);
 
@@ -256,9 +256,7 @@ export class BattleSystem {
            }
       }
 
-      if (action.isAttack) {
-           this._executeAttack(state, action, events);
-      } else if (action.skillId) {
+      if (action.skillId) {
            this._executeSkill(state, action, events);
       } else if (action.itemId) {
            this._executeItem(state, action, events);
@@ -268,54 +266,6 @@ export class BattleSystem {
       return events;
   }
 
-  _executeAttack(state, action, events) {
-      const battler = action.subject;
-      const target = action.target;
-
-      // Base Damage
-      let base = (battler.atk || 1) + randInt(-1, 1);
-      if (action._rowBonus) base += action._rowBonus;
-      if (base < 1) base = 1;
-
-      // Hit Check (EVA)
-      const eva = target.getPassiveValue ? target.getPassiveValue("EVA") : 0;
-      if (eva > 0 && random() < eva) {
-          events.push({ type: 'miss', battler, target, msg: `${battler.name} misses ${target.name}!` });
-          return;
-      }
-
-      // Crit Check
-      let isCritical = false;
-      const cri = battler.getPassiveValue ? battler.getPassiveValue("CRI") : 0;
-      if (cri > 0 && random() < cri) {
-          isCritical = true;
-      }
-
-      // Element Multiplier
-      const mult = this._elementMultiplier(battler.elements, target.elements);
-      let dmg = Math.round(base * mult);
-
-      if (isCritical) dmg = Math.floor(dmg * 2);
-      if (dmg < 1) dmg = 1;
-
-      // Apply
-      const result = EffectSystem.apply('hp_damage', dmg, battler, target, {
-          progressionSystem: ProgressionSystem
-      });
-
-      const msg = isCritical
-        ? `CRITICAL! ${battler.name} deals ${dmg} damage to ${target.name}!`
-        : `${battler.name} attacks ${target.name} for ${dmg}.`;
-
-      events.push({
-          ...result,
-          isCritical,
-          msg,
-          hpBefore: target.hp + dmg, // Approximation if not returned
-          hpAfter: target.hp
-      });
-  }
-
   _executeSkill(state, action, events) {
       const battler = action.subject;
       const target = action.target;
@@ -323,7 +273,7 @@ export class BattleSystem {
 
       if (!skill) return;
 
-      const skillName = `${elementToAscii(skill.element)}${skill.name}`;
+      const skillName = skill.element ? `${elementToAscii(skill.element)}${skill.name}` : skill.name;
       events.push({ type: 'use_skill', battler, skillName, msg: `${battler.name} uses ${skillName}!` });
 
       let boost = 1;
