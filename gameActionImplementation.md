@@ -6,13 +6,13 @@ This document outlines the implementation of the `Game_Action` class, which serv
 ## Design Choices
 
 ### 1. Encapsulation of Execution Logic
-The execution logic for battle actions has been moved into the `Game_Action` class and the `EffectSystem`.
-*   **Reasoning**: This adheres to object-oriented principles, grouping behavior (execution) with data (the action definition), while delegating pure state changes to the `EffectSystem`.
-*   **Benefit**: `BattleSystem` now focuses on flow control (turn order, win/loss), while `Game_Action` handles the "how" of an action.
+The execution logic for battle actions resides in the `Game_Action` class (for Exploration) and `BattleSystem` (for Combat), both delegating state changes to `EffectSystem`.
+*   **Context**: `Game_Action.apply` handles item usage during exploration. `BattleSystem` manually constructs events and calls `EffectSystem` during combat.
+*   **Drift Note**: There is logic duplication between `Game_Action.apply` and `BattleSystem._executeSkill` / `_executeItem`. `BattleSystem` currently bypasses `Game_Action.apply`.
 
 ### 2. Properties
 `Game_Action` implements the properties defined in `gameDesign.md`:
-*   `speed`: Calculated getter, combining the subject's speed (`asp`) and the item/skill's speed modifier.
+*   `speed`: Calculated getter, combining the subject's `asp` (Action Speed) and the item/skill's speed modifier.
 *   `ele` (Element): Handled internally during execution. For skills, the element is retrieved from the skill data. For attacks, it uses the battler's innate elements.
 
 ### 3. Unified Element Multiplier Logic
