@@ -22,7 +22,7 @@ export function generateTraitDescription(trait) {
  * @param {import("../managers/index.js").DataManager} [dataManager] - Optional data manager for lookups.
  * @returns {string} The description.
  */
-export function generateEffectDescription(key, value, dataManager) {
+export function generateEffectDescription(key, value, _dataManager) {
     switch (key) {
         case 'hp': return `Restores ${value} HP`;
         case 'maxHp': return `Max HP +${value}`;

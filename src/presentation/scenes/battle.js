@@ -1,5 +1,5 @@
 import { Scene_Base } from "./base.js";
-import { randInt, pickWeighted, probabilisticRound, random } from "../../core/utils.js";
+import { probabilisticRound, random } from "../../core/utils.js";
 import { AudioAdapter } from "../../adapters/audio_adapter.js";
 import { SettingsAdapter } from "../../adapters/settings_adapter.js";
 import { Window_Battle, Window_Victory, createInteractiveLabel } from "../windows/index.js";
@@ -194,7 +194,7 @@ export class Scene_Battle extends Scene_Base {
       this.inventoryWindow.setup(
           items,
           (item, action) => this.onInventoryAction(item, action),
-          (item) => {}
+          (_item) => {}
       );
   }
 

@@ -2,7 +2,7 @@ import { BattleState } from "../session/battle_state.js";
 import { EffectSystem } from "../rules/effects.js";
 import { ProgressionSystem } from "./progression.js";
 import { Registry } from "../data/registry.js";
-import { randInt, random, elementToAscii } from "../../core/utils.js";
+import { randInt, elementToAscii } from "../../core/utils.js";
 
 /**
  * Pure-ish system for Battle logic.
@@ -129,7 +129,7 @@ export class BattleSystem {
    * @param {Object} battlerContext
    */
   getAIAction(state, battlerContext) {
-      const { battler, isEnemy } = battlerContext;
+      const { battler } = battlerContext;
 
       const skills = battler.skills || [];
       if (skills.length === 0) {
