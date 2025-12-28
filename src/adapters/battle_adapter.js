@@ -1,5 +1,10 @@
 // src/adapters/battle_adapter.js
-import { BattleSystem } from "../engine/systems/battle.js";
+// BattleSystem is used in constructor params via dependency injection from Scene_Battle?
+// Actually the code imports it but only uses it in JSDoc or implicit typing?
+// No, it uses 'this.system' which is passed in.
+// Wait, the file imports BattleSystem but doesn't use it directly in the code body.
+// It assumes `battleSystem` passed to constructor is an instance of it.
+// Removing the import to satisfy lint.
 
 /**
  * Wraps BattleSystem to look like BattleManager for legacy compatibility.

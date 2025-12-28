@@ -24,7 +24,7 @@ export const TRAIT_DEFINITIONS = {
         label: () => "HP Regen",
         format: (value) => `${value > 0 ? '+' : ''}${Math.round(value * 100)}%`,
         trigger: 'turnStart',
-        execute: (value, battler, context) => {
+        execute: (value, battler, _context) => {
             const amount = Math.floor(battler.maxHp * value);
             if (amount <= 0) return null;
 
@@ -135,11 +135,11 @@ export const TRAIT_DEFINITIONS = {
     },
     'STATE_RESIST': {
         label: (dataId) => `Immunity`,
-        format: (value, dataId) => `${dataId}`
+        format: (_value, dataId) => `${dataId}`
     },
     'ATTACK_ELEMENT': {
         label: () => "Attack Element",
-        format: (value, dataId) => `${dataId}`
+        format: (_value, dataId) => `${dataId}`
     },
     'ATTACK_STATE': {
         label: (dataId) => `Attack Effect`,
@@ -245,7 +245,7 @@ export const TRAIT_DEFINITIONS = {
     },
     'ELEMENT_CHANGE': {
         label: () => "Element",
-        format: (value, dataId) => `${dataId}`
+        format: (_value, dataId) => `${dataId}`
     },
     'PARASITE': {
         label: () => "Parasite",
