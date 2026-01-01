@@ -250,9 +250,12 @@ export class Window_Base {
             if (SettingsAdapter.windowAnimations) {
                 let targetHeight;
                 if (this.height === 'auto') {
-                    const savedHeight = this.element.style.height;
+                    // We assume 'auto' calculates based on content or use a measured value
+                    // The original code used element.style.height = 'auto' and measured scrollHeight
+                    // We will set it to auto to measure
+                    // Note: savedHeight variable removed as it was unused warning
                     this.element.style.height = 'auto';
-                    targetHeight = this.element.scrollHeight; // Use scrollHeight for reliability
+                    targetHeight = this.element.scrollHeight;
                     if (targetHeight === 0) targetHeight = this.element.getBoundingClientRect().height;
                 } else {
                     targetHeight = this.height;

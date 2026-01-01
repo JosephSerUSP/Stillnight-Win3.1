@@ -47,8 +47,8 @@ export class MidiParser {
   parse() {
     this.pos = 0;
     if (this.readString(4) !== "MThd") throw new Error("Invalid MIDI header");
-    const headerLen = this.readInt32();
-    const format = this.readInt16();
+    this.readInt32(); // headerLen (unused)
+    this.readInt16(); // format (unused)
     const nTracks = this.readInt16();
     const division = this.readInt16();
 
@@ -289,6 +289,7 @@ export class MidiPlayer {
         // Simple loop: restart when last event is processed
         // Add a small buffer based on the last event time
         const duration = this.events[this.events.length - 1].time;
+        // eslint-disable-next-line no-unused-vars
         const delay = Math.max(0, (this.startTime + duration) - currentTime);
 
         // Wait for the track to naturally finish before looping

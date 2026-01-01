@@ -1,7 +1,5 @@
 
 import { Game_Battler } from '../objects/battler.js';
-import { Game_Party } from '../objects/party.js';
-import { createBattlerNameLabel } from '../presentation/windows/index.js';
 
 // Mock Data
 const mockActors = [
@@ -12,7 +10,7 @@ const mockActors = [
 // Mock Document/Element for window functions
 if (typeof document === 'undefined') {
     global.document = {
-        createElement: (tag) => {
+        createElement: () => {
             return {
                 style: {},
                 appendChild: () => {},

@@ -1,5 +1,5 @@
 import { Game_Battler } from "../objects/battler.js";
-import { randInt, pickWeighted, random } from "../core/utils.js";
+import { randInt, pickWeighted } from "../core/utils.js";
 import { Registry } from "../engine/data/registry.js";
 
 /**
@@ -95,7 +95,7 @@ export class EncounterAdapter {
     /**
      * Creates a specific Boss instance (e.g. Eternal Warden).
      */
-    static createBoss(depth, dataManager) {
+    static createBoss(depth) {
         // Hardcoded boss for now as per Scene_Battle legacy
         const bossHp = 40 + (depth - 3) * 5;
         return new Game_Battler({

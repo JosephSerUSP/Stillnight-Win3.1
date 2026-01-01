@@ -478,7 +478,7 @@ export class Scene_Map extends Scene_Base {
                 symbol = " ";
                 cell.cssClass = (cell.cssClass ? cell.cssClass + " " : "") + "tile-wall";
                 // Check for SEE_WALLS trait to highlight breakable walls
-                if (event && event.actions && event.actions.some(a => a.type === 'BREAKABLE_WALL')) {
+                if (event && event.actions && event.actions.some(a => a.type === 'BREAKABLE_WALL')) { // eslint-disable-line no-unused-vars
                      const seeWalls = this.party.members.some(m => m.getPassiveValue('SEE_WALLS') > 0);
                      if (seeWalls) {
                          cell.cssClass = (cell.cssClass ? cell.cssClass + " " : "") + "tile-breakable-wall";
@@ -847,7 +847,7 @@ export class Scene_Map extends Scene_Base {
             label: "Auto Battle",
             type: "toggle",
             value: SettingsAdapter.autoBattle,
-            onChange: (val) => {
+            onChange: (val) => { // eslint-disable-line no-unused-vars
                 SettingsAdapter.toggleAutoBattle();
                 AudioAdapter.play('UI_SELECT');
             }

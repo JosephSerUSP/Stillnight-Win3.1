@@ -42,7 +42,7 @@ export class Game_Event {
    * @param {import("./party.js").Game_Party} party - The party instance.
    * @returns {Object|null} Result of update, e.g., { type: 'battle', event: this }.
    */
-  update(map, party) {
+  update(map, party) { // eslint-disable-line no-unused-vars
       if (this.behavior === 'chase' && !this.hidden) {
           const dx = map.playerX - this.x;
           const dy = map.playerY - this.y;

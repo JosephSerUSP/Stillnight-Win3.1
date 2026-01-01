@@ -24,7 +24,7 @@ export const TRAIT_DEFINITIONS = {
         label: () => "HP Regen",
         format: (value) => `${value > 0 ? '+' : ''}${Math.round(value * 100)}%`,
         trigger: 'turnStart',
-        execute: (value, battler, context) => {
+        execute: (value, battler) => {
             const amount = Math.floor(battler.maxHp * value);
             if (amount <= 0) return null;
 
@@ -167,7 +167,7 @@ export const TRAIT_DEFINITIONS = {
     },
     'ON_PERMADEATH': {
         label: () => "On Death",
-        format: (value) => "Revives once"
+        format: () => "Revives once"
     },
     'SYMBIOSIS': {
         label: () => "Symbiosis",

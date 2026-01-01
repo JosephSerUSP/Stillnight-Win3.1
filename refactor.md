@@ -15,7 +15,7 @@ This document outlines the architectural refactor to create a single source of t
 
 ## Assessment
 
-The roadmap is largely complete, with most systems migrated to the new architecture. However, `TraitManager` and `EncounterManager` remain active and are used by `Game_Battler` and `DungeonGenerator` respectively. These should be migrated to `TraitRules` and `EncounterSystem` (or similar) in a future pass to complete the "Remove remaining legacy knot" phase.
+The roadmap is largely complete. `TraitManager` and `EncounterManager` have been migrated to pure engine systems/rules.
 
 ## Target Architecture
 
@@ -75,11 +75,11 @@ The roadmap is largely complete, with most systems migrated to the new architect
 *   `Scene_Map` accepts and resumes session.
 *   `Registry` populated in boot.
 
-## Phase 7 — Remove the remaining legacy knot (Partial)
+## Phase 7 — Remove the remaining legacy knot (Complete)
 **Goal:** Final cleanups.
 *   Retire `src/objects/objects.js` barrel (Complete).
 *   Replace `window.*` debug globals with `DebugTools` (Complete - via `exposeGlobals`).
 *   Migrate `EffectManager` to `EffectSystem` (Complete — EffectManager removed; Game_Action and systems use EffectSystem with injected context).
 *   Migrate remaining infrastructure managers (`Sound`, `Input`, `Config`) to pure Ports/Adapters structure (Complete — presentation routes through adapters for audio, settings, and input).
 *   Migrate `TraitManager` to `TraitRules` (Complete — TraitManager removed; TraitRules created in src/engine/rules/).
-*   **Remaining**: Migrate `EncounterManager` to `EncounterSystem` (if applicable) or Refactor into pure functions.
+*   Migrate `EncounterManager` to `EncounterSystem` (Complete).
