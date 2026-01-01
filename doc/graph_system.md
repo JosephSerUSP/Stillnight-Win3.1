@@ -50,7 +50,7 @@ Graph definitions are stored as JSON files in `data/graphs/`. The `data/graphs/i
     *   `falseNode`: Target if condition is not met.
     *   `branches`: (Optional) Array of `{ condition, target }` for multi-way branching.
 *   **ACTION**: Executes a game effect.
-    *   `action`: The action type (`OPEN_SHOP`, `TELEPORT`, `OFFER_QUEST`, `COMPLETE_QUEST`).
+    *   `action`: The action type (`OPEN_SHOP`, `TELEPORT`, `OFFER_QUEST`, `COMPLETE_QUEST`, `close`).
     *   `next`: Target node after action completes (if applicable).
 
 ### 2. Engine Layer (`src/engine/systems/director.js`)
