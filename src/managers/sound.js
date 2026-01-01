@@ -402,7 +402,7 @@ export class SoundManager {
           oscillator.start();
           oscillator.stop(this._audioCtx.currentTime + duration / 1000);
           oscillator.onended = onEnd;
-      } catch (e) {
+      } catch (e) { // eslint-disable-line no-unused-vars
           onEnd();
       }
   }
