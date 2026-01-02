@@ -30,7 +30,7 @@ export class InterpreterSystem {
             'ASCEND': this._handleAscend,
             'BREAKABLE_WALL': this._handleBreakableWall,
             'WAIT': this._handleWait,
-            'RANDOM_EVENT': this._handleRandomEvent,
+            'RANDOM_EVENT': this._handleRandomEvent, // See also: random.js
             'WEIGHTED_BRANCH': this._handleWeightedBranch,
             'CHOICE': this._handleChoice,
             'IF': this._handleIf,
