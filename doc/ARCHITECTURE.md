@@ -83,8 +83,8 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **SceneManager**: Stack-based State Machine.
 *   **WindowManager**: Visual Stack management.
 *   **DataManager**: Static asset loader.
-*   **TraitManager** (*Legacy*): Handles parameter calculations. Scheduled for migration to `src/engine/rules/`.
-*   **EncounterManager** (*Legacy*): Generates enemies. Scheduled for migration.
+*   **TraitManager** (*Legacy*): Removed. Parameter calculations now handled by `src/engine/rules/traits.js`.
+*   **EncounterManager** (*Legacy*): Generates enemies. Active but scheduled for migration to `EncounterSystem`.
 
 ---
 
@@ -97,12 +97,12 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 
 ### 5.2. Game_Battler (`src/objects/battler.js`)
 *   **Composition**: Combines `actorData` (Static Template) with instance state (`hp`, `level`, `equipment`).
-*   **Stats**: Calculates parameters dynamically using `TraitManager` (*Legacy*).
+*   **Stats**: Calculates parameters dynamically using `TraitRules` (`src/engine/rules/traits.js`).
 
 ### 5.3. Game_Map (`src/objects/map.js`)
 *   **Grid**: 2D array of tiles.
 *   **State**: Tracks `visited` (Fog of War) and `events`.
-*   **Role**: Mostly a data container now; logic has moved to `ExplorationSystem`.
+*   **Role**: Pure data container; logic has moved to `ExplorationSystem`.
 
 ---
 
@@ -114,7 +114,9 @@ The ancestor of all UI components.
     ```html
     <div class="window-frame">
       <div class="window-header">...</div>
-      <div class="window-content">...</div>
+      <div class="window-content">
+          <div class="window-panel">...</div>
+      </div>
       <div class="window-footer">...</div>
     </div>
     ```
@@ -138,7 +140,7 @@ UI.build(parent, {
 ### 7.1. Round-Based Turn System
 *   **System**: `BattleSystem` (`src/engine/systems/battle.js`).
 *   **Logic**:
-    1.  `planRound()`: Sorts participants by Speed (`agi`).
+    1.  `planRound()`: Sorts participants by Total Speed (Battler `asp` + Action `speed`).
     2.  `resolveRound()`: Iterates through the sorted queue.
 *   **Flow**:
     *   Pre-round: Command Input.
@@ -148,9 +150,11 @@ UI.build(parent, {
 An action is executed in stages:
 1.  **Instantiation**: `new Game_Action(subject)`.
 2.  **Configuration**: `.setItem()` or `.setSkill()`.
-3.  **Application**: `.apply(target, dataManager)` -> Returns `Event[]`.
-4.  **Effect Resolution**: Delegates to `EffectSystem.apply()`.
-5.  **Animation**: `Scene_Battle` iterates `Event[]` and plays animations/logs.
+3.  **Application**:
+    *   **Exploration**: `Game_Action.apply(target)` -> Delegates to `EffectSystem`.
+    *   **Battle**: `BattleSystem` builds events and calls `EffectSystem` directly (Note: Duplicate logic exists between `Game_Action` and `BattleSystem`).
+4.  **Effect Resolution**: `EffectSystem.apply()` executes pure logic.
+5.  **Animation**: Scene iterates `Event[]` and plays animations/logs.
 
 ```mermaid
 flowchart LR
@@ -199,6 +203,5 @@ When modifying this codebase, strictly adhere to these rules:
 ## 10. Transitional Architecture Notes
 *While the current implementation is functional, the following areas are in transition toward the ideal architecture:*
 
-*   **Trait Logic**: `TraitManager` handles parameter calculations but is slated for migration to `TraitRules`.
 *   **Encounter Logic**: `EncounterManager` is active but will eventually move to `EncounterSystem`.
-*   **Logic Separation**: The migration of Battle, Exploration, and Interpreter logic to `src/engine/` is complete. The focus is now on cleaning up remaining coupling in `Game_Battler` and `DungeonGenerator`.
+*   **Logic Separation**: The migration of Battle, Exploration, and Interpreter logic to `src/engine/` is complete. `TraitManager` has been replaced by `TraitRules`.
