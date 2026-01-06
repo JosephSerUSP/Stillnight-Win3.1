@@ -101,6 +101,12 @@ export class DataManager {
     this.themes = null;
 
     /**
+     * The material data loaded from materials.json.
+     * @type {Array|null}
+     */
+    this.materials = null;
+
+    /**
      * The graph data loaded from data/graphs/.
      * @type {Object|null}
      */
@@ -122,6 +128,7 @@ export class DataManager {
       shops: "data/shops.json",
       terms: "data/terms.json",
       themes: "data/themes.json",
+      materials: "data/materials.json",
       sounds: "data/sounds.json",
     };
 

@@ -438,10 +438,20 @@ export class Scene_Map extends Scene_Base {
              event.symbol = 'E'; // Enforce 'E' for moving enemies
         }
 
+        // Calculate distance for diffuse fog
+        const dist = Math.sqrt((x - this.map.playerX)**2 + (y - this.map.playerY)**2);
+
         if (!visited && !isPlayer && !forceVisible) {
           cell.cssClass = "tile-fog";
           cell.symbol = "?";
         } else {
+          // Apply diffuse fog to visible tiles based on distance
+          if (dist > 7) {
+             cell.cssClass = (cell.cssClass ? cell.cssClass + " " : "") + "tile-fog-2";
+          } else if (dist > 4) {
+             cell.cssClass = (cell.cssClass ? cell.cssClass + " " : "") + "tile-fog-1";
+          }
+
           let symbol = " ";
 
           if (event) {
@@ -473,24 +483,24 @@ export class Scene_Map extends Scene_Base {
           }
 
           if (symbol === " ") {
-            switch (ch) {
-              case "#":
-                symbol = " ";
-                cell.cssClass = (cell.cssClass ? cell.cssClass + " " : "") + "tile-wall";
-                // Check for SEE_WALLS trait to highlight breakable walls
-                if (event && event.actions && event.actions.some(a => a.type === 'BREAKABLE_WALL')) {
+            const material = this.dataManager.materials ? this.dataManager.materials.find(m => m.char === ch) : null;
+            if (material) {
+                symbol = material.symbol || " ";
+                if (material.cssClass) {
+                    cell.cssClass = (cell.cssClass ? cell.cssClass + " " : "") + material.cssClass;
+                }
+
+                // Special handling for breakable walls attached to the "wall" material type
+                // We check if the material is a wall type (e.g. tile-wall) and if the event is breakable
+                if (material.id === 'wall' && event && event.actions && event.actions.some(a => a.type === 'BREAKABLE_WALL')) {
                      const seeWalls = this.party.members.some(m => m.getPassiveValue('SEE_WALLS') > 0);
                      if (seeWalls) {
                          cell.cssClass = (cell.cssClass ? cell.cssClass + " " : "") + "tile-breakable-wall";
                      }
                 }
-                break;
-              case ".":
+            } else {
+                // Fallback for undefined characters
                 symbol = " ";
-                break;
-              default:
-                symbol = " ";
-                break;
             }
           }
 
