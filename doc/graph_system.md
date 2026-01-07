@@ -34,7 +34,7 @@ Graph definitions are stored as JSON files in `data/graphs/`. The `data/graphs/i
 
 **Node Types:**
 *   **TEXT**: Displays dialogue.
-    *   `content`: The text to display.
+    *   `content`: The text to display. Supports `${variable}` interpolation.
     *   `speaker`: (Optional) Name of speaker.
     *   `speakers`: (Optional) Array of `{ id, emotion, active }` for visual novel layout.
     *   `next`: ID of the next node (implicit "Continue").
@@ -45,16 +45,18 @@ Graph definitions are stored as JSON files in `data/graphs/`. The `data/graphs/i
         *   `action`: Special action (e.g., `"close"`).
         *   `setFlag`: (Optional) Sets a story flag to true.
 *   **ROUTER**: Conditional branching.
-    *   `condition`: Condition string (e.g., `flag:met_npc`, `hasItem:potion`).
-    *   `trueNode`: Target if condition is met.
-    *   `falseNode`: Target if condition is not met.
-    *   `branches`: (Optional) Array of `{ condition, target }` for multi-way branching.
+    *   `branches`: Array of `{ condition, target, default }` for multi-way branching.
+    *   `condition`: (Legacy) Condition string (e.g., `flag:met_npc`, `hasItem:potion`).
+    *   `trueNode`: (Legacy) Target if condition is met.
+    *   `falseNode`: (Legacy) Target if condition is not met.
 *   **ACTION**: Executes a game effect.
     *   `action`: The action type (`OPEN_SHOP`, `TELEPORT`, `OFFER_QUEST`, `COMPLETE_QUEST`).
     *   `next`: Target node after action completes (if applicable).
 
 ### 2. Engine Layer (`src/engine/systems/director.js`)
 *   **DirectorSystem**: Manages the `GraphWalker` and handles input (`CONTINUE`, `OPTION_SELECTED`). It notifies the observer (Adapter) of node changes.
+    *   *Text Interpolation*: Automatically processes `${variable}` syntax using `text_interpolator.js`.
+    *   *Node Merging*: Automatically merges a `TEXT` node that flows directly into a `CHOICE` node into a single event, eliminating the need for a "Continue" click before the choice.
 *   **GraphWalker**: Maintains the current node pointer and history.
 *   **TransitionLogic**: Evaluates condition strings against the game session.
 
