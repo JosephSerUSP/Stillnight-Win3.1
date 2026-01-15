@@ -1,14 +1,16 @@
 # Game Action Implementation
 
 ## Overview
-This document outlines the implementation of the `Game_Action` class, which serves as the core "Effect Object" wrapper for battle actions (Skills, Attacks, and Items) in the unified "Effect & Trait" system.
+This document outlines the implementation of the `Game_Action` class. Originally designed as the core "Effect Object" wrapper for all actions, it is currently primarily used for **Exploration Item Usage** (in `Scene_Map`).
+
+> **Note on Drift**: The `BattleSystem` (`src/engine/systems/battle.js`) currently implements its own parallel execution logic (`executeAction`) using plain data objects, largely bypassing `Game_Action`. This is a known area of technical debt (Logic Duplication).
 
 ## Design Choices
 
 ### 1. Encapsulation of Execution Logic
-The execution logic for battle actions has been moved into the `Game_Action` class and the `EffectSystem`.
+The execution logic for actions resides in the `Game_Action` class (for exploration) and the `EffectSystem`.
 *   **Reasoning**: This adheres to object-oriented principles, grouping behavior (execution) with data (the action definition), while delegating pure state changes to the `EffectSystem`.
-*   **Benefit**: `BattleSystem` now focuses on flow control (turn order, win/loss), while `Game_Action` handles the "how" of an action.
+*   **Benefit**: Delegating to `EffectSystem` ensures consistent rules for damage/healing regardless of the pipeline (Combat vs Exploration).
 
 ### 2. Properties
 `Game_Action` implements the properties defined in `gameDesign.md`:
@@ -24,19 +26,18 @@ Target selection logic (`makeTargets`) is part of `Game_Action`.
 *   **Reasoning**: The scope of an action (Self, Enemy, Ally) is intrinsic to the action itself.
 
 ## Usage
-The `BattleSystem` instantiates `Game_Action` objects to represent planned moves.
+
+### Exploration (Scene_Map)
+Used for applying items (potions, scrolls) outside of battle.
 
 ```javascript
-const action = new Game_Action(battler);
-action.setSkill(skillId, dataManager);
-// or
-action.setAttack();
-```
-
-Execution is triggered via:
-```javascript
+const action = new Game_Action(party);
+action.setItem(item, dataManager);
 const events = action.apply(target, dataManager);
 ```
+
+### Combat (BattleSystem)
+*Currently, `BattleSystem` does NOT use `Game_Action.apply()`. Instead, it manually constructs events via `_executeSkill` and `_executeItem`.*
 
 Internally, `apply` delegates specific effects (like `damage`, `heal`, `add_status`) to the `EffectSystem`:
 
