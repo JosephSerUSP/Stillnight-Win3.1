@@ -4,6 +4,7 @@ import { random } from "../core/utils.js";
 /**
  * @class EncounterManager
  * @description Handles encounter logic like initiative and sneak attacks.
+ * @deprecated Most logic has moved to `src/adapters/encounter_adapter.js`. This class is a legacy stub.
  */
 export class EncounterManager {
 
