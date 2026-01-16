@@ -1,46 +1,40 @@
 # Game Action Implementation
 
 ## Overview
-This document outlines the implementation of the `Game_Action` class, which serves as the core "Effect Object" wrapper for battle actions (Skills, Attacks, and Items) in the unified "Effect & Trait" system.
+This document outlines the implementation of the `Game_Action` class and the current status of the action execution pipeline.
 
-## Design Choices
+**Status**: *Partial / Technical Debt*
+The codebase currently implements two parallel pipelines for executing actions:
+1.  **Scene_Map**: Uses `Game_Action` for item usage.
+2.  **Scene_Battle**: Uses internal `BattleSystem` logic (`_executeSkill`, `_executeItem`) for combat actions.
 
-### 1. Encapsulation of Execution Logic
-The execution logic for battle actions has been moved into the `Game_Action` class and the `EffectSystem`.
-*   **Reasoning**: This adheres to object-oriented principles, grouping behavior (execution) with data (the action definition), while delegating pure state changes to the `EffectSystem`.
-*   **Benefit**: `BattleSystem` now focuses on flow control (turn order, win/loss), while `Game_Action` handles the "how" of an action.
+Both pipelines share the unified `EffectSystem` for applying the final state changes (Damage, Healing, Status).
 
-### 2. Properties
-`Game_Action` implements the properties defined in `gameDesign.md`:
-*   `speed`: Calculated getter, combining the subject's speed (`asp`) and the item/skill's speed modifier.
-*   `ele` (Element): Handled internally during execution. For skills, the element is retrieved from the skill data. For attacks, it uses the battler's innate elements.
+## Design Choices & Implementation
 
-### 3. Unified Element Multiplier Logic
-The elemental damage multiplier logic resides in `Game_Action` (for Attacks) or is handled implicitly during `EffectSystem` resolution (for Skills).
-*   **Improvement**: The implementation ensures that if a skill has an element, it checks against the target's element table to apply standard multipliers (1.5x for Weakness, 0.75x for Resistance), in addition to the "Same Element Bonus" for the user.
+### 1. Game_Action (Scene_Map)
+The `Game_Action` class serves as an "Effect Object" wrapper for item usage during exploration.
+*   **Encapsulation**: It groups the action data (Item ID) with the execution logic.
+*   **Flow**:
+    ```javascript
+    const action = new Game_Action(party);
+    action.setItem(item, dataManager);
+    const events = action.apply(target, dataManager);
+    ```
+*   **Under the Hood**: `apply()` delegates to `EffectSystem.apply()`.
 
-### 4. Target Selection
-Target selection logic (`makeTargets`) is part of `Game_Action`.
-*   **Reasoning**: The scope of an action (Self, Enemy, Ally) is intrinsic to the action itself.
+### 2. BattleSystem (Scene_Battle)
+In combat, `BattleSystem` currently handles action resolution directly, bypassing `Game_Action`.
+*   **Reasoning (Legacy)**: The `BattleSystem` was refactored to be a pure logic system (`src/engine/systems/battle.js`) and currently iterates over skill/item effects manually to apply combat-specific logic (e.g., Element Multipliers, Boosts) before calling `EffectSystem`.
+*   **Flow**:
+    1.  `BattleSystem.executeAction(state, actionPlan)`
+    2.  Calculates multipliers (Element advantage, etc.)
+    3.  Iterates `skill.effects` or `item.effects`
+    4.  Calls `EffectSystem.apply(effect.type, ...)`
 
-## Usage
-The `BattleSystem` instantiates `Game_Action` objects to represent planned moves.
+### 3. Unified Effect System
+Regardless of the pipeline, all state mutations occur via `EffectSystem` (`src/engine/rules/effects.js`).
+*   **Benefit**: Ensures that damage calculation formulas, healing logic, and status application are consistent across the game, even if the "wrapper" (Game_Action vs BattleSystem) differs.
 
-```javascript
-const action = new Game_Action(battler);
-action.setSkill(skillId, dataManager);
-// or
-action.setAttack();
-```
-
-Execution is triggered via:
-```javascript
-const events = action.apply(target, dataManager);
-```
-
-Internally, `apply` delegates specific effects (like `damage`, `heal`, `add_status`) to the `EffectSystem`:
-
-```javascript
-// Inside Game_Action._applySkill
-EffectSystem.apply(effectKey, effectValue, battler, target, context);
-```
+## Future Refactor Goal
+The long-term goal is to unify these pipelines. The logic within `BattleSystem` (Element multipliers, targeting) should ideally be encapsulated within a robust `ActionSystem` or an enhanced `Game_Action` that `BattleSystem` utilizes, eliminating the code duplication.

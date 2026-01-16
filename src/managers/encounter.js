@@ -3,7 +3,9 @@ import { random } from "../core/utils.js";
 
 /**
  * @class EncounterManager
+ * @deprecated Legacy/Helper. Encounter generation has moved to EncounterAdapter.
  * @description Handles encounter logic like initiative and sneak attacks.
+ * Future migration should move this initiative logic to BattleSystem or EncounterSystem.
  */
 export class EncounterManager {
 
