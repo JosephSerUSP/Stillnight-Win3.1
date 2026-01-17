@@ -2,6 +2,7 @@ import { RandomWalkGenerator } from "../generators/dungeon_generator.js";
 
 /**
  * @class Game_Map
+ * @deprecated Logic moved to ExplorationSystem. This class is now primarily a legacy data container.
  * @description Represents the game map and handles floor generation via generators.
  */
 export class Game_Map {
@@ -50,6 +51,7 @@ export class Game_Map {
 
   /**
    * Updates all events on the current floor.
+   * @deprecated Use ExplorationSystem.updateEntities instead.
    * @param {import("./party.js").Game_Party} party - The party.
    * @returns {Array} List of results (e.g., collisions).
    */
@@ -67,6 +69,7 @@ export class Game_Map {
 
   /**
    * Removes an event from the specified floor.
+   * @deprecated Use ExplorationSystem.removeEvent instead.
    * @param {number} floorIndex - The index of the floor.
    * @param {number} x - The x-coordinate.
    * @param {number} y - The y-coordinate.
@@ -82,6 +85,7 @@ export class Game_Map {
 
   /**
    * Reveals tiles around the player (fog of war).
+   * @deprecated Use ExplorationSystem.revealAroundPlayer instead.
    */
   revealAroundPlayer() {
     this.revealRadius(1);
@@ -89,6 +93,7 @@ export class Game_Map {
 
   /**
    * Reveals tiles within a specific radius around the player.
+   * @deprecated Use ExplorationSystem.revealAroundPlayer instead.
    * @param {number} radius - The radius to reveal.
    */
   revealRadius(radius) {
@@ -110,6 +115,7 @@ export class Game_Map {
 
   /**
    * Checks if all accessible (non-wall) tiles on the current floor have been visited.
+   * @deprecated Use ExplorationSystem.checkFloorExploration instead.
    * @returns {boolean} True if the floor is fully explored.
    */
   checkFloorExploration() {
@@ -128,6 +134,7 @@ export class Game_Map {
 
   /**
    * Reveals the entire current floor.
+   * @deprecated Use ExplorationSystem.revealCurrentFloor instead.
    * @param {boolean} [updateVisited=true] - Whether to mark all tiles visited immediately.
    */
   revealCurrentFloor(updateVisited = true) {
