@@ -83,8 +83,9 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **SceneManager**: Stack-based State Machine.
 *   **WindowManager**: Visual Stack management.
 *   **DataManager**: Static asset loader.
-*   **TraitManager** (*Legacy*): Handles parameter calculations. Scheduled for migration to `src/engine/rules/`.
-*   **EncounterManager** (*Legacy*): Generates enemies. Scheduled for migration.
+*   **TraitRules**: Handles parameter calculations.
+*   **EncounterAdapter**: Generates enemies.
+*   **EncounterRules**: Handles initiative logic.
 
 ---
 
@@ -199,6 +200,4 @@ When modifying this codebase, strictly adhere to these rules:
 ## 10. Transitional Architecture Notes
 *While the current implementation is functional, the following areas are in transition toward the ideal architecture:*
 
-*   **Trait Logic**: `TraitManager` handles parameter calculations but is slated for migration to `TraitRules`.
-*   **Encounter Logic**: `EncounterManager` is active but will eventually move to `EncounterSystem`.
 *   **Logic Separation**: The migration of Battle, Exploration, and Interpreter logic to `src/engine/` is complete. The focus is now on cleaning up remaining coupling in `Game_Battler` and `DungeonGenerator`.
