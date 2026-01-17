@@ -6,6 +6,8 @@ import { ProgressionSystem } from "../engine/systems/progression.js";
  * @class Game_Action
  * @description Encapsulates the execution of a battle action (Attack, Skill, Item).
  * Delegates state changes to EffectSystem.
+ *
+ * Note: Primarily used for Item Usage in Scene_Map. BattleSystem uses a separate pipeline.
  */
 export class Game_Action {
     /**
@@ -20,6 +22,9 @@ export class Game_Action {
         this._rowBonus = 0; // -1 for Back, +1 for Front (Player only)
     }
 
+    /**
+     * @deprecated BattleSystem handles attacks as skills via executeAction.
+     */
     setAttack() {
         this._isAttack = true;
         this._item = null;
@@ -119,6 +124,9 @@ export class Game_Action {
         return events;
     }
 
+    /**
+     * @deprecated BattleSystem handles attacks as skills via executeAction.
+     */
     _applyAttack(target, dataManager, events) {
         const battler = this.subject;
 
