@@ -1,46 +1,45 @@
 # Game Action Implementation
 
 ## Overview
-This document outlines the implementation of the `Game_Action` class, which serves as the core "Effect Object" wrapper for battle actions (Skills, Attacks, and Items) in the unified "Effect & Trait" system.
+This document outlines the implementation of the `Game_Action` class. Originally designed as the core "Effect Object" wrapper for all actions, it now primarily serves **Map and Menu item usage** (e.g., using a Potion from the inventory screen).
+
+**Note:** The `BattleSystem` utilizes an internal, optimized pipeline (`BattleSystem._executeSkill`, etc.) and does **not** use `Game_Action` instances for combat resolution.
 
 ## Design Choices
 
-### 1. Encapsulation of Execution Logic
-The execution logic for battle actions has been moved into the `Game_Action` class and the `EffectSystem`.
-*   **Reasoning**: This adheres to object-oriented principles, grouping behavior (execution) with data (the action definition), while delegating pure state changes to the `EffectSystem`.
-*   **Benefit**: `BattleSystem` now focuses on flow control (turn order, win/loss), while `Game_Action` handles the "how" of an action.
+### 1. Scope & Usage
+`Game_Action` encapsulates the logic for using Items and Skills outside of the main combat loop.
+*   **Menu Usage**: When a player selects "Use" on an item in the inventory, a `Game_Action` is instantiated to apply the effects.
+*   **Battle Divergence**: For architectural and performance reasons, `BattleSystem` manages its own action execution logic directly using `EffectSystem`, bypassing `Game_Action`.
 
 ### 2. Properties
-`Game_Action` implements the properties defined in `gameDesign.md`:
-*   `speed`: Calculated getter, combining the subject's speed (`asp`) and the item/skill's speed modifier.
-*   `ele` (Element): Handled internally during execution. For skills, the element is retrieved from the skill data. For attacks, it uses the battler's innate elements.
+`Game_Action` implements standard properties for action resolution:
+*   `speed`: Calculated getter (legacy support for turn order simulation).
+*   `ele` (Element): Handled internally during execution.
 
 ### 3. Unified Element Multiplier Logic
-The elemental damage multiplier logic resides in `Game_Action` (for Attacks) or is handled implicitly during `EffectSystem` resolution (for Skills).
-*   **Improvement**: The implementation ensures that if a skill has an element, it checks against the target's element table to apply standard multipliers (1.5x for Weakness, 0.75x for Resistance), in addition to the "Same Element Bonus" for the user.
+Like the Battle System, `Game_Action` respects elemental affinities.
+*   **Logic**: Checks against the target's element table to apply standard multipliers (1.5x for Weakness, 0.75x for Resistance) and "Same Element Bonus" for the user.
 
 ### 4. Target Selection
-Target selection logic (`makeTargets`) is part of `Game_Action`.
-*   **Reasoning**: The scope of an action (Self, Enemy, Ally) is intrinsic to the action itself.
+Target selection logic (`makeTargets`) is available to determine valid targets (Self, Ally, Enemy) based on the item/skill scope.
 
 ## Usage
-The `BattleSystem` instantiates `Game_Action` objects to represent planned moves.
+
+### Map/Menu Context
+The UI or `Scene_Map` instantiates `Game_Action` to apply an item:
 
 ```javascript
-const action = new Game_Action(battler);
-action.setSkill(skillId, dataManager);
-// or
-action.setAttack();
-```
-
-Execution is triggered via:
-```javascript
+const action = new Game_Action(party);
+action.setItem(itemData, dataManager);
 const events = action.apply(target, dataManager);
+// Process events (e.g., show healing animation)
 ```
 
+### Internal Flow
 Internally, `apply` delegates specific effects (like `damage`, `heal`, `add_status`) to the `EffectSystem`:
 
 ```javascript
-// Inside Game_Action._applySkill
+// Inside Game_Action._applyItem
 EffectSystem.apply(effectKey, effectValue, battler, target, context);
 ```

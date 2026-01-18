@@ -2,7 +2,9 @@ import { RandomWalkGenerator } from "../generators/dungeon_generator.js";
 
 /**
  * @class Game_Map
- * @description Represents the game map and handles floor generation via generators.
+ * @description Represents the game map.
+ * @deprecated Logic has been moved to ExplorationSystem (src/engine/systems/exploration.js).
+ * This class now serves primarily as a data container for legacy support.
  */
 export class Game_Map {
   /**
@@ -20,6 +22,7 @@ export class Game_Map {
 
   /**
    * Initializes floors based on map data.
+   * @deprecated logic moved to ExplorationSystem.createSession
    * @param {Array} mapData - Data for all floors.
    * @param {Array} eventDefs - Event definitions.
    * @param {Array} [npcData=[]] - NPC definitions.
@@ -34,6 +37,7 @@ export class Game_Map {
 
   /**
    * Generates a single floor layout using the appropriate generator.
+   * @deprecated logic moved to ExplorationSystem
    * @param {Object} meta - Floor metadata.
    * @param {number} index - Floor index.
    * @param {Array} eventDefs - Event definitions.
@@ -50,6 +54,7 @@ export class Game_Map {
 
   /**
    * Updates all events on the current floor.
+   * @deprecated logic moved to ExplorationSystem.updateEntities
    * @param {import("./party.js").Game_Party} party - The party.
    * @returns {Array} List of results (e.g., collisions).
    */
@@ -67,6 +72,7 @@ export class Game_Map {
 
   /**
    * Removes an event from the specified floor.
+   * @deprecated logic moved to ExplorationSystem.removeEvent
    * @param {number} floorIndex - The index of the floor.
    * @param {number} x - The x-coordinate.
    * @param {number} y - The y-coordinate.
@@ -82,6 +88,7 @@ export class Game_Map {
 
   /**
    * Reveals tiles around the player (fog of war).
+   * @deprecated logic moved to ExplorationSystem.revealAroundPlayer
    */
   revealAroundPlayer() {
     this.revealRadius(1);
@@ -89,6 +96,7 @@ export class Game_Map {
 
   /**
    * Reveals tiles within a specific radius around the player.
+   * @deprecated logic moved to ExplorationSystem.revealAroundPlayer
    * @param {number} radius - The radius to reveal.
    */
   revealRadius(radius) {
@@ -110,6 +118,7 @@ export class Game_Map {
 
   /**
    * Checks if all accessible (non-wall) tiles on the current floor have been visited.
+   * @deprecated logic moved to ExplorationSystem.checkFloorExploration
    * @returns {boolean} True if the floor is fully explored.
    */
   checkFloorExploration() {
@@ -128,6 +137,7 @@ export class Game_Map {
 
   /**
    * Reveals the entire current floor.
+   * @deprecated logic moved to ExplorationSystem.revealCurrentFloor
    * @param {boolean} [updateVisited=true] - Whether to mark all tiles visited immediately.
    */
   revealCurrentFloor(updateVisited = true) {
