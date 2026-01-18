@@ -83,8 +83,8 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **SceneManager**: Stack-based State Machine.
 *   **WindowManager**: Visual Stack management.
 *   **DataManager**: Static asset loader.
-*   **TraitManager** (*Legacy*): Handles parameter calculations. Scheduled for migration to `src/engine/rules/`.
-*   **EncounterManager** (*Legacy*): Generates enemies. Scheduled for migration.
+*   **TraitManager** (*Removed*): Replaced by `TraitRules` (`src/engine/rules/traits.js`).
+*   **EncounterManager** (*Legacy*): Generates enemies. Used by `DungeonGenerator`.
 
 ---
 
@@ -97,12 +97,12 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 
 ### 5.2. Game_Battler (`src/objects/battler.js`)
 *   **Composition**: Combines `actorData` (Static Template) with instance state (`hp`, `level`, `equipment`).
-*   **Stats**: Calculates parameters dynamically using `TraitManager` (*Legacy*).
+*   **Stats**: Calculates parameters dynamically using `TraitRules`.
 
 ### 5.3. Game_Map (`src/objects/map.js`)
 *   **Grid**: 2D array of tiles.
 *   **State**: Tracks `visited` (Fog of War) and `events`.
-*   **Role**: Mostly a data container now; logic has moved to `ExplorationSystem`.
+*   **Role**: Deprecated data container. Logic (generation, updates) has moved to `ExplorationSystem`.
 
 ---
 
@@ -144,22 +144,22 @@ UI.build(parent, {
     *   Pre-round: Command Input.
     *   Execution: Actions execute sequentially.
 
-### 7.2. Action Pipeline (`src/objects/action.js`)
-An action is executed in stages:
-1.  **Instantiation**: `new Game_Action(subject)`.
-2.  **Configuration**: `.setItem()` or `.setSkill()`.
-3.  **Application**: `.apply(target, dataManager)` -> Returns `Event[]`.
+### 7.2. Action Pipeline (`src/engine/systems/battle.js`)
+*Note: `BattleSystem` uses an internal pipeline and bypasses `Game_Action`, which is reserved for Map/Menu item usage.*
+
+An action is executed in stages within `BattleSystem.executeAction`:
+1.  **Input**: Receives a planned action object (from AI or Player Input).
+2.  **Resolution**: Determines targets and valid scopes.
+3.  **Execution**: Calls internal `_executeSkill` or `_executeItem` methods.
 4.  **Effect Resolution**: Delegates to `EffectSystem.apply()`.
-5.  **Animation**: `Scene_Battle` iterates `Event[]` and plays animations/logs.
+5.  **Logging**: Generates an array of event objects for `Scene_Battle` to animate.
 
 ```mermaid
 flowchart LR
     Start([Turn Start]) --> Select{Action Type}
-    Select -->|Attack| Atk[Apply Attack Logic]
-    Select -->|Skill| Skill[Apply Skill Effects]
-    Select -->|Item| Item[Consume & Apply Effects]
+    Select -->|Skill| Skill[BattleSystem._executeSkill]
+    Select -->|Item| Item[BattleSystem._executeItem]
 
-    Atk --> Events[Generate Event Log]
     Skill --> EffectSys[Call EffectSystem]
     Item --> EffectSys
 
@@ -190,15 +190,15 @@ When modifying this codebase, strictly adhere to these rules:
 
 1.  **NO Canvas Drawing**: Never try to draw UI on a canvas. Create a `Window_X` class extending `Window_Base` and use DOM elements.
 2.  **Respect State Ownership**: Do not look for `window.$gameParty`. Access `this.party` within the context of the current Scene or Adapter.
-3.  **Use the Action Pipeline**: Do not modify HP directly in battle logic. Create a `Game_Action` and execute it to ensure logs, animations, and side-effects (like reactions) occur.
+3.  **Use the Action Pipeline**: Do not modify HP directly in logic. Use `BattleSystem` (in combat) or `Game_Action` (in menu) to ensure logs, animations, and side-effects occur.
 4.  **Async/Await Over Update**: If adding a sequence (like a tutorial), write an `async` function and `await` the steps. Do not try to implement a state-machine in an `update()` loop.
-5.  **Data-Driven**: Hardcode as little as possible. Define new items/skills in `data/` JSON files, and new behavior in `EffectSystem` or `TraitManager`.
+5.  **Data-Driven**: Hardcode as little as possible. Define new items/skills in `data/` JSON files, and new behavior in `EffectSystem` or `TraitRules`.
 
 ---
 
 ## 10. Transitional Architecture Notes
 *While the current implementation is functional, the following areas are in transition toward the ideal architecture:*
 
-*   **Trait Logic**: `TraitManager` handles parameter calculations but is slated for migration to `TraitRules`.
-*   **Encounter Logic**: `EncounterManager` is active but will eventually move to `EncounterSystem`.
+*   **Trait Logic**: Migration to `TraitRules` is complete. `TraitManager` has been removed.
+*   **Encounter Logic**: `EncounterManager` is active (Legacy) and used by `DungeonGenerator`.
 *   **Logic Separation**: The migration of Battle, Exploration, and Interpreter logic to `src/engine/` is complete. The focus is now on cleaning up remaining coupling in `Game_Battler` and `DungeonGenerator`.

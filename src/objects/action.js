@@ -4,7 +4,8 @@ import { ProgressionSystem } from "../engine/systems/progression.js";
 
 /**
  * @class Game_Action
- * @description Encapsulates the execution of a battle action (Attack, Skill, Item).
+ * @description Encapsulates the execution of an action (primarily for Map/Menu item usage).
+ * Note: BattleSystem uses an internal pipeline and bypasses this class for combat.
  * Delegates state changes to EffectSystem.
  */
 export class Game_Action {
@@ -119,6 +120,9 @@ export class Game_Action {
         return events;
     }
 
+    /**
+     * @deprecated Used only if Game_Action is forced for attacks (legacy). BattleSystem handles this natively.
+     */
     _applyAttack(target, dataManager, events) {
         const battler = this.subject;
 
@@ -178,6 +182,9 @@ export class Game_Action {
         });
     }
 
+    /**
+     * @deprecated Used only if Game_Action is forced for skills (legacy/debug). BattleSystem handles this natively.
+     */
     _applySkill(target, dataManager, events) {
         const battler = this.subject;
         const skill = this._item;
