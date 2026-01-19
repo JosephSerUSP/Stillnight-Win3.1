@@ -1,46 +1,48 @@
 # Game Action Implementation
 
+> **DEPRECATED / PARTIAL DOCUMENTATION**
+>
+> **Note:** The `Game_Action` class is **no longer used** by the `BattleSystem` for combat execution. The Battle System uses its own internal execution pipeline (`BattleSystem.executeAction`) and plain data objects.
+>
+> `Game_Action` is currently retained primarily for **Item Usage in Exploration (Scene_Map)** and legacy support.
+
 ## Overview
-This document outlines the implementation of the `Game_Action` class, which serves as the core "Effect Object" wrapper for battle actions (Skills, Attacks, and Items) in the unified "Effect & Trait" system.
+This document outlines the implementation of the `Game_Action` class, which serves as a wrapper for **Map-based Item Actions**.
 
 ## Design Choices
 
 ### 1. Encapsulation of Execution Logic
-The execution logic for battle actions has been moved into the `Game_Action` class and the `EffectSystem`.
-*   **Reasoning**: This adheres to object-oriented principles, grouping behavior (execution) with data (the action definition), while delegating pure state changes to the `EffectSystem`.
-*   **Benefit**: `BattleSystem` now focuses on flow control (turn order, win/loss), while `Game_Action` handles the "how" of an action.
+`Game_Action` wraps item execution logic to interface with the `EffectSystem`.
+*   **Reasoning**: This allows `Scene_Map` to execute items (potions, scrolls) using the same underlying `EffectSystem` rules as combat, without needing to instantiate a full Battle Session.
 
 ### 2. Properties
-`Game_Action` implements the properties defined in `gameDesign.md`:
-*   `speed`: Calculated getter, combining the subject's speed (`asp`) and the item/skill's speed modifier.
-*   `ele` (Element): Handled internally during execution. For skills, the element is retrieved from the skill data. For attacks, it uses the battler's innate elements.
+`Game_Action` implements properties to track the subject and the item being used:
+*   `subject`: The battler (or party) using the item.
+*   `item`: The item data object.
 
-### 3. Unified Element Multiplier Logic
-The elemental damage multiplier logic resides in `Game_Action` (for Attacks) or is handled implicitly during `EffectSystem` resolution (for Skills).
-*   **Improvement**: The implementation ensures that if a skill has an element, it checks against the target's element table to apply standard multipliers (1.5x for Weakness, 0.75x for Resistance), in addition to the "Same Element Bonus" for the user.
+### 3. Usage (Scene_Map)
 
-### 4. Target Selection
-Target selection logic (`makeTargets`) is part of `Game_Action`.
-*   **Reasoning**: The scope of an action (Self, Enemy, Ally) is intrinsic to the action itself.
-
-## Usage
-The `BattleSystem` instantiates `Game_Action` objects to represent planned moves.
+The `Scene_Map` (or `Scene_Item`) instantiates `Game_Action` objects to apply items.
 
 ```javascript
-const action = new Game_Action(battler);
-action.setSkill(skillId, dataManager);
-// or
-action.setAttack();
-```
-
-Execution is triggered via:
-```javascript
+const action = new Game_Action(partyMember);
+action.setItem(itemId, dataManager);
 const events = action.apply(target, dataManager);
 ```
 
-Internally, `apply` delegates specific effects (like `damage`, `heal`, `add_status`) to the `EffectSystem`:
+Internally, `apply` delegates to `_applyItem`, which calls `EffectSystem`:
 
 ```javascript
-// Inside Game_Action._applySkill
-EffectSystem.apply(effectKey, effectValue, battler, target, context);
+// Inside Game_Action._applyItem
+EffectSystem.apply(effectKey, effectValue, item, target, context);
 ```
+
+## Legacy Battle Documentation (Obsolete)
+
+*The following section describes the legacy integration which has been superseded by `BattleSystem.executeAction`.*
+
+### Unified Element Multiplier Logic
+*Legacy Note:* The elemental damage multiplier logic resides in `Game_Action` (for Attacks) or is handled implicitly during `EffectSystem` resolution (for Skills).
+
+### Target Selection
+Target selection logic (`makeTargets`) is part of `Game_Action`.

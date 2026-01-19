@@ -83,8 +83,6 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **SceneManager**: Stack-based State Machine.
 *   **WindowManager**: Visual Stack management.
 *   **DataManager**: Static asset loader.
-*   **TraitManager** (*Legacy*): Handles parameter calculations. Scheduled for migration to `src/engine/rules/`.
-*   **EncounterManager** (*Legacy*): Generates enemies. Scheduled for migration.
 
 ---
 
@@ -97,12 +95,12 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 
 ### 5.2. Game_Battler (`src/objects/battler.js`)
 *   **Composition**: Combines `actorData` (Static Template) with instance state (`hp`, `level`, `equipment`).
-*   **Stats**: Calculates parameters dynamically using `TraitManager` (*Legacy*).
+*   **Stats**: Calculates parameters dynamically using `TraitRules` (`src/engine/rules/traits.js`).
 
 ### 5.3. Game_Map (`src/objects/map.js`)
 *   **Grid**: 2D array of tiles.
 *   **State**: Tracks `visited` (Fog of War) and `events`.
-*   **Role**: Mostly a data container now; logic has moved to `ExplorationSystem`.
+*   **Role**: **Deprecated**. Primary logic has moved to `ExplorationSystem` and `ExplorationAdapter`. Acts as a legacy data structure.
 
 ---
 
@@ -138,32 +136,34 @@ UI.build(parent, {
 ### 7.1. Round-Based Turn System
 *   **System**: `BattleSystem` (`src/engine/systems/battle.js`).
 *   **Logic**:
-    1.  `planRound()`: Sorts participants by Speed (`agi`).
-    2.  `resolveRound()`: Iterates through the sorted queue.
+    1.  `planRound()`: Sorts participants by Speed (`asp` + skill speed).
+    2.  `executeAction()`: Executed for each battler in the sorted queue.
 *   **Flow**:
     *   Pre-round: Command Input.
     *   Execution: Actions execute sequentially.
 
-### 7.2. Action Pipeline (`src/objects/action.js`)
-An action is executed in stages:
-1.  **Instantiation**: `new Game_Action(subject)`.
-2.  **Configuration**: `.setItem()` or `.setSkill()`.
-3.  **Application**: `.apply(target, dataManager)` -> Returns `Event[]`.
+### 7.2. Action Pipeline
+**Note:** `BattleSystem` uses an internal execution pipeline and **does not** use `Game_Action`.
+*   `Game_Action` is primarily used for Item usage in `Scene_Map`.
+
+The Battle Execution Flow:
+1.  **Planning**: `BattleSystem.getAIAction` or Player Input produces a plain action object (not a `Game_Action` instance).
+2.  **Execution**: `BattleSystem.executeAction(state, action)`.
+3.  **Resolution**: Calls internal `_executeSkill` or `_executeItem`.
 4.  **Effect Resolution**: Delegates to `EffectSystem.apply()`.
-5.  **Animation**: `Scene_Battle` iterates `Event[]` and plays animations/logs.
+5.  **Output**: Returns `Event[]` which `Scene_Battle` (via `BattleAdapter`) plays out.
 
 ```mermaid
 flowchart LR
-    Start([Turn Start]) --> Select{Action Type}
-    Select -->|Attack| Atk[Apply Attack Logic]
-    Select -->|Skill| Skill[Apply Skill Effects]
-    Select -->|Item| Item[Consume & Apply Effects]
+    Start([Action Start]) --> Exec[BattleSystem.executeAction]
+    Exec --> Select{Action Type}
+    Select -->|Skill| Skill[Internal _executeSkill]
+    Select -->|Item| Item[Internal _executeItem]
 
-    Atk --> Events[Generate Event Log]
-    Skill --> EffectSys[Call EffectSystem]
+    Skill --> EffectSys[EffectSystem.apply]
     Item --> EffectSys
 
-    EffectSys --> Events
+    EffectSys --> Events[Event Log]
     Events --> UI[Animate in Scene_Battle]
 ```
 
@@ -199,6 +199,5 @@ When modifying this codebase, strictly adhere to these rules:
 ## 10. Transitional Architecture Notes
 *While the current implementation is functional, the following areas are in transition toward the ideal architecture:*
 
-*   **Trait Logic**: `TraitManager` handles parameter calculations but is slated for migration to `TraitRules`.
-*   **Encounter Logic**: `EncounterManager` is active but will eventually move to `EncounterSystem`.
 *   **Logic Separation**: The migration of Battle, Exploration, and Interpreter logic to `src/engine/` is complete. The focus is now on cleaning up remaining coupling in `Game_Battler` and `DungeonGenerator`.
+*   **Graph System**: The narrative logic has been migrated to `DirectorSystem` and `GraphWalker`, replacing legacy `Game_Interpreter` logic for interactions.
