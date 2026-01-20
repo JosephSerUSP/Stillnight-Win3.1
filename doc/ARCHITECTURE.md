@@ -47,17 +47,22 @@ Scenes inherit from `Scene_Base`.
 2.  **Start**: `newScene.start()` is called.
 3.  **Pop**: `sceneManager.pop()` destroys the current scene and resumes the previous one.
 
+**Boot Process**:
+`Scene_Boot` attempts to load a saved session from `localStorage` ('stillnight_save_data') via `SessionSerializer`. If found, it resumes the session; otherwise, it creates a new one before pushing `Scene_Map`.
+
 ```mermaid
 sequenceDiagram
     participant Main
     participant SM as SceneManager
     participant Boot as Scene_Boot
+    participant Serializer as SessionSerializer
     participant Map as Scene_Map
 
     Main->>SM: new SceneManager()
     Main->>SM: push(new Scene_Boot)
     SM->>Boot: start()
     Boot->>DataManager: loadData()
+    Boot->>Serializer: fromJSON(savedData)
     Boot->>SM: push(new Scene_Map)
     SM->>Map: start()
     Note over Map: Game Loop (Input Wait)
@@ -72,19 +77,22 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **BattleSystem**: Pure logic for Turn Order, AI decisions, and Round resolution.
 *   **ExplorationSystem**: Logic for grid movement and collisions.
 *   **InterpreterSystem**: Logic for event command execution and state management.
-*   **EffectSystem** (`src/engine/rules/effects.js`): Pure registry of effect handlers.
+*   **ProgressionSystem**: Logic for stat growth and leveling.
 
-### 4.2. Adapters (`src/adapters/`)
+### 4.2. Rules (`src/engine/rules/`)
+*   **EffectSystem** (`effects.js`): Pure registry of effect handlers.
+*   **TraitRules** (`traits.js`): Logic for parameter calculations and passive traits.
+
+### 4.3. Adapters (`src/adapters/`)
 *   **BattleAdapter**: Connects `Scene_Battle` (UI) to `BattleSystem`.
 *   **ExplorationAdapter**: Connects `Scene_Map` to `ExplorationSystem`.
 *   **InterpreterAdapter**: Connects `Scene_Map` events to `InterpreterSystem` and handles UI side-effects (Show Text, Quest Offers).
 
-### 4.3. Infrastructure Managers (`src/managers/`)
+### 4.4. Infrastructure Managers (`src/managers/`)
 *   **SceneManager**: Stack-based State Machine.
 *   **WindowManager**: Visual Stack management.
 *   **DataManager**: Static asset loader.
-*   **TraitManager** (*Legacy*): Handles parameter calculations. Scheduled for migration to `src/engine/rules/`.
-*   **EncounterManager** (*Legacy*): Generates enemies. Scheduled for migration.
+*   **EncounterManager** (*Legacy*): Currently handles Initiative logic. Scheduled for migration to `EncounterSystem`.
 
 ---
 
@@ -102,7 +110,7 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 ### 5.3. Game_Map (`src/objects/map.js`)
 *   **Grid**: 2D array of tiles.
 *   **State**: Tracks `visited` (Fog of War) and `events`.
-*   **Role**: Mostly a data container now; logic has moved to `ExplorationSystem`.
+*   **Role**: Data container and Generator wrapper. While movement logic is in `ExplorationSystem`, it still retains event update/management logic.
 
 ---
 
@@ -144,13 +152,14 @@ UI.build(parent, {
     *   Pre-round: Command Input.
     *   Execution: Actions execute sequentially.
 
-### 7.2. Action Pipeline (`src/objects/action.js`)
-An action is executed in stages:
-1.  **Instantiation**: `new Game_Action(subject)`.
-2.  **Configuration**: `.setItem()` or `.setSkill()`.
-3.  **Application**: `.apply(target, dataManager)` -> Returns `Event[]`.
-4.  **Effect Resolution**: Delegates to `EffectSystem.apply()`.
-5.  **Animation**: `Scene_Battle` iterates `Event[]` and plays animations/logs.
+### 7.2. Action Pipeline
+**Note**: Currently, `BattleSystem` uses a parallel execution pipeline (`executeAction` -> `_executeSkill`/`_executeItem`) that calls `EffectSystem` directly. `Game_Action` is primarily used for Item application in `Scene_Map` and as a data container.
+
+**Standard Flow (Conceptual):**
+1.  **Selection**: Action selected by AI or Player.
+2.  **Execution**: `BattleSystem.executeAction` (Combat) or `Game_Action.apply` (Map).
+3.  **Effect Resolution**: Delegates to `EffectSystem.apply()`.
+4.  **Animation**: Scene iterates `Event[]` and plays animations/logs.
 
 ```mermaid
 flowchart LR
@@ -190,15 +199,15 @@ When modifying this codebase, strictly adhere to these rules:
 
 1.  **NO Canvas Drawing**: Never try to draw UI on a canvas. Create a `Window_X` class extending `Window_Base` and use DOM elements.
 2.  **Respect State Ownership**: Do not look for `window.$gameParty`. Access `this.party` within the context of the current Scene or Adapter.
-3.  **Use the Action Pipeline**: Do not modify HP directly in battle logic. Create a `Game_Action` and execute it to ensure logs, animations, and side-effects (like reactions) occur.
+3.  **Use the Action Pipeline**: Do not modify HP directly in battle logic. Use `BattleSystem.executeAction` (in combat) or `Game_Action.apply` (on map) to ensure logs, animations, and side-effects occur.
 4.  **Async/Await Over Update**: If adding a sequence (like a tutorial), write an `async` function and `await` the steps. Do not try to implement a state-machine in an `update()` loop.
-5.  **Data-Driven**: Hardcode as little as possible. Define new items/skills in `data/` JSON files, and new behavior in `EffectSystem` or `TraitManager`.
+5.  **Data-Driven**: Hardcode as little as possible. Define new items/skills in `data/` JSON files, and new behavior in `EffectSystem` or `TraitRules`.
 
 ---
 
 ## 10. Transitional Architecture Notes
 *While the current implementation is functional, the following areas are in transition toward the ideal architecture:*
 
-*   **Trait Logic**: `TraitManager` handles parameter calculations but is slated for migration to `TraitRules`.
-*   **Encounter Logic**: `EncounterManager` is active but will eventually move to `EncounterSystem`.
+*   **Encounter Logic**: `EncounterManager` is active (handling initiative) but will eventually move to `EncounterSystem`.
+*   **Action Pipeline**: Unifying the `BattleSystem` execution logic with `Game_Action` into a single pipeline.
 *   **Logic Separation**: The migration of Battle, Exploration, and Interpreter logic to `src/engine/` is complete. The focus is now on cleaning up remaining coupling in `Game_Battler` and `DungeonGenerator`.
