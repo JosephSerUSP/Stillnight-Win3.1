@@ -1,5 +1,10 @@
 # Game Action Implementation
 
+## Status Note
+**Partially Deprecated / Bifurcated**: Currently, the `BattleSystem` (`src/engine/systems/battle.js`) implements a parallel execution pipeline (`executeAction` -> `_executeSkill`/`_executeItem`) that bypasses `Game_Action.apply`.
+*   `Game_Action` is currently used primarily for **Item application in `Scene_Map`** and as a data container for planned actions.
+*   Future refactoring aims to unify these pipelines so `BattleSystem` uses `Game_Action` execution logic directly.
+
 ## Overview
 This document outlines the implementation of the `Game_Action` class, which serves as the core "Effect Object" wrapper for battle actions (Skills, Attacks, and Items) in the unified "Effect & Trait" system.
 
