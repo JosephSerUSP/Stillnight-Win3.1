@@ -1,6 +1,5 @@
 import { Game_Battler } from "./objects/battler.js";
 import { Game_Party } from "./objects/party.js";
-import { Game_Map } from "./objects/map.js";
 import { Game_Event } from "./objects/event.js";
 import { Game_Base } from "./objects/game_base.js";
 import { Game_Action } from "./objects/action.js";
@@ -27,7 +26,6 @@ export function exposeGlobals(instances = {}) {
     // Classes
     window.Game_Battler = Game_Battler;
     window.Game_Party = Game_Party;
-    window.Game_Map = Game_Map;
     window.Game_Event = Game_Event;
     window.Game_Base = Game_Base;
     window.Game_Action = Game_Action;

@@ -1,15 +1,15 @@
-import { Game_Battler } from "../objects/battler.js";
-import { random } from "../core/utils.js";
+import { Game_Battler } from "../../objects/battler.js";
+import { random } from "../../core/utils.js";
 
 /**
- * @class EncounterManager
- * @description Handles encounter logic like initiative and sneak attacks.
+ * @class EncounterRules
+ * @description Pure logic for encounter resolution (Initiative, etc).
  */
-export class EncounterManager {
+export class EncounterRules {
 
     /**
      * Determines initiative and modifies eventData accordingly.
-     * @param {import("../objects/party.js").Game_Party} party
+     * @param {import("../../objects/party.js").Game_Party} party
      * @param {Object} eventData
      * @param {Array} actors
      */

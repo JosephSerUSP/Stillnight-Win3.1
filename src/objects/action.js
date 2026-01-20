@@ -1,4 +1,4 @@
-import { randInt, elementToAscii, probabilisticRound, random } from "../core/utils.js";
+import { elementToAscii } from "../core/utils.js";
 import { EffectSystem } from "../engine/rules/effects.js";
 import { ProgressionSystem } from "../engine/systems/progression.js";
 
@@ -14,27 +14,17 @@ export class Game_Action {
     constructor(subject) {
         this.subject = subject;
         this._item = null;
-        this._isAttack = false;
         this._skillId = null;
         this._itemId = null;
         this._rowBonus = 0; // -1 for Back, +1 for Front (Player only)
     }
 
-    setAttack() {
-        this._isAttack = true;
-        this._item = null;
-        this._skillId = null;
-        this._itemId = null;
-    }
-
     setSkill(skillId, dataManager) {
-        this._isAttack = false;
         this._skillId = skillId;
         this._item = dataManager.skills[skillId];
     }
 
     setItem(itemOrId, dataManager) {
-        this._isAttack = false;
         if (typeof itemOrId === 'object' && itemOrId !== null) {
             this._item = itemOrId;
             this._itemId = itemOrId.id;
@@ -54,10 +44,6 @@ export class Game_Action {
 
     get item() {
         return this._item;
-    }
-
-    get isAttack() {
-        return this._isAttack;
     }
 
     get skillId() {
@@ -87,9 +73,6 @@ export class Game_Action {
             scope = this._item.target;
         }
 
-        // Attack defaults to enemy
-        if (this._isAttack) scope = 'enemy';
-
         if (scope.includes('self')) {
             return [this.subject];
         }
@@ -108,74 +91,13 @@ export class Game_Action {
         if (!target || target.hp <= 0) return [];
 
         const events = [];
-        if (this._isAttack) {
-            this._applyAttack(target, dataManager, events);
-        } else if (this._skillId) {
+        if (this._skillId) {
             this._applySkill(target, dataManager, events);
         } else if (this._itemId) {
             this._applyItem(target, dataManager, events);
         }
 
         return events;
-    }
-
-    _applyAttack(target, dataManager, events) {
-        const battler = this.subject;
-
-        // Base Damage
-        let base = battler.atk + randInt(-1, 1);
-        base += this._rowBonus;
-        if (base < 1) base = 1;
-
-        // Evasion
-        const evasionChance = target.getPassiveValue("EVA");
-        if (evasionChance > 0 && random() < evasionChance) {
-            events.push({
-                type: "miss",
-                battler: battler,
-                target: target,
-                msg: `${battler.name} attacks ${target.name} but misses!`,
-            });
-            return;
-        }
-
-        // Critical
-        let isCritical = false;
-        const critChance = battler.getPassiveValue("CRI");
-        if (critChance > 0 && random() < critChance) {
-            isCritical = true;
-        }
-
-        // Element Multiplier
-        // Attack uses battler.elements
-        const mult = this._elementMultiplier(battler.elements, target.elements, dataManager);
-
-        let dmg = probabilisticRound(base * mult);
-        dmg += battler.getPassiveValue("DEAL_DAMAGE_MOD");
-
-        if (isCritical) {
-            dmg = Math.floor(dmg * 2);
-        }
-
-        if (dmg < 1) dmg = 1;
-
-        const hpBefore = target.hp;
-        target.hp = Math.max(0, target.hp - dmg);
-
-        const msg = isCritical
-            ? `CRITICAL! ${battler.name} deals ${dmg} damage to ${target.name}!`
-            : `${battler.name} attacks ${target.name} for ${dmg}.`;
-
-        events.push({
-            type: "damage",
-            battler: battler,
-            target: target,
-            value: dmg,
-            hpBefore: hpBefore,
-            hpAfter: target.hp,
-            isCritical: isCritical,
-            msg: msg,
-        });
     }
 
     _applySkill(target, dataManager, events) {
