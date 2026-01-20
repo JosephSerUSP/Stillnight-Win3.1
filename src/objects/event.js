@@ -38,7 +38,7 @@ export class Game_Event {
 
   /**
    * Updates the event logic (e.g. movement).
-   * @param {import("./map.js").Game_Map} map - The map instance.
+   * @param {Object} map - The map state interface (ExplorationAdapter or similar).
    * @param {import("./party.js").Game_Party} party - The party instance.
    * @returns {Object|null} Result of update, e.g., { type: 'battle', event: this }.
    */
