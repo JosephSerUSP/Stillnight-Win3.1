@@ -1,7 +1,14 @@
 # Game Action Implementation
 
+## Context & Usage Disclaimer
+**Important**: As of the current architecture, this `Game_Action` class is **not** the primary execution engine for combat.
+*   **Combat**: `BattleSystem` (`src/engine/systems/battle.js`) implements its own lightweight execution pipeline (`executeAction`) that bypasses this class to maintain purity and separate logic from object state.
+*   **Map/Menu**: This class is primarily used for **Item and Skill usage from the Map/Menu**, or for legacy interop where an object-oriented wrapper is required.
+
+Both systems delegate the actual state modification to `EffectSystem`.
+
 ## Overview
-This document outlines the implementation of the `Game_Action` class, which serves as the core "Effect Object" wrapper for battle actions (Skills, Attacks, and Items) in the unified "Effect & Trait" system.
+This document outlines the implementation of the `Game_Action` class, which serves as an "Effect Object" wrapper for actions (Skills, Attacks, and Items), primarily outside of the core battle loop.
 
 ## Design Choices
 
@@ -24,13 +31,13 @@ Target selection logic (`makeTargets`) is part of `Game_Action`.
 *   **Reasoning**: The scope of an action (Self, Enemy, Ally) is intrinsic to the action itself.
 
 ## Usage
-The `BattleSystem` instantiates `Game_Action` objects to represent planned moves.
+The `Game_Action` class is typically used in `Scene_Map` or `Scene_Item` for applying items.
 
 ```javascript
 const action = new Game_Action(battler);
 action.setSkill(skillId, dataManager);
 // or
-action.setAttack();
+action.setItem(item, dataManager);
 ```
 
 Execution is triggered via:

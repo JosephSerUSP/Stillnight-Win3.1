@@ -73,6 +73,7 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **ExplorationSystem**: Logic for grid movement and collisions.
 *   **InterpreterSystem**: Logic for event command execution and state management.
 *   **EffectSystem** (`src/engine/rules/effects.js`): Pure registry of effect handlers.
+*   **TraitRules** (`src/engine/rules/traits.js`): Pure logic for parameter calculations and trait aggregation.
 
 ### 4.2. Adapters (`src/adapters/`)
 *   **BattleAdapter**: Connects `Scene_Battle` (UI) to `BattleSystem`.
@@ -83,8 +84,7 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **SceneManager**: Stack-based State Machine.
 *   **WindowManager**: Visual Stack management.
 *   **DataManager**: Static asset loader.
-*   **TraitManager** (*Legacy*): Handles parameter calculations. Scheduled for migration to `src/engine/rules/`.
-*   **EncounterManager** (*Legacy*): Generates enemies. Scheduled for migration.
+*   **EncounterManager** (*Legacy*): Generates enemies/initiative. Active in `src/managers/` but scheduled for migration.
 
 ---
 
@@ -97,7 +97,7 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 
 ### 5.2. Game_Battler (`src/objects/battler.js`)
 *   **Composition**: Combines `actorData` (Static Template) with instance state (`hp`, `level`, `equipment`).
-*   **Stats**: Calculates parameters dynamically using `TraitManager` (*Legacy*).
+*   **Stats**: Calculates parameters dynamically using `TraitRules`.
 
 ### 5.3. Game_Map (`src/objects/map.js`)
 *   **Grid**: 2D array of tiles.
@@ -144,28 +144,20 @@ UI.build(parent, {
     *   Pre-round: Command Input.
     *   Execution: Actions execute sequentially.
 
-### 7.2. Action Pipeline (`src/objects/action.js`)
-An action is executed in stages:
-1.  **Instantiation**: `new Game_Action(subject)`.
-2.  **Configuration**: `.setItem()` or `.setSkill()`.
-3.  **Application**: `.apply(target, dataManager)` -> Returns `Event[]`.
-4.  **Effect Resolution**: Delegates to `EffectSystem.apply()`.
-5.  **Animation**: `Scene_Battle` iterates `Event[]` and plays animations/logs.
+### 7.2. Action Pipelines
+The project currently uses two parallel pipelines for action execution:
 
-```mermaid
-flowchart LR
-    Start([Turn Start]) --> Select{Action Type}
-    Select -->|Attack| Atk[Apply Attack Logic]
-    Select -->|Skill| Skill[Apply Skill Effects]
-    Select -->|Item| Item[Consume & Apply Effects]
+1.  **Combat Pipeline (`BattleSystem.executeAction`)**:
+    *   Used during battle rounds.
+    *   Bypasses `Game_Action` wrapper in favor of pure logic functions (`_executeSkill`, `_executeItem`).
+    *   Directly calls `EffectSystem`.
 
-    Atk --> Events[Generate Event Log]
-    Skill --> EffectSys[Call EffectSystem]
-    Item --> EffectSys
+2.  **Map/Menu Pipeline (`Game_Action`)**:
+    *   Used for Item/Skill usage in `Scene_Map`.
+    *   Wraps the action in a `Game_Action` object.
+    *   Delegates to `EffectSystem`.
 
-    EffectSys --> Events
-    Events --> UI[Animate in Scene_Battle]
-```
+Both pipelines ultimately rely on `EffectSystem` to modify battler state, ensuring consistency in effects (Damage, Healing) regardless of the trigger source.
 
 ---
 
@@ -199,6 +191,6 @@ When modifying this codebase, strictly adhere to these rules:
 ## 10. Transitional Architecture Notes
 *While the current implementation is functional, the following areas are in transition toward the ideal architecture:*
 
-*   **Trait Logic**: `TraitManager` handles parameter calculations but is slated for migration to `TraitRules`.
-*   **Encounter Logic**: `EncounterManager` is active but will eventually move to `EncounterSystem`.
-*   **Logic Separation**: The migration of Battle, Exploration, and Interpreter logic to `src/engine/` is complete. The focus is now on cleaning up remaining coupling in `Game_Battler` and `DungeonGenerator`.
+*   **Encounter Logic**: `EncounterManager` is active (in `src/managers/`) but will eventually move to `EncounterSystem`.
+*   **Action Pipeline Unification**: The dual pipelines for Combat and Map actions should eventually be unified.
+*   **Logic Separation**: The migration of Battle, Exploration, Interpreter, and Trait logic to `src/engine/` is complete. The focus is now on cleaning up remaining coupling in `Game_Battler` and `DungeonGenerator`.
