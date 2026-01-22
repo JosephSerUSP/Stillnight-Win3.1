@@ -1,19 +1,19 @@
-import { Game_Battler } from "../objects/battler.js";
-import { random } from "../core/utils.js";
+import { Game_Battler } from "../../objects/battler.js";
+import { random } from "../../core/utils.js";
 
 /**
- * @class EncounterManager
- * @description Handles encounter logic like initiative and sneak attacks.
+ * EncounterRules
+ * @description Pure functions for encounter logic (initiative, sneak attacks).
  */
-export class EncounterManager {
+export const EncounterRules = {
 
     /**
      * Determines initiative and modifies eventData accordingly.
-     * @param {import("../objects/party.js").Game_Party} party
+     * @param {import("../../objects/party.js").Game_Party} party
      * @param {Object} eventData
      * @param {Array} actors
      */
-    static determineInitiative(party, eventData, actors) {
+    determineInitiative(party, eventData, actors) {
         if (!party || !eventData) return;
 
         // Player Initiative
@@ -67,4 +67,4 @@ export class EncounterManager {
             eventData.isPlayerFirstStrike = true;
         }
     }
-}
+};
