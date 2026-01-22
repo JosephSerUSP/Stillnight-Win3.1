@@ -1,6 +1,6 @@
 import { randInt, pickWeighted, random } from "../core/utils.js";
 import { Game_Event } from "../objects/event.js";
-import { EncounterManager } from "../managers/encounter.js";
+import { EncounterRules } from "../engine/rules/encounter_rules.js";
 
 /**
  * @class DungeonGenerator
@@ -148,7 +148,7 @@ export class DungeonGenerator {
 
             // 2. Initiative Check (Sneak Attack)
             if (party && !eventData.isSneakAttack) {
-                EncounterManager.determineInitiative(party, eventData, actors);
+                EncounterRules.determineInitiative(party, eventData, actors);
             }
         }
 
