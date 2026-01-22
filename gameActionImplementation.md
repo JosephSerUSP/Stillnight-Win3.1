@@ -1,14 +1,18 @@
 # Game Action Implementation
 
 ## Overview
-This document outlines the implementation of the `Game_Action` class, which serves as the core "Effect Object" wrapper for battle actions (Skills, Attacks, and Items) in the unified "Effect & Trait" system.
+This document outlines the implementation of the `Game_Action` class, which serves as a wrapper for battle actions (Skills, Attacks, and Items) primarily for **UI-initiated actions** (like using an item from the menu) and legacy support.
+
+**Important Note**: The core `BattleSystem` (used in `Scene_Battle`) has its own internal execution pipeline and **does not** use `Game_Action` for the main combat loop. `Game_Action` is currently maintained for:
+1.  Item usage from `Scene_Map` or `Scene_Battle` inventory menus.
+2.  Providing a consistent API for action properties where needed outside the pure battle system.
 
 ## Design Choices
 
 ### 1. Encapsulation of Execution Logic
-The execution logic for battle actions has been moved into the `Game_Action` class and the `EffectSystem`.
+The execution logic for battle actions is shared between `Game_Action` and `BattleSystem`, both delegating pure state changes to the `EffectSystem`.
 *   **Reasoning**: This adheres to object-oriented principles, grouping behavior (execution) with data (the action definition), while delegating pure state changes to the `EffectSystem`.
-*   **Benefit**: `BattleSystem` now focuses on flow control (turn order, win/loss), while `Game_Action` handles the "how" of an action.
+*   **Benefit**: `BattleSystem` focuses on flow control (turn order, win/loss), while `Game_Action` handles the "how" of an action for single-use contexts.
 
 ### 2. Properties
 `Game_Action` implements the properties defined in `gameDesign.md`:
@@ -17,20 +21,19 @@ The execution logic for battle actions has been moved into the `Game_Action` cla
 
 ### 3. Unified Element Multiplier Logic
 The elemental damage multiplier logic resides in `Game_Action` (for Attacks) or is handled implicitly during `EffectSystem` resolution (for Skills).
-*   **Improvement**: The implementation ensures that if a skill has an element, it checks against the target's element table to apply standard multipliers (1.5x for Weakness, 0.75x for Resistance), in addition to the "Same Element Bonus" for the user.
 
 ### 4. Target Selection
 Target selection logic (`makeTargets`) is part of `Game_Action`.
 *   **Reasoning**: The scope of an action (Self, Enemy, Ally) is intrinsic to the action itself.
 
-## Usage
-The `BattleSystem` instantiates `Game_Action` objects to represent planned moves.
+## Usage (UI / Legacy)
+
+The `Game_Action` class is instantiated when a player selects an action from a menu (e.g., using a Potion).
 
 ```javascript
-const action = new Game_Action(battler);
-action.setSkill(skillId, dataManager);
-// or
-action.setAttack();
+// Example: Using an item from the inventory
+const action = new Game_Action(partyMember);
+action.setItem(itemId, dataManager);
 ```
 
 Execution is triggered via:

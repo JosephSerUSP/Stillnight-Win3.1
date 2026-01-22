@@ -7,7 +7,7 @@ import { Game_Base } from "./game_base.js";
 /**
  * @class Game_Battler
  * @description The class representing a participant in a battle (actor or enemy).
- * Handles stats, leveling, skills, and passives via the unified Trait System.
+ * Handles stats, leveling, skills, and passives via the unified TraitRules system.
  * @extends Game_Base
  */
 export class Game_Battler extends Game_Base {
