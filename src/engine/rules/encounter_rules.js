@@ -1,20 +1,22 @@
-import { Game_Battler } from "../objects/battler.js";
-import { random } from "../core/utils.js";
+import { Game_Battler } from "../../objects/battler.js";
+import { random } from "../../core/utils.js";
 
 /**
- * @class EncounterManager
- * @description Handles encounter logic like initiative and sneak attacks.
+ * @namespace EncounterRules
+ * @description Pure functions for encounter logic like initiative.
  */
-export class EncounterManager {
+export const EncounterRules = {
 
     /**
-     * Determines initiative and modifies eventData accordingly.
-     * @param {import("../objects/party.js").Game_Party} party
-     * @param {Object} eventData
-     * @param {Array} actors
+     * Determines initiative and returns flags.
+     * @param {import("../../objects/party.js").Game_Party} party
+     * @param {Object} eventData - The event data containing encounter info.
+     * @param {Array} actors - The list of actor data definitions.
+     * @returns {Object} An object containing initiative flags (isSneakAttack, hidden, isPlayerFirstStrike).
      */
-    static determineInitiative(party, eventData, actors) {
-        if (!party || !eventData) return;
+    determineInitiative(party, eventData, actors) {
+        const result = {};
+        if (!party || !eventData) return result;
 
         // Player Initiative
         const partyInitChance = party.members.reduce((sum, m) => sum + m.getPassiveValue("INITIATIVE"), 0);
@@ -61,10 +63,12 @@ export class EncounterManager {
         }
 
         if (enemyWins) {
-            eventData.isSneakAttack = true;
-            eventData.hidden = true;
+            result.isSneakAttack = true;
+            result.hidden = true;
         } else if (partyWins) {
-            eventData.isPlayerFirstStrike = true;
+            result.isPlayerFirstStrike = true;
         }
+
+        return result;
     }
-}
+};
