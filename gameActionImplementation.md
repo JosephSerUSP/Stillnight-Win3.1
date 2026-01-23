@@ -5,10 +5,13 @@ This document outlines the implementation of the `Game_Action` class, which serv
 
 ## Design Choices
 
-### 1. Encapsulation of Execution Logic
-The execution logic for battle actions has been moved into the `Game_Action` class and the `EffectSystem`.
-*   **Reasoning**: This adheres to object-oriented principles, grouping behavior (execution) with data (the action definition), while delegating pure state changes to the `EffectSystem`.
-*   **Benefit**: `BattleSystem` now focuses on flow control (turn order, win/loss), while `Game_Action` handles the "how" of an action.
+### 1. Dual Execution Pipelines
+The system employs two distinct pipelines for executing actions, both leveraging the unified `EffectSystem`:
+
+*   **BattleSystem Pipeline**: Used during combat (Scene_Battle). `BattleSystem` executes logic directly (via `_executeSkill`/`_executeItem`) for tighter control over the battle log and event sequencing.
+*   **Game_Action Pipeline**: Used for Map interactions (Scene_Map) and external calls. `Game_Action` encapsulates the execution logic in an object-oriented wrapper.
+
+*   **Reasoning**: This separation allows `BattleSystem` to be optimized for the complex state machine of combat, while `Game_Action` provides a portable "Action Object" for general use (e.g., using a Potion from the Pause Menu).
 
 ### 2. Properties
 `Game_Action` implements the properties defined in `gameDesign.md`:
@@ -24,21 +27,26 @@ Target selection logic (`makeTargets`) is part of `Game_Action`.
 *   **Reasoning**: The scope of an action (Self, Enemy, Ally) is intrinsic to the action itself.
 
 ## Usage
-The `BattleSystem` instantiates `Game_Action` objects to represent planned moves.
+
+### 1. Standard Usage (Map / Scripts)
+For non-combat usage, instantiate and apply `Game_Action` directly:
 
 ```javascript
 const action = new Game_Action(battler);
-action.setSkill(skillId, dataManager);
-// or
-action.setAttack();
-```
-
-Execution is triggered via:
-```javascript
+action.setItem(itemId, dataManager);
 const events = action.apply(target, dataManager);
+// events = [{ type: 'heal', value: 50, ... }]
 ```
 
-Internally, `apply` delegates specific effects (like `damage`, `heal`, `add_status`) to the `EffectSystem`:
+### 2. Combat Usage (BattleSystem)
+In `Scene_Battle`, actions are typically defined as plain data or `Game_Action` instances, but executed via the system:
+
+```javascript
+// BattleSystem internally calls:
+this._executeSkill(state, action, events);
+// Which delegates to:
+EffectSystem.apply(effectKey, effectValue, battler, target, context);
+```
 
 ```javascript
 // Inside Game_Action._applySkill
