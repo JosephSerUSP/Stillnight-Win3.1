@@ -50,7 +50,6 @@ export class Scene_Boot extends Scene_Base {
         if (savedData) {
             try {
                 session = SessionSerializer.fromJSON(JSON.parse(savedData));
-                console.log("Session loaded successfully.");
             } catch (e) {
                 console.error("Failed to load save:", e);
                 session = this._createNewSession();
