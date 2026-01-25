@@ -14,15 +14,15 @@ export class DungeonGenerator {
 
     /**
      * Generates a floor.
-     * @param {Object} meta
-     * @param {number} index
-     * @param {Array} eventDefs
-     * @param {Array} npcData
-     * @param {import("../objects/party.js").Game_Party} party
-     * @param {Array} actors
+     * @param {Object} _meta
+     * @param {number} _index
+     * @param {Array} _eventDefs
+     * @param {Array} _npcData
+     * @param {import("../objects/party.js").Game_Party} _party
+     * @param {Array} _actors
      * @returns {Object} Floor object.
      */
-    generate(meta, index, eventDefs, npcData, party, actors) {
+    generate(_meta, _index, _eventDefs, _npcData, _party, _actors) {
         throw new Error("generate() must be implemented by subclass");
     }
 

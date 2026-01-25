@@ -1,7 +1,7 @@
 import { InterpreterSystem } from "../engine/systems/interpreter.js";
 import { DirectorSystem } from "../engine/systems/director.js";
 import { AudioAdapter } from "./audio_adapter.js";
-import { createInteractiveLabel, renderCreatureInfo } from "../presentation/windows/index.js";
+import { renderCreatureInfo } from "../presentation/windows/index.js";
 import { Game_Battler } from "../objects/battler.js";
 import { QuestSystem } from "../engine/systems/quest.js";
 import { randInt } from "../core/utils.js";

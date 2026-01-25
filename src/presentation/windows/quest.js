@@ -1,6 +1,6 @@
 import { Window_Base } from "./base.js";
 import { Window_Selectable } from "./selectable.js";
-import { createIcon, createInteractiveLabel, setPortrait } from "./utils.js";
+import { createInteractiveLabel, setPortrait } from "./utils.js";
 import { UI } from "./builder.js";
 
 /**

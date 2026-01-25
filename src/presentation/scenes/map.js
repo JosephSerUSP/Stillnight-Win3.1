@@ -846,7 +846,7 @@ export class Scene_Map extends Scene_Base {
             label: "Auto Battle",
             type: "toggle",
             value: SettingsAdapter.autoBattle,
-            onChange: (val) => {
+            onChange: (_val) => {
                 SettingsAdapter.toggleAutoBattle();
                 AudioAdapter.play('UI_SELECT');
             }

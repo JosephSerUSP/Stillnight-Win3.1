@@ -1,6 +1,5 @@
 import { Window_Base } from "./base.js";
 import { renderCreatureInfo, createInteractiveLabel } from "./utils.js";
-import { evaluateFormula } from "../../core/utils.js";
 import { TRAIT_DEFINITIONS } from "../../engine/rules/trait_definitions.js";
 import { EffectAdapter } from "../../adapters/effect_adapter.js";
 

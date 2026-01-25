@@ -1,6 +1,4 @@
 // src/adapters/battle_adapter.js
-import { BattleSystem } from "../engine/systems/battle.js";
-
 /**
  * Wraps BattleSystem to look like BattleManager for legacy compatibility.
  */

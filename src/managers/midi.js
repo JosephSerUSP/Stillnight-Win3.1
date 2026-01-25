@@ -47,8 +47,8 @@ export class MidiParser {
   parse() {
     this.pos = 0;
     if (this.readString(4) !== "MThd") throw new Error("Invalid MIDI header");
-    const headerLen = this.readInt32();
-    const format = this.readInt16();
+    this.readInt32(); // headerLen
+    this.readInt16(); // format
     const nTracks = this.readInt16();
     const division = this.readInt16();
 
@@ -232,7 +232,7 @@ export class MidiPlayer {
       try {
         osc.stop();
         osc.disconnect();
-      } catch (e) { /* ignore */ }
+      } catch (_e) { /* ignore */ }
     });
     this.activeOscillators = [];
   }
@@ -246,7 +246,7 @@ export class MidiPlayer {
         try {
             osc.stop();
             osc.disconnect();
-        } catch (e) { /* ignore */ }
+        } catch (_e) { /* ignore */ }
     });
     this.activeOscillators = [];
   }
@@ -289,7 +289,6 @@ export class MidiPlayer {
         // Simple loop: restart when last event is processed
         // Add a small buffer based on the last event time
         const duration = this.events[this.events.length - 1].time;
-        const delay = Math.max(0, (this.startTime + duration) - currentTime);
 
         // Wait for the track to naturally finish before looping
         // Actually, for simplicity, let's just loop immediately if we processed everything.
@@ -348,7 +347,7 @@ export class MidiPlayer {
       // Garbage collection of AudioNodes handles the rest after disconnection/stop
       // We should disconnect after stop to be clean, but time-delayed stop prevents immediate disconnect.
       // So we rely on GC.
-      setTimeout(() => { try { osc.disconnect(); } catch(e){ /* ignore */ } }, (time - this.audioCtx.currentTime + 1) * 1000);
+      setTimeout(() => { try { osc.disconnect(); } catch(_e){ /* ignore */ } }, (time - this.audioCtx.currentTime + 1) * 1000);
     }
   }
 }

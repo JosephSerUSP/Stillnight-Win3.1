@@ -1,5 +1,5 @@
 import { Game_Battler } from "../objects/battler.js";
-import { randInt, pickWeighted, random } from "../core/utils.js";
+import { randInt, pickWeighted } from "../core/utils.js";
 import { Registry } from "../engine/data/registry.js";
 
 /**
@@ -12,13 +12,13 @@ export class EncounterAdapter {
      * @param {Object} mapFloor - The floor data object.
      * @param {Object|string} encounterData - Specific encounter ID or config.
      * @param {number} depth - Dungeon depth.
-     * @param {import("../managers/data.js").DataManager} dataManager - Legacy DataManager (fallback).
+     * @param {import("../managers/data.js").DataManager} _dataManager - Legacy DataManager (fallback).
      * @returns {Array<Game_Battler>} List of enemy instances.
      */
-    static generateEnemies(mapFloor, encounterData, depth, dataManager) {
+    static generateEnemies(mapFloor, encounterData, depth, _dataManager) {
         const enemies = [];
         // Use Registry if available, else fallback to dataManager or empty
-        const actors = Registry.get('actors') || (dataManager ? dataManager.actors : []);
+        const actors = Registry.get('actors') || (_dataManager ? _dataManager.actors : []);
 
         if (!actors || actors.length === 0) return [];
 
@@ -95,7 +95,7 @@ export class EncounterAdapter {
     /**
      * Creates a specific Boss instance (e.g. Eternal Warden).
      */
-    static createBoss(depth, dataManager) {
+    static createBoss(depth, _dataManager) {
         // Hardcoded boss for now as per Scene_Battle legacy
         const bossHp = 40 + (depth - 3) * 5;
         return new Game_Battler({

@@ -1,5 +1,5 @@
 import { InterpreterState } from "../session/interpreter_state.js";
-import { randInt, pickWeighted, random } from "../../core/utils.js";
+import { randInt } from "../../core/utils.js";
 import { interpolateText } from "../utils/text_interpolator.js";
 import { TransitionLogic } from "../graph/transition.js";
 
@@ -98,7 +98,7 @@ export class InterpreterSystem {
 
     // --- Handlers ---
 
-    _handleBattle(state, command, session) {
+    _handleBattle(state, _command, _session) {
         const event = state.activeEvent;
         const x = event ? event.x : 0;
         const y = event ? event.y : 0;
@@ -117,15 +117,15 @@ export class InterpreterSystem {
         }];
     }
 
-    _handleShop(state, command, session) {
+    _handleShop(state, command, _session) {
         return [{ type: 'SHOP_START', shopId: command.shopId }];
     }
 
-    _handleRecruit(state, command, session) {
+    _handleRecruit(_state, command, _session) {
         return [{ type: 'RECRUIT_OPEN', options: command }];
     }
 
-    _handleNpcDialogue(state, command, session) {
+    _handleNpcDialogue(_state, command, _session) {
         return [{
             type: 'NPC_DIALOGUE_OPEN',
             id: command.id
@@ -134,15 +134,15 @@ export class InterpreterSystem {
         }];
     }
 
-    _handleDescend(state, command, session) {
+    _handleDescend(_state, _command, _session) {
         return [{ type: 'DESCEND' }, { type: 'PLAY_SOUND', name: 'STAIRS' }];
     }
 
-    _handleAscend(state, command, session) {
+    _handleAscend(_state, _command, _session) {
         return [{ type: 'ASCEND' }, { type: 'PLAY_SOUND', name: 'STAIRS' }];
     }
 
-    _handlePlaySound(state, command, session) {
+    _handlePlaySound(_state, command, _session) {
         return [{ type: 'PLAY_SOUND', name: command.name }];
     }
 
@@ -229,11 +229,11 @@ export class InterpreterSystem {
         return null;
     }
 
-    _handleTakeItem(state, command, session) {
+    _handleTakeItem(_state, _command, _session) {
          return null;
     }
 
-    _handleGiveXp(state, command, session) {
+    _handleGiveXp(_state, command, _session) {
         return [{
             type: 'GIVE_XP',
             amount: command.amount
@@ -259,12 +259,12 @@ export class InterpreterSystem {
         return events;
     }
 
-    _handleLog(state, command, session) {
+    _handleLog(_state, command, session) {
         const text = interpolateText(command.text, session);
         return [{ type: 'LOG', text: text }];
     }
 
-    _handleBreakableWall(state, command, session) {
+    _handleBreakableWall(state, command, _session) {
         const event = state.activeEvent;
         if (!event) return null;
 
@@ -286,7 +286,7 @@ export class InterpreterSystem {
         return events;
     }
 
-    _handleWait(state, command, session) {
+    _handleWait(state, command, _session) {
         state.waitMode = 'time';
         state.waitValue = command.duration || 1000;
         return null;
@@ -311,7 +311,7 @@ export class InterpreterSystem {
         return null;
     }
 
-    _handleWeightedBranch(state, command, session) {
+    _handleWeightedBranch(state, command, _session) {
         const roll = Math.random();
         let accumulated = 0;
         let selected = null;
@@ -335,7 +335,7 @@ export class InterpreterSystem {
         return null;
     }
 
-    _handleChoice(state, command, session) {
+    _handleChoice(state, command, _session) {
         const events = [{
             type: 'SHOW_CHOICES',
             options: command.options
@@ -373,7 +373,7 @@ export class InterpreterSystem {
         return null;
     }
 
-    _handleOfferQuest(state, command, session) {
+    _handleOfferQuest(state, command, _session) {
         return [{
             type: 'QUEST_OFFER',
             questId: command.questId,
@@ -383,7 +383,7 @@ export class InterpreterSystem {
         }];
     }
 
-    _handleCompleteQuest(state, command, session) {
+    _handleCompleteQuest(state, command, _session) {
         return [{
             type: 'QUEST_COMPLETE',
             questId: command.questId,
