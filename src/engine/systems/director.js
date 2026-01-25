@@ -109,11 +109,13 @@ export class DirectorSystem {
         }
 
         // Handle TEXT -> CHOICE Merge
-        // Optimization: If current node is TEXT and simply transitions to a CHOICE node, merge them.
+        // Optimization: If current node is TEXT and the NEXT node is CHOICE, merge them into a single UI event.
+        // This prevents the user from having to click "Continue" on a text box just to immediately see a choice menu.
+        // The TEXT content is prepended to the CHOICE content (if any).
         if (node.type === 'TEXT' && node.next) {
             const nextNode = this.walker.data.nodes[node.next];
             if (nextNode && nextNode.type === 'CHOICE') {
-                 // Move logic state to the choice node immediately
+                 // Move logic state to the choice node immediately so the graph is correctly positioned
                  this.walker.moveTo(node.next);
 
                  // Create a transient merged node for the observer
