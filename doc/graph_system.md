@@ -72,6 +72,15 @@ Currently, the Graph System is implemented for **NPC Interactions** only.
 *   **Traps**: Use legacy `_triggerTrap` logic.
 *   **Map Events**: Simple events (Treasure, Battle) use standard event handlers.
 
+## Runtime Optimizations
+
+### Text-Choice Merge
+To reduce user clicks and improve flow, `DirectorSystem` implements a **Text-Choice Merge**.
+*   **Scenario**: A `TEXT` node's `next` property points directly to a `CHOICE` node.
+*   **Behavior**: The system automatically transitions to the `CHOICE` node but preserves the content of the preceding `TEXT` node.
+*   **Result**: The user sees the text and the choices simultaneously in a single window update, rather than having to click "Continue" on the text just to see the choices.
+*   **Implementation**: This logic is handled inside `DirectorSystem.processCurrentNode()`.
+
 ## Extending the System
 
 To add new actions:
