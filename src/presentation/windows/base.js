@@ -250,7 +250,6 @@ export class Window_Base {
             if (SettingsAdapter.windowAnimations) {
                 let targetHeight;
                 if (this.height === 'auto') {
-                    const savedHeight = this.element.style.height;
                     this.element.style.height = 'auto';
                     targetHeight = this.element.scrollHeight; // Use scrollHeight for reliability
                     if (targetHeight === 0) targetHeight = this.element.getBoundingClientRect().height;

@@ -8,6 +8,7 @@ import { ThemeManager } from "./managers/theme.js";
 import { ConfigManager } from "./managers/config.js";
 import { SoundManager } from "./managers/sound.js";
 import { InterpreterAdapter } from "./adapters/interpreter_adapter.js";
+import { ProgressionSystem } from "./engine/systems/progression.js";
 import { Scene_Boot, Scene_Map as Scene_Map_Class, Scene_Battle, Scene_Shop } from "./presentation/scenes/scenes.js";
 
 /**
@@ -43,4 +44,5 @@ export function exposeGlobals(instances = {}) {
     window.ThemeManager = ThemeManager;
     window.ConfigManager = ConfigManager;
     window.SoundManager = SoundManager;
+    window.ProgressionSystem = ProgressionSystem;
 }

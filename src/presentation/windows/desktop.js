@@ -174,7 +174,7 @@ export class Window_Exploration extends Window_Base {
         this.setTitle(title);
     }
 
-    setMode(mode) {
+    setMode(_mode) {
         // Mode is displayed on the map info panel instead of the embedded header
     }
 

@@ -24,7 +24,7 @@ export const TRAIT_DEFINITIONS = {
         label: () => "HP Regen",
         format: (value) => `${value > 0 ? '+' : ''}${Math.round(value * 100)}%`,
         trigger: 'turnStart',
-        execute: (value, battler, context) => {
+        execute: (value, battler, _context) => {
             const amount = Math.floor(battler.maxHp * value);
             if (amount <= 0) return null;
 
@@ -134,7 +134,7 @@ export const TRAIT_DEFINITIONS = {
         format: (value) => `${Math.round(value * 100)}%`
     },
     'STATE_RESIST': {
-        label: (dataId) => `Immunity`,
+        label: (_dataId) => `Immunity`,
         format: (value, dataId) => `${dataId}`
     },
     'ATTACK_ELEMENT': {
@@ -142,7 +142,7 @@ export const TRAIT_DEFINITIONS = {
         format: (value, dataId) => `${dataId}`
     },
     'ATTACK_STATE': {
-        label: (dataId) => `Attack Effect`,
+        label: (_dataId) => `Attack Effect`,
         format: (value, dataId) => `${dataId} ${Math.round(value * 100)}%`
     },
     'SLOT_TYPE': {
@@ -167,7 +167,7 @@ export const TRAIT_DEFINITIONS = {
     },
     'ON_PERMADEATH': {
         label: () => "On Death",
-        format: (value) => "Revives once"
+        format: (_value) => "Revives once"
     },
     'SYMBIOSIS': {
         label: () => "Symbiosis",

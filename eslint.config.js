@@ -13,7 +13,7 @@ export default [
             ecmaVersion: 2022
         },
         rules: {
-            "no-unused-vars": "warn",
+            "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_", "caughtErrorsIgnorePattern": "^_" }],
             "no-undef": "error"
         },
         ignores: ["tests/**"]

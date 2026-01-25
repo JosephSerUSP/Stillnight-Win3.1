@@ -12,11 +12,6 @@ test('Verify Battle Layout and Evolution Preview', async ({ page }) => {
 
     // --- BATTLE LAYOUT VERIFICATION ---
     await page.evaluate(async () => {
-        const battleManager = new window.BattleManager(window.sceneManager.currentScene().party, window.dataManager);
-        const enemies = [
-            new window.Game_Battler(window.dataManager.actors.find(a => a.id === 'bat'), 1, true)
-        ];
-
         window.sceneManager.currentScene().startBattle(0, 0);
     });
 
@@ -97,7 +92,10 @@ test('Verify Shop and Inventory Refactor', async ({ page }) => {
     await page.locator('button:has-text("Leave")').click();
 
     // --- INVENTORY VERIFICATION ---
-    await page.locator('button[data-testid="btn-inventory"]').click();
+    // Open Party menu
+    await page.locator('.menu-toggle', { hasText: 'Party' }).click();
+    // Click Inventory
+    await page.locator('button[data-testid="menu-inventory"]').click();
 
     const invWindow = page.locator('#inventory-window');
     await expect(invWindow).toBeVisible();
