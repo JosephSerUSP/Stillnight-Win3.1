@@ -1,5 +1,9 @@
 # Game Design Document
 
+> **[DEPRECATED]**
+> This document contains outdated mechanics and design concepts.
+> Please refer to `doc/gameDesignJulesRewrite.md` for the current, authoritative design specification.
+
 ## 1. Core Philosophy: The Unified System
 The game's architecture is built on a unified "Effect & Trait" system. Everything that modifies a battler's state—whether temporary (like a buff), permanent (like equipment), or innate (like stats)—is handled through this system. This ensures maximum flexibility for creating novel mechanics.
 

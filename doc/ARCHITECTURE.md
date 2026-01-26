@@ -85,6 +85,8 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **SceneManager**: Stack-based State Machine.
 *   **WindowManager**: Visual Stack management.
 *   **DataManager**: Static asset loader.
+*   **SoundManager**: (Static) Adapter for the Web Audio API.
+*   **InputController**: (Static) Adapter for DOM Input Events.
 
 ---
 
