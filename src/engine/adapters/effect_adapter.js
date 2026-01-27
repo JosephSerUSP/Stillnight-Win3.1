@@ -1,4 +1,4 @@
-import { EffectSystem } from "../engine/rules/effects.js";
+import { EffectSystem } from "../rules/effects.js";
 
 /**
  * Adapter for effect previews.

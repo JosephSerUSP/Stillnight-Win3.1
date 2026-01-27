@@ -1,6 +1,6 @@
-import { Game_Battler } from "../objects/battler.js";
-import { randInt, pickWeighted } from "../core/utils.js";
-import { Registry } from "../engine/data/registry.js";
+import { Game_Battler } from "../../objects/battler.js";
+import { randInt, pickWeighted } from "../../core/utils.js";
+import { Registry } from "../data/registry.js";
 
 /**
  * Adapter to generate Game_Battler instances from encounter data.
@@ -12,7 +12,7 @@ export class EncounterAdapter {
      * @param {Object} mapFloor - The floor data object.
      * @param {Object|string} encounterData - Specific encounter ID or config.
      * @param {number} depth - Dungeon depth.
-     * @param {import("../managers/data.js").DataManager} _dataManager - Legacy DataManager (fallback).
+     * @param {import("../../data/loader.js").DataManager} _dataManager - Legacy DataManager (fallback).
      * @returns {Array<Game_Battler>} List of enemy instances.
      */
     static generateEnemies(mapFloor, encounterData, depth, _dataManager) {

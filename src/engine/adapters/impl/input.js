@@ -4,7 +4,7 @@
  */
 export class InputController {
     /**
-     * @param {import("../presentation/scenes/scenes.js").Scene_Map} scene
+     * @param {import("../../../presentation/scenes/scenes.js").Scene_Map} scene
      */
     constructor(scene) {
         this.scene = scene;

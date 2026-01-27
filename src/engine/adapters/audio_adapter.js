@@ -1,4 +1,4 @@
-import { SoundManager } from "../managers/sound.js";
+import { SoundManager } from "./impl/sound.js";
 
 /**
  * Adapter for audio operations.

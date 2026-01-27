@@ -34,7 +34,7 @@ export default [
         rules: {
             "no-restricted-imports": ["error", {
                 "patterns": [{
-                    "group": ["../../engine/systems/**", "../../managers/progression.js"],
+                    "group": ["../../engine/systems/**"],
                     "message": "Presentation Windows cannot import from Engine Systems directly. Use Selectors."
                 }]
             }]

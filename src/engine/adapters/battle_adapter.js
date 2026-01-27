@@ -1,4 +1,4 @@
-// src/adapters/battle_adapter.js
+// src/engine/adapters/battle_adapter.js
 /**
  * Wraps BattleSystem to look like BattleManager for legacy compatibility.
  */

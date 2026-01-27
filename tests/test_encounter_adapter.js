@@ -1,4 +1,4 @@
-import { EncounterAdapter } from "../src/adapters/encounter_adapter.js";
+import { EncounterAdapter } from "../src/engine/adapters/encounter_adapter.js";
 import { Registry } from "../src/engine/data/registry.js";
 
 // Mock Data

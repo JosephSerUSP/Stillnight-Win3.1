@@ -1,4 +1,4 @@
-import { InputController } from "../managers/index.js";
+import { InputController } from "./impl/input.js";
 
 /**
  * Adapter for input handling to keep scenes away from manager imports.

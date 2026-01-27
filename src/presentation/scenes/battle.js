@@ -1,11 +1,11 @@
 import { Scene_Base } from "./base.js";
 import { probabilisticRound, random } from "../../core/utils.js";
-import { AudioAdapter } from "../../adapters/audio_adapter.js";
-import { SettingsAdapter } from "../../adapters/settings_adapter.js";
+import { AudioAdapter } from "../../engine/adapters/audio_adapter.js";
+import { SettingsAdapter } from "../../engine/adapters/settings_adapter.js";
 import { Window_Battle, Window_Victory, createInteractiveLabel } from "../windows/index.js";
 import { BattleSystem } from "../../engine/systems/battle.js";
-import { BattleAdapter } from "../../adapters/battle_adapter.js";
-import { EncounterAdapter } from "../../adapters/encounter_adapter.js";
+import { BattleAdapter } from "../../engine/adapters/battle_adapter.js";
+import { EncounterAdapter } from "../../engine/adapters/encounter_adapter.js";
 import { Registry } from "../../engine/data/registry.js";
 import { selectBattleScreen } from "../selectors/battle.js";
 import { selectInventory } from "../selectors/inventory.js";

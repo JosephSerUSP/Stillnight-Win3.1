@@ -1,4 +1,5 @@
-import { DataManager, SceneManager } from "./managers/index.js";
+import { DataManager } from "./data/loader.js";
+import { SceneManager } from "./engine/core/scene_manager.js";
 import { Scene_Boot } from "./presentation/scenes/scenes.js";
 import { WindowManager } from "./presentation/windows/index.js";
 import { exposeGlobals } from "./debug_tools.js";

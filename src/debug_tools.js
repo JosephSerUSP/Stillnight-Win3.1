@@ -4,10 +4,10 @@ import { Game_Map } from "./objects/map.js";
 import { Game_Event } from "./objects/event.js";
 import { Game_Base } from "./objects/game_base.js";
 import { Game_Action } from "./objects/action.js";
-import { ThemeManager } from "./managers/theme.js";
-import { ConfigManager } from "./managers/config.js";
-import { SoundManager } from "./managers/sound.js";
-import { InterpreterAdapter } from "./adapters/interpreter_adapter.js";
+import { ThemeManager } from "./presentation/managers/theme_manager.js";
+import { ConfigManager } from "./engine/adapters/impl/config.js";
+import { SoundManager } from "./engine/adapters/impl/sound.js";
+import { InterpreterAdapter } from "./engine/adapters/interpreter_adapter.js";
 import { ProgressionSystem } from "./engine/systems/progression.js";
 import { Scene_Boot, Scene_Map as Scene_Map_Class, Scene_Battle, Scene_Shop } from "./presentation/scenes/scenes.js";
 
