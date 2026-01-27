@@ -34,9 +34,9 @@ global.fetch = async (url) => {
 };
 
 // Import Engine Modules
-import { DataManager } from '../src/managers/data.js';
+import { DataManager } from '../src/data/loader.js';
 import { BattleSystem } from '../src/engine/systems/battle.js';
-import { BattleAdapter } from '../src/adapters/battle_adapter.js';
+import { BattleAdapter } from '../src/engine/adapters/battle_adapter.js';
 import { Registry } from '../src/engine/data/registry.js';
 import { RandomWalkGenerator } from '../src/generators/dungeon_generator.js';
 import { Game_Party } from '../src/objects/party.js';

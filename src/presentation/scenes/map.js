@@ -4,14 +4,15 @@ import { Scene_Shop } from "./shop.js";
 import { Game_Party } from "../../objects/party.js";
 import { Game_Battler } from "../../objects/battler.js";
 import { Game_Action } from "../../objects/action.js";
-import { InterpreterAdapter } from "../../adapters/interpreter_adapter.js";
-import { ThemeManager, HUDManager } from "../../managers/index.js";
-import { AudioAdapter } from "../../adapters/audio_adapter.js";
-import { SettingsAdapter } from "../../adapters/settings_adapter.js";
-import { InputAdapter } from "../../adapters/input_adapter.js";
+import { InterpreterAdapter } from "../../engine/adapters/interpreter_adapter.js";
+import { ThemeManager } from "../managers/theme_manager.js";
+import { HUDManager } from "../managers/hud_manager.js";
+import { AudioAdapter } from "../../engine/adapters/audio_adapter.js";
+import { SettingsAdapter } from "../../engine/adapters/settings_adapter.js";
+import { InputAdapter } from "../../engine/adapters/input_adapter.js";
 import { Window_Desktop } from "../windows/index.js";
 import { ProgressionSystem } from "../../engine/systems/progression.js";
-import { ExplorationAdapter } from "../../adapters/exploration_adapter.js";
+import { ExplorationAdapter } from "../../engine/adapters/exploration_adapter.js";
 import { selectPartyHUD } from "../selectors/party.js";
 import { selectInventory } from "../selectors/inventory.js";
 import { selectBattlerDetails } from "../selectors/details.js";
@@ -28,8 +29,8 @@ import { SessionSerializer } from "../../engine/session/serializer.js";
 export class Scene_Map extends Scene_Base {
   /**
    * Creates a new Scene_Map.
-   * @param {import("../../managers/index.js").DataManager} dataManager - The data manager.
-   * @param {import("../../managers/index.js").SceneManager} sceneManager - The scene manager.
+   * @param {import("../../data/loader.js").DataManager} dataManager - The data manager.
+   * @param {import("../../engine/core/scene_manager.js").SceneManager} sceneManager - The scene manager.
    * @param {import("../windows/index.js").WindowManager} windowManager - The window manager.
    * @param {Object} [session] - The game session state.
    */

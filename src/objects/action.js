@@ -101,7 +101,7 @@ export class Game_Action {
     /**
      * Applies the action to the target.
      * @param {import("./battler.js").Game_Battler} target - The target.
-     * @param {import("../managers/data.js").DataManager} dataManager - Data manager for lookups.
+     * @param {import("../data/loader.js").DataManager} dataManager - Data manager for lookups.
      * @returns {Array} Events resulting from the action.
      */
     apply(target, dataManager) {

@@ -1,7 +1,7 @@
 import { Window_Base } from "./base.js";
 import { renderCreatureInfo, createInteractiveLabel } from "./utils.js";
 import { TRAIT_DEFINITIONS } from "../../engine/rules/trait_definitions.js";
-import { EffectAdapter } from "../../adapters/effect_adapter.js";
+import { EffectAdapter } from "../../engine/adapters/effect_adapter.js";
 
 /**
  * @class Window_Confirm

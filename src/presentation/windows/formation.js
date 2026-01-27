@@ -1,6 +1,6 @@
 import { Window_Base } from "./base.js";
 import { createPartySlot, createReserveSlot, createCommanderSlot } from "./utils.js";
-import { AudioAdapter } from "../../adapters/audio_adapter.js";
+import { AudioAdapter } from "../../engine/adapters/audio_adapter.js";
 
 /**
  * @class Window_Formation

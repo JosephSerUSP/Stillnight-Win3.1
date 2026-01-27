@@ -1,4 +1,4 @@
-import { ExplorationSystem } from "../engine/systems/exploration.js";
+import { ExplorationSystem } from "../systems/exploration.js";
 
 /**
  * Adapter to bridge Scene_Map (legacy View/Controller) with ExplorationSystem (pure Engine).
@@ -6,8 +6,8 @@ import { ExplorationSystem } from "../engine/systems/exploration.js";
  */
 export class ExplorationAdapter {
     /**
-     * @param {import("../objects/party.js").Game_Party} party
-     * @param {import("../engine/session/exploration_state.js").ExplorationState} [state]
+     * @param {import("../../objects/party.js").Game_Party} party
+     * @param {import("../session/exploration_state.js").ExplorationState} [state]
      */
     constructor(party, state = null) {
         this.system = new ExplorationSystem();

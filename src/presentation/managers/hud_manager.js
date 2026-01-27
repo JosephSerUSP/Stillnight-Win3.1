@@ -17,7 +17,7 @@ import {
   Window_Info,
   Window_StackNav,
   WindowLayer
-} from "../presentation/windows/index.js";
+} from "../windows/index.js";
 
 /**
  * @class HUDManager
@@ -25,7 +25,7 @@ import {
  */
 export class HUDManager {
     /**
-     * @param {import("../presentation/windows/index.js").WindowManager} windowManager
+     * @param {import("../windows/index.js").WindowManager} windowManager
      * @param {HTMLElement} gameContainer
      */
     constructor(windowManager, gameContainer) {

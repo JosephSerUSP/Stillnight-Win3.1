@@ -1,10 +1,10 @@
-import { InterpreterSystem } from "../engine/systems/interpreter.js";
-import { DirectorSystem } from "../engine/systems/director.js";
+import { InterpreterSystem } from "../systems/interpreter.js";
+import { DirectorSystem } from "../systems/director.js";
 import { AudioAdapter } from "./audio_adapter.js";
-import { renderCreatureInfo } from "../presentation/windows/index.js";
-import { Game_Battler } from "../objects/battler.js";
-import { QuestSystem } from "../engine/systems/quest.js";
-import { randInt } from "../core/utils.js";
+import { renderCreatureInfo } from "../../presentation/windows/index.js";
+import { Game_Battler } from "../../objects/battler.js";
+import { QuestSystem } from "../systems/quest.js";
+import { randInt } from "../../core/utils.js";
 
 /**
  * @class InterpreterAdapter
@@ -48,7 +48,7 @@ export class InterpreterAdapter {
         this.scene.inputLocked = true;
 
         try {
-            const state = new (await import("../engine/session/interpreter_state.js")).InterpreterState();
+            const state = new (await import("../session/interpreter_state.js")).InterpreterState();
             state.start(sequence, eventContext);
 
             while(state.stack.length > 0) {

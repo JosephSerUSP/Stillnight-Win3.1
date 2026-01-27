@@ -1,6 +1,6 @@
 import { Graphics } from "../../core/utils.js";
 import { UI } from "./builder.js";
-import { SettingsAdapter } from "../../adapters/settings_adapter.js";
+import { SettingsAdapter } from "../../engine/adapters/settings_adapter.js";
 import { makeDraggable } from "./components.js";
 
 /**

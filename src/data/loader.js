@@ -1,4 +1,4 @@
-import { SoundManager } from "./sound.js";
+import { SoundManager } from "../engine/adapters/impl/sound.js";
 
 /**
  * @class DataManager
