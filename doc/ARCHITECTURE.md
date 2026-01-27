@@ -72,9 +72,10 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **BattleSystem**: Pure logic for Turn Order, AI decisions, and Round resolution.
 *   **ExplorationSystem**: Logic for grid movement and collisions.
 *   **InterpreterSystem**: Logic for event command execution and state management.
+*   **DirectorSystem** (`src/engine/systems/director.js`): Logic for Dialogue Graphs, handling branching nodes and "Text-Choice Merge" optimization.
 *   **EffectSystem** (`src/engine/rules/effects.js`): Pure registry of effect handlers.
-*   **TraitRules** (`src/engine/rules/traits.js`): Pure logic for parameter calculations and passive traits.
-*   **EncounterRules** (`src/engine/rules/encounter_rules.js`): Pure logic for initiative and encounter generation.
+*   **TraitRules** (`src/engine/rules/traits.js`): Pure logic for parameter calculations and passive traits (Replaces `TraitManager`).
+*   **EncounterRules** (`src/engine/rules/encounter_rules.js`): Pure logic for initiative and encounter generation (Replaces `EncounterManager`).
 
 ### 4.2. Adapters (`src/adapters/`)
 *   **BattleAdapter**: Connects `Scene_Battle` (UI) to `BattleSystem`.
@@ -82,9 +83,9 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **InterpreterAdapter**: Connects `Scene_Map` events to `InterpreterSystem` and handles UI side-effects (Show Text, Quest Offers).
 
 ### 4.3. Infrastructure Managers (`src/managers/`)
-*   **SceneManager**: Stack-based State Machine.
-*   **WindowManager**: Visual Stack management.
-*   **DataManager**: Static asset loader.
+*   **SceneManager**: Stack-based State Machine for the application.
+*   **DataManager**: Static asset loader and data container.
+*   **SoundManager**: Implementation for Web Audio API (often accessed via `AudioAdapter`).
 
 ---
 
@@ -130,6 +131,9 @@ UI.build(parent, {
     children: [...]
 });
 ```
+
+### 6.3. WindowManager (`src/presentation/windows/manager.js`)
+Manages the visual stack of windows, handling focus, z-indexing, and modal behavior.
 
 ---
 
