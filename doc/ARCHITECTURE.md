@@ -72,9 +72,12 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **BattleSystem**: Pure logic for Turn Order, AI decisions, and Round resolution.
 *   **ExplorationSystem**: Logic for grid movement and collisions.
 *   **InterpreterSystem**: Logic for event command execution and state management.
-*   **EffectSystem** (`src/engine/rules/effects.js`): Pure registry of effect handlers.
+*   **DirectorSystem**: Logic for branching dialogue graphs, router nodes, and text/choice merging.
+*   **ProgressionSystem**: Logic for XP, Leveling, and Evolution criteria checks.
+*   **QuestSystem**: Pure logic for quest state validation, requirements checking, and reward application.
+*   **EffectSystem** (`src/engine/rules/effects.js`): Pure registry of effect handlers. Applies changes to battlers.
 *   **TraitRules** (`src/engine/rules/traits.js`): Pure logic for parameter calculations and passive traits.
-*   **EncounterRules** (`src/engine/rules/encounter_rules.js`): Pure logic for initiative and encounter generation.
+*   **EncounterRules** (`src/engine/rules/encounter_rules.js`): Pure logic for initiative determination (Sneak Attack / First Strike).
 
 ### 4.2. Adapters (`src/adapters/`)
 *   **BattleAdapter**: Connects `Scene_Battle` (UI) to `BattleSystem`.
@@ -85,6 +88,8 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **SceneManager**: Stack-based State Machine.
 *   **WindowManager**: Visual Stack management.
 *   **DataManager**: Static asset loader.
+*   **HUDManager**: Manages the WindowLayer and coordinates high-level UI operations (Presentation layer).
+*   **ThemeManager**: Manages CSS variables and visual themes (Presentation layer).
 
 ---
 
