@@ -4,7 +4,7 @@ import { Game_Map } from "./objects/map.js";
 import { Game_Event } from "./objects/event.js";
 import { Game_Base } from "./objects/game_base.js";
 import { Game_Action } from "./objects/action.js";
-import { ThemeManager } from "./managers/theme.js";
+import { ThemeManager } from "./presentation/managers/theme.js";
 import { ConfigManager } from "./managers/config.js";
 import { SoundManager } from "./managers/sound.js";
 import { InterpreterAdapter } from "./adapters/interpreter_adapter.js";
