@@ -138,7 +138,7 @@ UI.build(parent, {
 ### 7.1. Round-Based Turn System
 *   **System**: `BattleSystem` (`src/engine/systems/battle.js`).
 *   **Logic**:
-    1.  `planRound()`: Sorts participants by Speed (`agi`).
+    1.  `planRound()`: Collects actions from AI and Player, then sorts participants by total Speed (`asp` + action speed).
     2.  `resolveRound()`: Iterates through the sorted queue.
 *   **Flow**:
     *   Pre-round: Command Input.
@@ -149,7 +149,7 @@ The system uses two execution paths for actions, both utilizing `EffectSystem` f
 
 **A. Combat Pipeline (`BattleSystem`):**
 Used during combat rounds for maximum control and event batching.
-1.  **Selection**: `BattleSystem.getAIAction` or Player Input.
+1.  **Selection**: `BattleSystem.getAIAction` (Randomly selects a valid skill; returns null if none available) or Player Input.
 2.  **Execution**: `BattleSystem.executeAction` calls internal handlers (`_executeSkill`).
 3.  **Resolution**: Directly invokes `EffectSystem.apply()` to generate `Event[]`.
 

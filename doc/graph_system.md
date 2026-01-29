@@ -58,6 +58,9 @@ Graph definitions are stored as JSON files in `data/graphs/`. The `data/graphs/i
 *   **GraphWalker**: Maintains the current node pointer and history.
 *   **TransitionLogic**: Evaluates condition strings against the game session.
 
+**Runtime Optimizations:**
+*   **TEXT -> CHOICE Merge**: If a `TEXT` node is immediately followed by a `CHOICE` node, the `DirectorSystem` automatically advances to the choice node. It emits a single merged node event (containing the combined text and choices) to the observer. This prevents the player from having to click "Continue" just to see a menu.
+
 ### 3. Presentation Layer (`src/adapters/interpreter_adapter.js`)
 The `InterpreterAdapter` acts as the observer. It listens to the Director and updates the `Window_Event`.
 *   **Dialogue View**: `Window_Event` renders the text and choices.

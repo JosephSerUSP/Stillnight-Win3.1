@@ -38,9 +38,9 @@ Traits modify the inputs for the `Game_Battler` parameter system:
 
 ### 3.2. State Modifiers (Non-Numeric)
 Some traits alter the logic or state of the battler directly via functional getters:
-*   `eleAdd`: Adds an element to the battler's alignment.
-*   `eleChg`: Overrides the battler's elemental alignment.
-*   `actionMod`: Modifies properties of the battler's actions (e.g., speed boost).
+*   `ELEMENT_CHANGE` (was `eleChg`): Overrides the battler's elemental alignment.
+*   `actionMod`: Modifies properties of the battler's actions (e.g., speed boost). (Planned)
+*   `eleAdd`: Adds an element to the battler's alignment. (Not Implemented)
 
 ### 3.3. Triggered Traits
 Traits can listen for specific triggers (Events) and execute **Effects**:
@@ -67,7 +67,7 @@ Battlers are the entities in combat. Their statistics are derived dynamically us
 
 ### 5.1. Core Statistics (`param`)
 *   `mhp` (Max HP): Maximum health.
-*   `mpd` (MP Drain): Amount of MP drained from Summoner per action.
+*   `mpd` (MP Drain): Amount of MP drained from Summoner per action. (Planned)
 *   `atk` (Attack): Physical damage multiplier (Base 10 = 100%).
 *   `mat` (Magic): Magical damage multiplier (Base 10 = 100%).
 *   `def` (Defense): Physical damage reduction (Base 10 = 100%).
@@ -104,6 +104,8 @@ All combat maneuvers are encapsulated in the `Game_Action` class.
 ---
 
 ## 7. The Summoner (The Player)
+*Note: Mechanics in this section are currently in planning/development phase.*
+
 The Player Character (PC) acts as the commander.
 *   **MP Management**: MP is the "fuel" for the dungeon run. 0 MP -> progressive party debuffs (`param` penalties).
 *   **Turn**: Can perform **one** Action (Spell, Item, Formation) per turn.
