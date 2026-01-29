@@ -1,3 +1,6 @@
+# DEPRECATED
+> **Note:** This document is deprecated. Please refer to `doc/gameDesignJulesRewrite.md` for the authoritative design documentation.
+
 # Game Design Document
 
 ## 1. Core Philosophy: The Unified System
