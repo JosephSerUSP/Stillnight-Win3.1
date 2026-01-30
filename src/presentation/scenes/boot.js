@@ -1,6 +1,6 @@
 import { Scene_Base } from "./base.js";
 import { Scene_Map } from "./map.js";
-import { ThemeManager } from "../../managers/index.js";
+import { ThemeManager } from "../managers/theme.js";
 import { Registry } from "../../engine/data/registry.js";
 import { SessionSerializer } from "../../engine/session/serializer.js";
 import { Game_Party } from "../../objects/party.js";
