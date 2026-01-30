@@ -11,7 +11,7 @@ This document outlines the architectural refactor to create a single source of t
 *   **Interpreter**: Migrated to `InterpreterSystem` and `InterpreterAdapter`. Legacy `managers/interpreter.js` deleted.
 *   **UI Decoupling**: Windows now use `Adapters` (Audio, Settings, Effect) and `Selectors`. Direct manager imports removed from key windows.
 *   **Save/Load**: Wired into `Scene_Boot` and `Scene_Map` via `SessionSerializer`.
-*   **Cleanup**: `src/objects/objects.js` retired. `src/legacy/` deleted.
+*   **Cleanup**: `src/objects/objects.js` retired. `src/objects/sprites.js` retired. `src/legacy/` deleted.
 
 ## Assessment
 
@@ -83,3 +83,4 @@ The roadmap is largely complete, with most systems migrated to the new architect
 *   Migrate remaining infrastructure managers (`Sound`, `Input`, `Config`) to pure Ports/Adapters structure (Complete — presentation routes through adapters for audio, settings, and input).
 *   Migrate `TraitManager` to `TraitRules` (Complete — TraitManager removed; TraitRules created in src/engine/rules/).
 *   Migrate `EncounterManager` to `EncounterRules` (Complete — EncounterManager removed; EncounterRules created in src/engine/rules/ with pure functions).
+*   Retire `src/objects/sprites.js` (Complete).
