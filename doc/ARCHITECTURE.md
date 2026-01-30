@@ -85,6 +85,9 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **SceneManager**: Stack-based State Machine.
 *   **WindowManager**: Visual Stack management.
 *   **DataManager**: Static asset loader.
+*   **SoundManager**: Audio playback and procedural sound synthesis.
+*   **ConfigManager**: persistent settings management.
+*   **InputController**: Global input handling.
 
 ---
 
@@ -138,7 +141,7 @@ UI.build(parent, {
 ### 7.1. Round-Based Turn System
 *   **System**: `BattleSystem` (`src/engine/systems/battle.js`).
 *   **Logic**:
-    1.  `planRound()`: Sorts participants by Speed (`agi`).
+    1.  `planRound()`: Sorts participants by Total Speed (Action Speed + Skill Speed).
     2.  `resolveRound()`: Iterates through the sorted queue.
 *   **Flow**:
     *   Pre-round: Command Input.
@@ -151,7 +154,7 @@ The system uses two execution paths for actions, both utilizing `EffectSystem` f
 Used during combat rounds for maximum control and event batching.
 1.  **Selection**: `BattleSystem.getAIAction` or Player Input.
 2.  **Execution**: `BattleSystem.executeAction` calls internal handlers (`_executeSkill`).
-3.  **Resolution**: Directly invokes `EffectSystem.apply()` to generate `Event[]`.
+3.  **Resolution**: Directly invokes `EffectSystem.apply()` to generate single Event objects (aggregated by BattleSystem).
 
 **B. Object Pipeline (`Game_Action`):**
 Used for Item/Skill usage from Menus (Scene_Map) or as a definition wrapper.

@@ -370,6 +370,7 @@ export class SoundManager {
 
   /**
    * Legacy beep (used if no configuration exists or direct call needed).
+   * @deprecated Use play() instead.
    */
   static beep(frequency = 440, duration = 120) {
       const sfxVol = ConfigManager.masterVolume * ConfigManager.sfxVolume;

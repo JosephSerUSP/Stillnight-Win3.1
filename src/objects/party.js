@@ -184,6 +184,7 @@ export class Game_Party {
 
   /**
    * Handles map steps. Drains MP and applies Weakened effects.
+   * Directly modifies HP/MP (bypassing EffectSystem) for map mechanics.
    * @param {boolean} [isSafe=false] - If true, prevents MP drain and removes weakened state.
    * @returns {Array} List of events (e.g. damage logs).
    */
