@@ -11,7 +11,7 @@ This document outlines the architectural refactor to create a single source of t
 *   **Interpreter**: Migrated to `InterpreterSystem` and `InterpreterAdapter`. Legacy `managers/interpreter.js` deleted.
 *   **UI Decoupling**: Windows now use `Adapters` (Audio, Settings, Effect) and `Selectors`. Direct manager imports removed from key windows.
 *   **Save/Load**: Wired into `Scene_Boot` and `Scene_Map` via `SessionSerializer`.
-*   **Cleanup**: `src/objects/objects.js` retired. `src/legacy/` deleted.
+*   **Cleanup**: `src/objects/objects.js` and `src/objects/sprites.js` retired. `src/legacy/` deleted.
 
 ## Assessment
 
@@ -78,6 +78,7 @@ The roadmap is largely complete, with most systems migrated to the new architect
 ## Phase 7 — Remove the remaining legacy knot (Complete)
 **Goal:** Final cleanups.
 *   Retire `src/objects/objects.js` barrel (Complete).
+*   Retire `src/objects/sprites.js` (Complete).
 *   Replace `window.*` debug globals with `DebugTools` (Complete - via `exposeGlobals`).
 *   Migrate `EffectManager` to `EffectSystem` (Complete — EffectManager removed; Game_Action and systems use EffectSystem with injected context).
 *   Migrate remaining infrastructure managers (`Sound`, `Input`, `Config`) to pure Ports/Adapters structure (Complete — presentation routes through adapters for audio, settings, and input).
