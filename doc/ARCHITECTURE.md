@@ -85,9 +85,9 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **SceneManager**: Stack-based State Machine.
 *   **WindowManager**: Visual Stack management.
 *   **DataManager**: Static asset loader.
-*   **SoundManager**: Audio playback and procedural sound synthesis.
-*   **ConfigManager**: persistent settings management.
-*   **InputController**: Global input handling.
+*   **SoundManager**: Audio playback and procedural sound synthesis (Wrapped by `AudioAdapter`).
+*   **ConfigManager**: persistent settings management (Wrapped by `SettingsAdapter`).
+*   **InputController**: Global input handling (Wrapped by `InputAdapter`).
 
 ---
 
@@ -142,10 +142,10 @@ UI.build(parent, {
 *   **System**: `BattleSystem` (`src/engine/systems/battle.js`).
 *   **Logic**:
     1.  `planRound()`: Sorts participants by Total Speed (Action Speed + Skill Speed).
-    2.  `resolveRound()`: Iterates through the sorted queue.
+    2.  Resolution Loop: Iterates through the sorted queue (Managed by `Scene_Battle` / `BattleAdapter`).
 *   **Flow**:
     *   Pre-round: Command Input.
-    *   Execution: Actions execute sequentially.
+    *   Execution: Actions execute sequentially via `BattleSystem.executeAction()`.
 
 ### 7.2. Action Pipeline (Dual)
 The system uses two execution paths for actions, both utilizing `EffectSystem` for state changes.
