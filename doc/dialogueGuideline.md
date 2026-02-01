@@ -47,3 +47,14 @@ This two-hub structure ensures the NPC properly greets the player at the start o
 *   **Ambient Encounters:** Maintain a pool of random, smaller interactions (like a gambler or mercenary) to provide texture and make the space feel alive.
 
 By adhering to these guidelines, we can create a rich, character-driven world that rewards players for paying attention and encourages them to linger and explore the stories within it.
+
+## 4. The "Text-Choice Merge" Optimization
+
+**Context:** To reduce unnecessary clicks, the `DirectorSystem` implements a specific optimization when processing dialogue graphs.
+
+**Behavior:** If a `TEXT` node is followed *immediately* by a `CHOICE` node (via the `next` pointer), the system will **merge** them into a single interaction.
+*   The text from the `TEXT` node is displayed.
+*   The options from the `CHOICE` node are displayed immediately below it.
+*   The user does not need to click "Continue" to see the choices.
+
+**Guideline:** Writers can safely split a long lead-in sentence into a `TEXT` node and the actual question into the `CHOICE` node's content. The engine will present them seamlessly.
