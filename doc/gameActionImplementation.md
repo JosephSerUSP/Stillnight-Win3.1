@@ -16,7 +16,7 @@ The system employs two distinct pipelines for executing actions, both leveraging
 ### 2. Properties
 `Game_Action` implements the properties defined in `gameDesign.md`:
 *   `speed`: Calculated getter, combining the subject's speed (`asp`) and the item/skill's speed modifier.
-*   `ele` (Element): Handled internally during execution. For skills, the element is retrieved from the skill data. For attacks, it uses the battler's innate elements.
+*   `ele` (Element): **Not stored as a direct property.** Instead, elemental logic is handled internally during the execution pipeline (`_applySkill` or `_applyAttack`). For skills, the element is retrieved from the skill data. For attacks, it uses the battler's innate elements.
 
 ### 3. Unified Element Multiplier Logic
 The elemental damage multiplier logic resides in `Game_Action` (for Attacks) or is handled implicitly during `EffectSystem` resolution (for Skills).

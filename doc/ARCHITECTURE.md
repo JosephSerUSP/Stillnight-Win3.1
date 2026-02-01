@@ -82,12 +82,13 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **InterpreterAdapter**: Connects `Scene_Map` events to `InterpreterSystem` and handles UI side-effects (Show Text, Quest Offers).
 
 ### 4.3. Infrastructure Managers (`src/managers/`)
+These are legacy or infrastructure-level managers. They are increasingly being wrapped by Adapters to enforce the Ports/Adapters architecture.
 *   **SceneManager**: Stack-based State Machine.
 *   **WindowManager**: Visual Stack management.
 *   **DataManager**: Static asset loader.
-*   **SoundManager**: Audio playback and procedural sound synthesis.
-*   **ConfigManager**: persistent settings management.
-*   **InputController**: Global input handling.
+*   **SoundManager**: Audio playback and procedural sound synthesis (Wrapped by `AudioAdapter`).
+*   **ConfigManager**: Persistent settings management (Wrapped by `SettingsAdapter`).
+*   **InputController**: Global input handling (Wrapped by `InputAdapter`).
 
 ---
 
