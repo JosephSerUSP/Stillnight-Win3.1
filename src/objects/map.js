@@ -2,6 +2,7 @@ import { RandomWalkGenerator } from "../generators/dungeon_generator.js";
 
 /**
  * @class Game_Map
+ * @deprecated Logic moved to ExplorationSystem.
  * @description Represents the game map and handles floor generation via generators.
  */
 export class Game_Map {

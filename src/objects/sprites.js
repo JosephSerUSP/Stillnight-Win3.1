@@ -1,6 +1,7 @@
 /**
  * The base class for all sprites.
  * @class Sprite
+ * @deprecated Unused in DOM-based architecture.
  */
 export class Sprite {
   /**

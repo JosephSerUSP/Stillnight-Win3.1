@@ -82,4 +82,5 @@ The roadmap is largely complete, with most systems migrated to the new architect
 *   Migrate `EffectManager` to `EffectSystem` (Complete — EffectManager removed; Game_Action and systems use EffectSystem with injected context).
 *   Migrate remaining infrastructure managers (`Sound`, `Input`, `Config`) to pure Ports/Adapters structure (Complete — presentation routes through adapters for audio, settings, and input).
 *   Migrate `TraitManager` to `TraitRules` (Complete — TraitManager removed; TraitRules created in src/engine/rules/).
-*   Migrate `EncounterManager` to `EncounterRules` (Complete — EncounterManager removed; EncounterRules created in src/engine/rules/ with pure functions).
+*   Migrate `EncounterManager` to `EncounterRules` (Complete — EncounterManager removed; EncounterRules created in src/engine/rules/ with pure functions for initiative; generation logic moved to Generators).
+*   **Legacy Code**: `src/objects/map.js` and `src/objects/sprites.js` flagged as deprecated legacy stubs.
