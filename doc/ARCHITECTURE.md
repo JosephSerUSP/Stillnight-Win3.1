@@ -69,12 +69,12 @@ sequenceDiagram
 The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. Core logic resides in `src/engine/` and communicates with the UI via `src/adapters/`.
 
 ### 4.1. Core Engine (`src/engine/systems/`)
-*   **BattleSystem**: Pure logic for Turn Order, AI decisions, and Round resolution.
+*   **BattleSystem**: Pure-ish logic for Turn Order, AI decisions, and Action execution.
 *   **ExplorationSystem**: Logic for grid movement and collisions.
 *   **InterpreterSystem**: Logic for event command execution and state management.
 *   **EffectSystem** (`src/engine/rules/effects.js`): Pure registry of effect handlers.
 *   **TraitRules** (`src/engine/rules/traits.js`): Pure logic for parameter calculations and passive traits.
-*   **EncounterRules** (`src/engine/rules/encounter_rules.js`): Pure logic for initiative and encounter generation.
+*   **EncounterRules** (`src/engine/rules/encounter_rules.js`): Pure logic for initiative calculation.
 
 ### 4.2. Adapters (`src/adapters/`)
 *   **BattleAdapter**: Connects `Scene_Battle` (UI) to `BattleSystem`.
@@ -105,7 +105,7 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 ### 5.3. Game_Map (`src/objects/map.js`)
 *   **Grid**: 2D array of tiles.
 *   **State**: Tracks `visited` (Fog of War) and `events`.
-*   **Role**: Mostly a data container now; logic has moved to `ExplorationSystem`.
+*   **Role**: Legacy/Deprecated container. Logic and State moved to `ExplorationSystem` and `ExplorationState`.
 
 ---
 
@@ -142,7 +142,7 @@ UI.build(parent, {
 *   **System**: `BattleSystem` (`src/engine/systems/battle.js`).
 *   **Logic**:
     1.  `planRound()`: Sorts participants by Total Speed (Action Speed + Skill Speed).
-    2.  `resolveRound()`: Iterates through the sorted queue.
+    2.  Iteration: External consumers (e.g., `BattleAdapter`) iterate through the queue using `getNextBattler` and `executeAction`.
 *   **Flow**:
     *   Pre-round: Command Input.
     *   Execution: Actions execute sequentially.

@@ -6,6 +6,8 @@ import { randInt, elementToAscii } from "../../core/utils.js";
 
 /**
  * Pure-ish system for Battle logic.
+ * Provides methods for planning rounds and executing individual actions.
+ * Does not manage the round loop itself; iteration is handled by consumers (e.g. BattleAdapter).
  */
 export class BattleSystem {
   constructor() {
