@@ -8,7 +8,7 @@ This document outlines the implementation of the `Game_Action` class, which serv
 ### 1. Dual Execution Pipelines
 The system employs two distinct pipelines for executing actions, both leveraging the unified `EffectSystem`:
 
-*   **BattleSystem Pipeline**: Used during combat (Scene_Battle). `BattleSystem` executes logic directly (via `_executeSkill`/`_executeItem`) for tighter control over the battle log and event sequencing.
+*   **BattleSystem Pipeline**: Used during combat (Scene_Battle). `BattleSystem` executes logic directly (via `_executeSkill`/`_executeItem`) for tighter control over the battle log and event sequencing. **Note:** This logic duplicates the implementation found in `Game_Action` to allow for specialized battle-state manipulation.
 *   **Game_Action Pipeline**: Used for Map interactions (Scene_Map) and external calls. `Game_Action` encapsulates the execution logic in an object-oriented wrapper.
 
 *   **Reasoning**: This separation allows `BattleSystem` to be optimized for the complex state machine of combat, while `Game_Action` provides a portable "Action Object" for general use (e.g., using a Potion from the Pause Menu).
@@ -42,7 +42,7 @@ const events = action.apply(target, dataManager);
 In `Scene_Battle`, actions are typically defined as plain data or `Game_Action` instances, but executed via the system:
 
 ```javascript
-// BattleSystem internally calls:
+// BattleSystem internally calls its own handler (mirroring Game_Action logic):
 this._executeSkill(state, action, events);
 // Which delegates to:
 EffectSystem.apply(effectKey, effectValue, battler, target, context);

@@ -11,9 +11,11 @@ Some examples:
 'eva' - for calculating the chance of evading enemy melee physical attacks. default is 0. (means 0% evasion chance. 10% would mean a 10% chance.)
 'cri' - for calculating the chance of inflicting a critical hit on actions that can crit. Default is 0.
 -many other RPG Maker MZ traits that make sense in the context of the design of this game.-
-'eleAdd' - Adds a new element to the battler's 'ele' array.
-'eleChg' - Changes all elements of this battler's 'ele' to instances of the target element, adding one if it would otherwise be empty.
-'paramMod' etc - ways to affect a battler's parameters, such as 'mhp', 'mpd', 'mxa'.
+'ELEMENT_CHANGE' - (Renamed from eleChg) Changes all elements of this battler's 'ele' to instances of the target element, adding one if it would otherwise be empty.
+'SYMBIOSIS' - Heals neighbors for a specific amount each turn.
+'PARASITE' - Drains HP from an ally each turn.
+'REAR_GUARD' - Prevents sneak attacks if present in the back row.
+'paramMod' etc - ways to affect a battler's parameters, such as 'mhp', 'mxa'.
 'actionMod' etc - ways to affect a battler's Action's properties, such as 'actionSpeed'. 
 'trigger: effect' - Traits can execute Effects on certain triggers, such as restoring HP when winning a battle.
 Traits should be flexible. I should be able to cover novel traits without needing to hardcode them.
@@ -48,7 +50,7 @@ All Trait Objects have:
 4.  **Battlers**: The units themselves. They are the base Trait Object for themselves and inherit traits from Passives, Equipment, States and the PC.
     * `lvl`, `exp` etc. 
     * `mHp` - how much hp they can have at maximum.
-    * `mpd` - how much mp they drain from the summoner on every action. 
+    * `mpd` - [Planned / Not Implemented] how much mp they drain from the summoner on every action.
     * `atk` - an outgoing multiplier for physical abilities. default is 10 = 100% damage. 
     * `mat` - an outgoing multiplier for magical abilities. default is 10 = 100% damage.
     * `def` - an incoming multiplier for physical abilities. default is 10 = 100% damage.
@@ -56,7 +58,7 @@ All Trait Objects have:
     * `mxa` - the maximum amount of abilities this battler can have learned. Default is 4. 
     * `mxp` - the maximum amoutn of passives this battler can have learned. Default is 2.
     * `ele` - an array of elements the creature is aligned with. This can be repeated instances of the same element. It is used as: an outcoing multiplier for all abilities (1.25x for each instance of an 'same' elemental match), 2. an incoming multiplier for all abilities (1.25x for each instance of a 'resistance' or 'weakness' type elemental match )
-    * `eqs` - how many equipment slots that unit has. Default is 1.
+    * `eqs` - [Planned / Not Implemented] how many equipment slots that unit has. Default is 1.
 
 EFFECT OBJECTS:
 1.Actions: Apply Effects to targets. They can be:
@@ -75,7 +77,7 @@ PC Actions (Spells and Skills) don't care for this - they're always instant as t
 -Summoner:
 The Player Character. 
 'mmp / mp' - for exploration mechanics and spellcasting. 
-Performing actions (such as moving) in the dungeon drains their MP. When it hits 0, the creatures get progressively weaker, gaining a penalty to damage and success rates and losing HP with each step. This weakness gets worse every turn the PC has 0 MP.
+[Planned / Not Implemented] Performing actions (such as moving) in the dungeon drains their MP. When it hits 0, the creatures get progressively weaker, gaining a penalty to damage and success rates and losing HP with each step. This weakness gets worse every turn the PC has 0 MP.
 
 Instead of acting automatically, after every round the Summoner has access to a direct action:
 Use Item, Formation, Spell or Flee.
