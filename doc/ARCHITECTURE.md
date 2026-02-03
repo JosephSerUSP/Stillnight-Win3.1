@@ -105,7 +105,7 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 ### 5.3. Game_Map (`src/objects/map.js`)
 *   **Grid**: 2D array of tiles.
 *   **State**: Tracks `visited` (Fog of War) and `events`.
-*   **Role**: Mostly a data container now; logic has moved to `ExplorationSystem`.
+*   **Role**: **Legacy Component**. While `ExplorationSystem` is the primary logic handler, `Game_Map` still retains logic methods (`updateEvents`, `revealRadius`) which are duplicated in the system. New features should prioritize `ExplorationSystem`.
 
 ---
 
@@ -154,6 +154,7 @@ The system uses two execution paths for actions, both utilizing `EffectSystem` f
 Used during combat rounds for maximum control and event batching.
 1.  **Selection**: `BattleSystem.getAIAction` or Player Input.
 2.  **Execution**: `BattleSystem.executeAction` calls internal handlers (`_executeSkill`).
+    *   *Note*: These handlers (`_executeSkill`, `_executeItem`) **duplicate** the logic found in `Game_Action` (`_applySkill`, `_applyItem`) to allow for specialized battle-state manipulation.
 3.  **Resolution**: Directly invokes `EffectSystem.apply()` to generate single Event objects (aggregated by BattleSystem).
 
 **B. Object Pipeline (`Game_Action`):**
