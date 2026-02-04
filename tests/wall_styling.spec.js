@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('Wall tiles should have tile-wall class and empty symbol', async ({ page }) => {
   await page.goto('/?test=true');
-  await page.waitForFunction(() => window.sceneManager && window.sceneManager.currentScene());
+  await page.waitForFunction(() => window.sceneManager && window.sceneManager.currentScene() && window.sceneManager.currentScene().map);
 
   // Set up a map with a wall
   await page.evaluate(() => {
