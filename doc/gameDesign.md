@@ -11,8 +11,8 @@ Some examples:
 'eva' - for calculating the chance of evading enemy melee physical attacks. default is 0. (means 0% evasion chance. 10% would mean a 10% chance.)
 'cri' - for calculating the chance of inflicting a critical hit on actions that can crit. Default is 0.
 -many other RPG Maker MZ traits that make sense in the context of the design of this game.-
-'eleAdd' - Adds a new element to the battler's 'ele' array.
-'eleChg' - Changes all elements of this battler's 'ele' to instances of the target element, adding one if it would otherwise be empty.
+'eleAdd' - Adds a new element to the battler's 'ele' array. (Note: Unimplemented)
+'ELEMENT_CHANGE' (formerly eleChg) - Changes all elements of this battler's 'ele' to instances of the target element, adding one if it would otherwise be empty.
 'paramMod' etc - ways to affect a battler's parameters, such as 'mhp', 'mpd', 'mxa'.
 'actionMod' etc - ways to affect a battler's Action's properties, such as 'actionSpeed'. 
 'trigger: effect' - Traits can execute Effects on certain triggers, such as restoring HP when winning a battle.
@@ -53,10 +53,10 @@ All Trait Objects have:
     * `mat` - an outgoing multiplier for magical abilities. default is 10 = 100% damage.
     * `def` - an incoming multiplier for physical abilities. default is 10 = 100% damage.
     * `mdf` - an incoming multiplier for magical abilities. default is 10 = 100% damage.
-    * `mxa` - the maximum amount of abilities this battler can have learned. Default is 4. 
+    * `mxa` - the maximum amount of abilities this battler can have learned. Default is 4. (Note: Unimplemented)
     * `mxp` - the maximum amoutn of passives this battler can have learned. Default is 2.
     * `ele` - an array of elements the creature is aligned with. This can be repeated instances of the same element. It is used as: an outcoing multiplier for all abilities (1.25x for each instance of an 'same' elemental match), 2. an incoming multiplier for all abilities (1.25x for each instance of a 'resistance' or 'weakness' type elemental match )
-    * `eqs` - how many equipment slots that unit has. Default is 1.
+    * `eqs` - how many equipment slots that unit has. Default is 1. (Note: Unimplemented)
 
 EFFECT OBJECTS:
 1.Actions: Apply Effects to targets. They can be:
