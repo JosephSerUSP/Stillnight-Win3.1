@@ -24,10 +24,12 @@ There is **no global singleton** for the Game Party or Map state.
 *   **Implication**: State is preserved via object reference passing, not global variables.
 
 ### 2.4. Unified Effect System
-All changes to battler state (Damage, Healing, Buffs, XP) are routed through a unified pipeline:
+Most changes to battler state (Damage, Healing, Buffs, XP) are routed through a unified pipeline:
 1.  **Source**: `Game_Action` (Skill/Item).
 2.  **Logic**: `EffectSystem` (Pure Logic).
 3.  **Application**: `EffectSystem.apply`.
+
+*Note: Basic Attacks currently use a direct execution pipeline within `Game_Action` for optimization, bypassing `EffectSystem` but generating compatible Event objects.*
 
 ---
 
@@ -154,7 +156,7 @@ The system uses two execution paths for actions, both utilizing `EffectSystem` f
 Used during combat rounds for maximum control and event batching.
 1.  **Selection**: `BattleSystem.getAIAction` or Player Input.
 2.  **Execution**: `BattleSystem.executeAction` calls internal handlers (`_executeSkill`).
-3.  **Resolution**: Directly invokes `EffectSystem.apply()` to generate single Event objects (aggregated by BattleSystem).
+3.  **Resolution**: Invokes `EffectSystem.apply()` for Skills/Items to generate single Event objects. Basic Attacks rely on internal logic.
 
 **B. Object Pipeline (`Game_Action`):**
 Used for Item/Skill usage from Menus (Scene_Map) or as a definition wrapper.

@@ -80,6 +80,6 @@ The roadmap is largely complete, with most systems migrated to the new architect
 *   Retire `src/objects/objects.js` barrel (Complete).
 *   Replace `window.*` debug globals with `DebugTools` (Complete - via `exposeGlobals`).
 *   Migrate `EffectManager` to `EffectSystem` (Complete — EffectManager removed; Game_Action and systems use EffectSystem with injected context).
-*   Migrate remaining infrastructure managers (`Sound`, `Input`, `Config`) to pure Ports/Adapters structure (Complete — presentation routes through adapters for audio, settings, and input).
+*   Migrate remaining infrastructure managers (`Sound`, `Input`, `Config`) to pure Ports/Adapters structure (Complete — presentation routes through adapters for audio, settings, and input). Note: The concrete implementations (`src/managers/sound.js`, etc.) are retained as the backing infrastructure.
 *   Migrate `TraitManager` to `TraitRules` (Complete — TraitManager removed; TraitRules created in src/engine/rules/).
 *   Migrate `EncounterManager` to `EncounterRules` (Complete — EncounterManager removed; EncounterRules created in src/engine/rules/ with pure functions).
