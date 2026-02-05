@@ -19,8 +19,8 @@ The system employs two distinct pipelines for executing actions, both leveraging
 *   `ele` (Element): Handled internally during execution. For skills, the element is retrieved from the skill data. For attacks, it uses the battler's innate elements.
 
 ### 3. Unified Element Multiplier Logic
-The elemental damage multiplier logic resides in `Game_Action` (for Attacks) or is handled implicitly during `EffectSystem` resolution (for Skills).
-*   **Improvement**: The implementation ensures that if a skill has an element, it checks against the target's element table to apply standard multipliers (1.5x for Weakness, 0.75x for Resistance), in addition to the "Same Element Bonus" for the user.
+The elemental damage multiplier logic resides in `Game_Action` (for Attacks) or is explicitly calculated by the caller and passed to `EffectSystem` (for Skills).
+*   **Improvement**: The implementation ensures that if a skill has an element, the caller (`BattleSystem` or `Game_Action`) calculates the multiplier against the target's element table (1.5x for Weakness, 0.75x for Resistance) and passes it via `context.boost` to `EffectSystem`.
 
 ### 4. Target Selection
 Target selection logic (`makeTargets`) is part of `Game_Action`.

@@ -11,10 +11,10 @@ Some examples:
 'eva' - for calculating the chance of evading enemy melee physical attacks. default is 0. (means 0% evasion chance. 10% would mean a 10% chance.)
 'cri' - for calculating the chance of inflicting a critical hit on actions that can crit. Default is 0.
 -many other RPG Maker MZ traits that make sense in the context of the design of this game.-
-'eleAdd' - Adds a new element to the battler's 'ele' array.
-'eleChg' - Changes all elements of this battler's 'ele' to instances of the target element, adding one if it would otherwise be empty.
-'paramMod' etc - ways to affect a battler's parameters, such as 'mhp', 'mpd', 'mxa'.
-'actionMod' etc - ways to affect a battler's Action's properties, such as 'actionSpeed'. 
+'eleAdd' - [Planned / Not Implemented] Adds a new element to the battler's 'ele' array.
+'ELEMENT_CHANGE' (was 'eleChg') - Changes all elements of this battler's 'ele' to instances of the target element, adding one if it would otherwise be empty.
+'paramMod' etc - ways to affect a battler's parameters, such as 'mhp', 'mpd' [Not Implemented], 'mxa' [Not Implemented].
+'actionMod' [Not Implemented] etc - ways to affect a battler's Action's properties, such as 'actionSpeed'.
 'trigger: effect' - Traits can execute Effects on certain triggers, such as restoring HP when winning a battle.
 Traits should be flexible. I should be able to cover novel traits without needing to hardcode them.
 
@@ -48,15 +48,15 @@ All Trait Objects have:
 4.  **Battlers**: The units themselves. They are the base Trait Object for themselves and inherit traits from Passives, Equipment, States and the PC.
     * `lvl`, `exp` etc. 
     * `mHp` - how much hp they can have at maximum.
-    * `mpd` - how much mp they drain from the summoner on every action. 
+    * `mpd` - [Not Implemented] how much mp they drain from the summoner on every action.
     * `atk` - an outgoing multiplier for physical abilities. default is 10 = 100% damage. 
     * `mat` - an outgoing multiplier for magical abilities. default is 10 = 100% damage.
     * `def` - an incoming multiplier for physical abilities. default is 10 = 100% damage.
     * `mdf` - an incoming multiplier for magical abilities. default is 10 = 100% damage.
-    * `mxa` - the maximum amount of abilities this battler can have learned. Default is 4. 
-    * `mxp` - the maximum amoutn of passives this battler can have learned. Default is 2.
+    * `mxa` - [Not Implemented] the maximum amount of abilities this battler can have learned. Default is 4.
+    * `mxp` - [Not Implemented] the maximum amount of passives this battler can have learned. Default is 2.
     * `ele` - an array of elements the creature is aligned with. This can be repeated instances of the same element. It is used as: an outcoing multiplier for all abilities (1.25x for each instance of an 'same' elemental match), 2. an incoming multiplier for all abilities (1.25x for each instance of a 'resistance' or 'weakness' type elemental match )
-    * `eqs` - how many equipment slots that unit has. Default is 1.
+    * `eqs` - [Not Implemented] how many equipment slots that unit has. Default is 1.
 
 EFFECT OBJECTS:
 1.Actions: Apply Effects to targets. They can be:
@@ -99,11 +99,11 @@ Effect: Restores HP equal to the healing item's normal restoration effect to eve
 
 EXAMPLE COMPLEX TRAITS:
 
-Mug: 
+Mug: [Planned / Not Implemented]
 Trigger: On dealing damage.
 Effect: Gains gold equal to damage dealt. 
 
-Proficient: 
+Proficient: [Planned / Not Implemented]
 Trait: Increases the effect of other traits bestowed by equipment by 'value'%. 
 
 
