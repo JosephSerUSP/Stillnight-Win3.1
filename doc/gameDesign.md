@@ -19,11 +19,22 @@ Some examples:
 Traits should be flexible. I should be able to cover novel traits without needing to hardcode them.
 
 
--Effects: These directly affect battlers, such as changing hp, applying states, changing level / xp / parameters, etc. 
-'learnAction' - Teaches an action to a creature. 
-'learnPassive' - Teaches a passive to a creature. 
-'elementAdd' - Adds a new element to the battler.
-'elementChange' - Changes all elements of this battler to the target element. If the battler has no elements, it should now have one.
+-Effects: These directly affect battlers, such as changing hp, applying states, changing level / xp / parameters, etc.
+**Implemented Effects:**
+*   `hp_heal`: Restores HP.
+*   `hp_damage`: Reduces HP.
+*   `hp_drain`: Drains HP from target to user.
+*   `add_status`: Applies a State (with chance).
+*   `maxHp`: Permanently increases Max HP.
+*   `xp`: Grants Experience Points.
+*   `recruit_egg`: Special effect for hatching/recruiting.
+
+**Planned Effects:**
+*   `learnAction`
+*   `learnPassive`
+*   `elementAdd`
+*   `elementChange`
+
 Effects should be flexible. I should be able to cover novel effects without hardcoding them. For example, I should be able to write an effect that changes a battler's maxActions on the fly, even if a 'changeMaxActions' effect doesn't exist.
 
 
@@ -48,7 +59,6 @@ All Trait Objects have:
 4.  **Battlers**: The units themselves. They are the base Trait Object for themselves and inherit traits from Passives, Equipment, States and the PC.
     * `lvl`, `exp` etc. 
     * `mHp` - how much hp they can have at maximum.
-    * `mpd` - how much mp they drain from the summoner on every action. 
     * `atk` - an outgoing multiplier for physical abilities. default is 10 = 100% damage. 
     * `mat` - an outgoing multiplier for magical abilities. default is 10 = 100% damage.
     * `def` - an incoming multiplier for physical abilities. default is 10 = 100% damage.
@@ -56,7 +66,8 @@ All Trait Objects have:
     * `mxa` - the maximum amount of abilities this battler can have learned. Default is 4. 
     * `mxp` - the maximum amoutn of passives this battler can have learned. Default is 2.
     * `ele` - an array of elements the creature is aligned with. This can be repeated instances of the same element. It is used as: an outcoing multiplier for all abilities (1.25x for each instance of an 'same' elemental match), 2. an incoming multiplier for all abilities (1.25x for each instance of a 'resistance' or 'weakness' type elemental match )
-    * `eqs` - how many equipment slots that unit has. Default is 1.
+    * `eqs` - how many equipment slots that unit has. Default is 1. (Planned / Partial Implementation: Currently effectively 1).
+    * `mpd` - (Planned / Partial) how much mp they drain from the summoner on every action.
 
 EFFECT OBJECTS:
 1.Actions: Apply Effects to targets. They can be:

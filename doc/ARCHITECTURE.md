@@ -69,12 +69,12 @@ sequenceDiagram
 The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. Core logic resides in `src/engine/` and communicates with the UI via `src/adapters/`.
 
 ### 4.1. Core Engine (`src/engine/systems/`)
-*   **BattleSystem**: Pure logic for Turn Order, AI decisions, and Round resolution.
-*   **ExplorationSystem**: Logic for grid movement and collisions.
+*   **BattleSystem**: Stateless logic for Turn Order, AI decisions, and Round resolution.
+*   **ExplorationSystem**: Logic for grid movement, collisions, event triggers, and visibility.
 *   **InterpreterSystem**: Logic for event command execution and state management.
 *   **EffectSystem** (`src/engine/rules/effects.js`): Pure registry of effect handlers.
 *   **TraitRules** (`src/engine/rules/traits.js`): Pure logic for parameter calculations and passive traits.
-*   **EncounterRules** (`src/engine/rules/encounter_rules.js`): Pure logic for initiative and encounter generation.
+*   **EncounterRules** (`src/engine/rules/encounter_rules.js`): Pure logic for initiative calculation. (Encounter generation is handled by Generators/ExplorationSystem).
 
 ### 4.2. Adapters (`src/adapters/`)
 *   **BattleAdapter**: Connects `Scene_Battle` (UI) to `BattleSystem`.
@@ -82,9 +82,9 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 *   **InterpreterAdapter**: Connects `Scene_Map` events to `InterpreterSystem` and handles UI side-effects (Show Text, Quest Offers).
 
 ### 4.3. Infrastructure Managers (`src/managers/`)
-*   **SceneManager**: Stack-based State Machine.
+*   **SceneManager**: Stack-based State Machine. Delegates update loop to current scene.
 *   **WindowManager**: Visual Stack management.
-*   **DataManager**: Static asset loader.
+*   **DataManager**: Asset loader (JSON & JS modules) and System Initializer (Sound).
 *   **SoundManager**: Audio playback and procedural sound synthesis.
 *   **ConfigManager**: persistent settings management.
 *   **InputController**: Global input handling.
@@ -141,7 +141,7 @@ UI.build(parent, {
 ### 7.1. Round-Based Turn System
 *   **System**: `BattleSystem` (`src/engine/systems/battle.js`).
 *   **Logic**:
-    1.  `planRound()`: Sorts participants by Total Speed (Action Speed + Skill Speed).
+    1.  `planRound()`: Sorts participants by Total Speed (Action Speed + Skill Speed). Excludes Summoner from turn queue. Handles First Strike / Sneak Attack logic.
     2.  `resolveRound()`: Iterates through the sorted queue.
 *   **Flow**:
     *   Pre-round: Command Input.
@@ -184,7 +184,7 @@ flowchart LR
 ### 8.1. Grid Movement
 *   **System**: `ExplorationSystem` (`src/engine/systems/exploration.js`).
 *   **Input**: Discrete `dx, dy` inputs.
-*   **Resolution**: Returns a result object (e.g., `{ type: 'MOVED' }`, `{ type: 'BLOCKED', reason: 'wall' }`).
+*   **Resolution**: Returns a Sequence object (e.g., `{ type: 'SEQUENCE', results: [...] }`) containing steps like Moved, Event Triggered, Revealed, etc.
 
 ### 8.2. Event Execution
 *   **System**: `InterpreterSystem` (`src/engine/systems/interpreter.js`).
