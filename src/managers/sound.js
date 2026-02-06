@@ -368,43 +368,4 @@ export class SoundManager {
       setTimeout(onEnd, maxDuration);
   }
 
-  /**
-   * Legacy beep (used if no configuration exists or direct call needed).
-   * @deprecated Use play() instead.
-   */
-  static beep(frequency = 440, duration = 120) {
-      const sfxVol = ConfigManager.masterVolume * ConfigManager.sfxVolume;
-      if (sfxVol <= 0) return;
-
-      this._initializeContext();
-      if (!this._audioCtx) return;
-      if (this._audioCtx.state === 'suspended') this._audioCtx.resume();
-
-      this._sfxCount++;
-      this.updateVolumes();
-
-      const onEnd = () => {
-          this._sfxCount--;
-           if (this._sfxCount <= 0) {
-              this._sfxCount = 0;
-              this.updateVolumes();
-          }
-      };
-
-      try {
-          const oscillator = this._audioCtx.createOscillator();
-          const gainNode = this._audioCtx.createGain();
-          oscillator.type = "square";
-          oscillator.frequency.value = frequency;
-          // Tuned up beep volume to 0.2 (was 0.05)
-          gainNode.gain.value = 0.2 * sfxVol;
-          oscillator.connect(gainNode);
-          gainNode.connect(this._audioCtx.destination);
-          oscillator.start();
-          oscillator.stop(this._audioCtx.currentTime + duration / 1000);
-          oscillator.onended = onEnd;
-      } catch (_e) {
-          onEnd();
-      }
-  }
 }
