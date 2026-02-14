@@ -89,6 +89,12 @@ html, body {
         0 0 0 1px var(--bezel-light) inset,
         0 0 0 2px var(--bezel-shadow) inset,
         0 0 0 3px var(--bezel-dark) inset;
+    display: flex;
+    flex-direction: column;
+    width: 960px;
+    height: 600px;
+    max-width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
 }
 
 /* Generic Window Header (Replaces .title-bar and .dialog-titlebar) */
@@ -286,6 +292,7 @@ html, body {
     box-sizing: border-box;
     display: flex;
     gap: 4px;
+    min-height: 0;
 }
 
 .panel {
@@ -304,6 +311,7 @@ html, body {
     flex-direction: column;
     padding: 4px;
     gap: 4px;
+    min-height: 0;
 }
 .stack-nav h1 {
     font-size: 11px;
@@ -399,6 +407,7 @@ html, body {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-height: 0;
 }
 
 /* ===== Terminal Look for Battle Window ===== */
@@ -471,6 +480,7 @@ html, body {
     flex: 1;
     display: flex;
     gap: 4px;
+    min-height: 0;
 }
 
 /* map column stretches, right column fixed width */
@@ -480,6 +490,7 @@ html, body {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-height: 0;
 }
 .card-side-panels {
     flex: 0 0 260px;   /* fixed width for party/log column */
@@ -487,6 +498,7 @@ html, body {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-height: 0;
 }
 
 .card-header {
@@ -512,6 +524,7 @@ html, body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    min-height: 0;
 }
 
 /* 19x19 grid, centered map */
@@ -523,6 +536,7 @@ html, body {
     grid-template-columns: repeat(var(--grid-cols, 19), 1fr);
     grid-template-rows: repeat(var(--grid-rows, 19), 1fr);
     gap: 2px;
+    margin: auto;
 }
 
 .tile {
@@ -588,6 +602,7 @@ html, body {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    min-height: 0;
 }
 
 /* party grows; log fixed height window */
