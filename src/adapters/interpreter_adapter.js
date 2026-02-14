@@ -159,6 +159,10 @@ export class InterpreterAdapter {
             title: e.title || "Event",
             description: e.text,
             image: e.image,
+            layout: e.layout,
+            speakers: e.speakers,
+            portrait: e.portrait,
+            emotion: e.emotion,
             style: e.style || 'terminal',
             choices: [{
                 label: "Continue",
