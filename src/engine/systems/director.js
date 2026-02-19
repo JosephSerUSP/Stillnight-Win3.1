@@ -23,6 +23,10 @@ export class DirectorSystem {
         this.processCurrentNode();
     }
 
+    /**
+     * Handles user input (e.g., selecting an option or clicking continue).
+     * @param {Object} input - { type: 'OPTION_SELECTED' | 'CONTINUE', index?: number }
+     */
     handleInput(input) {
         if (!this.walker || this.walker.finished) return;
 
@@ -110,6 +114,8 @@ export class DirectorSystem {
 
         // Handle TEXT -> CHOICE Merge
         // Optimization: If current node is TEXT and simply transitions to a CHOICE node, merge them.
+        // This prevents the user from having to click "Continue" just to see the choices immediately after.
+        // The TEXT content is prepended to the CHOICE content/prompt.
         if (node.type === 'TEXT' && node.next) {
             const nextNode = this.walker.data.nodes[node.next];
             if (nextNode && nextNode.type === 'CHOICE') {

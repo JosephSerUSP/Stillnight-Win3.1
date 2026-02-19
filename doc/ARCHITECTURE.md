@@ -71,7 +71,9 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 ### 4.1. Core Engine (`src/engine/systems/`)
 *   **BattleSystem**: Pure logic for Turn Order, AI decisions, and Round resolution.
 *   **ExplorationSystem**: Logic for grid movement and collisions.
-*   **InterpreterSystem**: Logic for event command execution and state management.
+*   **DirectorSystem**: Logic for traversing Dialogue Graphs (Nodes & Edges). Includes "Text-Choice Merge" optimization to reduce clicks.
+*   **InterpreterSystem**: Logic for linear event command execution (e.g., `GIVE_ITEM`). Delegates complex dialogue to `DirectorSystem`.
+*   **QuestSystem**: Pure logic for quest state validation, acceptance, and reward application.
 *   **EffectSystem** (`src/engine/rules/effects.js`): Pure registry of effect handlers.
 *   **TraitRules** (`src/engine/rules/traits.js`): Pure logic for parameter calculations and passive traits.
 *   **EncounterRules** (`src/engine/rules/encounter_rules.js`): Pure logic for initiative and encounter generation.
