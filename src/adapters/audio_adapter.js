@@ -49,15 +49,6 @@ export const AudioAdapter = {
         return SoundManager._currentMusicKey;
     },
 
-    /**
-     * Legacy beep.
-     * @param {number} freq
-     * @param {number} duration
-     */
-    beep(freq, duration) {
-        SoundManager.beep(freq, duration);
-    },
-
     getMusicKeys() {
         // Accessing internal state of SoundManager for debug/list purposes
         return SoundManager._midiData ? Array.from(SoundManager._midiData.keys()).sort() : [];

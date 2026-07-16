@@ -3,9 +3,10 @@
  * Wraps BattleSystem to look like BattleManager for legacy compatibility.
  */
 export class BattleAdapter {
-  constructor(party, battleSystem) {
+  constructor(party, battleSystem, dataManager) {
     this.party = party;
     this.system = battleSystem;
+    this.dataManager = dataManager;
 
     // Legacy properties
     this.enemies = [];
@@ -61,10 +62,7 @@ export class BattleAdapter {
     const allies = isEnemy ? this.enemies : this.party.activeMembers;
     const opponents = isEnemy ? this.party.activeMembers : this.enemies;
 
-    // Fallback for DataManager (assumed global for legacy code compatibility inside battler logic)
-    const dm = window.dataManager || {};
-
-    return battler.onTurnStart(allies, opponents, dm);
+    return battler.onTurnStart(allies, opponents, this.dataManager);
   }
 
   executeAction(action) {

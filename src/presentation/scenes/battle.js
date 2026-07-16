@@ -33,7 +33,7 @@ export class Scene_Battle extends Scene_Base {
     // We ignore the passed battleManager for the core logic but keep it for legacy signature if needed
     // Actually, we replace this.battleManager with our Adapter.
     this.battleSystem = new BattleSystem();
-    this.battleManager = new BattleAdapter(party, this.battleSystem);
+    this.battleManager = new BattleAdapter(party, this.battleSystem, dataManager);
 
     this.windowLayer = windowLayer;
     this.map = map;
