@@ -36,7 +36,8 @@
     ],
     "initialParty": true,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "mpDrain": 1
   },
   {
     "id": "highPixie",
@@ -65,7 +66,8 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": false,
-    "isEvolved": true
+    "isEvolved": true,
+    "mpDrain": 2
   },
   {
     "id": "skeleton",
@@ -82,7 +84,8 @@
     ],
     "skills": [
       "attack",
-      "boneRush"
+      "boneRush",
+      "graveHunger"
     ],
     "flavor": "A reanimated corpse that just wants to go back to sleep.",
     "expGrowth": 4,
@@ -100,7 +103,8 @@
     "evolutions": [],
     "initialParty": true,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "mpDrain": 1
   },
   {
     "id": "angel",
@@ -133,7 +137,8 @@
     ],
     "initialParty": false,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "mpDrain": 2
   },
   {
     "id": "archangel",
@@ -162,7 +167,8 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": false,
-    "isEvolved": true
+    "isEvolved": true,
+    "mpDrain": 3
   },
   {
     "id": "demon",
@@ -200,7 +206,8 @@
     ],
     "initialParty": false,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "mpDrain": 3
   },
   {
     "id": "incubus",
@@ -230,7 +237,8 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": false,
-    "isEvolved": true
+    "isEvolved": true,
+    "mpDrain": 4
   },
   {
     "id": "nurse",
@@ -257,7 +265,8 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "mpDrain": 2
   },
   {
     "id": "imp",
@@ -290,7 +299,8 @@
     "evolutions": [],
     "initialParty": true,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "mpDrain": 1
   },
   {
     "id": "golem",
@@ -306,7 +316,8 @@
     "elements": [],
     "skills": [
       "attack",
-      "boneRush"
+      "boneRush",
+      "graniteCrash"
     ],
     "flavor": "An animated statue, slow but incredibly durable.",
     "expGrowth": 8,
@@ -314,7 +325,8 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "mpDrain": 2
   },
   {
     "id": "ghoul",
@@ -333,15 +345,17 @@
     ],
     "skills": [
       "attack",
-      "boneRush"
+      "boneRush",
+      "graveHunger"
     ],
-    "flavor": "An animated statue, slow but incredibly durable.",
+    "flavor": "A grave-starved corpse that remembers hunger more clearly than its own name.",
     "expGrowth": 8,
     "gold": 40,
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "mpDrain": 2
   },
   {
     "id": "ooze",
@@ -358,14 +372,16 @@
     ],
     "skills": [
       "attack",
-      "windBlade"
+      "windBlade",
+      "causticMire"
     ],
     "expGrowth": 5,
     "gold": 10,
     "evolutions": [],
     "initialParty": true,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "mpDrain": 2
   },
   {
     "id": "bat",
@@ -390,7 +406,8 @@
     "evolutions": [],
     "initialParty": true,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "mpDrain": 1
   },
   {
     "id": "wisp",
@@ -408,7 +425,8 @@
     ],
     "skills": [
       "attack",
-      "soothingMote"
+      "soothingMote",
+      "blueFlare"
     ],
     "expGrowth": 4,
     "gold": 14,
@@ -421,7 +439,8 @@
     "evolutions": [],
     "initialParty": true,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "mpDrain": 1
   },
   {
     "id": "egg",
@@ -445,7 +464,8 @@
     ],
     "initialParty": false,
     "isRecruitable": false,
-    "isEvolved": false
+    "isEvolved": false,
+    "mpDrain": 1
   },
   {
     "id": "phoenix",
@@ -471,7 +491,8 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": false,
-    "isEvolved": true
+    "isEvolved": true,
+    "mpDrain": 3
   },
   {
     "id": "larva",
@@ -500,7 +521,8 @@
     ],
     "initialParty": false,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "mpDrain": 2
   },
   {
     "id": "crimsonLord",
@@ -517,7 +539,8 @@
     "skills": [
       "attack",
       "shadowClaw",
-      "infernalPact"
+      "infernalPact",
+      "graveHunger"
     ],
     "flavor": "He has drunk his fill, and now commands the blood.",
     "expGrowth": 6,
@@ -525,7 +548,8 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": false,
-    "isEvolved": true
+    "isEvolved": true,
+    "mpDrain": 4
   },
   {
     "id": "flauros",
@@ -560,7 +584,8 @@
     "evolutions": [],
     "initialParty": false,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "mpDrain": 3
   },
   {
     "id": "candle",
@@ -579,7 +604,8 @@
     "skills": [
       "attack",
       "soothingMote",
-      "divineFavor"
+      "divineFavor",
+      "guidingFlame"
     ],
     "flavor": "A simple wax candle given life. Ideally, keep it away from the library.",
     "expGrowth": 2,
@@ -598,7 +624,8 @@
     ],
     "initialParty": false,
     "isRecruitable": true,
-    "isEvolved": false
+    "isEvolved": false,
+    "mpDrain": 1
   },
   {
     "id": "shadowStalker",
@@ -607,7 +634,8 @@
     "maxHp": 40,
     "role": "Assassin",
     "elements": [
-      "Shadow"
+      "Black",
+      "Black"
     ],
     "skills": [
       "attack",
@@ -626,7 +654,8 @@
     ],
     "spriteKey": "ShadowStalker",
     "gold": 14,
-    "expGrowth": 10
+    "expGrowth": 10,
+    "mpDrain": 3
   },
   {
     "id": "summoner",
@@ -642,6 +671,68 @@
     "traits": [],
     "spriteKey": "egg",
     "gold": 0,
-    "expGrowth": 20
+    "expGrowth": 20,
+    "mpDrain": 0
+  },
+  {
+    "id": "lantern",
+    "name": "Lantern",
+    "level": 8,
+    "role": "Support",
+    "maxHp": 18,
+    "maxMp": 0,
+    "mpDrain": 2,
+    "spriteKey": "candle",
+    "passives": [
+      "nightVision",
+      "holyAura"
+    ],
+    "elements": [
+      "Red",
+      "White",
+      "White"
+    ],
+    "skills": [
+      "attack",
+      "guidingFlame",
+      "beaconPulse"
+    ],
+    "flavor": "A patient flame in a metal body. Other creatures draw close when the dark becomes too absolute.",
+    "expGrowth": 5,
+    "gold": 30,
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": false,
+    "isEvolved": true
+  },
+  {
+    "id": "eternalWarden",
+    "name": "Eternal Warden",
+    "level": 12,
+    "role": "Boss",
+    "maxHp": 96,
+    "mpDrain": 0,
+    "spriteKey": "crimsonLord",
+    "passives": [
+      "rearGuard",
+      "etherealBody"
+    ],
+    "elements": [
+      "Black",
+      "White",
+      "Black"
+    ],
+    "skills": [
+      "attack",
+      "stillnightEdict",
+      "graveHunger"
+    ],
+    "flavor": "The shape left behind when an oath outlives everyone who made it.",
+    "expGrowth": 18,
+    "gold": 600,
+    "evolutions": [],
+    "initialParty": false,
+    "isRecruitable": false,
+    "isEvolved": true
   }
 ]
