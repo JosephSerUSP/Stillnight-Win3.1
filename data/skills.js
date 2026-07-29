@@ -105,6 +105,54 @@ export const skills = {
         ]
     },
 
+    // Creature identity pass
+    graniteCrash: {
+        id: 'graniteCrash', name: 'Granite Crash', target: 'enemy-any', element: null,
+        description: "A crushing blow from a body too heavy to hurry.",
+        speed: -2, effects: [{ type: 'hp_damage', formula: '10 + 1.4 * a.level' }]
+    },
+    graveHunger: {
+        id: 'graveHunger', name: 'Grave Hunger', target: 'enemy-any', element: 'Black',
+        description: "The dead borrow warmth they cannot keep.",
+        effects: [{ type: 'hp_drain', formula: '5 + 0.8 * a.level' }]
+    },
+    causticMire: {
+        id: 'causticMire', name: 'Caustic Mire', target: 'enemy-any', element: 'Green',
+        description: "Clinging slime burns long after the first touch.",
+        effects: [
+            { type: 'hp_damage', formula: '4 + 0.8 * a.level' },
+            { type: 'add_status', status: 'poison', chance: 0.7, duration: 4 }
+        ]
+    },
+    blueFlare: {
+        id: 'blueFlare', name: 'Blue Flare', target: 'enemy-any', element: 'Blue',
+        description: "A cold flame fed by memory rather than air.",
+        effects: [{ type: 'hp_damage', formula: '7 + 1.3 * a.level' }]
+    },
+    guidingFlame: {
+        id: 'guidingFlame', name: 'Guiding Flame', target: 'enemy-any', element: 'Red',
+        description: "A small flame points toward the safest path through a foe.",
+        effects: [{ type: 'hp_damage', formula: '5 + 1.0 * a.level' }]
+    },
+    beaconPulse: {
+        id: 'beaconPulse', name: 'Beacon Pulse', target: 'ally-any', element: 'White',
+        description: "The lantern steadies an ally with a rhythm of warm light.",
+        effects: [{ type: 'add_status', status: 'regen', chance: 1.0, duration: 4 }]
+    },
+    assassinate: {
+        id: 'assassinate', name: 'Assassinate', target: 'enemy-any', element: 'Black',
+        description: "A patient strike aimed where life is least defended.",
+        speed: 3, effects: [{ type: 'hp_damage', formula: '12 + 1.5 * a.level' }]
+    },
+    stillnightEdict: {
+        id: 'stillnightEdict', name: 'Stillnight Edict', target: 'enemy-any', element: 'Black',
+        description: "The Warden commands one living thing to become quiet.",
+        effects: [
+            { type: 'hp_damage', formula: '9 + 1.2 * a.level' },
+            { type: 'add_status', status: 'sleep', chance: 0.45, duration: 2 }
+        ]
+    },
+
     wait: {
         id: 'wait',
         name: 'Wait',
