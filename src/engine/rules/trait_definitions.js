@@ -43,6 +43,21 @@ export const TRAIT_DEFINITIONS = {
             };
         }
     },
+    'HP_DOT': {
+        label: () => "HP Loss",
+        format: (value) => `-${Math.round(value * 100)}% each turn`,
+        trigger: 'turnStart',
+        execute: (value, battler, _context) => {
+            const amount = Math.max(1, Math.floor(battler.maxHp * value));
+            const hpBefore = battler.hp;
+            battler.hp = Math.max(0, battler.hp - amount);
+            return {
+                type: 'damage', battler, target: battler, value: amount,
+                hpBefore, hpAfter: battler.hp,
+                msg: `${battler.name} suffers ${amount} damage.`
+            };
+        }
+    },
     'EVA': {
         label: () => "Evasion",
         format: (value) => `+${Math.round(value * 100)}%`
