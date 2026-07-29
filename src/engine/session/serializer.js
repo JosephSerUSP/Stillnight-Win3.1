@@ -67,7 +67,8 @@ export class SessionSerializer {
             inventory: party.inventory,
             slots: party.slots.map(s => s ? this.serializeBattler(s) : null),
             knownWords: party.knownWords || [],
-            storyFlags: party.storyFlags || {}
+            storyFlags: party.storyFlags || {},
+            variables: party.variables || {}
         };
     }
 
@@ -78,6 +79,7 @@ export class SessionSerializer {
         party.inventory = data.inventory || [];
         party.knownWords = data.knownWords || [];
         party.storyFlags = data.storyFlags || {};
+        party.variables = data.variables || {};
 
         party.slots = data.slots.map(s => s ? this.deserializeBattler(s) : null);
         return party;
