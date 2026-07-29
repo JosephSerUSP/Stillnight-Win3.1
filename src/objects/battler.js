@@ -197,6 +197,14 @@ export class Game_Battler extends Game_Base {
   }
 
   /**
+   * MP upkeep paid by the summoner for this creature on each dungeon step.
+   * Reserve creatures and enemies do not consume expedition MP.
+   */
+  get mpDrain() {
+      return Math.max(0, this.getParam('mpDrain', this.actorData.mpDrain ?? 1));
+  }
+
+  /**
    * Gets the value of a specific passive code from traits.
    * Used for 'xparam' (HIT, CRI) or legacy passive codes.
    * @param {string} code - The trait code (e.g., 'HRG').
