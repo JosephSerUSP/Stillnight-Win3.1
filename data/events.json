@@ -230,6 +230,21 @@
     }
   },
   {
+    "id": "npc_dungeon_merchant",
+    "type": "npc",
+    "symbol": "M",
+    "cssClass": "tile-shop",
+    "trigger": "touch",
+    "scripts": {
+      "onEnter": [
+        {
+          "type": "NPC_DIALOGUE",
+          "id": "npc_dungeon_merchant"
+        }
+      ]
+    }
+  },
+  {
     "id": "npc_daphne",
     "type": "npc",
     "symbol": "D",
