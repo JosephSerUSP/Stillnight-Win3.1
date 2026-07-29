@@ -58,6 +58,13 @@ export const states = {
             { code: 'PARAM_PLUS', dataId: 'atk', value: 3 }
         ]
     },
+    poison: {
+        id: 'poison',
+        name: 'Poison',
+        icon: 2,
+        duration: 4,
+        traits: [{ code: 'HP_DOT', value: 0.08 }]
+    },
     weakened: {
         id: 'weakened',
         name: 'Weakened',
