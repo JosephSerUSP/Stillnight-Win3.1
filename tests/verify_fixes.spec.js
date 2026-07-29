@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('Verify Battle Layout and Evolution Preview', async ({ page }) => {
     // 1. Go to game with test mode
-    await page.goto('http://127.0.0.1:8080/?test=true');
+    await page.goto('/?test=true');
     await page.waitForLoadState('networkidle');
 
     // Disable animations
@@ -76,7 +76,7 @@ test('Verify Battle Layout and Evolution Preview', async ({ page }) => {
 });
 
 test('Verify Shop and Inventory Refactor', async ({ page }) => {
-    await page.goto('http://127.0.0.1:8080/?test=true');
+    await page.goto('/?test=true');
     await page.waitForLoadState('networkidle');
 
     // --- SHOP VERIFICATION ---

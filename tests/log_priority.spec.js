@@ -8,7 +8,7 @@ test('Log messages have priority', async ({ page }) => {
   };
 
   // Go to the game page with test mode enabled
-  await page.goto('http://localhost:8000/?test=true');
+  await page.goto('/?test=true');
 
   // Wait for game to initialize
   await page.waitForSelector('#game-container');

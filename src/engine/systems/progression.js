@@ -69,7 +69,7 @@ export class ProgressionSystem {
 
         for (const evo of battler.evolutions) {
             let eligible = true;
-            if (evo.level && battler.level <= evo.level) eligible = false;
+            if (evo.level && battler.level < evo.level) eligible = false;
             if (evo.item) {
                 const hasItem = inventory.some(i => i.id === evo.item);
                 if (!hasItem) eligible = false;
