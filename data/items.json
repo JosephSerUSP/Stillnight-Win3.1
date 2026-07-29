@@ -290,7 +290,7 @@
     "equipType": "Weapon",
     "cost": 1520,
     "icon": 73,
-    "description": "Leaf-shaped daggers that strike with the speed of wind.",
+    "description": "A cool blue sceptre that bends the wearer's nature toward flowing magic.",
     "traits": [
       {
         "code": "PARAM_PLUS",
