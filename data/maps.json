@@ -196,6 +196,10 @@
       {
         "id": "treasure",
         "chance": 0.5
+      },
+      {
+        "id": "chasm_gale",
+        "count": 1
       }
     ],
     "treasures": [
@@ -257,6 +261,10 @@
       {
         "id": "recruit",
         "chance": 0.7
+      },
+      {
+        "id": "rusted_chorus",
+        "count": 1
       }
     ],
     "encounters": [
@@ -365,6 +373,10 @@
         "behavior": "guard",
         "symbol": "W",
         "cssClass": "text-danger"
+      },
+      {
+        "id": "blood_font",
+        "count": 1
       }
     ],
     "treasures": [
