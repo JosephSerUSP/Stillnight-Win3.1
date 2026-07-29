@@ -188,44 +188,52 @@ export class Game_Party {
    * @param {boolean} [isSafe=false] - If true, prevents MP drain and removes weakened state.
    * @returns {Array} List of events (e.g. damage logs).
    */
+  get expeditionMembers() {
+      return this.slots.slice(0, 4).filter(member => member !== null);
+  }
+
+  /** Total MP upkeep of the currently deployed creatures. */
+  get mpCostPerStep() {
+      return this.expeditionMembers.reduce((sum, member) => sum + (member.mpDrain ?? 1), 0);
+  }
+
   onStep(isSafe = false) {
       const events = [];
+      if (!this.summoner) return events;
 
-      // Filter out summoner for cost calculation if desired, OR keep as is.
-      // Current activeMembers now includes Summoner.
-      // Requirement: "Summoner should not participate in battle like a regular creature... but gain stats..."
-      // Map movement: Logic was "mpCostPerStep = activeCount".
-      // If Summoner is in activeMembers, count is +1.
-      // This implies the Summoner's movement also costs MP. This is consistent.
+      const creatures = this.expeditionMembers;
+      const previousMp = this.summoner.mp;
 
-      const activeCount = this.activeMembers.length;
-      if (activeCount === 0 || !this.summoner) return events;
-
-      // Drain MP (only if not safe)
-      if (!isSafe) {
-          const mpCostPerStep = activeCount; // 1 MP per active creature (including Summoner)
-          this.summoner.mp = Math.max(0, this.summoner.mp - mpCostPerStep);
+      if (isSafe) {
+          this.variables.depletionSteps = 0;
+      } else if (creatures.length > 0) {
+          const cost = this.mpCostPerStep;
+          this.summoner.mp = Math.max(0, this.summoner.mp - cost);
+          events.push({ type: 'mp_drain', value: cost, before: previousMp, after: this.summoner.mp });
       }
 
-      // Check Weakened State
-      if (this.summoner.mp === 0 && !isSafe) {
-          // Apply Weakened State if not already applied
-          this.activeMembers.forEach(m => {
-              if (!m.isStateAffected('weakened')) {
-                  m.addState('weakened');
-                  events.push({ type: 'text', msg: `${m.name} is weakened!` });
-              }
-              // HP Drain
-              const damage = Math.max(1, Math.floor(m.maxHp * 0.05));
-              m.hp = Math.max(0, m.hp - damage);
-              // events.push({ type: 'damage', target: m, value: damage }); // Too spammy for map?
+      if (this.summoner.mp === 0 && !isSafe && creatures.length > 0) {
+          const depletionSteps = (this.variables.depletionSteps || 0) + 1;
+          this.variables.depletionSteps = depletionSteps;
+
+          if (previousMp > 0) {
+              events.push({ type: 'text', msg: 'The summoning link runs dry. Your creatures begin feeding on themselves.' });
+          } else if (depletionSteps === 8 || depletionSteps === 16) {
+              events.push({ type: 'text', msg: 'The empty link tightens. Every step is taking more from them.' });
+          }
+
+          const damageRate = Math.min(0.15, 0.03 + Math.floor(depletionSteps / 8) * 0.02);
+          creatures.forEach(member => {
+              if (!member.isStateAffected('weakened')) member.addState('weakened');
+              const damage = Math.max(1, Math.floor(member.maxHp * damageRate));
+              member.hp = Math.max(0, member.hp - damage);
           });
       } else {
-          // Remove Weakened State if applied (either recovered MP or entered Safe Zone)
-          this.activeMembers.forEach(m => {
-              if (m.isStateAffected('weakened')) {
-                  m.removeState('weakened');
-                  events.push({ type: 'text', msg: `${m.name} recovered strength.` });
+          this.variables.depletionSteps = 0;
+          creatures.forEach(member => {
+              if (member.isStateAffected('weakened')) {
+                  member.removeState('weakened');
+                  events.push({ type: 'text', msg: `${member.name} recovers as the summoning link steadies.` });
               }
           });
       }
