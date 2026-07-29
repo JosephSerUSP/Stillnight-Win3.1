@@ -741,6 +741,7 @@ export class Scene_Map extends Scene_Base {
   openFormation() {
     if (this.sceneManager.currentScene() !== this) return;
     this.windowManager.push(this.hudManager.formationWindow);
+    this.logMessage(`[Link] Deployed creatures consume ${this.party.mpCostPerStep} MP per dungeon step.`);
 
     const handleSwap = (idx1, idx2) => {
         if (this.party.reorderMembers(idx1, idx2)) {
@@ -1165,7 +1166,7 @@ export class Scene_Map extends Scene_Base {
     if (member.role === 'Summoner') {
         this.logMessage(`[Inspect] ${member.name} – Lv${member.level}, HP ${member.hp}/${member.maxHp}, MP ${member.mp}/${member.maxMp}.`);
     } else {
-        this.logMessage(`[Inspect] ${member.name} – Lv${member.level}, ${this.partyRow(index)}, HP ${member.hp}/${member.maxHp}.`);
+        this.logMessage(`[Inspect] ${member.name} – Lv${member.level}, ${this.partyRow(index)}, HP ${member.hp}/${member.maxHp}, Upkeep ${member.mpDrain} MP/step.`);
     }
 
     this.hudManager.inspectWindow.onUserClose = () => this.closeInspect();
