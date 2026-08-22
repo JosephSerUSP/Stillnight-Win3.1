@@ -9,13 +9,19 @@ This document outlines the architectural refactor to create a single source of t
 *   **Battle**: Migrated to `BattleSystem` and `BattleAdapter`. Legacy `managers/battle.js` deleted.
 *   **Exploration**: Migrated to `ExplorationSystem` and `ExplorationAdapter`. Legacy `managers/exploration.js` deleted.
 *   **Interpreter**: Migrated to `InterpreterSystem` and `InterpreterAdapter`. Legacy `managers/interpreter.js` deleted.
-*   **UI Decoupling**: Windows now use `Adapters` (Audio, Settings, Effect) and `Selectors`. Direct manager imports removed from key windows.
+*   **UI Decoupling**: Windows generally use adapters and selectors rather than simulation imports.
 *   **Save/Load**: Wired into `Scene_Boot` and `Scene_Map` via `SessionSerializer`.
-*   **Cleanup**: `src/objects/objects.js` retired. `src/legacy/` deleted.
+*   **Cleanup**: `src/objects/objects.js` and `src/legacy/` retired.
+*   **Input ownership**: `InputController` manager retired; browser keyboard translation now lives inside `InputAdapter`.
+*   **Infrastructure cleanup**: **In progress.** Sound and Config remain manager-owned globals behind adapters; DataManager still initializes audio.
+
+See `doc/refactor-audit-2026-08.md` for the evidence-based boundary audit that reopened the final infrastructure cleanup.
 
 ## Assessment
 
-The roadmap is largely complete, with most systems migrated to the new architecture. `TraitManager` and `EncounterManager` have been successfully migrated to `TraitRules` and `EncounterRules`, completing the "Remove remaining legacy knot" phase. The system now enforces hard layer boundaries.
+The simulation/runtime-state refactor is largely complete: battle, exploration, interpreter, effects, traits, and encounters have moved to engine systems/rules and presentation boundaries are substantially cleaner.
+
+The repository is **not yet finished with Phase 7**, however. The previous tracker overstated completion of the infrastructure-manager migration. `SoundManager` and `ConfigManager` remain global static owners; `AudioAdapter` reaches into private SoundManager fields for catalog/current-track queries; and `DataManager` still bootstraps audio as a loading side effect. These are boundary/lifecycle problems rather than reasons to disturb the now-stable engine architecture.
 
 ## Target Architecture
 
@@ -32,7 +38,7 @@ The roadmap is largely complete, with most systems migrated to the new architect
 `src/presentation/`
 *   `scenes/` – glue: translate user intent to engine commands; route to windows
 *   `windows/` – DOM UI only (no simulation imports)
-*   `selectors/` – “view models” derived from session state (selectPartyHUD(session))
+*   `selectors/` – view models derived from session state
 
 ### Data (read-only)
 `data/` + `src/data/`
@@ -46,7 +52,7 @@ The roadmap is largely complete, with most systems migrated to the new architect
 ## Phase 1 — Create the New Engine skeleton + import bans (Complete)
 *   `src/engine/` created.
 *   ESLint rules added.
-*   `src/legacy/` created.
+*   `src/legacy/` created and subsequently retired.
 
 ## Phase 2 — Migrate Battle (Complete)
 *   `BattleSystem` and `BattleAdapter` implemented.
@@ -66,8 +72,8 @@ The roadmap is largely complete, with most systems migrated to the new architect
 
 ## Phase 5 — UI decoupling pass (Complete)
 *   Created `AudioAdapter`, `SettingsAdapter`, `EffectAdapter`.
-*   Refactored Windows (`base.js`, `audio_player.js`, `formation.js`, `confirm.js`) to use adapters.
-*   Removed direct `manager` imports from presentation layer.
+*   Refactored key windows to use adapters.
+*   Removed direct simulation-manager imports from presentation layer.
 
 ## Phase 6 — Save/Load (Complete)
 *   `SessionSerializer` implemented.
@@ -75,11 +81,22 @@ The roadmap is largely complete, with most systems migrated to the new architect
 *   `Scene_Map` accepts and resumes session.
 *   `Registry` populated in boot.
 
-## Phase 7 — Remove the remaining legacy knot (Complete)
-**Goal:** Final cleanups.
-*   Retire `src/objects/objects.js` barrel (Complete).
-*   Replace `window.*` debug globals with `DebugTools` (Complete - via `exposeGlobals`).
-*   Migrate `EffectManager` to `EffectSystem` (Complete — EffectManager removed; Game_Action and systems use EffectSystem with injected context).
-*   Migrate remaining infrastructure managers (`Sound`, `Input`, `Config`) to pure Ports/Adapters structure (Complete — presentation routes through adapters for audio, settings, and input).
-*   Migrate `TraitManager` to `TraitRules` (Complete — TraitManager removed; TraitRules created in src/engine/rules/).
-*   Migrate `EncounterManager` to `EncounterRules` (Complete — EncounterManager removed; EncounterRules created in src/engine/rules/ with pure functions).
+## Phase 7 — Remove the remaining legacy knot (In progress)
+**Goal:** Finish ownership cleanup without reintroducing a second source of runtime truth.
+
+Completed:
+*   Retire `src/objects/objects.js` barrel.
+*   Replace ad-hoc debug globals with `DebugTools` exposure.
+*   Migrate `EffectManager` to `EffectSystem`.
+*   Migrate `TraitManager` to `TraitRules`.
+*   Migrate `EncounterManager` to `EncounterRules`.
+*   Retire `InputController` manager; keyboard mapping is presentation adapter logic.
+
+Remaining:
+*   Give audio a public adapter/service contract so `AudioAdapter` no longer reads private `SoundManager` fields.
+*   Remove direct `SoundManager` → `ConfigManager` global coupling through explicit settings/volume dependencies.
+*   Separate configuration persistence (`localStorage`) from mutable settings ownership.
+*   Separate `DataManager` content loading from audio/service initialization.
+*   Re-audit `src/managers/` after those moves and retire the namespace where responsibilities have acquired explicit homes.
+
+Completion rule: Phase 7 may be marked complete only when the remaining ownership described above has actually moved and code search confirms no compatibility manager is silently retaining it.
