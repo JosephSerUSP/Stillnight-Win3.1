@@ -1,14 +1,62 @@
 /** Parses standard MIDI files (SMF). */
 export class MidiParser {
-  constructor(arrayBuffer) { this.data = new Uint8Array(arrayBuffer); this.view = new DataView(arrayBuffer); this.pos = 0; }
+  constructor(arrayBuffer) {
+    this.data = new Uint8Array(arrayBuffer);
+    this.view = new DataView(arrayBuffer);
+    this.pos = 0;
+  }
   readString(len) { let str = ""; for (let i = 0; i < len; i++) str += String.fromCharCode(this.data[this.pos++]); return str; }
   readInt32() { const val = this.view.getUint32(this.pos); this.pos += 4; return val; }
   readInt16() { const val = this.view.getUint16(this.pos); this.pos += 2; return val; }
   readInt8() { return this.data[this.pos++]; }
   readVarInt() { let value = 0; let byte; do { byte = this.readInt8(); value = (value << 7) | (byte & 0x7f); } while (byte & 0x80); return value; }
   parse() {
-    this.pos = 0; if (this.readString(4) !== "MThd") throw new Error("Invalid MIDI header"); this.readInt32(); this.readInt16(); const nTracks = this.readInt16(); const division = this.readInt16(); const tracks = []; let tracksFound = 0;
-    while (tracksFound < nTracks && this.pos < this.data.length) { if (this.pos + 8 > this.data.length) break; const chunkType = this.readString(4); const chunkLen = this.readInt32(); if (chunkType !== "MTrk") { this.pos += chunkLen; continue; } const startPos = this.pos; const events = []; let ticks = 0; let runningStatus = 0; while (this.pos < startPos + chunkLen) { ticks += this.readVarInt(); let eventType = this.data[this.pos]; let event = { ticks }; if (eventType >= 0x80) { this.pos++; runningStatus = eventType; } else eventType = runningStatus; if (eventType === 0xff) { const metaType = this.readInt8(); const len = this.readVarInt(); if (metaType === 0x51) { event.type = "tempo"; event.microsecondsPerBeat = (this.data[this.pos] << 16) | (this.data[this.pos + 1] << 8) | this.data[this.pos + 2]; } else if (metaType === 0x2f) event.type = "end"; this.pos += len; } else if (eventType === 0xf0 || eventType === 0xf7) { const len = this.readVarInt(); this.pos += len; } else { const command = eventType & 0xf0; event.channel = eventType & 0x0f; if (command === 0x90) { event.note = this.readInt8(); event.velocity = this.readInt8(); event.type = event.velocity === 0 ? "noteOff" : "noteOn"; } else if (command === 0x80) { event.note = this.readInt8(); event.velocity = this.readInt8(); event.type = "noteOff"; } else if (command === 0xc0 || command === 0xd0) this.readInt8(); else { this.readInt8(); this.readInt8(); } } if (event.type) events.push(event); } tracks.push(events); tracksFound++; }
+    this.pos = 0;
+    if (this.readString(4) !== "MThd") throw new Error("Invalid MIDI header");
+    this.readInt32();
+    this.readInt16();
+    const nTracks = this.readInt16();
+    const division = this.readInt16();
+    const tracks = [];
+    let tracksFound = 0;
+    while (tracksFound < nTracks && this.pos < this.data.length) {
+      if (this.pos + 8 > this.data.length) break;
+      const chunkType = this.readString(4);
+      const chunkLen = this.readInt32();
+      if (chunkType !== "MTrk") { this.pos += chunkLen; continue; }
+      const startPos = this.pos;
+      const events = [];
+      let ticks = 0;
+      let runningStatus = 0;
+      while (this.pos < startPos + chunkLen) {
+        ticks += this.readVarInt();
+        let eventType = this.data[this.pos];
+        let event = { ticks };
+        if (eventType >= 0x80) { this.pos++; runningStatus = eventType; } else eventType = runningStatus;
+        if (eventType === 0xff) {
+          const metaType = this.readInt8();
+          const len = this.readVarInt();
+          if (metaType === 0x51) {
+            event.type = "tempo";
+            event.microsecondsPerBeat = (this.data[this.pos] << 16) | (this.data[this.pos + 1] << 8) | this.data[this.pos + 2];
+          } else if (metaType === 0x2f) event.type = "end";
+          this.pos += len;
+        } else if (eventType === 0xf0 || eventType === 0xf7) {
+          const len = this.readVarInt();
+          this.pos += len;
+        } else {
+          const command = eventType & 0xf0;
+          event.channel = eventType & 0x0f;
+          if (command === 0x90) { event.note = this.readInt8(); event.velocity = this.readInt8(); event.type = event.velocity === 0 ? "noteOff" : "noteOn"; }
+          else if (command === 0x80) { event.note = this.readInt8(); event.velocity = this.readInt8(); event.type = "noteOff"; }
+          else if (command === 0xc0 || command === 0xd0) this.readInt8();
+          else { this.readInt8(); this.readInt8(); }
+        }
+        if (event.type) events.push(event);
+      }
+      tracks.push(events);
+      tracksFound++;
+    }
     return { division, tracks };
   }
 }
