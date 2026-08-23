@@ -18,3 +18,12 @@ export const AudioAdapter = {
     getMusicKeys() { return SoundService.getMusicKeys(); },
     getSfxKeys() { return SoundService.getSfxKeys(); }
 };
+
+// Browser test/debug aliases. These expose snapshots rather than the service's
+// private mutable collections, preserving old inspection ergonomics without
+// making those fields architectural API.
+Object.defineProperties(AudioAdapter, {
+    _currentMusicKey: { get: () => SoundService.getCurrentMusicKey() },
+    _midiData: { get: () => new Map(SoundService.getMusicKeys().map(key => [key, true])) },
+    _soundMap: { get: () => Object.fromEntries(SoundService.getSfxKeys().map(key => [key, true])) }
+});
