@@ -46,3 +46,49 @@ test('Summoner exhaustion escalates in runtime and authored MP recovery clears i
   expect(result.exhaustionAfterRecovery).toBe(0);
   expect(result.weakenedAfterRecovery).toBe(false);
 });
+
+test('battle Formation and Flee dispatch through the direct Summoner cost contract', async ({ page }) => {
+  await page.goto('/?test=true');
+  await page.waitForFunction(() =>
+    window.sceneManager &&
+    window.sceneManager.currentScene() &&
+    window.sceneManager.currentScene().constructor.name === 'Scene_Map'
+  );
+
+  await page.evaluate(() => {
+    window.ConfigManager.windowAnimations = false;
+    window.sceneManager.currentScene().startBattle(0, 0);
+  });
+  await page.waitForFunction(() =>
+    window.sceneManager.currentScene() &&
+    window.sceneManager.currentScene().constructor.name === 'Scene_Battle'
+  );
+
+  await page.evaluate(() => {
+    const battle = window.sceneManager.currentScene();
+    battle.party.summoner.mp = 10;
+    battle.party.summoner.exhaustion = 0;
+    battle.onFormationClick();
+    battle.formationWindow.onSlotClick(null, 0);
+    battle.formationWindow.onSlotClick(null, 1);
+    battle.confirmWindow.btnOk.click();
+  });
+
+  await page.waitForFunction(() => window.sceneManager.currentScene().party.summoner.mp === 9);
+
+  const result = await page.evaluate(async () => {
+    const battle = window.sceneManager.currentScene();
+    const map = window.sceneManager.previous();
+    map.getFleeChance = () => 0;
+    await battle.attemptFlee();
+    return {
+      scene: window.sceneManager.currentScene().constructor.name,
+      mp: battle.party.summoner.mp,
+      formationUsed: battle.actionTakenThisTurn,
+    };
+  });
+
+  expect(result.scene).toBe('Scene_Battle');
+  expect(result.mp).toBe(8);
+  expect(result.formationUsed).toBe(true);
+});
