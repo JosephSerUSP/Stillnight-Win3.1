@@ -80,6 +80,20 @@ export class BattleAdapter {
     return events;
   }
 
+  getSummonerSpellOptions() {
+    return this.system.getSummonerSpellOptions(this.state);
+  }
+
+  getSummonerSpellTargets(spellId) {
+    return this.system.getSummonerSpellTargets(this.state, spellId);
+  }
+
+  castSummonerSpell(spellId, target = null) {
+    const result = this.system.castSummonerSpell(this.state, spellId, target);
+    this._sync();
+    return result;
+  }
+
   _sync() {
     this.round = this.state.round;
     this.turnQueue = this.state.turnQueue;

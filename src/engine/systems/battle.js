@@ -2,6 +2,7 @@ import { BattleState } from "../session/battle_state.js";
 import { EffectSystem } from "../rules/effects.js";
 import { ProgressionSystem } from "./progression.js";
 import { SummonerResourceSystem } from "./summoner_resource.js";
+import { SummonerSpellSystem } from "./summoner_spell.js";
 import { Registry } from "../data/registry.js";
 import { randInt, elementToAscii } from "../../core/utils.js";
 
@@ -272,7 +273,7 @@ export class BattleSystem {
       return events;
   }
 
-  /** Shared direct-Summoner resource entry point for Formation/Flee/Spell. */
+  /** Shared direct-Summoner resource entry point for Formation/Flee. */
   consumeSummonerAction(state, kind, explicitCost = null) {
       const events = SummonerResourceSystem.consumeDirectAction(
           state.participants.party,
@@ -281,6 +282,20 @@ export class BattleSystem {
       );
       this._checkBattleEnd(state, events);
       return events;
+  }
+
+  getSummonerSpellOptions(state) {
+      return SummonerSpellSystem.getOptions(state.participants.party);
+  }
+
+  getSummonerSpellTargets(state, spellId) {
+      return SummonerSpellSystem.getValidTargets(state.participants.party, spellId);
+  }
+
+  castSummonerSpell(state, spellId, target = null) {
+      const result = SummonerSpellSystem.cast(state.participants.party, spellId, target);
+      if (result.ok) this._checkBattleEnd(state, result.events);
+      return result;
   }
 
   _executeSkill(state, action, events) {

@@ -22,6 +22,7 @@ export class Scene_Boot extends Scene_Base {
 
         Registry.set('items', this.contentLoader.items);
         Registry.set('skills', this.contentLoader.skills);
+        Registry.set('spells', this.contentLoader.spells);
         Registry.set('actors', this.contentLoader.actors);
         if (this.contentLoader.states) Registry.set('states', this.contentLoader.states);
         if (this.contentLoader.enemies) Registry.set('enemies', this.contentLoader.enemies);

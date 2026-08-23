@@ -2,7 +2,7 @@ import { Scene_Base } from "./base.js";
 import { probabilisticRound, random } from "../../core/utils.js";
 import { AudioAdapter } from "../../adapters/audio_adapter.js";
 import { SettingsAdapter } from "../../adapters/settings_adapter.js";
-import { Window_Battle, Window_Victory, createInteractiveLabel } from "../windows/index.js";
+import { Window_Battle, Window_Victory, Window_SpellSelect, createInteractiveLabel } from "../windows/index.js";
 import { BattleSystem } from "../../engine/systems/battle.js";
 import { BattleAdapter } from "../../adapters/battle_adapter.js";
 import { EncounterAdapter } from "../../adapters/encounter_adapter.js";
@@ -46,6 +46,10 @@ export class Scene_Battle extends Scene_Base {
     this.actionTakenThisTurn = false;
 
     this.battleWindow = new Window_Battle();
+    const spellButton = this.battleWindow.addButton("Spell", () => this.onSpellClick());
+    this.battleWindow.btnSpell = spellButton;
+    const actionRow = this.battleWindow.btnItem.parentElement;
+    if (actionRow) actionRow.insertBefore(spellButton, this.battleWindow.btnItem.nextSibling);
     this.windowLayer.addChild(this.battleWindow);
 
     // Use shared windows from Scene_Map
@@ -55,7 +59,9 @@ export class Scene_Battle extends Scene_Base {
     this.confirmEffectWindow = sharedWindows.confirmEffect;
     this.confirmWindow = sharedWindows.confirm;
     this.equipItemSelectWindow = sharedWindows.equipItemSelect;
+    this.spellWindow = new Window_SpellSelect();
     this.victoryWindow = new Window_Victory();
+    this.windowLayer.addChild(this.spellWindow);
     this.windowLayer.addChild(this.victoryWindow);
 
     this.formationWindow.onUserClose = () => this.windowManager.close(this.formationWindow);
@@ -63,6 +69,7 @@ export class Scene_Battle extends Scene_Base {
     this.partySelectWindow.onUserClose = () => this.windowManager.close(this.partySelectWindow);
     this.confirmEffectWindow.onUserClose = () => this.windowManager.close(this.confirmEffectWindow);
     this.confirmWindow.onUserClose = () => this.windowManager.close(this.confirmWindow);
+    this.spellWindow.onUserClose = () => this.windowManager.close(this.spellWindow);
     this.victoryWindow.onUserClose = () => {/* Prevent closing victory manually without claim? Or allow and re-open? For now, button handles it. */};
 
     // Use setHandlers for callback delegation
@@ -77,6 +84,7 @@ export class Scene_Battle extends Scene_Base {
 
   populateRegistry(dataManager) {
       if (dataManager.skills) Registry.set('skills', dataManager.skills);
+      if (dataManager.spells) Registry.set('spells', dataManager.spells);
       if (dataManager.items) Registry.set('items', dataManager.items);
       if (dataManager.elements) Registry.set('elements', dataManager.elements);
       if (dataManager.states) Registry.set('states', dataManager.states);
@@ -202,6 +210,55 @@ export class Scene_Battle extends Scene_Base {
       );
   }
 
+  onSpellClick() {
+      if (this.actionTakenThisTurn || this.battleBusy) return;
+
+      const options = this.battleManager.getSummonerSpellOptions();
+      this.spellWindow.setup(options, (option) => this.onSpellSelected(option));
+      this.windowManager.push(this.spellWindow);
+  }
+
+  onSpellSelected(option) {
+      const { spell, validTargets } = option;
+      if (spell.target === 'ally-any' || spell.target === 'ally-dead') {
+          const validSet = new Set(validTargets);
+          this.partySelectWindow.setup(
+              this.party,
+              `Cast ${spell.name} on:`,
+              (target) => {
+                  this.windowManager.close(this.partySelectWindow);
+                  this.processSpellAction(spell, target);
+              },
+              this.sceneManager.previous().getContext(),
+              (member) => validSet.has(member)
+          );
+          this.windowManager.push(this.partySelectWindow);
+          return;
+      }
+
+      this.processSpellAction(spell);
+  }
+
+  async processSpellAction(spell, target = null) {
+      const result = this.battleManager.castSummonerSpell(spell.id, target);
+      if (!result.ok) {
+          const failure = result.events?.find(event => event.type === 'spell_failed');
+          this.battleWindow.appendLog(failure?.msg || 'That spell cannot be cast.');
+          AudioAdapter.play('UI_ERROR');
+          return;
+      }
+
+      this.windowManager.close(this.partySelectWindow);
+      this.windowManager.close(this.spellWindow);
+      await this.animateEvents(result.events);
+      this.actionTakenThisTurn = true;
+      this.disableActionButtons();
+      this.sceneManager.previous().checkPermadeath();
+      this.sceneManager.previous().updateParty();
+      this.renderBattleAscii();
+      AudioAdapter.play('UI_SELECT');
+  }
+
   async processItemAction(item, target) {
       // Use Summoner as subject if available, otherwise fallback to generic party context
       const subject = this.party.summoner || this.party;
@@ -276,11 +333,13 @@ export class Scene_Battle extends Scene_Base {
   disableActionButtons() {
       this.battleWindow.btnFormation.classList.add('disabled');
       this.battleWindow.btnItem.classList.add('disabled');
+      this.battleWindow.btnSpell.classList.add('disabled');
   }
 
   enableActionButtons() {
       this.battleWindow.btnFormation.classList.remove('disabled');
       this.battleWindow.btnItem.classList.remove('disabled');
+      this.battleWindow.btnSpell.classList.remove('disabled');
   }
 
   /**
@@ -289,6 +348,7 @@ export class Scene_Battle extends Scene_Base {
    */
   stop() {
     this.windowManager.close(this.battleWindow);
+    this.windowManager.close(this.spellWindow);
     if (this.sceneManager.previous().hud) {
         this.sceneManager.previous().hud.setMode("Exploration");
     }

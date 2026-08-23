@@ -25,10 +25,11 @@ export class Window_PartySelect extends Window_Selectable {
         this.btnCancel = this.addButton("Cancel", () => this.onUserClose());
     }
 
-    setup(party, message, onSelect, context = null) {
+    setup(party, message, onSelect, context = null, targetFilter = null) {
         this.party = party;
         this.context = context;
         this.onSelect = onSelect;
+        this.targetFilter = targetFilter;
         this.msgEl.textContent = message;
         this.refresh();
     }
@@ -36,7 +37,9 @@ export class Window_PartySelect extends Window_Selectable {
     refresh() {
         this.gridEl.innerHTML = "";
         if (!this.party) return;
-        this.party.members.forEach((m) => {
+        this.party.members
+            .filter((member) => !this.targetFilter || this.targetFilter(member))
+            .forEach((m) => {
             const realIndex = this.party.slots.indexOf(m);
             let evolutionStatus = null;
             if (this.context) {
