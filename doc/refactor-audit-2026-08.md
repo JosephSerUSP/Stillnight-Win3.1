@@ -1,74 +1,47 @@
-# Architecture Refactor Audit — 2026-08
+# Architecture Audit — August 2026
 
-This audit checks the repository against `AGENTS.md` and the canonical `doc/refactor.md` claim that the runtime refactor is complete.
+## Result
 
-## Executive finding
+The audit began because the repository's refactor tracker described infrastructure ownership as complete while a catch-all `src/managers/` layer still retained input, scene lifecycle, settings, audio, MIDI, and static-content responsibilities.
 
-The engine migration is materially advanced, but the repository is **not yet at the architecture described by the completion language in `doc/refactor.md`**. The most important remaining debt is no longer battle/exploration/interpreter simulation logic; it is infrastructure ownership and boundary truthfulness.
+That discrepancy has now been resolved by the refactor performed alongside this audit. Phase 7 is complete at the ownership level.
 
-The audit therefore treats the previous “Phase 7 complete” statement as too broad. This PR starts the corrective pass by removing `InputController` from `src/managers/` entirely and making keyboard-to-scene intent a presentation adapter concern.
+## Findings and resolution
 
-## Findings
+### Runtime simulation
+Battle, exploration, interpreter, progression/effects/traits/encounters already had credible engine-owned homes. This audit deliberately did not reopen those systems merely to increase refactor scope.
 
-### A. Engine/presentation separation: strong
+### Input
+`InputController` mixed browser KeyboardEvents, modal presentation state, Scene_Map knowledge, and movement calls. It was presentation logic. The manager was deleted and the behavior moved behind `InputAdapter`.
 
-Battle, exploration, interpreter, effects, traits, encounters, and progression have dedicated engine modules. Presentation generally reaches those systems through adapters/selectors. This is the successful core of the earlier refactor and should be preserved.
+### Scene lifecycle
+`SceneManager` owns presentation Scene instances and `requestAnimationFrame`. It now lives in `src/presentation/scene_manager.js` rather than a generic managers namespace.
 
-### B. `src/managers/` still owns infrastructure that the roadmap says was migrated
+### Settings
+`src/infrastructure/settings.js` separates settings state from its localStorage repository. Runtime code consumes `SettingsAdapter` or an injected settings contract. The old source-layer `ConfigManager` class is deleted; only a browser test/debug compatibility object preserves the historical `window.ConfigManager` shape.
 
-At audit time the directory still contains:
+### Audio and MIDI
+The public `AudioAdapter` contract now fronts `src/infrastructure/audio/sound_service.js`; MIDI parsing/playback lives with that audio infrastructure. Settings are injected explicitly from composition and adapters do not inspect private audio caches.
 
-- `config.js`
-- `data.js`
-- `index.js`
-- `input_controller.js`
-- `midi.js`
-- `scene.js`
-- `sound.js`
+### Static content
+The old DataManager had ceased to be a runtime service after audio bootstrap was removed. Its remaining responsibility was static authored-content acquisition, so it is now `src/data/content_loader.js`.
 
-This contradicts the broad Phase 7 wording that Sound/Input/Config were migrated to a Ports/Adapters structure. Wrapping a manager in an adapter is useful dependency shielding, but it is not the same as migrating ownership.
+### Composition
+`src/main.js` no longer imports a managers barrel. It explicitly composes settings, audio, static content, presentation scene lifecycle, windows, and boot.
 
-### C. Input manager is misplaced presentation logic
+## Final ownership map
 
-`InputController` knows `Scene_Map` shape, `windowManager.stack`, `runActive`, browser `KeyboardEvent`, and `movePlayer`. It is presentation glue, not a runtime service and not engine state.
+- `src/engine/`: runtime state, deterministic systems/rules, serialization-facing domain behavior.
+- `src/presentation/`: scenes, windows, selectors, scene lifecycle, presentation-only managers.
+- `src/infrastructure/`: browser persistence and WebAudio/MIDI implementation.
+- `src/data/` + `data/`: static content acquisition and authored data.
+- `src/adapters/`: narrow boundaries consumed by presentation/composition.
+- `src/managers/`: retired.
 
-**Action in this PR:** move that behavior behind `src/adapters/input_adapter.js` and delete `src/managers/input_controller.js` plus its barrel export.
+## Completion criterion
 
-### D. Audio adapter leaks SoundManager internals
+The criterion was not “rename every Manager.” It was: no compatibility manager may silently retain ownership that the architecture claims has moved.
 
-`AudioAdapter.getCurrentMusicKey()`, `getMusicKeys()`, and `getSfxKeys()` read underscored static fields on `SoundManager`. This means the adapter boundary is nominal rather than contractual for those queries.
+The source-layer `src/managers/` files and barrel are now removed. Remaining historical manager names exposed on `window` under `?test=true` are compatibility/debug surfaces only and delegate to the real settings/audio boundaries; they are not alternate state owners.
 
-**Follow-up:** give audio infrastructure a public query contract (or an injected audio port/service) and remove adapter knowledge of private storage.
-
-### E. Sound and config remain coupled globals
-
-`SoundManager` reads `ConfigManager` static volume fields directly. `ConfigManager` loads itself at module evaluation time and talks directly to `localStorage`. This makes audio/config lifecycle implicit and complicates isolated tests.
-
-**Follow-up:** introduce explicit settings/storage ownership and inject volume/settings reads into audio infrastructure. Do this behavior-preservingly; do not move these globals into `src/engine/`.
-
-### F. Data loading initializes audio as a side effect
-
-`DataManager.loadData()` both loads content and initializes `SoundManager`. That mixes static data acquisition with runtime service bootstrapping.
-
-**Follow-up:** let boot/composition root initialize data and audio explicitly after data has loaded.
-
-### G. Documentation had two competing truths
-
-`doc/ARCHITECTURE.md` accurately describes infrastructure managers as still present, while `doc/refactor.md` said the relevant migration was complete. The canonical tracker must prefer observable repository state over aspirational completion labels.
-
-## Refactor direction
-
-1. **This PR:** retire `InputController` manager; keep input in the presentation adapter where its dependencies actually live.
-2. **Next:** make AudioAdapter consume only a public audio contract; eliminate reads of `_currentMusicKey`, `_midiData`, `_soundMap`.
-3. **Then:** separate configuration persistence from mutable settings state and inject settings into audio.
-4. **Then:** separate data loading from service initialization/composition.
-5. **Finally:** reassess whether `src/managers/` is still a meaningful layer or merely a compatibility namespace; delete/rename it only when remaining responsibilities have clear homes.
-
-## Guardrails
-
-- Do not migrate DOM, WebAudio, localStorage, or KeyboardEvent concerns into `src/engine/`.
-- Do not create a second runtime-state authority while removing managers.
-- Prefer explicit composition/injection over replacement globals.
-- Preserve deterministic engine behavior and save compatibility.
-- A wrapper is not proof that ownership has migrated.
-- `doc/refactor.md` completion claims must be backed by code search and actual deletion of the legacy ownership described.
+Executable Playwright validation remains a merge gate because this GitHub editing environment cannot run the repository's browser suite. That validation caveat does not change the ownership classification above.
