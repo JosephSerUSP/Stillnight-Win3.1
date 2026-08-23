@@ -4,14 +4,14 @@ export class ContentLoader {
     this.actors = null; this.elements = null; this.events = null; this.maps = null; this.items = null;
     this.quests = null; this.shops = null; this.terms = null; this.sounds = null; this.skills = null;
     this.passives = null; this.states = null; this.startingParty = null; this.animations = null; this.themes = null;
-    this.enemies = null; this.graphs = {}; this.loaded = false;
+    this.graphs = {}; this.loaded = false;
   }
 
   async loadData() {
     const dataSources = {
       actors: "data/actors.json", elements: "data/elements.json", events: "data/events.json", maps: "data/maps.json",
       items: "data/items.json", quests: "data/quests.json", shops: "data/shops.json", terms: "data/terms.json",
-      themes: "data/themes.json", sounds: "data/sounds.json", enemies: "data/enemies.json"
+      themes: "data/themes.json", sounds: "data/sounds.json"
     };
 
     try {
