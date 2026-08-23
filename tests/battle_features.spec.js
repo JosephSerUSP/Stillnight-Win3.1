@@ -41,6 +41,7 @@ test('Battle UI Features', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Settings' }).click();
   await page.click('#menu-item-settings-general');
-  await expect(page.locator('#options-window')).toBeVisible();
-  await expect(page.locator('#options-window')).toContainText('Auto Battle');
+  const settingsWindow = page.locator('.window-frame:has(.window-header span:text-is("Settings"))');
+  await expect(settingsWindow).toBeVisible();
+  await expect(settingsWindow).toContainText('Auto Battle');
 });
