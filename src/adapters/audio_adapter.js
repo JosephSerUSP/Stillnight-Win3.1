@@ -1,13 +1,14 @@
 import { SoundManager } from "../managers/sound.js";
 
 /**
- * Presentation-facing audio boundary.
- *
- * SoundManager is still the infrastructure implementation during Phase 7, but
- * this adapter consumes only its public contract. Private WebAudio/cache state
- * must not leak into presentation callers.
+ * Presentation/boot-facing audio boundary. Private WebAudio/cache state remains
+ * inside the infrastructure implementation.
  */
 export const AudioAdapter = {
+    initialize(soundMap) {
+        return SoundManager.init(soundMap);
+    },
+
     play(key, options) {
         return SoundManager.play(key, options);
     },
