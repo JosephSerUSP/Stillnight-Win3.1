@@ -11,11 +11,10 @@ export class SoundService {
   static _musicPlayer = null;
   static _sfxCount = 0;
   static _currentMusicKey = null;
-  static _settings = DEFAULT_SETTINGS;
+  static _settings = { get: key => DEFAULT_SETTINGS[key] };
 
-  static configureSettings(settings) { if (!settings) throw new TypeError("SoundService requires a settings provider."); this._settings = settings; this.updateVolumes(); }
-  static _setting(key) { return typeof this._settings.get === 'function' ? this._settings.get(key) : this._settings[key]; }
-  static _volume(kind) { return Number(this._setting('masterVolume') ?? DEFAULT_SETTINGS.masterVolume) * Number(this._setting(kind) ?? DEFAULT_SETTINGS[kind]); }
+  static configureSettings(settings) { if (!settings || typeof settings.get !== 'function') throw new TypeError("SoundService requires a settings query contract."); this._settings = settings; this.updateVolumes(); }
+  static _volume(kind) { return Number(this._settings.get('masterVolume') ?? DEFAULT_SETTINGS.masterVolume) * Number(this._settings.get(kind) ?? DEFAULT_SETTINGS[kind]); }
   static async init(soundMap) { this._soundMap = soundMap || {}; this._initializeContext(); return this.loadAll(); }
   static _initializeContext() { if (!this._audioCtx && typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) this._audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (this._audioCtx && !this._musicPlayer) this._musicPlayer = new MidiPlayer(this._audioCtx); }
 
@@ -49,31 +48,18 @@ export class SoundService {
   static getCurrentMusicKey() { return this._currentMusicKey; }
   static getMusicKeys() { return Array.from(this._midiData.keys()).sort(); }
   static getSfxKeys() { return Object.keys(this._soundMap).sort(); }
-
   static updateVolumes() { if (!this._audioCtx) return; const musicVol = this._volume('musicVolume'); if (this._sfxCount > 0) { if (this._musicPlayer) this._musicPlayer.setVolume(0); } else if (this._musicPlayer) this._musicPlayer.setVolume(musicVol * 0.6); }
 
   static async play(key, options = {}) {
     const sfxVol = this._volume('sfxVolume'); if (sfxVol <= 0) return;
     this._initializeContext(); if (!this._audioCtx) return; if (this._audioCtx.state === 'suspended') this._audioCtx.resume();
     let soundDef = this._soundMap[key]; if (!soundDef) return;
-    this._sfxCount++; this.updateVolumes();
-    const onEnd = () => { this._sfxCount--; if (this._sfxCount <= 0) { this._sfxCount = 0; this.updateVolumes(); } };
-    if (typeof soundDef === 'string') {
-      let buffer = this._buffers.get(key); if (!buffer) { await this.loadSound(key, soundDef); buffer = this._buffers.get(key); }
-      if (buffer) { const source = this._audioCtx.createBufferSource(); source.buffer = buffer; const gainNode = this._audioCtx.createGain(); gainNode.gain.value = (options.volume !== undefined ? options.volume : 0.5) * sfxVol; if (options.pitch) source.playbackRate.value = options.pitch; source.connect(gainNode); gainNode.connect(this._audioCtx.destination); source.onended = onEnd; source.start(0); } else onEnd();
-      return;
-    }
-    if (!Array.isArray(soundDef)) soundDef = [soundDef];
-    const now = this._audioCtx.currentTime; let maxDuration = 0;
+    this._sfxCount++; this.updateVolumes(); const onEnd = () => { this._sfxCount--; if (this._sfxCount <= 0) { this._sfxCount = 0; this.updateVolumes(); } };
+    if (typeof soundDef === 'string') { let buffer = this._buffers.get(key); if (!buffer) { await this.loadSound(key, soundDef); buffer = this._buffers.get(key); } if (buffer) { const source = this._audioCtx.createBufferSource(); source.buffer = buffer; const gainNode = this._audioCtx.createGain(); gainNode.gain.value = (options.volume !== undefined ? options.volume : 0.5) * sfxVol; if (options.pitch) source.playbackRate.value = options.pitch; source.connect(gainNode); gainNode.connect(this._audioCtx.destination); source.onended = onEnd; source.start(0); } else onEnd(); return; }
+    if (!Array.isArray(soundDef)) soundDef = [soundDef]; const now = this._audioCtx.currentTime; let maxDuration = 0;
     soundDef.forEach(note => { try { const oscillator = this._audioCtx.createOscillator(); const gainNode = this._audioCtx.createGain(); oscillator.type = note.type || 'square'; let freq = note.frequency || 440; if (options.pitch) freq *= options.pitch; oscillator.frequency.value = freq; const noteVol = note.volume || 0.3; gainNode.gain.value = (options.volume !== undefined ? options.volume : 0.5) * noteVol * sfxVol; oscillator.connect(gainNode); gainNode.connect(this._audioCtx.destination); const startTime = now + (note.start || 0) / 1000; const duration = (note.duration || 100) / 1000; const endTime = (note.start || 0) + (note.duration || 100); if (endTime > maxDuration) maxDuration = endTime; oscillator.start(startTime); oscillator.stop(startTime + duration); } catch (e) { console.error("SoundService note error:", e); } });
     setTimeout(onEnd, maxDuration);
   }
 
-  static beep(frequency = 440, duration = 120) {
-    const sfxVol = this._volume('sfxVolume'); if (sfxVol <= 0) return;
-    this._initializeContext(); if (!this._audioCtx) return; if (this._audioCtx.state === 'suspended') this._audioCtx.resume();
-    this._sfxCount++; this.updateVolumes();
-    const onEnd = () => { this._sfxCount--; if (this._sfxCount <= 0) { this._sfxCount = 0; this.updateVolumes(); } };
-    try { const oscillator = this._audioCtx.createOscillator(); const gainNode = this._audioCtx.createGain(); oscillator.type = "square"; oscillator.frequency.value = frequency; gainNode.gain.value = 0.2 * sfxVol; oscillator.connect(gainNode); gainNode.connect(this._audioCtx.destination); oscillator.start(); oscillator.stop(this._audioCtx.currentTime + duration / 1000); oscillator.onended = onEnd; } catch (_e) { onEnd(); }
-  }
+  static beep(frequency = 440, duration = 120) { const sfxVol = this._volume('sfxVolume'); if (sfxVol <= 0) return; this._initializeContext(); if (!this._audioCtx) return; if (this._audioCtx.state === 'suspended') this._audioCtx.resume(); this._sfxCount++; this.updateVolumes(); const onEnd = () => { this._sfxCount--; if (this._sfxCount <= 0) { this._sfxCount = 0; this.updateVolumes(); } }; try { const oscillator = this._audioCtx.createOscillator(); const gainNode = this._audioCtx.createGain(); oscillator.type = "square"; oscillator.frequency.value = frequency; gainNode.gain.value = 0.2 * sfxVol; oscillator.connect(gainNode); gainNode.connect(this._audioCtx.destination); oscillator.start(); oscillator.stop(this._audioCtx.currentTime + duration / 1000); oscillator.onended = onEnd; } catch (_e) { onEnd(); } }
 }
