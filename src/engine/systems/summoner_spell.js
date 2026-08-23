@@ -43,7 +43,7 @@ export class SummonerSpellSystem {
     }
 
     const targets = this.getValidTargets(party, spell);
-    if (spell.target !== 'self' && targets.length === 0) {
+    if (targets.length === 0) {
       return { ok: false, reason: 'no_valid_targets', targets: [] };
     }
 
@@ -64,7 +64,7 @@ export class SummonerSpellSystem {
     }
 
     if (spell.target === 'self') {
-      return { ok: true, spell, cost, targets: [party.summoner] };
+      return { ok: true, spell, cost, targets };
     }
 
     return { ok: true, spell, cost, targets };
