@@ -43,6 +43,9 @@ jobs:
       - name: Verify Summoner resource contract
         run: node tests/test_summoner_resource.js
 
+      - name: Verify Summoner spell contract
+        run: node tests/test_summoner_spells.js
+
   browser:
     name: Playwright browser regression suite
     runs-on: ubuntu-latest
