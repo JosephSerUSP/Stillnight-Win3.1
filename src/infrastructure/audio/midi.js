@@ -15,21 +15,7 @@ export class MidiParser {
 
 /** Plays parsed MIDI data using Web Audio API. */
 export class MidiPlayer {
-  constructor(audioCtx) {
-    this.audioCtx = audioCtx;
-    this.gainNode = audioCtx.createGain();
-    this.gainNode.connect(audioCtx.destination);
-    this.gainNode.gain.value = 0.3;
-    this.isPlaying = false;
-    this.events = [];
-    this.eventIndex = 0;
-    this.startTime = 0;
-    this.activeOscillators = [];
-    this.schedulerTimer = null;
-    this.lookahead = 0.1;
-    this.scheduleAheadTime = 0.2;
-    this.pausedTime = 0;
-  }
+  constructor(audioCtx) { this.audioCtx=audioCtx;this.gainNode=audioCtx.createGain();this.gainNode.connect(audioCtx.destination);this.gainNode.gain.value=.3;this.isPlaying=false;this.events=[];this.eventIndex=0;this.startTime=0;this.activeOscillators=[];this.schedulerTimer=null;this.lookahead=.1;this.scheduleAheadTime=.2;this.pausedTime=0; }
   get duration() { return this.events?.length ? this.events[this.events.length - 1].time : 0; }
   get currentTime() { if (!this.isPlaying && this.pausedTime > 0) return this.pausedTime; if (!this.isPlaying) return 0; return Math.max(0, this.audioCtx.currentTime - this.startTime); }
   load(midiData) { this.stop(); this.events = this._mergeTracks(midiData); }
@@ -39,7 +25,42 @@ export class MidiPlayer {
   pause() { if (!this.isPlaying) return; this.isPlaying = false; clearTimeout(this.schedulerTimer); this.pausedTime = this.audioCtx.currentTime - this.startTime; this.activeOscillators.forEach(osc => { try { osc.stop(); osc.disconnect(); } catch (_e) {} }); this.activeOscillators = []; }
   resume() { if (this.isPlaying) return; this.isPlaying = true; this.startTime = this.audioCtx.currentTime - this.pausedTime; this.schedule(); }
   setVolume(value) { this.gainNode.gain.setTargetAtTime(value, this.audioCtx.currentTime, 0.1); }
-  schedule() { if (!this.isPlaying) return; const currentTime = this.audioCtx.currentTime; while (this.eventIndex < this.events.length && this.events[this.eventIndex].time + this.startTime < currentTime + this.scheduleAheadTime) { const event = this.events[this.eventIndex]; const playTime = this.startTime + event.time; if (playTime >= currentTime) { if (event.type === "noteOn") this.playNote(event.note, event.velocity, playTime); else if (event.type === "noteOff") this.stopNote(event.note, playTime); } this.eventIndex++; } if (this.eventIndex >= this.events.length) { if (this.loop) { const duration = this.events[this.events.length - 1].time; if (currentTime >= this.startTime + duration + 1.0) { this.startTime = currentTime; this.eventIndex = 0; } } else { this.stop(); return; } } this.schedulerTimer = setTimeout(() => this.schedule(), this.lookahead * 1000); }
-  playNote(note, velocity, time) { const osc = this.audioCtx.createOscillator(); const gain = this.audioCtx.createGain(); osc.type = "square"; osc.frequency.value = 440 * Math.pow(2, (note - 69) / 12); osc.connect(gain); gain.connect(this.gainNode); gain.gain.value = 0.5 * (velocity / 127); osc.start(time); this.activeOscillators.push(osc); osc._midiNote = note; }
-  stopNote(note, time) { const index = this.activeOscillators.findIndex(o => o._midiNote === note); if (index !== -1) { const osc = this.activeOscillators[index]; osc.stop(time); this.activeOscillators.splice(index, 1); setTimeout(() => { try { osc.disconnect(); } catch (_e) {} }, (time - this.audioCtx.currentTime + 1) * 1000); } }
+  schedule() {
+    if (!this.isPlaying) return;
+    const currentTime = this.audioCtx.currentTime;
+    while (this.eventIndex < this.events.length && this.events[this.eventIndex].time + this.startTime < currentTime + this.scheduleAheadTime) {
+      const event = this.events[this.eventIndex];
+      const playTime = this.startTime + event.time;
+      if (playTime >= currentTime) {
+        if (event.type === "noteOn") this.playNote(event.note, event.velocity, playTime);
+        else if (event.type === "noteOff") this.stopNote(event.note, playTime);
+      }
+      this.eventIndex++;
+    }
+    if (this.eventIndex >= this.events.length) {
+      if (this.loop) {
+        const duration = this.events[this.events.length - 1].time;
+        if (currentTime >= this.startTime + duration + 1.0) { this.startTime = currentTime; this.eventIndex = 0; }
+      } else { this.stop(); return; }
+    }
+    this.schedulerTimer = setTimeout(() => this.schedule(), this.lookahead * 1000);
+  }
+  playNote(note, velocity, time) {
+    const osc = this.audioCtx.createOscillator();
+    const gain = this.audioCtx.createGain();
+    osc.type = "square";
+    osc.frequency.value = 440 * Math.pow(2, (note - 69) / 12);
+    osc.connect(gain); gain.connect(this.gainNode);
+    gain.gain.value = 0.5 * (velocity / 127);
+    osc.start(time); this.activeOscillators.push(osc); osc._midiNote = note;
+  }
+  stopNote(note, time) {
+    const index = this.activeOscillators.findIndex(o => o._midiNote === note);
+    if (index !== -1) {
+      const osc = this.activeOscillators[index];
+      osc.stop(time);
+      this.activeOscillators.splice(index, 1);
+      setTimeout(() => { try { osc.disconnect(); } catch (_e) {} }, (time - this.audioCtx.currentTime + 1) * 1000);
+    }
+  }
 }
