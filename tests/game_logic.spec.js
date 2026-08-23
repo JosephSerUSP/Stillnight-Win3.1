@@ -19,16 +19,20 @@ test.describe('Game Logic', () => {
   test('Battle window shake on close attempt', async ({ page }) => {
     await page.evaluate(() => window.sceneManager.currentScene().startBattle(0, 0));
 
-    const battleWindow = page.locator('.window-header span', { hasText: 'Battle – Stillnight' });
-    await expect(battleWindow).toBeVisible();
+    const battleFrame = page.locator('.window-frame:has-text("Battle – Stillnight")');
+    await expect(battleFrame).toBeVisible();
 
-    const closeBtn = page.locator('.window-header button', { hasText: 'X' }).last();
+    // Window_Battle deliberately rejects direct close attempts by shaking.
+    // Scope to the battle window so hidden close buttons from other windows
+    // cannot satisfy this locator.
+    const closeBtn = battleFrame.locator('.window-header button', { hasText: 'X' });
+    await expect(closeBtn).toBeVisible();
     await closeBtn.click();
 
-    const dialog = page.locator('.window-frame').last();
-    await expect(dialog).toBeVisible();
+    await expect(battleFrame).toBeVisible();
     await page.waitForTimeout(600);
-    await expect(dialog).toBeVisible();
+    await expect(battleFrame).toBeVisible();
+    expect(await page.evaluate(() => window.sceneManager.currentScene().constructor.name)).toBe('Scene_Battle');
   });
 
   test('Equipment switch keeps window open', async ({ page }) => {
