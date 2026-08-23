@@ -72,4 +72,6 @@ Completed:
 
 ### Completion rule
 
-Satisfied: no source-layer compatibility manager remains as an alternate owner of runtime state. Future work should be ordinary architecture maintenance and executable validation, not continuation of Phase 7.
+Satisfied at the source-ownership level: no source-layer compatibility manager remains as an alternate owner of runtime state. Phase 7 is closed.
+
+Executable Playwright/browser regression validation is still required before PR merge. The connected GitHub editing environment cannot run that suite and no PR workflow run is currently available, so completion of the architectural milestone must not be mistaken for executable merge validation.
