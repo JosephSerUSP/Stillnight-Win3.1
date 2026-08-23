@@ -35,7 +35,7 @@ test.describe('Sacrifice and Permadeath', () => {
     const initialMemberCount = await page.evaluate(() => window.sceneManager.currentScene().party.members.length);
 
     await page.evaluate(() => window.sceneManager.currentScene().startBattle(0, 0));
-    await expect(page.locator('#mode-label')).toHaveText('Battle');
+    await expect(page.locator('#map-mode')).toHaveText('Battle');
 
     await page.evaluate(() => {
       const battleScene = window.sceneManager.currentScene();
@@ -47,7 +47,11 @@ test.describe('Sacrifice and Permadeath', () => {
     });
 
     await page.click('button:has-text("Claim Rewards")');
-    await expect(page.locator('#mode-label')).toHaveText('Exploration');
+    await page.waitForFunction(() =>
+      window.sceneManager.currentScene() &&
+      window.sceneManager.currentScene().constructor.name === 'Scene_Map'
+    );
+    await expect(page.locator('#map-mode')).toHaveText('Exploration');
 
     const memberCount = await page.evaluate(() => window.sceneManager.currentScene().party.members.length);
     expect(memberCount).toBe(initialMemberCount - 1);
