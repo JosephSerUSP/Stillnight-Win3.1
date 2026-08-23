@@ -16,7 +16,13 @@ for (const key of ['autoBattle','windowAnimations','masterVolume','sfxVolume','m
   Object.defineProperty(ConfigDebug, key, {
     enumerable: true,
     get: () => settingsStore.get(key),
-    set: value => settingsStore.set(key, key === 'autoBattle' || key === 'windowAnimations' ? !!value : value, { persist: false })
+    set: value => {
+      settingsStore.set(
+        key,
+        key === 'autoBattle' || key === 'windowAnimations' ? !!value : value,
+        { persist: false }
+      );
+    }
   });
 }
 ConfigDebug.load = () => settingsStore.load();
