@@ -2,7 +2,7 @@
 
 ## Result
 
-The audit began because the repository's refactor tracker described infrastructure ownership as complete while a catch-all `src/managers/` layer still retained input, scene lifecycle, settings, audio, MIDI, and static-content responsibilities.
+The audit began because the repository's refactor tracker described infrastructure ownership as complete while a catch-all root `src/managers/` layer still retained input, scene lifecycle, settings, audio, MIDI, and static-content responsibilities.
 
 That discrepancy has now been resolved by the refactor performed alongside this audit. Phase 7 is complete at the ownership level.
 
@@ -15,7 +15,7 @@ Battle, exploration, interpreter, progression/effects/traits/encounters already 
 `InputController` mixed browser KeyboardEvents, modal presentation state, Scene_Map knowledge, and movement calls. It was presentation logic. The manager was deleted and the behavior moved behind `InputAdapter`.
 
 ### Scene lifecycle
-`SceneManager` owns presentation Scene instances and `requestAnimationFrame`. It now lives in `src/presentation/scene_manager.js` rather than a generic managers namespace.
+`SceneManager` owns presentation Scene instances and `requestAnimationFrame`. It now lives in `src/presentation/scene_manager.js` rather than a generic root managers namespace.
 
 ### Settings
 `src/infrastructure/settings.js` separates settings state from its localStorage repository. Runtime code consumes `SettingsAdapter` or an injected settings contract. The old source-layer `ConfigManager` class is deleted; only a browser test/debug compatibility object preserves the historical `window.ConfigManager` shape.
@@ -32,16 +32,16 @@ The old DataManager had ceased to be a runtime service after audio bootstrap was
 ## Final ownership map
 
 - `src/engine/`: runtime state, deterministic systems/rules, serialization-facing domain behavior.
-- `src/presentation/`: scenes, windows, selectors, scene lifecycle, presentation-only managers.
+- `src/presentation/`: scenes, windows, selectors, scene lifecycle, and presentation-only managers such as theme/window concerns.
 - `src/infrastructure/`: browser persistence and WebAudio/MIDI implementation.
 - `src/data/` + `data/`: static content acquisition and authored data.
 - `src/adapters/`: narrow boundaries consumed by presentation/composition.
-- `src/managers/`: retired.
+- root `src/managers/`: retired.
 
 ## Completion criterion
 
 The criterion was not “rename every Manager.” It was: no compatibility manager may silently retain ownership that the architecture claims has moved.
 
-The source-layer `src/managers/` files and barrel are now removed. Remaining historical manager names exposed on `window` under `?test=true` are compatibility/debug surfaces only and delegate to the real settings/audio boundaries; they are not alternate state owners.
+The source-layer root `src/managers/` files and barrel are now removed. Remaining historical manager names exposed on `window` under `?test=true` are compatibility/debug surfaces only and delegate to the real settings/audio boundaries; they are not alternate state owners. Presentation-local managers are not part of the retired legacy namespace and remain where their ownership is truthful.
 
 Executable Playwright validation remains a merge gate because this GitHub editing environment cannot run the repository's browser suite. That validation caveat does not change the ownership classification above.
