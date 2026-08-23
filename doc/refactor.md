@@ -74,4 +74,6 @@ Completed:
 
 Satisfied at the source-ownership level: no source-layer compatibility manager remains as an alternate owner of runtime state. Phase 7 is closed.
 
-Executable Playwright/browser regression validation is still required before PR merge. The connected GitHub editing environment cannot run that suite and no PR workflow run is currently available, so completion of the architectural milestone must not be mistaken for executable merge validation.
+### Executable merge gate
+
+PR CI now validates the ownership refactor rather than relying on static audit alone. The final merge head must pass source-boundary linting, the deterministic golden-log harness, the battle-selector smoke test, and the full Playwright browser regression suite. Stabilization of that suite also exposed a real duplicate-dispatch bug for hidden stepped events; the exploration system now reveals hidden event state while emitting a single gameplay `EVENT` dispatch. A green CI run on the final head is required before merge.
