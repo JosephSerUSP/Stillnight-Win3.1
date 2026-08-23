@@ -1,3 +1,11 @@
+# Historical Refactor Plan — Archived
+
+> **Status: completed historical migration plan.** This file describes the future-tense plan that led to the architecture completed through Phase 7 and PR #469. It is retained for design history and rationale only.
+>
+> **Do not use the phases, paths, legacy-manager names, or TODO wording below as current repository instructions.** For current structural truth use `doc/ARCHITECTURE.md`; for migration completion/status use `doc/refactor.md`.
+
+---
+
 1) One source of truth for runtime state
 
 Create a single GameSession (or Runtime) that owns:
