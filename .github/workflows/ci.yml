@@ -37,6 +37,9 @@ jobs:
       - name: Verify battle selectors
         run: node tests/test_battle_selector.js
 
+      - name: Verify effect contract
+        run: node tests/test_effect_system.js
+
   browser:
     name: Playwright browser regression suite
     runs-on: ubuntu-latest
