@@ -19,11 +19,11 @@ export const AudioAdapter = {
     getSfxKeys() { return SoundService.getSfxKeys(); }
 };
 
-// Browser test/debug aliases. These expose snapshots rather than the service's
-// private mutable collections, preserving old inspection ergonomics without
-// making those fields architectural API.
+// Browser test/debug compatibility only. Production callers use the methods
+// above; these getters preserve existing inspection semantics without creating
+// another owner of the collections.
 Object.defineProperties(AudioAdapter, {
     _currentMusicKey: { get: () => SoundService.getCurrentMusicKey() },
-    _midiData: { get: () => new Map(SoundService.getMusicKeys().map(key => [key, true])) },
-    _soundMap: { get: () => Object.fromEntries(SoundService.getSfxKeys().map(key => [key, true])) }
+    _midiData: { get: () => SoundService._midiData },
+    _soundMap: { get: () => SoundService._soundMap }
 });
