@@ -29,13 +29,11 @@ export class BattleAdapter {
     this.isBattleFinished = false;
     this.isVictoryPending = false;
 
-    // Create Engine Session
     this.state = this.system.createSession({
       party: this.party,
       enemies: this.enemies
     }, { tileX, tileY, isSneakAttack });
 
-    // Sync adapter props with state
     this._sync();
   }
 
@@ -56,14 +54,9 @@ export class BattleAdapter {
 
   startTurn(battlerContext) {
     const { battler, isEnemy } = battlerContext;
-
-    // Determine Allies and Opponents
     const allies = isEnemy ? this.enemies : this.party.activeMembers;
     const opponents = isEnemy ? this.party.activeMembers : this.enemies;
-
-    // Fallback for DataManager (assumed global for legacy code compatibility inside battler logic)
     const dm = window.dataManager || {};
-
     return battler.onTurnStart(allies, opponents, dm);
   }
 
@@ -78,6 +71,20 @@ export class BattleAdapter {
     const events = this.system.consumeSummonerAction(this.state, kind, explicitCost);
     this._sync();
     return events;
+  }
+
+  getSummonerSpellOptions() {
+    return this.system.getSummonerSpellOptions(this.state);
+  }
+
+  getSummonerSpellTargets(spellId) {
+    return this.system.getSummonerSpellTargets(this.state, spellId);
+  }
+
+  castSummonerSpell(spellId, target = null) {
+    const result = this.system.castSummonerSpell(this.state, spellId, target);
+    this._sync();
+    return result;
   }
 
   _sync() {
