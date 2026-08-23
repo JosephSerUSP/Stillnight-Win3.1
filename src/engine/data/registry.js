@@ -21,6 +21,11 @@ export const Registry = {
         return skills[id];
     },
 
+    getSpell(id) {
+        const spells = this._data.spells || {};
+        return spells[id];
+    },
+
     getItem(id) {
         const items = this._data.items;
         if (!items) return null;
