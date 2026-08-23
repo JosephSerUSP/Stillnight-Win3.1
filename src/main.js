@@ -6,7 +6,10 @@ import { Scene_Boot } from "./presentation/scenes/scenes.js";
 import { WindowManager } from "./presentation/windows/index.js";
 import { exposeGlobals } from "./debug_tools.js";
 
-/** Application composition root. */
+/**
+ * Application composition root.
+ * Infrastructure dependencies and persistence lifecycle are explicit here.
+ */
 async function main() {
   SettingsAdapter.load();
   AudioAdapter.configureSettings(SettingsAdapter);
@@ -16,15 +19,23 @@ async function main() {
   const contentLoader = new ContentLoader();
   const windowManager = new WindowManager();
 
-  sceneManager.push(new Scene_Boot(contentLoader, sceneManager, windowManager));
+  const initialScene = new Scene_Boot(contentLoader, sceneManager, windowManager);
+  sceneManager.push(initialScene);
 
   document.addEventListener("keydown", (e) => {
-    if (windowManager.handleInput(e)) { e.preventDefault(); e.stopPropagation(); return; }
-    const currentScene = sceneManager.currentScene();
-    if (currentScene && typeof currentScene.onKeyDown === 'function') currentScene.onKeyDown(e);
+      if (windowManager.handleInput(e)) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+      }
+
+      const currentScene = sceneManager.currentScene();
+      if (currentScene && typeof currentScene.onKeyDown === 'function') {
+          currentScene.onKeyDown(e);
+      }
   });
 
-  // Keep dataManager as a test-facing alias while source ownership uses ContentLoader.
+  // Preserve the existing test-facing alias while source ownership uses ContentLoader.
   exposeGlobals({ sceneManager, windowManager, dataManager: contentLoader });
 }
 
