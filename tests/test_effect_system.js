@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { EffectSystem } from '../src/engine/rules/effects.js';
 import { ContentLoader } from '../src/data/content_loader.js';
+import { BattleSystem } from '../src/engine/systems/battle.js';
+import { Registry } from '../src/engine/data/registry.js';
 import { Game_Battler } from '../src/objects/battler.js';
 import { skills } from '../data/skills.js';
 import { passives } from '../data/passives.js';
@@ -95,5 +97,47 @@ assert.deepEqual(
     EffectSystem.valueFromAuthoredEffect({ type: 'add_status', status: 'poison', chance: 0.4 }),
     { id: 'poison', chance: 0.4 }
 );
+
+// BattleSystem is an execution consumer of the same authored effect contract.
+Registry.set('items', items);
+Registry.set('skills', skills);
+Registry.set('passives', passives);
+const battleSystem = new BattleSystem();
+const battleSummoner = battler({ id: 'battle-summoner', role: 'Summoner' });
+const enemy = battler({ id: 'dummy-enemy', isEnemy: true });
+enemy.isEnemy = true;
+const battleState = battleSystem.createSession({
+    party: { summoner: battleSummoner, activeMembers: [battleSummoner] },
+    enemies: [enemy]
+});
+const wine = items.find(item => item.id === 'wine_glass');
+battleSummoner.mp = 5;
+battleSummoner.addState('weakened');
+let battleEvents = battleSystem.executeAction(battleState, {
+    subject: battleSummoner,
+    target: battleSummoner,
+    itemId: wine.id,
+    item: wine
+});
+assert.equal(battleSummoner.mp, 45);
+assert.equal(battleSummoner.isStateAffected('weakened'), false);
+assert.ok(battleEvents.some(event => event.type === 'mp_heal'));
+assert.ok(battleEvents.some(event => event.type === 'status_remove'));
+
+const lesson = {
+    id: 'passive_lesson',
+    name: 'Passive Lesson',
+    type: 'consumable',
+    effects: [{ type: 'learnPassive', value: 'initiative' }]
+};
+const lessonTarget = battler({ id: 'lesson-target' });
+battleEvents = battleSystem.executeAction(battleState, {
+    subject: battleSummoner,
+    target: lessonTarget,
+    itemId: lesson.id,
+    item: lesson
+});
+assert.ok(battleEvents.some(event => event.type === 'learn_passive' && event.ok));
+assert.equal(lessonTarget.passives[0], passives.initiative);
 
 console.log(`effect contract OK (${EffectSystem.getRegisteredKeys().length} registered keys)`);
