@@ -13,7 +13,11 @@ import { Scene_Boot, Scene_Map as Scene_Map_Class, Scene_Battle, Scene_Shop } fr
 
 const ConfigDebug = {};
 for (const key of ['autoBattle','windowAnimations','masterVolume','sfxVolume','musicVolume']) {
-  Object.defineProperty(ConfigDebug, key, { enumerable: true, get: () => settingsStore.get(key), set: value => settingsStore.set(key, value, { persist: false }) });
+  Object.defineProperty(ConfigDebug, key, {
+    enumerable: true,
+    get: () => settingsStore.get(key),
+    set: value => settingsStore.set(key, key === 'autoBattle' || key === 'windowAnimations' ? !!value : value, { persist: false })
+  });
 }
 ConfigDebug.load = () => settingsStore.load();
 ConfigDebug.save = () => settingsStore.save();
