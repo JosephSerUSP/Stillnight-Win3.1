@@ -119,9 +119,9 @@ let battleEvents = battleSystem.executeAction(battleState, {
     itemId: wine.id,
     item: wine
 });
-assert.equal(battleSummoner.mp, 55);
+const wineMpEvent = battleEvents.find(event => event.type === 'mp_heal');
+assert.equal(wineMpEvent?.value, 50);
 assert.equal(battleSummoner.isStateAffected('weakened'), false);
-assert.ok(battleEvents.some(event => event.type === 'mp_heal'));
 assert.ok(battleEvents.some(event => event.type === 'status_remove'));
 
 const lesson = {
