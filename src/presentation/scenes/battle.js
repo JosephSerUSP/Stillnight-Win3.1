@@ -26,8 +26,12 @@ export class Scene_Battle extends Scene_Base {
     this.sceneManager = sceneManager;
     this.party = party;
 
+    // NEW: Bridge DataManager to Registry
     this.populateRegistry(dataManager);
 
+    // NEW: Use BattleAdapter wrapping BattleSystem
+    // We ignore the passed battleManager for the core logic but keep it for legacy signature if needed
+    // Actually, we replace this.battleManager with our Adapter.
     this.battleSystem = new BattleSystem();
     this.battleManager = new BattleAdapter(party, this.battleSystem);
 
@@ -66,8 +70,9 @@ export class Scene_Battle extends Scene_Base {
     this.confirmEffectWindow.onUserClose = () => this.windowManager.close(this.confirmEffectWindow);
     this.confirmWindow.onUserClose = () => this.windowManager.close(this.confirmWindow);
     this.spellWindow.onUserClose = () => this.windowManager.close(this.spellWindow);
-    this.victoryWindow.onUserClose = () => {};
+    this.victoryWindow.onUserClose = () => {/* Prevent closing victory manually without claim? Or allow and re-open? For now, button handles it. */};
 
+    // Use setHandlers for callback delegation
     this.battleWindow.setHandlers({
         onRound: () => this.resolveBattleRound(),
         onFlee: () => this.attemptFlee(),
@@ -98,6 +103,7 @@ export class Scene_Battle extends Scene_Base {
 
     let enemies = [];
 
+    // Check for Boss Floor
     if (this.map.floorIndex === this.map.floors.length - 1) {
         enemies.push(EncounterAdapter.createBoss(depth, this.dataManager));
     } else {
@@ -119,6 +125,7 @@ export class Scene_Battle extends Scene_Base {
         AudioAdapter.play('UI_SUCCESS');
     }
 
+    // Plan the first round immediately so actions are visible
     this.battleManager.planRound(this.isPlayerFirstStrike);
 
     this.applyBattleStartPassives();
@@ -138,6 +145,7 @@ export class Scene_Battle extends Scene_Base {
   }
 
   toggleAutoBattle(e) {
+      // Logic adjusted to handle both direct boolean and event
       const autoBattleEnabled = (typeof e === 'boolean')
           ? SettingsAdapter.setAutoBattle(e)
           : SettingsAdapter.toggleAutoBattle();
@@ -252,6 +260,7 @@ export class Scene_Battle extends Scene_Base {
   }
 
   async processItemAction(item, target) {
+      // Use Summoner as subject if available, otherwise fallback to generic party context
       const subject = this.party.summoner || this.party;
 
       const action = {
@@ -369,6 +378,8 @@ export class Scene_Battle extends Scene_Base {
     this.battleWindow.btnFlee.disabled = true;
     this.disableActionButtons();
 
+    // Note: Actions are already planned by planRound() call at start or end of previous round.
+
     const delay = (ms) => new Promise((res) => setTimeout(res, ms));
     AudioAdapter.play('UI_SELECT');
 
@@ -383,6 +394,7 @@ export class Scene_Battle extends Scene_Base {
         const action = battlerContext.action;
 
         if (action) {
+             // Animate action preview consumption before execution
              await this.battleWindow.animateActionConsumption(battlerContext.battler);
 
              const actionEvents = this.battleManager.executeAction(action);
@@ -412,6 +424,7 @@ export class Scene_Battle extends Scene_Base {
 
       this.battleWindow.appendLog("Use Resolve Round or Flee.");
 
+      // Plan next round so user can see intentions
       this.battleManager.planRound();
       this.renderBattleAscii();
 
@@ -521,14 +534,17 @@ export class Scene_Battle extends Scene_Base {
                 await this.battleWindow.animateBattlerName(event.battler);
             }
 
+            // --- Custom Rich Log Logic ---
             let logged = false;
             if (event.type === 'use_skill' || event.type === 'use_item') {
                 if (event.item) {
                      const frag = document.createDocumentFragment();
                      frag.appendChild(document.createTextNode(`${event.battler.name} uses `));
 
+                     // Use 'skill' or 'item' based on type
                      const itemType = event.type === 'use_skill' ? 'skill' : 'item';
                      const label = createInteractiveLabel(event.item, itemType);
+                     // Slightly customize label style for inline flow
                      label.style.display = "inline-flex";
                      label.style.verticalAlign = "middle";
                      label.style.margin = "0 4px";
@@ -536,6 +552,18 @@ export class Scene_Battle extends Scene_Base {
                      frag.appendChild(label);
 
                      if (event.type === 'use_item' && event.msg.includes(' on ')) {
+                          // Try to parse target name from msg if target obj not in event (event has battler but target implied)
+                          // Actually event usually has NO target property for 'use_skill' in battle system (checked code).
+                          // Wait, executeSkill/Item does not attach 'target' to the 'use_skill' event object explicitly!
+                          // But msg says "... on Target".
+                          // Let's rely on extracting target name from msg or modifying system again (too risky/churny).
+                          // Or just append the rest of the message.
+                          // "X uses Y!" -> We just replaced "X uses Y".
+                          // "X uses Y on Z." -> We replace "X uses Y".
+                          // Let's verify msg format.
+                          // Skill: `${battler.name} uses ${skillName}!`
+                          // Item: `${subject.name} uses ${item.name} on ${target.name}.`
+
                           if (event.type === 'use_item') {
                               const suffix = event.msg.substring(event.msg.indexOf(` on `));
                               frag.appendChild(document.createTextNode(suffix));
@@ -550,6 +578,7 @@ export class Scene_Battle extends Scene_Base {
                      logged = true;
                 }
 
+                // Look ahead logic (unchanged)
                 let resultCount = 0;
                 for (let j = i + 1; j < events.length; j++) {
                     const nextEvent = events[j];
@@ -560,6 +589,7 @@ export class Scene_Battle extends Scene_Base {
                 }
                 appendNextResult = (resultCount === 1);
             }
+            // -----------------------------
 
             if (event.msg && !logged) {
                 const isDependentResult = event.msg.startsWith('  ');
@@ -568,7 +598,7 @@ export class Scene_Battle extends Scene_Base {
 
                 if (isDependentResult && appendNextResult) {
                      this.battleWindow.appendToLastLog(trimmedMsg, { priority });
-                     appendNextResult = false;
+                     appendNextResult = false; // Only append the first one
                 } else {
                      this.battleWindow.appendLog(isDependentResult && priority === 'low' ? trimmedMsg : event.msg, { priority });
                 }
