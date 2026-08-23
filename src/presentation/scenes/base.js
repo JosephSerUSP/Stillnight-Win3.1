@@ -1,15 +1,21 @@
 /**
- * Abstract base class for presentation scenes.
+ * @class Scene_Base
+ * @description The abstract base class for all game scenes.
+ * Manages the static content and window dependencies, and defines lifecycle methods.
  */
 export class Scene_Base {
   /**
-   * @param {import("../../data/content_loader.js").ContentLoader} contentLoader static content loader
-   * @param {import("../windows/index.js").WindowManager} windowManager presentation window manager
+   * @param {import("../../data/content_loader.js").ContentLoader} contentLoader - Static game content loader.
+   * @param {import("../windows/index.js").WindowManager} windowManager - The window manager instance.
    */
   constructor(contentLoader, windowManager) {
+    /** @type {import("../../data/content_loader.js").ContentLoader} */
     this.contentLoader = contentLoader;
-    // Compatibility property used throughout existing scene/window code.
+    // Compatibility name used by existing scenes while the concrete dependency
+    // is now accurately classified as ContentLoader.
     this.dataManager = contentLoader;
+
+    /** @type {import("../windows/index.js").WindowManager} */
     this.windowManager = windowManager;
   }
 
