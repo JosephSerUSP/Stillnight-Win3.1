@@ -31,10 +31,16 @@ test('Battle UI Features', async ({ page }) => {
   await expect(page.locator('#formation-window')).toBeVisible();
   await page.click('#formation-window button:has-text("Cancel")');
 
-  await page.waitForTimeout(500);
-  await battleWin.locator('button:has-text("Flee")').click();
+  // Leave the injected battle deterministically. Flee is intentionally random
+  // gameplay and should not decide whether this UI regression test can proceed.
+  await page.evaluate(() => window.sceneManager.pop());
+  await page.waitForFunction(() =>
+    window.sceneManager.currentScene() &&
+    window.sceneManager.currentScene().constructor.name === 'Scene_Map'
+  );
 
   await page.getByRole('button', { name: 'Settings' }).click();
   await page.click('#menu-item-settings-general');
-  await expect(page.locator('text="Auto Battle"')).toBeVisible();
+  await expect(page.locator('#options-window')).toBeVisible();
+  await expect(page.locator('#options-window')).toContainText('Auto Battle');
 });
