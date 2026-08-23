@@ -111,7 +111,9 @@ test('Protect is a non-healing Summoner spell and does not add a Summoner turn',
 
   await page.waitForFunction(() => {
     const battle = window.sceneManager.currentScene();
-    return battle.party.slots[0].isStateAffected('protect') && battle.party.summoner.mp === 15;
+    return battle.actionTakenThisTurn &&
+      battle.party.slots[0].isStateAffected('protect') &&
+      battle.party.summoner.mp === 15;
   });
 
   const result = await page.evaluate(() => {
