@@ -1,5 +1,4 @@
 import { selectBattlerView, selectBattleScreen } from '../src/presentation/selectors/battle.js';
-import { ProgressionSystem } from '../src/managers/progression.js';
 
 // Mock Data
 const mockBattler = {
