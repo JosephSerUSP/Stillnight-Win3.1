@@ -15,7 +15,7 @@ This document outlines the architectural refactor to create a single source of t
 * **Static content**: acquisition lives in `src/data/content_loader.js`; it does not initialize runtime services.
 * **Composition**: `src/main.js` wires settings, audio, content, presentation lifecycle, and boot explicitly.
 * **Legacy root managers namespace**: retired. `src/managers/` no longer owns runtime behavior or compatibility exports. Presentation-local managers such as theme/window concerns remain presentation-owned.
-* **Boundary guardrails**: engine imports are barred from presentation/browser infrastructure, and presentation windows remain barred from engine systems / the retired root managers namespace.
+* **Boundary guardrails**: engine imports are barred from presentation/browser infrastructure, presentation windows remain barred from engine systems / the retired root managers namespace, and `AGENTS.md` now records the completed ownership model for future work.
 
 See `doc/refactor-audit-2026-08.md` for the audit that reopened and drove this cleanup.
 
@@ -68,7 +68,7 @@ Completed:
 * retired the runtime `ConfigManager` class while preserving only a debug/test compatibility object;
 * retired `src/managers/index.js` and the remaining root `src/managers/` source files;
 * removed the composition root's dependency on the managers barrel;
-* strengthened ESLint boundaries around engine/browser infrastructure and presentation windows.
+* strengthened ESLint boundaries and repository-level `AGENTS.md` enforcement around the completed ownership model.
 
 ### Completion rule
 
