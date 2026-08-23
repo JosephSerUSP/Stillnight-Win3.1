@@ -7,7 +7,6 @@ test.describe('Event System', () => {
         window.dataManager &&
         window.dataManager.maps &&
         window.dataManager.events &&
-        window.dataManager.npcs &&
         window.sceneManager &&
         window.sceneManager.currentScene() &&
         window.sceneManager.currentScene().constructor.name === "Scene_Map"
@@ -32,9 +31,7 @@ test.describe('Event System', () => {
       return floor.events;
     });
 
-    // Should have enemies at least
     expect(floorData.some(e => e.type === 'enemy')).toBe(true);
-    // Should have shop
     expect(floorData.some(e => e.type === 'shop')).toBe(true);
   });
 
@@ -42,11 +39,7 @@ test.describe('Event System', () => {
      const result = await page.evaluate(() => {
          const { Game_Map } = window;
          const map = new Game_Map();
-         const meta = {
-             title: "Test Floor",
-             depth: 1,
-             events: [ { id: 'enemy', count: 1 } ]
-         };
+         const meta = { title: "Test Floor", depth: 1, events: [ { id: 'enemy', count: 1 } ] };
          const eventDefs = window.dataManager.events;
          const floor = map.generateFloor(meta, 0, eventDefs, []);
 
@@ -54,7 +47,7 @@ test.describe('Event System', () => {
          if (!event) return { success: false, reason: 'No events generated' };
 
          const countBefore = floor.events.length;
-         map.floors = [floor]; // Setup map state
+         map.floors = [floor];
          map.removeEvent(0, event.x, event.y);
          const countAfter = floor.events.length;
 
@@ -74,17 +67,11 @@ test.describe('Event System', () => {
       const result = await page.evaluate(() => {
           const { Game_Map } = window;
           const map = new Game_Map();
-          const meta = {
-              title: "Test Floor",
-              depth: 1,
-              events: [ { id: 'npc', count: 1 } ]
-          };
+          const meta = { title: "Test Floor", depth: 1, events: [ { id: 'npc', count: 1 } ] };
           const npcs = [{ id: 'test_npc', char: 'T', dialogue: 'Hello' }];
           const eventDefs = window.dataManager.events;
 
-          // Force NPC generation logic check
           let hasNpc = false;
-          // Try 20 times to hit the chance if probabilistic, but we forced count: 1
           for(let i=0; i<5; i++) {
               const floor = map.generateFloor(meta, 0, eventDefs, npcs);
               if (floor.events.some(e => e.type === 'npc' && e.id === 'test_npc')) {
@@ -108,13 +95,9 @@ test.describe('Event System', () => {
         floor.visited[0][1] = true;
 
         floor.events.push(new window.Game_Event(1, 0, {
-            type: 'TRAP_TRIGGER',
-            symbol: 'T',
-            hidden: true,
-            trapValue: 100,
+            type: 'TRAP_TRIGGER', symbol: 'T', hidden: true, trapValue: 100,
             actions: [{ type: 'TRAP_TRIGGER', damage: 1 }]
         }));
-
         scene.updateGrid();
     });
 
@@ -123,10 +106,7 @@ test.describe('Event System', () => {
 
     await page.evaluate(() => {
         const p = window.sceneManager.currentScene().party.members[0];
-        p.passives.push({
-            name: 'Eagle Eye',
-            traits: [{ code: 'SEE_TRAPS', value: 101 }]
-        });
+        p.passives.push({ name: 'Eagle Eye', traits: [{ code: 'SEE_TRAPS', value: 101 }] });
         window.sceneManager.currentScene().updateGrid();
     });
 
@@ -146,10 +126,7 @@ test.describe('Event System', () => {
           floor.events = floor.events.filter(e => !(e.x === 1 && e.y === 0));
 
           floor.events.push(new window.Game_Event(1, 0, {
-              type: 'TRAP_TRIGGER',
-              symbol: 'T',
-              hidden: true,
-              trapValue: 100,
+              type: 'TRAP_TRIGGER', symbol: 'T', hidden: true, trapValue: 100,
               actions: [{ type: 'TRAP_TRIGGER', damage: 10, message: "Testing Trap" }]
           }));
           scene.updateGrid();
@@ -159,21 +136,14 @@ test.describe('Event System', () => {
 
       const eventTitle = await page.locator('#event-window .window-header span').textContent();
       expect(eventTitle).toContain('Trap!');
-
       const eventDesc = await page.locator('#event-window .event-description').textContent();
       expect(eventDesc).toContain('Testing Trap');
 
-      // Click "Ouch..." to resolve
       await page.locator('#event-window button', { hasText: 'Ouch...' }).click();
-
-      // Wait for effect delay
       await page.waitForTimeout(1500);
-
-      // Check for damage log
       const eventLog = await page.locator('#event-window .event-description').textContent();
       expect(eventLog).toContain('The party takes 10 damage');
 
-      // Verify closing
       await page.locator('#event-window button', { hasText: 'Close' }).click();
       const overlayClass = await page.locator('#event-window').evaluate(el => el.parentElement.className);
       expect(overlayClass).not.toContain('active');
@@ -182,7 +152,6 @@ test.describe('Event System', () => {
   test('Treasure event logic', async ({ page }) => {
       await page.evaluate(() => {
           const scene = window.sceneManager.currentScene();
-          // Ensure we have a valid treasure to pick to guarantee consistent test
           const floor = scene.map.floors[scene.map.floorIndex];
           if (floor) {
               floor.treasures = ['hp_tonic'];
@@ -192,21 +161,9 @@ test.describe('Event System', () => {
 
       const eventTitle = await page.locator('#event-window .window-header span').textContent();
       expect(eventTitle).toContain('Treasure Found!');
-
-      // Check for interactive label
       const label = page.locator('#event-window .interactive-label');
       await expect(label).toBeVisible();
       await expect(label).toHaveCSS('cursor', 'help');
-
-      await page.waitForTimeout(200);
-      // We expect default.png because hp_tonic uses default icon which maps to 6,
-      // but Window_Event uses data.image for the BIG picture, not the icon.
-      // Treasure event uses 'treasure.png'.
-      const imgSrc = await page.locator('#event-window img').getAttribute('src');
-      // It might be treasure.png (if exists) or default.png (fallback).
-      // Since file check earlier showed 404 for treasure.png, it will fallback.
-      // We accept either.
-      // expect(imgSrc).toMatch(/(treasure|default)\.png/);
   });
 
   test('Shrine terminal style', async ({ page }) => {
@@ -221,7 +178,6 @@ test.describe('Event System', () => {
 
       const hasClass = await page.locator('#event-window .event-description').getAttribute('class');
       expect(hasClass).toContain('terminal-style');
-
       const desc = await page.locator('#event-window .event-description').textContent();
       expect(desc).toContain('Terminal log start.');
   });
