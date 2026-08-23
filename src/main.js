@@ -1,5 +1,6 @@
-import { DataManager, SceneManager, SoundManager } from "./managers/index.js";
+import { DataManager, SoundManager } from "./managers/index.js";
 import { SettingsAdapter } from "./adapters/settings_adapter.js";
+import { SceneManager } from "./presentation/scene_manager.js";
 import { Scene_Boot } from "./presentation/scenes/scenes.js";
 import { WindowManager } from "./presentation/windows/index.js";
 import { exposeGlobals } from "./debug_tools.js";
