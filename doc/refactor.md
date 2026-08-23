@@ -14,13 +14,13 @@ This document outlines the architectural refactor to create a single source of t
 * **Audio**: browser/WebAudio implementation lives in `src/infrastructure/audio/`, consumed through `AudioAdapter`.
 * **Static content**: acquisition lives in `src/data/content_loader.js`; it does not initialize runtime services.
 * **Composition**: `src/main.js` wires settings, audio, content, presentation lifecycle, and boot explicitly.
-* **Legacy managers namespace**: retired. `src/managers/` no longer owns runtime behavior or compatibility exports.
+* **Legacy root managers namespace**: retired. `src/managers/` no longer owns runtime behavior or compatibility exports. Presentation-local managers such as theme/window concerns remain presentation-owned.
 
 See `doc/refactor-audit-2026-08.md` for the audit that reopened and drove this cleanup.
 
 ## Assessment
 
-The architectural refactor described by this plan is complete at the ownership level. Runtime simulation truth is in the engine/session model; browser infrastructure is explicit; presentation lifecycle is presentation-owned; static content acquisition is data-owned; and the historical catch-all `src/managers/` namespace has been removed rather than preserved as a second architectural vocabulary.
+The architectural refactor described by this plan is complete at the ownership level. Runtime simulation truth is in the engine/session model; browser infrastructure is explicit; presentation lifecycle is presentation-owned; static content acquisition is data-owned; and the historical catch-all root `src/managers/` namespace has been removed rather than preserved as a second architectural vocabulary.
 
 The browser debug surface intentionally retains the names `window.ConfigManager` and `window.SoundManager` for existing tests. These are test-facing compatibility objects only: `ConfigManager` delegates directly to the settings store and `SoundManager` points at `AudioAdapter`. They are not source-layer managers and own no independent runtime state.
 
@@ -65,9 +65,9 @@ Completed:
 * classified `DataManager` as static content acquisition and replaced it with `ContentLoader` in `src/data/`;
 * classified Sound + MIDI playback as browser audio infrastructure and moved them to `src/infrastructure/audio/`;
 * retired the runtime `ConfigManager` class while preserving only a debug/test compatibility object;
-* retired `src/managers/index.js` and the remaining `src/managers/` source files;
+* retired `src/managers/index.js` and the remaining root `src/managers/` source files;
 * removed the composition root's dependency on the managers barrel.
 
 ### Completion rule
 
-Satisfied: no source-layer compatibility manager remains as an alternate owner of runtime state. Future work should be ordinary architecture maintenance and validation, not continuation of Phase 7.
+Satisfied: no source-layer compatibility manager remains as an alternate owner of runtime state. Future work should be ordinary architecture maintenance and executable validation, not continuation of Phase 7.
