@@ -266,12 +266,11 @@ export class BattleSystem {
       if (!attackerElements || !defenderElements) return 1;
       let advantageFound = false;
       let disadvantageFound = false;
-      const elements = Registry.get('elements') || {};
 
       for (const attackerEl of attackerElements) {
           if (advantageFound || disadvantageFound) break;
           for (const defenderEl of defenderElements) {
-               const row = elements[attackerEl];
+               const row = Registry.elements ? Registry.elements[attackerEl] : null;
                if (row) {
                    if (row.strong && row.strong.includes(defenderEl)) advantageFound = true;
                    if (row.weak && row.weak.includes(defenderEl)) disadvantageFound = true;
