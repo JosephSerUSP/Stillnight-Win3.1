@@ -21,9 +21,9 @@ test('Summoner exhaustion escalates in runtime and authored MP recovery clears i
     creature.states = [];
 
     const levelOneEvents = party.onStep(false);
-    const hpAfterLevelOne = creature.hp;
     const levelTwoEvents = party.onStep(false);
-    const hpAfterLevelTwo = creature.hp;
+    const levelOneDamage = levelOneEvents.find(event => event.type === 'exhaustion_damage' && event.target === creature);
+    const levelTwoDamage = levelTwoEvents.find(event => event.type === 'exhaustion_damage' && event.target === creature);
 
     party.inventory.push(ale);
     scene.useItem(ale, summoner);
@@ -31,8 +31,8 @@ test('Summoner exhaustion escalates in runtime and authored MP recovery clears i
     return {
       levelOne: levelOneEvents.find(event => event.type === 'exhaustion_start')?.level,
       levelTwo: levelTwoEvents.find(event => event.type === 'exhaustion_increase')?.level,
-      firstDamage: creature.maxHp - hpAfterLevelOne,
-      secondDamage: hpAfterLevelOne - hpAfterLevelTwo,
+      firstRate: levelOneDamage?.rate,
+      secondRate: levelTwoDamage?.rate,
       mpAfterRecovery: summoner.mp,
       exhaustionAfterRecovery: summoner.exhaustion,
       weakenedAfterRecovery: creature.isStateAffected('weakened'),
@@ -41,7 +41,8 @@ test('Summoner exhaustion escalates in runtime and authored MP recovery clears i
 
   expect(result.levelOne).toBe(1);
   expect(result.levelTwo).toBe(2);
-  expect(result.secondDamage).toBeGreaterThan(result.firstDamage);
+  expect(result.firstRate).toBe(0.05);
+  expect(result.secondRate).toBe(0.1);
   expect(result.mpAfterRecovery).toBeGreaterThan(0);
   expect(result.exhaustionAfterRecovery).toBe(0);
   expect(result.weakenedAfterRecovery).toBe(false);
