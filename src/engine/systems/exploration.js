@@ -96,11 +96,11 @@ export class ExplorationSystem {
             results.push({ type: 'EXPLORED_ALL' });
         }
 
-        // Event Trigger (Stepped on)
+        // Event Trigger (Stepped on). Revealing a hidden event is a state change,
+        // not a second gameplay dispatch; emit one EVENT result so onEnter runs once.
         if (event) {
             if (event.hidden) {
                 event.hidden = false;
-                results.push({ type: 'REVEALED', event });
             }
             results.push({ type: 'EVENT', event });
         } else {
