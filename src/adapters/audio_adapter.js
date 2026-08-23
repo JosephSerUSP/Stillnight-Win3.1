@@ -1,55 +1,18 @@
-import { SoundManager } from "../managers/sound.js";
+import { SoundService } from "../infrastructure/audio/sound_service.js";
 
-/**
- * Presentation/boot-facing audio boundary. Private WebAudio/cache state remains
- * inside the infrastructure implementation.
- */
+/** Presentation/boot-facing audio boundary. */
 export const AudioAdapter = {
-    initialize(soundMap) {
-        return SoundManager.init(soundMap);
-    },
-
-    play(key, options) {
-        return SoundManager.play(key, options);
-    },
-
-    playMusic(key) {
-        SoundManager.playMusic(key);
-    },
-
-    stopMusic() {
-        SoundManager.stopMusic();
-    },
-
-    pauseMusic() {
-        SoundManager.pauseMusic();
-    },
-
-    resumeMusic() {
-        SoundManager.resumeMusic();
-    },
-
-    isMusicPlaying() {
-        return SoundManager.isMusicPlaying();
-    },
-
-    updateVolumes() {
-        SoundManager.updateVolumes();
-    },
-
-    getCurrentMusicKey() {
-        return SoundManager.getCurrentMusicKey();
-    },
-
-    beep(freq, duration) {
-        SoundManager.beep(freq, duration);
-    },
-
-    getMusicKeys() {
-        return SoundManager.getMusicKeys();
-    },
-
-    getSfxKeys() {
-        return SoundManager.getSfxKeys();
-    }
+    initialize(soundMap) { return SoundService.init(soundMap); },
+    configureSettings(settings) { SoundService.configureSettings(settings); },
+    play(key, options) { return SoundService.play(key, options); },
+    playMusic(key) { SoundService.playMusic(key); },
+    stopMusic() { SoundService.stopMusic(); },
+    pauseMusic() { SoundService.pauseMusic(); },
+    resumeMusic() { SoundService.resumeMusic(); },
+    isMusicPlaying() { return SoundService.isMusicPlaying(); },
+    updateVolumes() { SoundService.updateVolumes(); },
+    getCurrentMusicKey() { return SoundService.getCurrentMusicKey(); },
+    beep(freq, duration) { SoundService.beep(freq, duration); },
+    getMusicKeys() { return SoundService.getMusicKeys(); },
+    getSfxKeys() { return SoundService.getSfxKeys(); }
 };
