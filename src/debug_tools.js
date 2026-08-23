@@ -6,7 +6,7 @@ import { Game_Base } from "./objects/game_base.js";
 import { Game_Action } from "./objects/action.js";
 import { ThemeManager } from "./presentation/managers/theme.js";
 import { settingsStore } from "./infrastructure/settings.js";
-import { AudioAdapter } from "./adapters/audio_adapter.js";
+import { AudioDebug } from "./adapters/audio_adapter.js";
 import { InterpreterAdapter } from "./adapters/interpreter_adapter.js";
 import { ProgressionSystem } from "./engine/systems/progression.js";
 import { Scene_Boot, Scene_Map as Scene_Map_Class, Scene_Battle, Scene_Shop } from "./presentation/scenes/scenes.js";
@@ -33,6 +33,6 @@ export function exposeGlobals(instances = {}) {
     window.Scene_Boot = Scene_Boot; window.Scene_Map = Scene_Map_Class; window.Scene_Battle = Scene_Battle; window.Scene_Shop = Scene_Shop;
     window.ThemeManager = ThemeManager;
     window.ConfigManager = ConfigDebug;
-    window.SoundManager = AudioAdapter;
+    window.SoundManager = AudioDebug;
     window.ProgressionSystem = ProgressionSystem;
 }
