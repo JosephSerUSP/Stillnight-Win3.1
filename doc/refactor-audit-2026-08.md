@@ -21,7 +21,7 @@ Battle, exploration, interpreter, progression/effects/traits/encounters already 
 `src/infrastructure/settings.js` separates settings state from its localStorage repository. Runtime code consumes `SettingsAdapter` or an injected settings contract. The old source-layer `ConfigManager` class is deleted; only a browser test/debug compatibility object preserves the historical `window.ConfigManager` shape.
 
 ### Audio and MIDI
-The public `AudioAdapter` contract now fronts `src/infrastructure/audio/sound_service.js`; MIDI parsing/playback lives with that audio infrastructure. Settings are injected explicitly from composition and adapters do not inspect private audio caches.
+The public `AudioAdapter` contract now fronts `src/infrastructure/audio/sound_service.js`; MIDI parsing/playback lives with that audio infrastructure. Settings are injected explicitly from composition. Existing browser tests historically inspect underscore audio caches; debug-facing getters preserve that inspection by referencing the single SoundService-owned caches. Production callers use the public adapter methods.
 
 ### Static content
 The old DataManager had ceased to be a runtime service after audio bootstrap was removed. Its remaining responsibility was static authored-content acquisition, so it is now `src/data/content_loader.js`.
