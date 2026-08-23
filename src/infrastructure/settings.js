@@ -1,14 +1,16 @@
 const STORAGE_KEY = "stillnight_config";
 const DEFAULTS = Object.freeze({ autoBattle: false, windowAnimations: true, masterVolume: 0.5, sfxVolume: 0.5, musicVolume: 0.5 });
 
-function volume(value, fallback) { const parsed = Number.parseFloat(value); return Number.isFinite(parsed) ? parsed : fallback; }
 function normalize(raw = {}) {
     const settings = { ...DEFAULTS };
     settings.autoBattle = !!raw.autoBattle;
     settings.windowAnimations = raw.windowAnimations !== undefined ? !!raw.windowAnimations : DEFAULTS.windowAnimations;
-    settings.masterVolume = typeof raw.audioEnabled === 'boolean' ? (raw.audioEnabled ? 0.5 : 0.0) : volume(raw.masterVolume, DEFAULTS.masterVolume);
-    settings.sfxVolume = typeof raw.sfxEnabled === 'boolean' ? (raw.sfxEnabled ? 0.5 : 0.0) : volume(raw.sfxVolume, DEFAULTS.sfxVolume);
-    settings.musicVolume = typeof raw.musicEnabled === 'boolean' ? (raw.musicEnabled ? 0.5 : 0.0) : volume(raw.musicVolume, DEFAULTS.musicVolume);
+    if (typeof raw.audioEnabled === 'boolean') settings.masterVolume = raw.audioEnabled ? 0.5 : 0.0;
+    else if (raw.masterVolume !== undefined) settings.masterVolume = Number.parseFloat(raw.masterVolume);
+    if (typeof raw.sfxEnabled === 'boolean') settings.sfxVolume = raw.sfxEnabled ? 0.5 : 0.0;
+    else if (raw.sfxVolume !== undefined) settings.sfxVolume = Number.parseFloat(raw.sfxVolume);
+    if (typeof raw.musicEnabled === 'boolean') settings.musicVolume = raw.musicEnabled ? 0.5 : 0.0;
+    else if (raw.musicVolume !== undefined) settings.musicVolume = Number.parseFloat(raw.musicVolume);
     return settings;
 }
 
