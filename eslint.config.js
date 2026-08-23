@@ -11,7 +11,13 @@ export default [
         },
         rules: {
             "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_", "caughtErrorsIgnorePattern": "^_" }],
-            "no-undef": "error"
+            "no-undef": "error",
+            "no-restricted-imports": ["error", {
+                "patterns": [{
+                    "group": ["./managers/**", "../managers/**", "../../managers/**", "../../../managers/**"],
+                    "message": "The root src/managers namespace is retired. Import the owning data, infrastructure, presentation, engine, or adapter module instead."
+                }]
+            }]
         },
         ignores: ["tests/**"]
     },
@@ -20,8 +26,8 @@ export default [
         rules: {
             "no-restricted-imports": ["error", {
                 "patterns": [{
-                    "group": ["../presentation/**", "../../presentation/**", "../infrastructure/**", "../../infrastructure/**"],
-                    "message": "Engine must remain presentation- and browser-infrastructure-agnostic."
+                    "group": ["../presentation/**", "../../presentation/**", "../infrastructure/**", "../../infrastructure/**", "../managers/**", "../../managers/**"],
+                    "message": "Engine must remain presentation- and browser-infrastructure-agnostic; the root managers namespace is retired."
                 }]
             }]
         }
