@@ -13,6 +13,7 @@ This document outlines the architectural refactor to create a single source of t
 *   **Save/Load**: Wired into `Scene_Boot` and `Scene_Map` via `SessionSerializer`.
 *   **Cleanup**: `src/objects/objects.js` and `src/legacy/` retired.
 *   **Input ownership**: `InputController` manager retired; browser keyboard translation now lives inside `InputAdapter`.
+*   **Scene lifecycle ownership**: `SceneManager` is presentation lifecycle and now lives at `src/presentation/scene_manager.js`; it is no longer exported from `src/managers/`.
 *   **Audio contract**: `AudioAdapter` consumes public SoundManager commands/queries only; private cache fields no longer leak.
 *   **Settings ownership**: mutable settings state and localStorage persistence are separated in `src/infrastructure/settings.js`; `ConfigManager` is a compatibility facade only.
 *   **Composition**: audio receives its settings dependency explicitly from `main.js`; `DataManager` loads content only and no longer bootstraps audio.
@@ -22,9 +23,9 @@ See `doc/refactor-audit-2026-08.md` for the evidence-based boundary audit that r
 
 ## Assessment
 
-The simulation/runtime-state refactor is largely complete. The infrastructure pass has now removed the concrete ownership violations found by the August audit: input is presentation-side, audio has a public contract, audio no longer imports configuration, settings persistence is separated from state, and content loading no longer initializes audio.
+The simulation/runtime-state refactor is largely complete. The infrastructure pass has now removed the concrete ownership violations found by the August audit: input and scene lifecycle are presentation-side, audio has a public contract, audio no longer imports configuration, settings persistence is separated from state, and content loading no longer initializes audio.
 
-Phase 7 remains open for one final reason: the repository still carries a `src/managers/` compatibility namespace (`DataManager`, `SoundManager`, `SceneManager`, `ConfigManager`, MIDI classes). The next step is no longer to invent more wrappers; it is to classify those remaining responsibilities, move/rename only where that improves ownership truth, and delete compatibility exports that no longer have real consumers.
+Phase 7 remains open because the repository still carries a smaller `src/managers/` compatibility namespace (`DataManager`, `SoundManager`, `ConfigManager`, MIDI classes). The next step is no longer to invent more wrappers; it is to classify those remaining responsibilities, move/rename only where that improves ownership truth, and delete compatibility exports that no longer have real consumers.
 
 ## Target Architecture
 
@@ -41,6 +42,7 @@ Phase 7 remains open for one final reason: the repository still carries a `src/m
 *   `scenes/` – glue: translate user intent to engine commands; route to windows
 *   `windows/` – DOM UI only (no simulation imports)
 *   `selectors/` – view models derived from session state
+*   `scene_manager.js` – scene stack + browser animation-frame lifecycle
 
 ### Infrastructure
 `src/infrastructure/` + browser-facing adapters
@@ -99,13 +101,14 @@ Completed:
 *   Migrate `TraitManager` to `TraitRules`.
 *   Migrate `EncounterManager` to `EncounterRules`.
 *   Retire `InputController` manager; keyboard mapping is presentation adapter logic.
+*   Classify `SceneManager` as presentation lifecycle and move it out of `src/managers/`.
 *   Give audio a public command/query contract; no adapter reads of underscored SoundManager fields remain.
 *   Remove direct `SoundManager` → `ConfigManager` coupling; volume settings are injected at the composition root.
 *   Separate mutable settings state from `localStorage` persistence; `ConfigManager` remains only for compatibility/debug consumers.
 *   Separate `DataManager` content acquisition from audio initialization; boot initializes audio explicitly after content loading.
 
 Remaining:
-*   Audit consumers of the remaining `src/managers/` namespace and classify each file as infrastructure, presentation lifecycle, data loader, compatibility facade, or obsolete barrel.
+*   Classify the smaller remaining `src/managers/` namespace: `DataManager` (data loader), `SoundManager` + MIDI (browser audio infrastructure), `ConfigManager` (compatibility facade), and the barrel itself.
 *   Retire `ConfigManager` once direct debug/test compatibility consumers are migrated.
 *   Move/rename remaining services only when the destination expresses real ownership; do not perform a cosmetic directory shuffle.
 *   Strengthen lint/import boundaries around the resulting architecture.
