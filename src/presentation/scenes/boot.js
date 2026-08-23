@@ -1,51 +1,38 @@
 import { Scene_Base } from "./base.js";
 import { Scene_Map } from "./map.js";
 import { ThemeManager } from "../managers/theme.js";
+import { AudioAdapter } from "../../adapters/audio_adapter.js";
 import { Registry } from "../../engine/data/registry.js";
 import { SessionSerializer } from "../../engine/session/serializer.js";
 import { Game_Party } from "../../objects/party.js";
 import { QuestLogState } from "../../engine/session/quest_state.js";
 
 /**
- * @class Scene_Boot
- * @description The initial scene that loads game data and transitions to the title or map scene.
- * @extends Scene_Base
+ * Initial composition scene: acquires content, initializes content-dependent
+ * presentation services, restores session state, then enters the map.
  */
 export class Scene_Boot extends Scene_Base {
-    /**
-     * Creates a new Scene_Boot.
-     * @param {import("../../managers/index.js").DataManager} dataManager - The data manager instance.
-     * @param {import("../../managers/index.js").SceneManager} sceneManager - The scene manager instance.
-     * @param {import("../windows/index.js").WindowManager} windowManager - The window manager instance.
-     */
-    constructor(dataManager, sceneManager, windowManager) {
-        super(dataManager, windowManager);
+    constructor(contentLoader, sceneManager, windowManager) {
+        super(contentLoader, windowManager);
         this.sceneManager = sceneManager;
     }
 
-    /**
-     * Loads all necessary data and then pushes the initial game scene (Scene_Map).
-     * @method start
-     * @async
-     */
     async start() {
-        await this.dataManager.loadData();
+        await this.contentLoader.loadData();
 
-        // Populate Registry
-        Registry.set('items', this.dataManager.items);
-        Registry.set('skills', this.dataManager.skills);
-        Registry.set('actors', this.dataManager.actors);
-        if (this.dataManager.states) Registry.set('states', this.dataManager.states);
-        if (this.dataManager.enemies) Registry.set('enemies', this.dataManager.enemies);
-        if (this.dataManager.quests) Registry.set('quests', this.dataManager.quests);
+        Registry.set('items', this.contentLoader.items);
+        Registry.set('skills', this.contentLoader.skills);
+        Registry.set('actors', this.contentLoader.actors);
+        if (this.contentLoader.states) Registry.set('states', this.contentLoader.states);
+        if (this.contentLoader.enemies) Registry.set('enemies', this.contentLoader.enemies);
+        if (this.contentLoader.quests) Registry.set('quests', this.contentLoader.quests);
 
-        ThemeManager.init(this.dataManager.themes);
+        ThemeManager.init(this.contentLoader.themes);
+        if (this.contentLoader.sounds) {
+            await AudioAdapter.initialize(this.contentLoader.sounds);
+        }
 
-        // Load Session
         let session;
-        // In a real implementation, we might check for a 'continue' flag or show a Title Screen first.
-        // For now, we auto-load if save exists, else new game.
-        // Or better: Scene_Map handles the "New Game" logic if session is fresh.
         const savedData = localStorage.getItem('stillnight_save_data');
         if (savedData) {
             try {
@@ -58,7 +45,7 @@ export class Scene_Boot extends Scene_Base {
             session = this._createNewSession();
         }
 
-        this.sceneManager.push(new Scene_Map(this.dataManager, this.sceneManager, this.windowManager, session));
+        this.sceneManager.push(new Scene_Map(this.contentLoader, this.sceneManager, this.windowManager, session));
     }
 
     _createNewSession() {

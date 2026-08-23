@@ -1,69 +1,28 @@
-import { SoundManager } from "../managers/sound.js";
+import { SoundService } from "../infrastructure/audio/sound_service.js";
 
-/**
- * Adapter for audio operations.
- * Wraps the legacy SoundManager to prevent direct imports from presentation layer.
- */
+/** Presentation/boot-facing audio boundary. */
 export const AudioAdapter = {
-    /**
-     * Plays a sound effect.
-     * @param {string} key
-     * @param {Object} [options]
-     */
-    play(key, options) {
-        SoundManager.play(key, options);
-    },
-
-    /**
-     * Plays background music.
-     * @param {string} key
-     */
-    playMusic(key) {
-        SoundManager.playMusic(key);
-    },
-
-    /**
-     * Stops background music.
-     */
-    stopMusic() {
-        SoundManager.stopMusic();
-    },
-
-    pauseMusic() {
-        SoundManager.pauseMusic();
-    },
-
-    resumeMusic() {
-        SoundManager.resumeMusic();
-    },
-
-    isMusicPlaying() {
-        return SoundManager.isMusicPlaying();
-    },
-
-    updateVolumes() {
-        SoundManager.updateVolumes();
-    },
-
-    getCurrentMusicKey() {
-        return SoundManager._currentMusicKey;
-    },
-
-    /**
-     * Legacy beep.
-     * @param {number} freq
-     * @param {number} duration
-     */
-    beep(freq, duration) {
-        SoundManager.beep(freq, duration);
-    },
-
-    getMusicKeys() {
-        // Accessing internal state of SoundManager for debug/list purposes
-        return SoundManager._midiData ? Array.from(SoundManager._midiData.keys()).sort() : [];
-    },
-
-    getSfxKeys() {
-        return SoundManager._soundMap ? Object.keys(SoundManager._soundMap).sort() : [];
-    }
+    initialize(soundMap) { return SoundService.init(soundMap); },
+    configureSettings(settings) { SoundService.configureSettings(settings); },
+    play(key, options) { return SoundService.play(key, options); },
+    playMusic(key) { SoundService.playMusic(key); },
+    stopMusic() { SoundService.stopMusic(); },
+    pauseMusic() { SoundService.pauseMusic(); },
+    resumeMusic() { SoundService.resumeMusic(); },
+    isMusicPlaying() { return SoundService.isMusicPlaying(); },
+    getMusicDuration() { return SoundService.getMusicDuration(); },
+    getMusicTime() { return SoundService.getMusicTime(); },
+    updateVolumes() { SoundService.updateVolumes(); },
+    getCurrentMusicKey() { return SoundService.getCurrentMusicKey(); },
+    beep(freq, duration) { SoundService.beep(freq, duration); },
+    getMusicKeys() { return SoundService.getMusicKeys(); },
+    getSfxKeys() { return SoundService.getSfxKeys(); }
 };
+
+/** @internal Browser test/debug compatibility; not production API. */
+export const AudioDebug = Object.create(AudioAdapter);
+Object.defineProperties(AudioDebug, {
+    _currentMusicKey: { get: () => SoundService.getCurrentMusicKey() },
+    _midiData: { get: () => SoundService.getDebugMidiData() },
+    _soundMap: { get: () => SoundService.getDebugSoundMap() }
+});

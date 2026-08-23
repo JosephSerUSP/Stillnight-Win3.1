@@ -4,82 +4,76 @@ This document outlines the architectural refactor to create a single source of t
 
 ## Execution audit (Current State)
 
-*   **Deterministic RNG**: Implemented (`src/core/rng.js`) and verified via harness.
-*   **Engine Skeleton**: Implemented (`src/engine/`). Import boundaries enforced via ESLint.
-*   **Battle**: Migrated to `BattleSystem` and `BattleAdapter`. Legacy `managers/battle.js` deleted.
-*   **Exploration**: Migrated to `ExplorationSystem` and `ExplorationAdapter`. Legacy `managers/exploration.js` deleted.
-*   **Interpreter**: Migrated to `InterpreterSystem` and `InterpreterAdapter`. Legacy `managers/interpreter.js` deleted.
-*   **UI Decoupling**: Windows now use `Adapters` (Audio, Settings, Effect) and `Selectors`. Direct manager imports removed from key windows.
-*   **Save/Load**: Wired into `Scene_Boot` and `Scene_Map` via `SessionSerializer`.
-*   **Cleanup**: `src/objects/objects.js` retired. `src/legacy/` deleted.
+* **Deterministic RNG**: implemented (`src/core/rng.js`).
+* **Engine skeleton**: implemented (`src/engine/`) with import boundaries.
+* **Battle / Exploration / Interpreter**: migrated to engine systems + adapters; legacy simulation managers deleted.
+* **Save/load**: session serialization is authoritative for runtime state.
+* **Input**: browser keyboard translation is presentation-side in `InputAdapter`.
+* **Scene lifecycle**: presentation-side in `src/presentation/scene_manager.js`.
+* **Settings**: state + persistence live in `src/infrastructure/settings.js`; no runtime `ConfigManager` class remains.
+* **Audio**: browser/WebAudio implementation lives in `src/infrastructure/audio/`, consumed through `AudioAdapter`.
+* **Static content**: acquisition lives in `src/data/content_loader.js`; it does not initialize runtime services.
+* **Composition**: `src/main.js` wires settings, audio, content, presentation lifecycle, and boot explicitly.
+* **Legacy root managers namespace**: retired. `src/managers/` no longer owns runtime behavior or compatibility exports. Presentation-local managers such as theme/window concerns remain presentation-owned.
+* **Boundary guardrails**: ESLint globally rejects imports targeting the retired root managers namespace; engine imports are also barred from presentation/browser infrastructure, and presentation windows remain barred from engine systems. `AGENTS.md` records the completed ownership model for future work.
+
+See `doc/refactor-audit-2026-08.md` for the audit that reopened and drove this cleanup.
 
 ## Assessment
 
-The roadmap is largely complete, with most systems migrated to the new architecture. `TraitManager` and `EncounterManager` have been successfully migrated to `TraitRules` and `EncounterRules`, completing the "Remove remaining legacy knot" phase. The system now enforces hard layer boundaries.
+The architectural refactor described by this plan is complete at the ownership level. Runtime simulation truth is in the engine/session model; browser infrastructure is explicit; presentation lifecycle is presentation-owned; static content acquisition is data-owned; and the historical catch-all root `src/managers/` namespace has been removed rather than preserved as a second architectural vocabulary.
+
+The browser debug surface intentionally retains the names `window.ConfigManager` and `window.SoundManager` for existing tests. These are test-facing compatibility surfaces only. `ConfigManager` delegates directly to the settings store. `window.SoundManager` is `AudioDebug`, a wrapper over `AudioAdapter`; its historical underscore getters call explicit SoundService debug queries and reference the single infrastructure-owned caches rather than owning copies. Production `AudioAdapter` exposes only its public contract.
 
 ## Target Architecture
 
-### Engine (pure-ish, testable, serializable)
-`src/engine/`
-*   `session/` – runtime state + save/load serialization
-*   `systems/` – battle, exploration, encounters, interpreter, progression
-*   `rules/` – effects, traits, formulas (pure functions + registries)
-*   `events/` – event types + helpers
-*   `ports/` – interfaces for audio, storage, rng, clock, midi, etc.
-*   `adapters/` – DOM/audio/localStorage implementations of ports (thin wrappers)
+### Engine — `src/engine/`
+Pure-ish, testable, serializable runtime rules and state: session, systems, rules, events, and engine-required ports.
 
-### Presentation (DOM-first, fast iteration)
-`src/presentation/`
-*   `scenes/` – glue: translate user intent to engine commands; route to windows
-*   `windows/` – DOM UI only (no simulation imports)
-*   `selectors/` – “view models” derived from session state (selectPartyHUD(session))
+### Presentation — `src/presentation/`
+DOM UI, scenes, selectors, windows, theme/window lifecycle, and the scene stack/browser animation-frame lifecycle.
 
-### Data (read-only)
-`data/` + `src/data/`
-*   loader + validators
-*   schemas (even lightweight) to fail loudly on broken content
+### Infrastructure — `src/infrastructure/`
+Browser persistence and service implementations, including settings and WebAudio/MIDI playback.
 
-## Phase 0 — Lock behavior and make refactor safe (Complete)
-*   **Deterministic RNG**: One RNG service used everywhere.
-*   **Golden Logs**: Harness verifies battle and dungeon determinism.
+### Data — `data/` + `src/data/`
+Static authored content plus acquisition/loading code. Loading content does not bootstrap services.
 
-## Phase 1 — Create the New Engine skeleton + import bans (Complete)
-*   `src/engine/` created.
-*   ESLint rules added.
-*   `src/legacy/` created.
+### Adapters — `src/adapters/`
+Narrow presentation/composition-facing boundaries over engine systems and browser infrastructure.
 
-## Phase 2 — Migrate Battle (Complete)
-*   `BattleSystem` and `BattleAdapter` implemented.
-*   `Scene_Battle` decoupled.
-*   `managers/battle.js` deleted.
+## Phases 0–6 — Complete
 
-## Phase 3 — Migrate Exploration (Complete)
-*   `ExplorationSystem` and `ExplorationAdapter` implemented.
-*   `Scene_Map` uses `ExplorationAdapter`.
-*   `managers/exploration.js` deleted.
-
-## Phase 4 — Migrate Interpreter / Events (Complete)
-*   `InterpreterSystem` implemented.
-*   `InterpreterAdapter` implemented.
-*   `Scene_Map` uses `InterpreterAdapter`.
-*   `managers/interpreter.js` deleted.
-
-## Phase 5 — UI decoupling pass (Complete)
-*   Created `AudioAdapter`, `SettingsAdapter`, `EffectAdapter`.
-*   Refactored Windows (`base.js`, `audio_player.js`, `formation.js`, `confirm.js`) to use adapters.
-*   Removed direct `manager` imports from presentation layer.
-
-## Phase 6 — Save/Load (Complete)
-*   `SessionSerializer` implemented.
-*   `Scene_Boot` loads session from local storage or creates new.
-*   `Scene_Map` accepts and resumes session.
-*   `Registry` populated in boot.
+0. Lock behavior / deterministic RNG.
+1. Engine skeleton + import boundaries.
+2. Battle migration.
+3. Exploration migration.
+4. Interpreter/events migration.
+5. UI decoupling.
+6. Save/load + session authority.
 
 ## Phase 7 — Remove the remaining legacy knot (Complete)
-**Goal:** Final cleanups.
-*   Retire `src/objects/objects.js` barrel (Complete).
-*   Replace `window.*` debug globals with `DebugTools` (Complete - via `exposeGlobals`).
-*   Migrate `EffectManager` to `EffectSystem` (Complete — EffectManager removed; Game_Action and systems use EffectSystem with injected context).
-*   Migrate remaining infrastructure managers (`Sound`, `Input`, `Config`) to pure Ports/Adapters structure (Complete — presentation routes through adapters for audio, settings, and input).
-*   Migrate `TraitManager` to `TraitRules` (Complete — TraitManager removed; TraitRules created in src/engine/rules/).
-*   Migrate `EncounterManager` to `EncounterRules` (Complete — EncounterManager removed; EncounterRules created in src/engine/rules/ with pure functions).
+
+Completed:
+* retired obsolete objects/legacy barrels and ad-hoc manager globals;
+* migrated Effect/Trait/Encounter responsibilities to systems/rules;
+* retired `InputController` and moved keyboard intent translation presentation-side;
+* moved `SceneManager` to presentation lifecycle;
+* established a public audio adapter contract and isolated private-cache inspection to the test/debug surface;
+* removed audio → configuration coupling and injected an explicit settings query contract from composition;
+* separated settings state from `localStorage` persistence;
+* separated static content loading from service initialization;
+* classified `DataManager` as static content acquisition and replaced it with `ContentLoader` in `src/data/`;
+* classified Sound + MIDI playback as browser audio infrastructure and moved them to `src/infrastructure/audio/`;
+* retired the runtime `ConfigManager` class while preserving only a debug/test compatibility object;
+* retired `src/managers/index.js` and the remaining root `src/managers/` source files;
+* removed the composition root's dependency on the managers barrel;
+* strengthened ESLint boundaries and repository-level `AGENTS.md` enforcement around the completed ownership model.
+
+### Completion rule
+
+Satisfied at the source-ownership level: no source-layer compatibility manager remains as an alternate owner of runtime state. Phase 7 is closed.
+
+### Executable merge gate
+
+PR CI now validates the ownership refactor rather than relying on static audit alone. The final merge head must pass source-boundary linting, the deterministic golden-log harness, the battle-selector smoke test, and the full Playwright browser regression suite. Stabilization of that suite also exposed a real duplicate-dispatch bug for hidden stepped events; the exploration system now reveals hidden event state while emitting a single gameplay `EVENT` dispatch. A green CI run on the final head is required before merge.
