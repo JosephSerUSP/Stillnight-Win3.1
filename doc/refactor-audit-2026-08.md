@@ -44,6 +44,8 @@ The criterion was not “rename every Manager.” It was: no compatibility manag
 
 The source-layer root `src/managers/` files and barrel are now removed. Remaining historical manager names exposed on `window` under `?test=true` are compatibility/debug surfaces only and delegate to the real settings/audio boundaries; they are not alternate state owners. Presentation-local managers are not part of the retired legacy namespace and remain where their ownership is truthful.
 
-## Validation boundary
+## Executable validation
 
-This connected GitHub editing environment cannot execute the repository's Playwright/browser suite, and no pull-request workflow run is currently available for the branch. Phase 7 is therefore complete as an architectural/source-ownership milestone, while executable regression validation remains a mandatory merge gate. The PR should not be merged on the strength of this audit alone.
+The PR now carries executable CI for the architecture it claims: source-boundary linting, the deterministic golden-log harness, a battle-selector smoke test, and the full Playwright browser regression suite. CI remains the merge gate for the final head.
+
+That stabilization pass was not merely test cleanup. It caught a real exploration defect: stepping onto a hidden event emitted both `REVEALED` and `EVENT`, and the presentation layer dispatched `onEnter` for both results. Hidden stepped events could therefore execute twice. Exploration now treats reveal as a state transition and emits one gameplay `EVENT`, with a browser regression test asserting that a hidden trap damages the party exactly once.
