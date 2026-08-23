@@ -27,7 +27,7 @@ The public `AudioAdapter` contract now fronts `src/infrastructure/audio/sound_se
 The old DataManager had ceased to be a runtime service after audio bootstrap was removed. Its remaining responsibility was static authored-content acquisition, so it is now `src/data/content_loader.js`.
 
 ### Composition and enforcement
-`src/main.js` no longer imports a managers barrel. It explicitly composes settings, audio, static content, presentation scene lifecycle, windows, and boot. ESLint now also bars engine imports from presentation/browser infrastructure and keeps presentation windows away from engine systems and the retired root managers path.
+`src/main.js` no longer imports a managers barrel. It explicitly composes settings, audio, static content, presentation scene lifecycle, windows, and boot. ESLint bars engine imports from presentation/browser infrastructure and keeps presentation windows away from engine systems and the retired root managers path.
 
 ## Final ownership map
 
@@ -44,4 +44,6 @@ The criterion was not “rename every Manager.” It was: no compatibility manag
 
 The source-layer root `src/managers/` files and barrel are now removed. Remaining historical manager names exposed on `window` under `?test=true` are compatibility/debug surfaces only and delegate to the real settings/audio boundaries; they are not alternate state owners. Presentation-local managers are not part of the retired legacy namespace and remain where their ownership is truthful.
 
-Executable Playwright validation remains a merge gate because this GitHub editing environment cannot run the repository's browser suite. That validation caveat does not change the ownership classification above.
+## Validation boundary
+
+This connected GitHub editing environment cannot execute the repository's Playwright/browser suite, and no pull-request workflow run is currently available for the branch. Phase 7 is therefore complete as an architectural/source-ownership milestone, while executable regression validation remains a mandatory merge gate. The PR should not be merged on the strength of this audit alone.
