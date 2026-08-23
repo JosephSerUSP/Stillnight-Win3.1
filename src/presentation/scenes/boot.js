@@ -11,7 +11,6 @@ import { QuestLogState } from "../../engine/session/quest_state.js";
 export class Scene_Boot extends Scene_Base {
     constructor(contentLoader, sceneManager, windowManager) {
         super(contentLoader, windowManager);
-        this.contentLoader = contentLoader;
         this.sceneManager = sceneManager;
     }
 
