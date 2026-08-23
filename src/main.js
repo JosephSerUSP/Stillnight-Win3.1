@@ -6,15 +6,16 @@ import { exposeGlobals } from "./debug_tools.js";
 
 /**
  * Application composition root.
- * Infrastructure dependencies are wired here before scenes begin loading data.
+ * Infrastructure dependencies and persistence lifecycle are explicit here.
  */
 async function main() {
+  SettingsAdapter.load();
+
   const gameContainer = document.getElementById("game-container");
   const sceneManager = new SceneManager(gameContainer);
   const dataManager = new DataManager();
   const windowManager = new WindowManager();
 
-  // Audio consumes the settings contract; it does not own or import settings.
   SoundManager.configureSettings(SettingsAdapter);
 
   const initialScene = new Scene_Boot(dataManager, sceneManager, windowManager);
