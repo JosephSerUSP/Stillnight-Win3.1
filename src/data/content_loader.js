@@ -16,6 +16,7 @@ export class ContentLoader {
     this.terms = null;
     this.sounds = null;
     this.skills = null;
+    this.spells = null;
     this.passives = null;
     this.states = null;
     this.startingParty = null;
@@ -42,6 +43,8 @@ export class ContentLoader {
     try {
       const { skills } = await import("../../data/skills.js");
       this.skills = skills;
+      const { spells } = await import("../../data/spells.js");
+      this.spells = spells;
       const { passives } = await import("../../data/passives.js");
       this.passives = passives;
       const { states } = await import("../../data/states.js");
@@ -49,7 +52,7 @@ export class ContentLoader {
       const { startingParty } = await import("../../data/party.js");
       this.startingParty = startingParty;
     } catch (error) {
-      console.error("Failed to load skills.js, passives.js, or states.js:", error);
+      console.error("Failed to load skills.js, spells.js, passives.js, states.js, or party.js:", error);
     }
 
     for (const [key, src] of Object.entries(dataSources)) {
@@ -84,13 +87,14 @@ export class ContentLoader {
   }
 
   /**
-   * Fails content acquisition when authored items/skills reference an effect
-   * that the runtime registry cannot execute.
+   * Fails content acquisition when authored items/skills/spells reference an
+   * effect that the runtime registry cannot execute.
    */
   validateEffectVocabulary() {
     const sources = [
       { path: "data/items.json", records: this.items },
       { path: "data/skills.js", records: this.skills },
+      { path: "data/spells.js", records: this.spells },
     ];
     const errors = [];
 
