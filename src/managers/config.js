@@ -1,59 +1,26 @@
+import { settingsStore } from "../infrastructure/settings.js";
+
 /**
- * @class ConfigManager
- * @description Manages persistent game configuration settings.
+ * @deprecated Compatibility facade for debug/test consumers.
+ * Runtime settings ownership lives in infrastructure/settings.js; new code
+ * should use SettingsAdapter (presentation) or inject a settings contract.
  */
 export class ConfigManager {
-    static autoBattle = false;
-    static windowAnimations = true;
-    static masterVolume = 0.5;
-    static sfxVolume = 0.5;
-    static musicVolume = 0.5;
+    static get autoBattle() { return settingsStore.get('autoBattle'); }
+    static set autoBattle(value) { settingsStore.set('autoBattle', !!value, { persist: false }); }
 
-    static load() {
-        try {
-            const data = localStorage.getItem("stillnight_config");
-            if (data) {
-                const config = JSON.parse(data);
-                this.autoBattle = !!config.autoBattle;
-                this.windowAnimations = config.windowAnimations !== undefined ? !!config.windowAnimations : true;
+    static get windowAnimations() { return settingsStore.get('windowAnimations'); }
+    static set windowAnimations(value) { settingsStore.set('windowAnimations', !!value, { persist: false }); }
 
-                // Migrate legacy booleans to floats if needed
-                if (typeof config.audioEnabled === 'boolean') {
-                    this.masterVolume = config.audioEnabled ? 0.5 : 0.0;
-                } else if (config.masterVolume !== undefined) {
-                    this.masterVolume = parseFloat(config.masterVolume);
-                }
+    static get masterVolume() { return settingsStore.get('masterVolume'); }
+    static set masterVolume(value) { settingsStore.set('masterVolume', value, { persist: false }); }
 
-                if (typeof config.sfxEnabled === 'boolean') {
-                    this.sfxVolume = config.sfxEnabled ? 0.5 : 0.0;
-                } else if (config.sfxVolume !== undefined) {
-                    this.sfxVolume = parseFloat(config.sfxVolume);
-                }
+    static get sfxVolume() { return settingsStore.get('sfxVolume'); }
+    static set sfxVolume(value) { settingsStore.set('sfxVolume', value, { persist: false }); }
 
-                if (typeof config.musicEnabled === 'boolean') {
-                    this.musicVolume = config.musicEnabled ? 0.5 : 0.0;
-                } else if (config.musicVolume !== undefined) {
-                    this.musicVolume = parseFloat(config.musicVolume);
-                }
-            }
-        } catch (e) {
-            console.error("Failed to load config", e);
-        }
-    }
+    static get musicVolume() { return settingsStore.get('musicVolume'); }
+    static set musicVolume(value) { settingsStore.set('musicVolume', value, { persist: false }); }
 
-    static save() {
-        try {
-            const config = {
-                autoBattle: this.autoBattle,
-                windowAnimations: this.windowAnimations,
-                masterVolume: this.masterVolume,
-                sfxVolume: this.sfxVolume,
-                musicVolume: this.musicVolume
-            };
-            localStorage.setItem("stillnight_config", JSON.stringify(config));
-        } catch (e) {
-            console.error("Failed to save config", e);
-        }
-    }
+    static load() { return settingsStore.load(); }
+    static save() { settingsStore.save(); }
 }
-ConfigManager.load();
