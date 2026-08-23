@@ -20,7 +20,7 @@ export class LocalStorageSettingsRepository {
 
 export class SettingsStore {
     constructor(repository = new LocalStorageSettingsRepository()) { this.repository = repository; this.state = { ...DEFAULTS }; }
-    load() { try { const persisted = this.repository.load(); this.state = persisted ? normalize(persisted) : { ...DEFAULTS }; } catch (error) { console.error("Failed to load config", error); this.state = { ...DEFAULTS }; } return this.state; }
+    load() { try { const persisted = this.repository.load(); if (persisted) this.state = normalize(persisted); } catch (error) { console.error("Failed to load config", error); } return this.state; }
     save() { try { this.repository.save(this.snapshot()); } catch (error) { console.error("Failed to save config", error); } }
     snapshot() { return { ...this.state }; }
     get(key) { return this.state[key]; }
