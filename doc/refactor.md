@@ -15,6 +15,7 @@ This document outlines the architectural refactor to create a single source of t
 * **Static content**: acquisition lives in `src/data/content_loader.js`; it does not initialize runtime services.
 * **Composition**: `src/main.js` wires settings, audio, content, presentation lifecycle, and boot explicitly.
 * **Legacy root managers namespace**: retired. `src/managers/` no longer owns runtime behavior or compatibility exports. Presentation-local managers such as theme/window concerns remain presentation-owned.
+* **Boundary guardrails**: engine imports are barred from presentation/browser infrastructure, and presentation windows remain barred from engine systems / the retired root managers namespace.
 
 See `doc/refactor-audit-2026-08.md` for the audit that reopened and drove this cleanup.
 
@@ -22,7 +23,7 @@ See `doc/refactor-audit-2026-08.md` for the audit that reopened and drove this c
 
 The architectural refactor described by this plan is complete at the ownership level. Runtime simulation truth is in the engine/session model; browser infrastructure is explicit; presentation lifecycle is presentation-owned; static content acquisition is data-owned; and the historical catch-all root `src/managers/` namespace has been removed rather than preserved as a second architectural vocabulary.
 
-The browser debug surface intentionally retains the names `window.ConfigManager` and `window.SoundManager` for existing tests. These are test-facing compatibility surfaces only: `ConfigManager` delegates directly to the settings store and `SoundManager` is `AudioAdapter`. A few historical underscore cache getters remain on that debug-facing audio object so existing inspection tests retain their value semantics; they reference the single SoundService-owned caches and are not production API or alternate state.
+The browser debug surface intentionally retains the names `window.ConfigManager` and `window.SoundManager` for existing tests. These are test-facing compatibility surfaces only: `ConfigManager` delegates directly to the settings store and `SoundManager` is a debug wrapper over `AudioAdapter`. Historical underscore cache getters remain only on that test/debug wrapper so existing inspection tests retain their value semantics; production `AudioAdapter` exposes only its public contract.
 
 ## Target Architecture
 
@@ -58,15 +59,16 @@ Completed:
 * migrated Effect/Trait/Encounter responsibilities to systems/rules;
 * retired `InputController` and moved keyboard intent translation presentation-side;
 * moved `SceneManager` to presentation lifecycle;
-* established a public audio adapter contract and removed production private-field leakage;
-* removed audio → configuration coupling and injected settings from composition;
+* established a public audio adapter contract and isolated private-cache inspection to the test/debug surface;
+* removed audio → configuration coupling and injected an explicit settings query contract from composition;
 * separated settings state from `localStorage` persistence;
 * separated static content loading from service initialization;
 * classified `DataManager` as static content acquisition and replaced it with `ContentLoader` in `src/data/`;
 * classified Sound + MIDI playback as browser audio infrastructure and moved them to `src/infrastructure/audio/`;
 * retired the runtime `ConfigManager` class while preserving only a debug/test compatibility object;
 * retired `src/managers/index.js` and the remaining root `src/managers/` source files;
-* removed the composition root's dependency on the managers barrel.
+* removed the composition root's dependency on the managers barrel;
+* strengthened ESLint boundaries around engine/browser infrastructure and presentation windows.
 
 ### Completion rule
 
