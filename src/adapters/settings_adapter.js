@@ -1,38 +1,37 @@
-import { ConfigManager } from "../managers/config.js";
+import { settingsStore } from "../infrastructure/settings.js";
 
 /**
- * Adapter for configuration settings.
+ * Presentation-facing settings contract.
+ * Mutable state and persistence are owned by infrastructure, not this adapter.
  */
 export const SettingsAdapter = {
-    get masterVolume() { return ConfigManager.masterVolume; },
-    get sfxVolume() { return ConfigManager.sfxVolume; },
-    get musicVolume() { return ConfigManager.musicVolume; },
+    load() { return settingsStore.load(); },
+
+    get masterVolume() { return settingsStore.get('masterVolume'); },
+    get sfxVolume() { return settingsStore.get('sfxVolume'); },
+    get musicVolume() { return settingsStore.get('musicVolume'); },
     get windowAnimations() {
         if (typeof window !== 'undefined' && window.location && window.location.search.includes("test=true")) {
             return false;
         }
-        return ConfigManager.windowAnimations;
+        return settingsStore.get('windowAnimations');
     },
-    get autoBattle() { return ConfigManager.autoBattle; },
+    get autoBattle() { return settingsStore.get('autoBattle'); },
 
-    setMasterVolume(val) { ConfigManager.masterVolume = val; ConfigManager.save(); },
-    setSfxVolume(val) { ConfigManager.sfxVolume = val; ConfigManager.save(); },
-    setMusicVolume(val) { ConfigManager.musicVolume = val; ConfigManager.save(); },
-    setWindowAnimations(val) { ConfigManager.windowAnimations = val; ConfigManager.save(); },
+    setMasterVolume(val) { return settingsStore.set('masterVolume', val); },
+    setSfxVolume(val) { return settingsStore.set('sfxVolume', val); },
+    setMusicVolume(val) { return settingsStore.set('musicVolume', val); },
+    setWindowAnimations(val) { return settingsStore.set('windowAnimations', !!val); },
 
     toggleAutoBattle() {
-        ConfigManager.autoBattle = !ConfigManager.autoBattle;
-        ConfigManager.save();
-        return ConfigManager.autoBattle;
+        return settingsStore.set('autoBattle', !settingsStore.get('autoBattle'));
     },
 
     setAutoBattle(val) {
-        ConfigManager.autoBattle = !!val;
-        ConfigManager.save();
-        return ConfigManager.autoBattle;
+        return settingsStore.set('autoBattle', !!val);
     },
 
     save() {
-        ConfigManager.save();
+        settingsStore.save();
     }
 };
