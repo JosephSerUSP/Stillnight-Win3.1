@@ -25,10 +25,11 @@ export class Window_PartySelect extends Window_Selectable {
         this.btnCancel = this.addButton("Cancel", () => this.onUserClose());
     }
 
-    setup(party, message, onSelect, context = null) {
+    setup(party, message, onSelect, context = null, targetFilter = null) {
         this.party = party;
         this.context = context;
         this.onSelect = onSelect;
+        this.targetFilter = targetFilter;
         this.msgEl.textContent = message;
         this.refresh();
     }
@@ -36,7 +37,9 @@ export class Window_PartySelect extends Window_Selectable {
     refresh() {
         this.gridEl.innerHTML = "";
         if (!this.party) return;
-        this.party.members.forEach((m) => {
+        this.party.members
+            .filter((member) => !this.targetFilter || this.targetFilter(member))
+            .forEach((m) => {
             const realIndex = this.party.slots.indexOf(m);
             let evolutionStatus = null;
             if (this.context) {
@@ -56,14 +59,10 @@ export class Window_PartySelect extends Window_Selectable {
             let slot;
             if (realIndex === 4) {
                 slot = createCommanderSlot(m, options);
-                // Commander slot is usually wide. In a grid of 2, it might fit in one cell but look squished,
-                // or we can make it span 2 columns if grid layout allows.
-                // But the grid is set to repeat(2, 1fr).
-                // Let's set it to span 2 columns to look nice.
                 slot.style.gridColumn = "span 2";
-            } else if (realIndex > 4) { // Reserve
+            } else if (realIndex > 4) {
                 slot = createReserveSlot(m, realIndex, options);
-            } else { // Active Party
+            } else {
                 slot = createPartySlot(m, realIndex, options);
             }
             this.gridEl.appendChild(slot);
