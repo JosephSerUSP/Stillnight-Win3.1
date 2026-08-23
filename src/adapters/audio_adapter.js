@@ -22,7 +22,7 @@ export const AudioAdapter = {
 /** @internal Browser test/debug compatibility; not production API. */
 export const AudioDebug = Object.create(AudioAdapter);
 Object.defineProperties(AudioDebug, {
-    _currentMusicKey: { get: () => SoundService._currentMusicKey },
-    _midiData: { get: () => SoundService._midiData },
-    _soundMap: { get: () => SoundService._soundMap }
+    _currentMusicKey: { get: () => SoundService.getCurrentMusicKey() },
+    _midiData: { get: () => SoundService.getDebugMidiData() },
+    _soundMap: { get: () => SoundService.getDebugSoundMap() }
 });
