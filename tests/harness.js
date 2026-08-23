@@ -34,7 +34,7 @@ global.fetch = async (url) => {
 };
 
 // Import Engine Modules
-import { DataManager } from '../src/managers/data.js';
+import { ContentLoader } from '../src/data/content_loader.js';
 import { BattleSystem } from '../src/engine/systems/battle.js';
 import { BattleAdapter } from '../src/adapters/battle_adapter.js';
 import { Registry } from '../src/engine/data/registry.js';
@@ -44,8 +44,8 @@ import { Game_Battler } from '../src/objects/battler.js';
 import { rng } from '../src/core/utils.js';
 
 // Setup Data
-const dataManager = new DataManager();
-global.window.dataManager = dataManager; // For BattleAdapter compatibility fallback
+const dataManager = new ContentLoader();
+global.window.dataManager = dataManager; // Test-facing alias retained by the browser debug surface too.
 
 const party = new Game_Party();
 const battleSystem = new BattleSystem();
