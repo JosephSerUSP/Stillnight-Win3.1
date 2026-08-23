@@ -1,9 +1,15 @@
 import { MidiParser, MidiPlayer } from "./midi.js";
-import { ConfigManager } from "./config.js";
+
+const DEFAULT_SETTINGS = Object.freeze({
+  masterVolume: 0.5,
+  musicVolume: 0.5,
+  sfxVolume: 0.5
+});
 
 /**
  * Browser audio service. Mutable playback/cache details remain private to this
  * infrastructure boundary; callers use the public command/query contract.
+ * Volume settings are supplied by the application composition root.
  */
 export class SoundManager {
   static _audioCtx = null;
@@ -13,6 +19,19 @@ export class SoundManager {
   static _musicPlayer = null;
   static _sfxCount = 0;
   static _currentMusicKey = null;
+  static _settings = DEFAULT_SETTINGS;
+
+  static configureSettings(settings) {
+      if (!settings) throw new TypeError("SoundManager requires a settings provider.");
+      this._settings = settings;
+      this.updateVolumes();
+  }
+
+  static _volume(kind) {
+      const master = Number(this._settings.masterVolume ?? DEFAULT_SETTINGS.masterVolume);
+      const channel = Number(this._settings[kind] ?? DEFAULT_SETTINGS[kind]);
+      return master * channel;
+  }
 
   static async init(soundMap) {
       this._soundMap = soundMap || {};
@@ -128,14 +147,13 @@ export class SoundManager {
   static getMusicDuration() { return this._musicPlayer ? this._musicPlayer.duration : 0; }
   static getMusicTime() { return this._musicPlayer ? this._musicPlayer.currentTime : 0; }
 
-  // Public read-only query contract. Adapters must not inspect private caches.
   static getCurrentMusicKey() { return this._currentMusicKey; }
   static getMusicKeys() { return Array.from(this._midiData.keys()).sort(); }
   static getSfxKeys() { return Object.keys(this._soundMap).sort(); }
 
   static updateVolumes() {
       if (!this._audioCtx) return;
-      const musicVol = ConfigManager.masterVolume * ConfigManager.musicVolume;
+      const musicVol = this._volume('musicVolume');
       if (this._sfxCount > 0) {
           if (this._musicPlayer) this._musicPlayer.setVolume(0);
       } else if (this._musicPlayer) {
@@ -144,7 +162,7 @@ export class SoundManager {
   }
 
   static async play(key, options = {}) {
-      const sfxVol = ConfigManager.masterVolume * ConfigManager.sfxVolume;
+      const sfxVol = this._volume('sfxVolume');
       if (sfxVol <= 0) return;
 
       this._initializeContext();
@@ -213,7 +231,7 @@ export class SoundManager {
   }
 
   static beep(frequency = 440, duration = 120) {
-      const sfxVol = ConfigManager.masterVolume * ConfigManager.sfxVolume;
+      const sfxVol = this._volume('sfxVolume');
       if (sfxVol <= 0) return;
       this._initializeContext();
       if (!this._audioCtx) return;
