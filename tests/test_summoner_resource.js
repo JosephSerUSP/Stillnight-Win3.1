@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import { Game_Party } from '../src/objects/party.js';
 import { Game_Battler } from '../src/objects/battler.js';
+import { Game_Action } from '../src/objects/action.js';
 import { SummonerResourceSystem } from '../src/engine/systems/summoner_resource.js';
 import { SessionSerializer } from '../src/engine/session/serializer.js';
 import { BattleSystem } from '../src/engine/systems/battle.js';
+import { BattleAdapter } from '../src/adapters/battle_adapter.js';
 import { Registry } from '../src/engine/data/registry.js';
 
 function makeBattler(id, { role = 'Attacker', maxHp = 100, maxMp = 0, mpd, isEnemy = false } = {}) {
@@ -79,10 +81,32 @@ events = party.onStep(false);
 assert.equal(party.summoner.mp, 5);
 assert.equal(events[0].kind, 'movement');
 
-// Direct Summoner commands use the shared contract.
-events = SummonerResourceSystem.consumeDirectAction(party, 'formation');
+// MP-restoring authored effects immediately clear exhaustion through Game_Action.
+party.summoner.mp = 0;
+SummonerResourceSystem.consumeCreatureAction(party, party.slots[0]);
+assert.equal(party.summoner.exhaustion, 1);
+assert.equal(party.slots[0].isStateAffected('weakened'), true);
+const tonic = { id: 'test_mp', name: 'Test MP', type: 'consumable', effects: [{ type: 'mp_heal', value: 10 }] };
+party.inventory.push(tonic);
+const restoreAction = new Game_Action(party);
+restoreAction.setItem(tonic, { items: [tonic], skills: {}, passives: {} });
+events = restoreAction.apply(party.summoner, { items: [tonic], skills: {}, passives: {} });
+assert.equal(party.summoner.mp, 10);
+assert.equal(party.summoner.exhaustion, 0);
+assert.equal(party.slots[0].isStateAffected('weakened'), false);
+assert.ok(events.some(event => event.type === 'exhaustion_recovered' && event.reason === 'mp_restored'));
+
+// Direct Summoner commands use the shared BattleAdapter -> BattleSystem contract.
+const directSystem = new BattleSystem();
+const directAdapter = new BattleAdapter(party, directSystem);
+directAdapter.setup([], 0, 0);
+party.summoner.mp = 5;
+events = directAdapter.consumeSummonerAction('formation');
 assert.equal(party.summoner.mp, 4);
 assert.equal(events[0].kind, 'summoner_formation');
+events = directAdapter.consumeSummonerAction('flee');
+assert.equal(party.summoner.mp, 3);
+assert.equal(events[0].kind, 'summoner_flee');
 
 // Battle creature actions drain that creature's mpd; enemy actions do not.
 const battleParty = makeParty();
