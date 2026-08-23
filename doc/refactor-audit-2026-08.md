@@ -27,7 +27,7 @@ The public `AudioAdapter` contract now fronts `src/infrastructure/audio/sound_se
 The old DataManager had ceased to be a runtime service after audio bootstrap was removed. Its remaining responsibility was static authored-content acquisition, so it is now `src/data/content_loader.js`.
 
 ### Composition and enforcement
-`src/main.js` no longer imports a managers barrel. It explicitly composes settings, audio, static content, presentation scene lifecycle, windows, and boot. ESLint bars engine imports from presentation/browser infrastructure and keeps presentation windows away from engine systems and the retired root managers path.
+`src/main.js` no longer imports a managers barrel. It explicitly composes settings, audio, static content, presentation scene lifecycle, windows, and boot. ESLint globally rejects imports targeting the retired root managers namespace, bars engine imports from presentation/browser infrastructure, and keeps presentation windows away from engine systems. `AGENTS.md` records the same ownership rule for future agents.
 
 ## Final ownership map
 
