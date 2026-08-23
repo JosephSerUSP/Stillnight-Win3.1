@@ -10,6 +10,8 @@ export const AudioAdapter = {
     pauseMusic() { SoundService.pauseMusic(); },
     resumeMusic() { SoundService.resumeMusic(); },
     isMusicPlaying() { return SoundService.isMusicPlaying(); },
+    getMusicDuration() { return SoundService.getMusicDuration(); },
+    getMusicTime() { return SoundService.getMusicTime(); },
     updateVolumes() { SoundService.updateVolumes(); },
     getCurrentMusicKey() { return SoundService.getCurrentMusicKey(); },
     beep(freq, duration) { SoundService.beep(freq, duration); },
