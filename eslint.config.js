@@ -5,10 +5,7 @@ export default [
     js.configs.recommended,
     {
         languageOptions: {
-            globals: {
-                ...globals.browser,
-                ...globals.node
-            },
+            globals: { ...globals.browser, ...globals.node },
             sourceType: "module",
             ecmaVersion: 2022
         },
@@ -23,8 +20,8 @@ export default [
         rules: {
             "no-restricted-imports": ["error", {
                 "patterns": [{
-                    "group": ["../presentation/**", "../../presentation/**"],
-                    "message": "Engine must remain presentation-agnostic."
+                    "group": ["../presentation/**", "../../presentation/**", "../infrastructure/**", "../../infrastructure/**"],
+                    "message": "Engine must remain presentation- and browser-infrastructure-agnostic."
                 }]
             }]
         }
@@ -34,8 +31,8 @@ export default [
         rules: {
             "no-restricted-imports": ["error", {
                 "patterns": [{
-                    "group": ["../../engine/systems/**", "../../managers/progression.js"],
-                    "message": "Presentation Windows cannot import from Engine Systems directly. Use Selectors."
+                    "group": ["../../engine/systems/**", "../../managers/**"],
+                    "message": "Presentation Windows cannot import Engine Systems or the retired root managers namespace directly. Use Selectors or Adapters."
                 }]
             }]
         }
