@@ -11,6 +11,7 @@ test.describe('Event System', () => {
         window.sceneManager.currentScene() &&
         window.sceneManager.currentScene().constructor.name === "Scene_Map"
     );
+    await page.evaluate(() => { window.ConfigManager.windowAnimations = false; });
   });
 
   test('Map generates events properly', async ({ page }) => {
@@ -93,10 +94,14 @@ test.describe('Event System', () => {
         map.playerY = 0;
         floor.tiles[0][1] = '.';
         floor.visited[0][1] = true;
+        floor.events = floor.events.filter(e => !(e.x === 1 && e.y === 0));
 
         floor.events.push(new window.Game_Event(1, 0, {
-            type: 'TRAP_TRIGGER', symbol: 'T', hidden: true, trapValue: 100,
-            actions: [{ type: 'TRAP_TRIGGER', damage: 1 }]
+            type: 'trap',
+            symbol: 'T',
+            hidden: true,
+            trapValue: 100,
+            scripts: { onEnter: [] }
         }));
         scene.updateGrid();
     });
@@ -114,8 +119,8 @@ test.describe('Event System', () => {
     expect(tileVisible).toContain('T');
   });
 
-  test('Trap triggering logic', async ({ page }) => {
-      await page.evaluate(() => {
+  test('Hidden trap executes its onEnter script exactly once', async ({ page }) => {
+      const hpBefore = await page.evaluate(() => {
           const scene = window.sceneManager.currentScene();
           const map = scene.map;
           const floor = map.floors[map.floorIndex];
@@ -126,59 +131,93 @@ test.describe('Event System', () => {
           floor.events = floor.events.filter(e => !(e.x === 1 && e.y === 0));
 
           floor.events.push(new window.Game_Event(1, 0, {
-              type: 'TRAP_TRIGGER', symbol: 'T', hidden: true, trapValue: 100,
-              actions: [{ type: 'TRAP_TRIGGER', damage: 10, message: "Testing Trap" }]
+              type: 'trap',
+              symbol: 'T',
+              hidden: true,
+              trapValue: 100,
+              scripts: {
+                  onEnter: [{ type: 'DAMAGE_PARTY', amount: 1, message: 'Testing Trap' }]
+              }
           }));
           scene.updateGrid();
+          return scene.party.members[0].hp;
       });
 
       await page.locator('.tile[data-x="1"][data-y="0"]').click();
+      await page.waitForFunction(before =>
+          window.sceneManager.currentScene().party.members[0].hp < before,
+          hpBefore
+      );
 
-      const eventTitle = await page.locator('#event-window .window-header span').textContent();
-      expect(eventTitle).toContain('Trap!');
-      const eventDesc = await page.locator('#event-window .event-description').textContent();
-      expect(eventDesc).toContain('Testing Trap');
-
-      await page.locator('#event-window button', { hasText: 'Ouch...' }).click();
-      await page.waitForTimeout(1500);
-      const eventLog = await page.locator('#event-window .event-description').textContent();
-      expect(eventLog).toContain('The party takes 10 damage');
-
-      await page.locator('#event-window button', { hasText: 'Close' }).click();
-      const overlayClass = await page.locator('#event-window').evaluate(el => el.parentElement.className);
-      expect(overlayClass).not.toContain('active');
-  });
-
-  test('Treasure event logic', async ({ page }) => {
-      await page.evaluate(() => {
+      const result = await page.evaluate(() => {
           const scene = window.sceneManager.currentScene();
           const floor = scene.map.floors[scene.map.floorIndex];
-          if (floor) {
-              floor.treasures = ['hp_tonic'];
-              scene.interpreter.openTreasureEvent();
-          }
+          const trap = floor.events.find(e => e.x === 1 && e.y === 0);
+          return {
+              hp: scene.party.members[0].hp,
+              hidden: trap ? trap.hidden : null,
+              log: document.getElementById('log-content').textContent
+          };
       });
 
-      const eventTitle = await page.locator('#event-window .window-header span').textContent();
-      expect(eventTitle).toContain('Treasure Found!');
-      const label = page.locator('#event-window .interactive-label');
-      await expect(label).toBeVisible();
-      await expect(label).toHaveCSS('cursor', 'help');
+      expect(result.hp).toBe(hpBefore - 1);
+      expect(result.hidden).toBe(false);
+      expect(result.log).toContain('Testing Trap');
+  });
+
+  test('Treasure event gives the scripted item through the interpreter', async ({ page }) => {
+      const before = await page.evaluate(() => {
+          const scene = window.sceneManager.currentScene();
+          const map = scene.map;
+          const floor = map.floors[map.floorIndex];
+          map.playerX = 0;
+          map.playerY = 0;
+          floor.visited[0][1] = true;
+          floor.tiles[0][1] = '.';
+          floor.events = floor.events.filter(e => !(e.x === 1 && e.y === 0));
+
+          floor.events.push(new window.Game_Event(1, 0, {
+              type: 'treasure',
+              symbol: '$',
+              scripts: {
+                  onEnter: [{ type: 'GIVE_ITEM', itemId: 'hp_tonic' }]
+              }
+          }));
+          scene.updateGrid();
+          return scene.party.inventory.filter(i => i.id === 'hp_tonic').length;
+      });
+
+      await page.locator('.tile[data-x="1"][data-y="0"]').click();
+      await page.waitForFunction(expected =>
+          window.sceneManager.currentScene().party.inventory.filter(i => i.id === 'hp_tonic').length === expected,
+          before + 1
+      );
+
+      const result = await page.evaluate(() => ({
+          count: window.sceneManager.currentScene().party.inventory.filter(i => i.id === 'hp_tonic').length,
+          log: document.getElementById('log-content').textContent
+      }));
+      expect(result.count).toBe(before + 1);
+      expect(result.log).toContain('Obtained:');
   });
 
   test('Shrine terminal style', async ({ page }) => {
       await page.evaluate(() => {
-           window.sceneManager.currentScene().eventWindow.show({
-                title: "Shrine Test",
-                description: "Terminal log start.",
-                style: 'terminal',
-                choices: [{ label: "Test", onClick: () => {} }]
-           });
+          const scene = window.sceneManager.currentScene();
+          const eventWindow = scene.eventWindow;
+          eventWindow.show({
+              title: 'Shrine Test',
+              description: 'Terminal log start.',
+              style: 'terminal',
+              choices: [{ label: 'Test', onClick: () => {} }]
+          });
+          scene.windowManager.push(eventWindow);
       });
 
-      const hasClass = await page.locator('#event-window .event-description').getAttribute('class');
-      expect(hasClass).toContain('terminal-style');
-      const desc = await page.locator('#event-window .event-description').textContent();
-      expect(desc).toContain('Terminal log start.');
+      const eventWindow = page.locator('#event-window');
+      await expect(eventWindow).toBeVisible();
+      const desc = eventWindow.locator('.event-description');
+      await expect(desc).toHaveClass(/terminal-style/);
+      await expect(desc).toContainText('Terminal log start.');
   });
 });
