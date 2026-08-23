@@ -1,116 +1,28 @@
-import { SoundManager } from "./sound.js";
-
 /**
- * @class DataManager
- * @description Central manager for loading and accessing game data.
- * Loads static JSON data and dynamic JS data modules.
+ * Loads and exposes static game content. Runtime services are initialized by
+ * the application/boot composition layer after content acquisition completes.
  */
 export class DataManager {
-  /**
-   * Creates a new DataManager instance.
-   */
   constructor() {
-    /**
-     * The actor data loaded from actors.json.
-     * @type {Object|null}
-     */
     this.actors = null;
-
-    /**
-     * The element data loaded from elements.json.
-     * @type {Object|null}
-     */
     this.elements = null;
-
-    /**
-     * The event data loaded from events.json.
-     * @type {Array|null}
-     */
     this.events = null;
-
-    /**
-     * The map data loaded from maps.json.
-     * @type {Array|null}
-     */
     this.maps = null;
-
-    /**
-     * The item data loaded from items.json.
-     * @type {Array|null}
-     */
     this.items = null;
-
-    /**
-     * The quest data loaded from quests.json.
-     * @type {Object|null}
-     */
     this.quests = null;
-
-    /**
-     * The shop data loaded from shops.json.
-     * @type {Object|null}
-     */
     this.shops = null;
-
-    /**
-     * The terms/strings data loaded from terms.json.
-     * @type {Object|null}
-     */
     this.terms = null;
-
-    /**
-     * The sound mapping data loaded from sounds.json.
-     * @type {Object|null}
-     */
     this.sounds = null;
-
-    /**
-     * The skill data loaded from skills.js.
-     * @type {Object|null}
-     */
     this.skills = null;
-
-    /**
-     * The passive data loaded from passives.js.
-     * @type {Object|null}
-     */
     this.passives = null;
-
-    /**
-     * The state data loaded from states.js.
-     * @type {Object|null}
-     */
     this.states = null;
-
-    /**
-     * The starting party data loaded from party.js.
-     * @type {Object|null}
-     */
     this.startingParty = null;
-
-    /**
-     * The animation data loaded from animations.js.
-     * @type {Object|null}
-     */
     this.animations = null;
-
-    /**
-     * The theme data loaded from themes.json.
-     * @type {Array|null}
-     */
     this.themes = null;
-
-    /**
-     * The graph data loaded from data/graphs/.
-     * @type {Object|null}
-     */
     this.graphs = {};
+    this.loaded = false;
   }
 
-  /**
-   * Loads all game data from JSON and JS files.
-   * @async
-   */
   async loadData() {
     const dataSources = {
       actors: "data/actors.json",
@@ -147,7 +59,6 @@ export class DataManager {
       }
     }
 
-    // Load Animations
     try {
         const { animations } = await import("../../data/animations.js");
         this.animations = animations;
@@ -155,24 +66,15 @@ export class DataManager {
         console.error("Failed to load animations.js:", error);
     }
 
-    // Load Graphs
     try {
         const response = await fetch("data/graphs/index.json");
         const graphList = await response.json();
         for (const graphId of graphList) {
              const gRes = await fetch(`data/graphs/${graphId}.json`);
-             const gData = await gRes.json();
-             this.graphs[graphId] = gData;
+             this.graphs[graphId] = await gRes.json();
         }
     } catch (error) {
-        // Warning only, graphs might be empty/missing in some setups
         console.warn("Failed to load graphs:", error);
-    }
-
-    // Initialize SoundManager with loaded sound data
-    // We await this to ensure MIDI data is ready before the game starts
-    if (this.sounds) {
-        await SoundManager.init(this.sounds);
     }
 
     this.loaded = true;
