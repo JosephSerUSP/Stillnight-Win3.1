@@ -12,7 +12,8 @@ export class Scene_Base {
     this.windowManager = windowManager;
   }
 
-  start() {}
-  update() {}
-  stop() {}
+  // Lifecycle hooks intentionally default to no-ops.
+  start() { /* subclasses may override */ }
+  update() { /* subclasses may override */ }
+  stop() { /* subclasses may override */ }
 }
