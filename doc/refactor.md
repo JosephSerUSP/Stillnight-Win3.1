@@ -1,6 +1,8 @@
-# Refactor Plan
+# Refactor Status & Migration History
 
-This document outlines the architectural refactor to create a single source of truth for runtime state and enforce hard layer boundaries.
+This document records the architectural refactor that established a single source of truth for runtime state and hard layer boundaries. The migration is complete through Phase 7.
+
+For **current structural implementation guidance**, use `doc/ARCHITECTURE.md`. This file remains authoritative for refactor completion status, ownership-audit history, and the guarantees established by the migration.
 
 ## Execution audit (Current State)
 
@@ -76,4 +78,4 @@ Satisfied at the source-ownership level: no source-layer compatibility manager r
 
 ### Executable merge gate
 
-PR CI now validates the ownership refactor rather than relying on static audit alone. The final merge head must pass source-boundary linting, the deterministic golden-log harness, the battle-selector smoke test, and the full Playwright browser regression suite. Stabilization of that suite also exposed a real duplicate-dispatch bug for hidden stepped events; the exploration system now reveals hidden event state while emitting a single gameplay `EVENT` dispatch. A green CI run on the final head is required before merge.
+PR CI validates the ownership refactor rather than relying on static audit alone. The merge head passed source-boundary linting, the deterministic golden-log harness, the battle-selector smoke test, and the full Playwright browser regression suite. Stabilization of that suite also exposed and fixed a real duplicate-dispatch bug for hidden stepped events; the exploration system now reveals hidden event state while emitting a single gameplay `EVENT` dispatch.
