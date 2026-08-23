@@ -19,10 +19,10 @@ export class ContentLoader {
       const { passives } = await import("../../data/passives.js"); this.passives = passives;
       const { states } = await import("../../data/states.js"); this.states = states;
       const { startingParty } = await import("../../data/party.js"); this.startingParty = startingParty;
-    } catch (error) { console.error("Failed to load skills.js, passives.js, states.js, or party.js:", error); }
+    } catch (error) { console.error("Failed to load skills.js, passives.js, or states.js:", error); }
 
     for (const [key, src] of Object.entries(dataSources)) {
-      try { const response = await fetch(src); if (!response.ok) throw new Error(`HTTP error ${response.status}`); this[key] = await response.json(); }
+      try { const response = await fetch(src); this[key] = await response.json(); }
       catch (error) { console.error(`Failed to load ${src}:`, error); }
     }
 
@@ -31,11 +31,9 @@ export class ContentLoader {
 
     try {
       const response = await fetch("data/graphs/index.json");
-      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
       const graphList = await response.json();
       for (const graphId of graphList) {
         const graphResponse = await fetch(`data/graphs/${graphId}.json`);
-        if (!graphResponse.ok) throw new Error(`HTTP error ${graphResponse.status}`);
         this.graphs[graphId] = await graphResponse.json();
       }
     } catch (error) { console.warn("Failed to load graphs:", error); }
