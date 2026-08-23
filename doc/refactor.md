@@ -23,7 +23,7 @@ See `doc/refactor-audit-2026-08.md` for the audit that reopened and drove this c
 
 The architectural refactor described by this plan is complete at the ownership level. Runtime simulation truth is in the engine/session model; browser infrastructure is explicit; presentation lifecycle is presentation-owned; static content acquisition is data-owned; and the historical catch-all root `src/managers/` namespace has been removed rather than preserved as a second architectural vocabulary.
 
-The browser debug surface intentionally retains the names `window.ConfigManager` and `window.SoundManager` for existing tests. These are test-facing compatibility surfaces only: `ConfigManager` delegates directly to the settings store and `SoundManager` is a debug wrapper over `AudioAdapter`. Historical underscore cache getters remain only on that test/debug wrapper so existing inspection tests retain their value semantics; production `AudioAdapter` exposes only its public contract.
+The browser debug surface intentionally retains the names `window.ConfigManager` and `window.SoundManager` for existing tests. These are test-facing compatibility surfaces only. `ConfigManager` delegates directly to the settings store. `window.SoundManager` is `AudioDebug`, a wrapper over `AudioAdapter`; its historical underscore getters call explicit SoundService debug queries and reference the single infrastructure-owned caches rather than owning copies. Production `AudioAdapter` exposes only its public contract.
 
 ## Target Architecture
 
