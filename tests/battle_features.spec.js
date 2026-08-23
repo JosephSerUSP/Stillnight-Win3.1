@@ -34,6 +34,7 @@ test('Battle UI Features', async ({ page }) => {
   await page.waitForTimeout(500);
   await battleWin.locator('button:has-text("Flee")').click();
 
-  await page.click('button:has-text("Settings")');
-  await expect(page.locator('text="Auto Battle:"')).toBeVisible();
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.click('#menu-item-settings-general');
+  await expect(page.locator('text="Auto Battle"')).toBeVisible();
 });
