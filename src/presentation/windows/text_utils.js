@@ -19,10 +19,10 @@ export function generateTraitDescription(trait) {
  * Generates a human-readable description for an item effect.
  * @param {string} key - The effect key (e.g., 'hp', 'recruit_egg').
  * @param {any} value - The effect value.
- * @param {import("../managers/index.js").DataManager} [dataManager] - Optional data manager for lookups.
+ * @param {import("../../data/content_loader.js").ContentLoader} [_contentLoader] - Optional content lookup source.
  * @returns {string} The description.
  */
-export function generateEffectDescription(key, value, _dataManager) {
+export function generateEffectDescription(key, value, _contentLoader) {
     switch (key) {
         case 'hp': return `Restores ${value} HP`;
         case 'maxHp': return `Max HP +${value}`;
