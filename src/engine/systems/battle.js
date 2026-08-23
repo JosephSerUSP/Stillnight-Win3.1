@@ -287,16 +287,12 @@ export class BattleSystem {
                context.boost = (context.boost || 1) * elementMult;
           }
 
-          let effectKey = effect.type;
-          let effectValue = effect.formula || effect.value;
-
-          if (effect.type === 'add_status') {
-               effectValue = { id: effect.status, chance: effect.chance };
-          }
-
-          const result = EffectSystem.apply(effectKey, effectValue, battler, target, {
+          const effectValue = EffectSystem.valueFromAuthoredEffect(effect);
+          const result = EffectSystem.apply(effect.type, effectValue, battler, target, {
               ...context,
-              progressionSystem: ProgressionSystem
+              progressionSystem: ProgressionSystem,
+              skills: Registry.get('skills'),
+              passives: Registry.get('passives')
           });
 
           if (result) {
@@ -328,11 +324,16 @@ export class BattleSystem {
 
       if (item.effects) {
           item.effects.forEach(effect => {
-               const result = EffectSystem.apply(effect.type, effect.formula || effect.value, item, target, {
-                   progressionSystem: ProgressionSystem
+               const effectValue = EffectSystem.valueFromAuthoredEffect(effect);
+               const result = EffectSystem.apply(effect.type, effectValue, item, target, {
+                   progressionSystem: ProgressionSystem,
+                   skills: Registry.get('skills'),
+                   passives: Registry.get('passives')
                });
                if (result) {
                     if (result.type === 'heal') result.msg = `  ${target.name} heals ${result.value} HP.`;
+                    else if (result.type === 'mp_heal') result.msg = `  ${target.name} recovers ${result.value} MP.`;
+                    else if (result.type === 'status_remove') result.msg = `  ${target.name} is no longer ${result.status}.`;
                     events.push(result);
                }
           });
