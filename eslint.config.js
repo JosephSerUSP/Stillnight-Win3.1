@@ -1,6 +1,8 @@
 import globals from "globals";
 import js from "@eslint/js";
 
+const retiredManagersMessage = "The root src/managers namespace is retired. Import the owning data, infrastructure, presentation, engine, or adapter module instead.";
+
 export default [
     js.configs.recommended,
     {
@@ -11,15 +13,41 @@ export default [
         },
         rules: {
             "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_", "caughtErrorsIgnorePattern": "^_" }],
-            "no-undef": "error",
-            "no-restricted-imports": ["error", {
-                "patterns": [{
-                    "group": ["./managers/**", "../managers/**", "../../managers/**", "../../../managers/**"],
-                    "message": "The root src/managers namespace is retired. Import the owning data, infrastructure, presentation, engine, or adapter module instead."
-                }]
-            }]
+            "no-undef": "error"
         },
         ignores: ["tests/**"]
+    },
+    {
+        files: ["src/*.js"],
+        rules: {
+            "no-restricted-imports": ["error", {
+                "patterns": [{ "group": ["./managers/**"], "message": retiredManagersMessage }]
+            }]
+        }
+    },
+    {
+        files: ["src/adapters/**", "src/core/**", "src/data/**", "src/generators/**", "src/infrastructure/**", "src/objects/**"],
+        rules: {
+            "no-restricted-imports": ["error", {
+                "patterns": [{ "group": ["../managers/**", "../../managers/**"], "message": retiredManagersMessage }]
+            }]
+        }
+    },
+    {
+        files: ["src/presentation/*.js"],
+        rules: {
+            "no-restricted-imports": ["error", {
+                "patterns": [{ "group": ["../managers/**"], "message": retiredManagersMessage }]
+            }]
+        }
+    },
+    {
+        files: ["src/presentation/*/**"],
+        rules: {
+            "no-restricted-imports": ["error", {
+                "patterns": [{ "group": ["../../managers/**"], "message": retiredManagersMessage }]
+            }]
+        }
     },
     {
         files: ["src/engine/**"],
