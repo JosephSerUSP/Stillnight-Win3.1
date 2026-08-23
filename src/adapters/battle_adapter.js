@@ -73,6 +73,13 @@ export class BattleAdapter {
     return events;
   }
 
+  /** Resource cost for direct Summoner commands outside the creature queue. */
+  consumeSummonerAction(kind, explicitCost = null) {
+    const events = this.system.consumeSummonerAction(this.state, kind, explicitCost);
+    this._sync();
+    return events;
+  }
+
   _sync() {
     this.round = this.state.round;
     this.turnQueue = this.state.turnQueue;

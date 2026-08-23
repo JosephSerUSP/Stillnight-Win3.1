@@ -39,6 +39,7 @@ export class Game_Battler extends Game_Base {
     this.evolutions = actorData.evolutions || [];
     this.gold = actorData.gold || 0;
     this.isEnemy = isEnemy;
+    this.exhaustion = Math.max(0, Number(actorData.exhaustion) || 0);
 
     /**
      * Active states on the battler.
@@ -189,6 +190,13 @@ export class Game_Battler extends Game_Base {
       // Max Passives, default 2
       const base = 2;
       return this.getParam('mxp', base);
+  }
+
+  /** MP drained from the Summoner whenever this creature performs an action. */
+  get mpd() {
+      const authored = this.actorData?.mpd;
+      const base = this.role === 'Summoner' ? 0 : (Number.isFinite(authored) ? authored : 1);
+      return this.getParam('mpd', base);
   }
 
   get asp() {

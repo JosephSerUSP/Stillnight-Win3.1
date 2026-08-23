@@ -1,6 +1,7 @@
 import { BattleState } from "../session/battle_state.js";
 import { EffectSystem } from "../rules/effects.js";
 import { ProgressionSystem } from "./progression.js";
+import { SummonerResourceSystem } from "./summoner_resource.js";
 import { Registry } from "../data/registry.js";
 import { randInt, elementToAscii } from "../../core/utils.js";
 
@@ -249,12 +250,35 @@ export class BattleSystem {
            }
       }
 
+      let executed = false;
       if (action.skillId) {
            this._executeSkill(state, action, events);
+           executed = true;
       } else if (action.itemId) {
            this._executeItem(state, action, events);
+           executed = true;
       }
 
+      if (executed) {
+          const party = state.participants.party;
+          if (subject.role === 'Summoner') {
+              events.push(...SummonerResourceSystem.consumeDirectAction(party, action.itemId ? 'item' : 'action'));
+          } else {
+              events.push(...SummonerResourceSystem.consumeCreatureAction(party, subject));
+          }
+      }
+
+      this._checkBattleEnd(state, events);
+      return events;
+  }
+
+  /** Shared direct-Summoner resource entry point for Formation/Flee/Spell. */
+  consumeSummonerAction(state, kind, explicitCost = null) {
+      const events = SummonerResourceSystem.consumeDirectAction(
+          state.participants.party,
+          kind,
+          explicitCost
+      );
       this._checkBattleEnd(state, events);
       return events;
   }

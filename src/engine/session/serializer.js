@@ -94,6 +94,7 @@ export class SessionSerializer {
             xp: battler.xp,
             hp: battler.hp,
             mp: battler.mp,
+            exhaustion: battler.exhaustion || 0,
             _baseMaxHp: battler._baseMaxHp,
             _baseMaxMp: battler._baseMaxMp,
             _baseElements: battler._baseElements,
@@ -121,6 +122,7 @@ export class SessionSerializer {
         battler.xp = data.xp;
         battler.hp = data.hp;
         battler.mp = data.mp;
+        battler.exhaustion = Math.max(0, Number(data.exhaustion) || 0);
         battler._baseMaxHp = data._baseMaxHp;
         battler._baseMaxMp = data._baseMaxMp;
         battler._baseElements = data._baseElements;

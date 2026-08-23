@@ -165,7 +165,7 @@ export class Scene_Battle extends Scene_Base {
               this.confirmWindow.messageEl.textContent = "Swapping members counts as your turn action.";
               this.windowManager.push(this.confirmWindow);
 
-              this.confirmWindow.btnOk.onclick = () => {
+              this.confirmWindow.btnOk.onclick = async () => {
                   this.windowManager.close(this.confirmWindow);
 
                   if (this.party.reorderMembers(idx1, idx2)) {
@@ -173,6 +173,10 @@ export class Scene_Battle extends Scene_Base {
                       this.actionTakenThisTurn = true;
                       this.disableActionButtons();
                       this.battleWindow.appendLog("Formation changed.");
+                      const resourceEvents = this.battleManager.consumeSummonerAction('formation');
+                      await this.animateEvents(resourceEvents);
+                      this.sceneManager.previous().checkPermadeath();
+                      this.sceneManager.previous().updateParty();
                       this.renderBattleAscii();
                       AudioAdapter.play('UI_SELECT');
                   }
@@ -552,7 +556,7 @@ export class Scene_Battle extends Scene_Base {
                  targetNewHp = event.hpAfterTarget;
             }
 
-            if (event.type === 'damage' && event.target) {
+            if ((event.type === 'damage' || event.type === 'exhaustion_damage') && event.target) {
                 this.battleWindow.animateBattler(event.target, 'flash');
 
                 if (event.isCritical) {
@@ -646,7 +650,15 @@ export class Scene_Battle extends Scene_Base {
    * Attempts to flee from the battle based on party stats.
    * @method attemptFlee
    */
-  attemptFlee() {
+  async attemptFlee() {
+    if (this.battleBusy) return;
+
+    const resourceEvents = this.battleManager.consumeSummonerAction('flee');
+    await this.animateEvents(resourceEvents);
+    this.sceneManager.previous().checkPermadeath();
+    this.sceneManager.previous().updateParty();
+    this.renderBattleAscii();
+
     if (random() < this.sceneManager.previous().getFleeChance()) {
       this.sceneManager.previous().logMessage("[Battle] You successfully fled!");
       AudioAdapter.play('ESCAPE');

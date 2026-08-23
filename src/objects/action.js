@@ -1,6 +1,7 @@
 import { randInt, elementToAscii, probabilisticRound, random } from "../core/utils.js";
 import { EffectSystem } from "../engine/rules/effects.js";
 import { ProgressionSystem } from "../engine/systems/progression.js";
+import { SummonerResourceSystem } from "../engine/systems/summoner_resource.js";
 
 /**
  * @class Game_Action
@@ -227,6 +228,10 @@ export class Game_Action {
                     events.push(result);
                 }
             });
+        }
+
+        if (subject?.summoner === target && events.some(event => event.type === 'mp_heal' && event.value > 0)) {
+            events.push(...SummonerResourceSystem.recoverIfPossible(subject, 'mp_restored'));
         }
     }
 

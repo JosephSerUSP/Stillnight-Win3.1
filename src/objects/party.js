@@ -1,4 +1,5 @@
 import { Game_Battler } from "./battler.js";
+import { SummonerResourceSystem } from "../engine/systems/summoner_resource.js";
 
 /**
  * @class Game_Party
@@ -85,7 +86,7 @@ export class Game_Party {
 
   /**
    * Checks for party members with 0 HP and handles permadeath or rebirth traits.
-   * @returns {Array<Object>} List of events (e.g., { type: 'DEATH', member: ... }, { type: 'REBIRTH', member: ... })
+   * @returns {Array<Object>} List of events (e.g. { type: 'DEATH', member: ... }, { type: 'REBIRTH', member: ... })
    */
   checkDeaths() {
       const events = [];
@@ -183,54 +184,13 @@ export class Game_Party {
   }
 
   /**
-   * Handles map steps. Drains MP and applies Weakened effects.
-   * Directly modifies HP/MP (bypassing EffectSystem) for map mechanics.
-   * @param {boolean} [isSafe=false] - If true, prevents MP drain and removes weakened state.
-   * @returns {Array} List of events (e.g. damage logs).
+   * Compatibility entry point used by Scene_Map. Resource semantics live in
+   * SummonerResourceSystem; Game_Party no longer calculates MP/exhaustion.
+   * @param {boolean} [isSafe=false]
+   * @returns {Array<Object>}
    */
   onStep(isSafe = false) {
-      const events = [];
-
-      // Filter out summoner for cost calculation if desired, OR keep as is.
-      // Current activeMembers now includes Summoner.
-      // Requirement: "Summoner should not participate in battle like a regular creature... but gain stats..."
-      // Map movement: Logic was "mpCostPerStep = activeCount".
-      // If Summoner is in activeMembers, count is +1.
-      // This implies the Summoner's movement also costs MP. This is consistent.
-
-      const activeCount = this.activeMembers.length;
-      if (activeCount === 0 || !this.summoner) return events;
-
-      // Drain MP (only if not safe)
-      if (!isSafe) {
-          const mpCostPerStep = activeCount; // 1 MP per active creature (including Summoner)
-          this.summoner.mp = Math.max(0, this.summoner.mp - mpCostPerStep);
-      }
-
-      // Check Weakened State
-      if (this.summoner.mp === 0 && !isSafe) {
-          // Apply Weakened State if not already applied
-          this.activeMembers.forEach(m => {
-              if (!m.isStateAffected('weakened')) {
-                  m.addState('weakened');
-                  events.push({ type: 'text', msg: `${m.name} is weakened!` });
-              }
-              // HP Drain
-              const damage = Math.max(1, Math.floor(m.maxHp * 0.05));
-              m.hp = Math.max(0, m.hp - damage);
-              // events.push({ type: 'damage', target: m, value: damage }); // Too spammy for map?
-          });
-      } else {
-          // Remove Weakened State if applied (either recovered MP or entered Safe Zone)
-          this.activeMembers.forEach(m => {
-              if (m.isStateAffected('weakened')) {
-                  m.removeState('weakened');
-                  events.push({ type: 'text', msg: `${m.name} recovered strength.` });
-              }
-          });
-      }
-
-      return events;
+      return SummonerResourceSystem.consumeMovement(this, { safe: isSafe });
   }
 
   /**

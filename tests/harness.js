@@ -72,6 +72,7 @@ async function runBattleHarness(seed) {
         m.hp = m.maxHp;
         m.mp = m.maxMp;
         m.states = [];
+        m.exhaustion = 0;
     });
 
     // Create Enemies (Ooze x2)
@@ -133,9 +134,19 @@ async function runBattleHarness(seed) {
     return log;
 }
 
+const RESOURCE_EVENT_TYPES = new Set([
+    'summoner_mp_loss',
+    'exhaustion_start',
+    'exhaustion_increase',
+    'exhaustion_recovered',
+    'exhaustion_damage',
+]);
+
 function simplifyEvents(events) {
     if (!events) return [];
-    return events.map(e => {
+    // Keep the historical golden focused on combat resolution. The resource
+    // stream is covered independently by tests/test_summoner_resource.js.
+    return events.filter(e => !RESOURCE_EVENT_TYPES.has(e.type)).map(e => {
         // Clone and strip circular refs
         const { target, source, battler, ...rest } = e;
         const out = { ...rest };
