@@ -4,7 +4,7 @@ import { Registry } from "../engine/data/registry.js";
 
 /**
  * Adapter to generate Game_Battler instances from encounter data.
- * Bridges the gap between pure Engine data and Legacy Game Objects.
+ * Bridges engine encounter data to runtime battler objects.
  */
 export class EncounterAdapter {
     /**
@@ -12,12 +12,12 @@ export class EncounterAdapter {
      * @param {Object} mapFloor - The floor data object.
      * @param {Object|string} encounterData - Specific encounter ID or config.
      * @param {number} depth - Dungeon depth.
-     * @param {import("../managers/data.js").DataManager} _dataManager - Legacy DataManager (fallback).
+     * @param {import("../data/content_loader.js").ContentLoader} _dataManager - Optional static-content lookup fallback.
      * @returns {Array<Game_Battler>} List of enemy instances.
      */
     static generateEnemies(mapFloor, encounterData, depth, _dataManager) {
         const enemies = [];
-        // Use Registry if available, else fallback to dataManager or empty
+        // Use Registry if available, else fallback to the content lookup source or empty.
         const actors = Registry.get('actors') || (_dataManager ? _dataManager.actors : []);
 
         if (!actors || actors.length === 0) return [];
