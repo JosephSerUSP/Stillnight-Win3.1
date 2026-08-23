@@ -28,8 +28,9 @@ export class MidiParser {
           if (metaType === 0x51) { event.type = "tempo"; event.microsecondsPerBeat = (this.data[this.pos] << 16) | (this.data[this.pos + 1] << 8) | this.data[this.pos + 2]; }
           else if (metaType === 0x2f) event.type = "end";
           this.pos += len;
-        } else if (eventType === 0xf0 || eventType === 0xf7) { const len = this.readVarInt(); this.pos += len; }
-        else {
+        } else if (eventType === 0xf0 || eventType === 0xf7) {
+          const len = this.readVarInt(); this.pos += len;
+        } else {
           const command = eventType & 0xf0; event.channel = eventType & 0x0f;
           if (command === 0x90) { event.note = this.readInt8(); event.velocity = this.readInt8(); event.type = event.velocity === 0 ? "noteOff" : "noteOn"; }
           else if (command === 0x80) { event.note = this.readInt8(); event.velocity = this.readInt8(); event.type = "noteOff"; }
@@ -47,8 +48,19 @@ export class MidiParser {
 /** Plays parsed MIDI data using Web Audio API. */
 export class MidiPlayer {
   constructor(audioCtx) {
-    this.audioCtx = audioCtx; this.gainNode = audioCtx.createGain(); this.gainNode.connect(audioCtx.destination); this.gainNode.gain.value = 0.3;
-    this.isPlaying = false; this.events = []; this.eventIndex = 0; this.startTime = 0; this.activeOscillators = []; this.schedulerTimer = null; this.lookahead = 0.1; this.scheduleAheadTime = 0.2; this.pausedTime = 0;
+    this.audioCtx = audioCtx;
+    this.gainNode = audioCtx.createGain();
+    this.gainNode.connect(audioCtx.destination);
+    this.gainNode.gain.value = 0.3;
+    this.isPlaying = false;
+    this.events = [];
+    this.eventIndex = 0;
+    this.startTime = 0;
+    this.activeOscillators = [];
+    this.schedulerTimer = null;
+    this.lookahead = 0.1;
+    this.scheduleAheadTime = 0.2;
+    this.pausedTime = 0;
   }
   get duration() { return this.events?.length ? this.events[this.events.length - 1].time : 0; }
   get currentTime() { if (!this.isPlaying && this.pausedTime > 0) return this.pausedTime; if (!this.isPlaying) return 0; return Math.max(0, this.audioCtx.currentTime - this.startTime); }
