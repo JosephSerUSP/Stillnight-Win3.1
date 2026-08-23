@@ -13,10 +13,10 @@ async function main() {
 
   const gameContainer = document.getElementById("game-container");
   const sceneManager = new SceneManager(gameContainer);
-  const dataManager = new ContentLoader();
+  const contentLoader = new ContentLoader();
   const windowManager = new WindowManager();
 
-  sceneManager.push(new Scene_Boot(dataManager, sceneManager, windowManager));
+  sceneManager.push(new Scene_Boot(contentLoader, sceneManager, windowManager));
 
   document.addEventListener("keydown", (e) => {
     if (windowManager.handleInput(e)) { e.preventDefault(); e.stopPropagation(); return; }
@@ -24,7 +24,8 @@ async function main() {
     if (currentScene && typeof currentScene.onKeyDown === 'function') currentScene.onKeyDown(e);
   });
 
-  exposeGlobals({ sceneManager, windowManager, dataManager });
+  // Keep dataManager as a test-facing alias while source ownership uses ContentLoader.
+  exposeGlobals({ sceneManager, windowManager, dataManager: contentLoader });
 }
 
 window.addEventListener("DOMContentLoaded", main);
