@@ -18,16 +18,16 @@ Battle, exploration, interpreter, progression/effects/traits/encounters already 
 `SceneManager` owns presentation Scene instances and `requestAnimationFrame`. It now lives in `src/presentation/scene_manager.js` rather than a generic root managers namespace.
 
 ### Settings
-`src/infrastructure/settings.js` separates settings state from its localStorage repository. Runtime code consumes `SettingsAdapter` or an injected settings contract. The old source-layer `ConfigManager` class is deleted; only a browser test/debug compatibility object preserves the historical `window.ConfigManager` shape.
+`src/infrastructure/settings.js` separates settings state from its localStorage repository. Runtime code consumes `SettingsAdapter` or an injected settings query contract. The old source-layer `ConfigManager` class is deleted; only a browser test/debug compatibility object preserves the historical `window.ConfigManager` shape.
 
 ### Audio and MIDI
-The public `AudioAdapter` contract now fronts `src/infrastructure/audio/sound_service.js`; MIDI parsing/playback lives with that audio infrastructure. Settings are injected explicitly from composition. Existing browser tests historically inspect underscore audio caches; debug-facing getters preserve that inspection by referencing the single SoundService-owned caches. Production callers use the public adapter methods.
+The public `AudioAdapter` contract now fronts `src/infrastructure/audio/sound_service.js`; MIDI parsing/playback lives with that audio infrastructure. Settings are injected explicitly from composition. Existing browser tests historically inspect underscore audio caches; that inspection is isolated to `AudioDebug`, the object exposed as `window.SoundManager` under test mode. Production `AudioAdapter` has no private-cache surface.
 
 ### Static content
 The old DataManager had ceased to be a runtime service after audio bootstrap was removed. Its remaining responsibility was static authored-content acquisition, so it is now `src/data/content_loader.js`.
 
-### Composition
-`src/main.js` no longer imports a managers barrel. It explicitly composes settings, audio, static content, presentation scene lifecycle, windows, and boot.
+### Composition and enforcement
+`src/main.js` no longer imports a managers barrel. It explicitly composes settings, audio, static content, presentation scene lifecycle, windows, and boot. ESLint now also bars engine imports from presentation/browser infrastructure and keeps presentation windows away from engine systems and the retired root managers path.
 
 ## Final ownership map
 
