@@ -19,11 +19,10 @@ export const AudioAdapter = {
     getSfxKeys() { return SoundService.getSfxKeys(); }
 };
 
-// Browser test/debug compatibility only. Production callers use the methods
-// above; these getters preserve existing inspection semantics without creating
-// another owner of the collections.
-Object.defineProperties(AudioAdapter, {
-    _currentMusicKey: { get: () => SoundService.getCurrentMusicKey() },
+/** @internal Browser test/debug compatibility; not production API. */
+export const AudioDebug = Object.create(AudioAdapter);
+Object.defineProperties(AudioDebug, {
+    _currentMusicKey: { get: () => SoundService._currentMusicKey },
     _midiData: { get: () => SoundService._midiData },
     _soundMap: { get: () => SoundService._soundMap }
 });
