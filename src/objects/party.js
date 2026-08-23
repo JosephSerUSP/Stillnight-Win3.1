@@ -1,127 +1,51 @@
 import { Game_Battler } from "./battler.js";
+import { SummonerResourceSystem } from "../engine/systems/summoner_resource.js";
 
 /**
  * @class Game_Party
  * @description Manages the party, inventory, and gold.
  */
 export class Game_Party {
-  /**
-   * Creates a new Game_Party instance.
-   */
+  /** Creates a new Game_Party instance. */
   constructor() {
-    /**
-     * Maximum number of party members.
-     * @type {number}
-     */
     this.MAX_MEMBERS = 24;
-
-    /**
-     * The slots for party members. Can contain nulls.
-     * @type {Array<Game_Battler|null>}
-     */
     this.slots = new Array(this.MAX_MEMBERS).fill(null);
-
-    /**
-     * The party's gold.
-     * @type {number}
-     */
     this.gold = 0;
-
-    /**
-     * The party's inventory.
-     * @type {Array}
-     */
     this.inventory = [];
-
-    /**
-     * Narrative flags for quests and events.
-     * @type {Object}
-     */
     this.storyFlags = {};
-
-    /**
-     * Narrative variables for counters and values.
-     * @type {Object}
-     */
     this.variables = {};
-
-    /**
-     * Learned codex words.
-     * @type {Array<string>}
-     */
     this.knownWords = [];
-
   }
 
-  /**
-   * Gets the Summoner (Commander), who occupies the fixed 5th slot (index 4).
-   * @type {Game_Battler|null}
-   */
-  get summoner() {
-      return this.slots[4];
-  }
+  /** Gets the Summoner (Commander), fixed at index 4. */
+  get summoner() { return this.slots[4]; }
 
-  /**
-   * Gets the list of active (non-null) members.
-   * Includes the Summoner if present.
-   * @type {Game_Battler[]}
-   */
-  get members() {
-      return this.slots.filter(m => m !== null);
-  }
+  get members() { return this.slots.filter(m => m !== null); }
 
-  /**
-   * Gets the active party members (Slots 0-3 + Summoner at 4).
-   * @type {Game_Battler[]}
-   */
-  get activeMembers() {
-      // Changed from slice(0, 4) to slice(0, 5) to include Summoner
-      return this.slots.slice(0, 5).filter(m => m !== null);
-  }
+  /** Slots 0-3 + Summoner at 4. */
+  get activeMembers() { return this.slots.slice(0, 5).filter(m => m !== null); }
 
-  get reserveMembers() {
-      return this.slots.slice(5).filter(m => m !== null);
-  }
+  get reserveMembers() { return this.slots.slice(5).filter(m => m !== null); }
 
-  /**
-   * Checks for party members with 0 HP and handles permadeath or rebirth traits.
-   * @returns {Array<Object>} List of events (e.g., { type: 'DEATH', member: ... }, { type: 'REBIRTH', member: ... })
-   */
   checkDeaths() {
       const events = [];
-
-      // Check Summoner Death
-      if (this.summoner && this.summoner.hp <= 0) {
-          events.push({ type: 'GAME_OVER', member: this.summoner });
-          // Typically we can return early, but maybe we want to process other deaths for log consistency?
-          // Since it's game over, it might not matter.
-      }
-
+      if (this.summoner && this.summoner.hp <= 0) events.push({ type: 'GAME_OVER', member: this.summoner });
       const members = [...this.members];
-
       for (const member of members) {
-          // Skip Summoner in this loop to avoid duplicate processing or accidental removal
           if (member === this.summoner) continue;
-
           if (member.hp <= 0) {
               const permadeathTraits = member.traits.filter(t => t.code === 'ON_PERMADEATH');
-
               if (permadeathTraits.length > 0) {
                    const heal = Math.floor(member.maxHp * 0.2) || 1;
                    member.hp = heal;
-
                    const oldLevel = member.level;
-                   const levelsLost = 2;
-                   member.level = Math.max(1, member.level - levelsLost);
-
+                   member.level = Math.max(1, member.level - 2);
                    if (member.level < oldLevel) {
                        const lost = oldLevel - member.level;
                        member._baseMaxHp = Math.max(1, member._baseMaxHp - (lost * 3));
                        member.xp = 0;
                    }
-
                    if (member.hp > member.maxHp) member.hp = member.maxHp;
-
                    events.push({ type: 'REBIRTH', member });
               } else {
                   this.removeMember(member);
@@ -132,13 +56,8 @@ export class Game_Party {
       return events;
   }
 
-  /**
-   * Initializes the party members based on starting data.
-   * @param {import("./managers.js").DataManager} dataManager - The data manager.
-   */
   createInitialMembers(dataManager) {
     const { startingParty, actors, items } = dataManager;
-
     this.gold = startingParty.getGold();
     this.inventory = startingParty.getInventory(items);
 
@@ -152,17 +71,12 @@ export class Game_Party {
       return Game_Battler.create(actorData, config.level);
     }).filter(member => member !== null);
 
-    // Place initial members in slots 0-3, then 5+
     let slotIndex = 0;
     initialMembers.forEach((m) => {
-        if (slotIndex === 4) slotIndex++; // Skip Summoner slot
-        if (slotIndex < this.MAX_MEMBERS) {
-            this.slots[slotIndex] = m;
-            slotIndex++;
-        }
+        if (slotIndex === 4) slotIndex++;
+        if (slotIndex < this.MAX_MEMBERS) this.slots[slotIndex++] = m;
     });
 
-    // Initialize Summoner in Slot 4
     const summonerData = actors.find(a => a.id === 'summoner');
     let summoner;
     if (summonerData) {
@@ -170,92 +84,29 @@ export class Game_Party {
     } else {
         console.warn("Summoner data not found in actors.json. Creating default.");
         summoner = new Game_Battler({
-            id: 'summoner',
-            name: 'Commander',
-            maxHp: 50,
-            maxMp: 100,
-            level: 1,
-            role: 'Summoner',
-            traits: []
+            id: 'summoner', name: 'Commander', maxHp: 50, maxMp: 100,
+            level: 1, role: 'Summoner', traits: []
         });
     }
     this.slots[4] = summoner;
   }
 
   /**
-   * Handles map steps. Drains MP and applies Weakened effects.
-   * Directly modifies HP/MP (bypassing EffectSystem) for map mechanics.
-   * @param {boolean} [isSafe=false] - If true, prevents MP drain and removes weakened state.
-   * @returns {Array} List of events (e.g. damage logs).
+   * Compatibility entry point used by Scene_Map. Resource semantics live in
+   * SummonerResourceSystem; Game_Party no longer calculates MP/exhaustion.
    */
   onStep(isSafe = false) {
-      const events = [];
-
-      // Filter out summoner for cost calculation if desired, OR keep as is.
-      // Current activeMembers now includes Summoner.
-      // Requirement: "Summoner should not participate in battle like a regular creature... but gain stats..."
-      // Map movement: Logic was "mpCostPerStep = activeCount".
-      // If Summoner is in activeMembers, count is +1.
-      // This implies the Summoner's movement also costs MP. This is consistent.
-
-      const activeCount = this.activeMembers.length;
-      if (activeCount === 0 || !this.summoner) return events;
-
-      // Drain MP (only if not safe)
-      if (!isSafe) {
-          const mpCostPerStep = activeCount; // 1 MP per active creature (including Summoner)
-          this.summoner.mp = Math.max(0, this.summoner.mp - mpCostPerStep);
-      }
-
-      // Check Weakened State
-      if (this.summoner.mp === 0 && !isSafe) {
-          // Apply Weakened State if not already applied
-          this.activeMembers.forEach(m => {
-              if (!m.isStateAffected('weakened')) {
-                  m.addState('weakened');
-                  events.push({ type: 'text', msg: `${m.name} is weakened!` });
-              }
-              // HP Drain
-              const damage = Math.max(1, Math.floor(m.maxHp * 0.05));
-              m.hp = Math.max(0, m.hp - damage);
-              // events.push({ type: 'damage', target: m, value: damage }); // Too spammy for map?
-          });
-      } else {
-          // Remove Weakened State if applied (either recovered MP or entered Safe Zone)
-          this.activeMembers.forEach(m => {
-              if (m.isStateAffected('weakened')) {
-                  m.removeState('weakened');
-                  events.push({ type: 'text', msg: `${m.name} recovered strength.` });
-              }
-          });
-      }
-
-      return events;
+      return SummonerResourceSystem.consumeMovement(this, { safe: isSafe });
   }
 
-  /**
-   * Adds a member to the first available slot (skipping index 4).
-   * @param {Game_Battler} battler - The battler to add.
-   * @returns {boolean} True if added, false if party is full.
-   */
   addMember(battler) {
       let index = this.slots.indexOf(null);
-
-      // If found index is 4 (Summoner slot), find next null
-      if (index === 4) {
-          index = this.slots.indexOf(null, 5);
-      }
-
+      if (index === 4) index = this.slots.indexOf(null, 5);
       if (index === -1) return false;
       this.slots[index] = battler;
       return true;
   }
 
-  /**
-   * Removes a member from the party (sets slot to null).
-   * @param {Game_Battler} battler - The battler to remove.
-   * @returns {boolean} True if removed.
-   */
   removeMember(battler) {
       const index = this.slots.indexOf(battler);
       if (index === -1) return false;
@@ -263,12 +114,6 @@ export class Game_Party {
       return true;
   }
 
-  /**
-   * Replaces a member at a specific index.
-   * @param {number} index - The slot index.
-   * @param {Game_Battler} battler - The new battler.
-   * @returns {boolean} True if successful.
-   */
   replaceMember(index, battler) {
       if (index >= 0 && index < this.MAX_MEMBERS) {
           this.slots[index] = battler;
@@ -277,36 +122,16 @@ export class Game_Party {
       return false;
   }
 
-  /**
-   * Checks if there is space in the party.
-   * @returns {boolean}
-   */
-  hasEmptySlot() {
-      return this.slots.includes(null);
-  }
+  hasEmptySlot() { return this.slots.includes(null); }
 
-  /**
-   * Checks whether the inventory contains a given item id.
-   * @param {string} itemId
-   * @param {number} [qty=1]
-   * @returns {boolean}
-   */
   hasItem(itemId, qty = 1) {
       let remaining = qty;
       for (const item of this.inventory) {
-          if (item.id === itemId) {
-              remaining--;
-              if (remaining <= 0) return true;
-          }
+          if (item.id === itemId && --remaining <= 0) return true;
       }
       return false;
   }
 
-  /**
-   * Removes instances of an item by id.
-   * @param {string} itemId
-   * @param {number} [qty=1]
-   */
   removeItemById(itemId, qty = 1) {
       let remaining = qty;
       this.inventory = this.inventory.filter(item => {
@@ -318,100 +143,39 @@ export class Game_Party {
       });
   }
 
-  /**
-   * Adds an item definition to the inventory.
-   * @param {Object} itemDef
-   * @param {number} [qty=1]
-   */
   addItem(itemDef, qty = 1) {
-      for (let i = 0; i < qty; i++) {
-          this.inventory.push(itemDef);
-      }
+      for (let i = 0; i < qty; i++) this.inventory.push(itemDef);
   }
 
-  /**
-   * Reorders a party member/slot from one index to another.
-   * Prevent moving index 4 (Summoner).
-   * @param {number} fromIndex - The current index of the member.
-   * @param {number} toIndex - The target index.
-   * @returns {boolean} True if successful.
-   */
   reorderMembers(fromIndex, toIndex) {
       if (fromIndex < 0 || fromIndex >= this.MAX_MEMBERS) return false;
       if (toIndex < 0 || toIndex >= this.MAX_MEMBERS) return false;
-
-      if (fromIndex === 4 || toIndex === 4) return false; // Locked slot
-
+      if (fromIndex === 4 || toIndex === 4) return false;
       const temp = this.slots[fromIndex];
       this.slots[fromIndex] = this.slots[toIndex];
       this.slots[toIndex] = temp;
       return true;
   }
 
+  setVariable(key, value) { this.variables[key] = value; }
+  getVariable(key) { return this.variables[key]; }
 
-  /**
-   * Sets a narrative variable.
-   * @param {string} key - The variable name.
-   * @param {number|string} value - The value.
-   */
-  setVariable(key, value) {
-      this.variables[key] = value;
-  }
-
-  /**
-   * Gets a narrative variable.
-   * @param {string} key - The variable name.
-   * @returns {number|string|undefined} The value.
-   */
-  getVariable(key) {
-      return this.variables[key];
-  }
-
-  /**
-   * Modifies a numeric narrative variable.
-   * @param {string} key - The variable name.
-   * @param {string} operation - 'add', 'sub', 'mul', 'div', 'set'.
-   * @param {number} value - The operand.
-   */
   modifyVariable(key, operation, value) {
       let current = this.variables[key];
-      // Initialize if undefined and operation is math
-      if (current === undefined && operation !== 'set') {
-          current = 0;
-      }
-
+      if (current === undefined && operation !== 'set') current = 0;
       switch (operation) {
-          case 'add':
-              this.variables[key] = current + value;
-              break;
-          case 'sub':
-              this.variables[key] = current - value;
-              break;
-          case 'mul':
-              this.variables[key] = current * value;
-              break;
-          case 'div':
-              this.variables[key] = Math.floor(current / value);
-              break;
-          case 'set':
-              this.variables[key] = value;
-              break;
-          default:
-              console.warn(`Game_Party: Unknown modify operation '${operation}'`);
+          case 'add': this.variables[key] = current + value; break;
+          case 'sub': this.variables[key] = current - value; break;
+          case 'mul': this.variables[key] = current * value; break;
+          case 'div': this.variables[key] = Math.floor(current / value); break;
+          case 'set': this.variables[key] = value; break;
+          default: console.warn(`Game_Party: Unknown modify operation '${operation}'`);
       }
   }
 
-  /**
-   * Equips an item to a member, handling swaps and inventory updates.
-   * @param {Game_Battler} member - The member to equip.
-   * @param {Object} item - The item to equip (can be null to unequip).
-   * @returns {Object} { success: boolean, msg: string }
-   */
   equipItem(member, item) {
       if (!item) {
-          if (member.equipmentItem) {
-              this.inventory.push(member.equipmentItem);
-          }
+          if (member.equipmentItem) this.inventory.push(member.equipmentItem);
           member.equipmentItem = null;
           return { success: true, msg: `${member.name} unequipped item.` };
       } else if (item.equippedMember) {
@@ -421,14 +185,10 @@ export class Game_Party {
           member.equipmentItem = item;
           return { success: true, msg: `${member.name} swapped ${item.name} with ${otherMember.name}.` };
       } else {
-          if (member.equipmentItem) {
-              this.inventory.push(member.equipmentItem);
-          }
+          if (member.equipmentItem) this.inventory.push(member.equipmentItem);
           member.equipmentItem = item;
           const invIndex = this.inventory.findIndex((i) => i.id === item.id);
-          if (invIndex > -1) {
-              this.inventory.splice(invIndex, 1);
-          }
+          if (invIndex > -1) this.inventory.splice(invIndex, 1);
           return { success: true, msg: `${member.name} equipped ${item.name}.` };
       }
   }
