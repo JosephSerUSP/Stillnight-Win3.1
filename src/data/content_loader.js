@@ -1,3 +1,5 @@
+import { EffectSystem } from "../engine/rules/effects.js";
+
 /**
  * Loads and exposes static game content. Runtime services are initialized by
  * the application/boot composition layer after content acquisition completes.
@@ -77,6 +79,41 @@ export class ContentLoader {
       console.warn("Failed to load graphs:", error);
     }
 
+    this.validateEffectVocabulary();
     this.loaded = true;
+  }
+
+  /**
+   * Fails content acquisition when authored items/skills reference an effect
+   * that the runtime registry cannot execute.
+   */
+  validateEffectVocabulary() {
+    const sources = [
+      { path: "data/items.json", records: this.items },
+      { path: "data/skills.js", records: this.skills },
+    ];
+    const errors = [];
+
+    for (const { path, records } of sources) {
+      const entries = Array.isArray(records)
+        ? records.map((record, index) => [record?.id || `[${index}]`, record])
+        : Object.entries(records || {});
+
+      for (const [recordId, record] of entries) {
+        const effects = Array.isArray(record?.effects) ? record.effects : [];
+        effects.forEach((effect, effectIndex) => {
+          const key = effect?.type;
+          if (!key || !EffectSystem.has(key)) {
+            errors.push(`${path} :: ${recordId} :: effects[${effectIndex}] -> ${JSON.stringify(key)}`);
+          }
+        });
+      }
+    }
+
+    if (errors.length > 0) {
+      throw new Error(
+        `Unknown authored effect type${errors.length === 1 ? '' : 's'}:\n${errors.map(error => `- ${error}`).join('\n')}`
+      );
+    }
   }
 }

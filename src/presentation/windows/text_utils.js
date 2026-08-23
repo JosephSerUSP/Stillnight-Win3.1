@@ -1,4 +1,5 @@
 import { TRAIT_DEFINITIONS } from "../../engine/rules/trait_definitions.js";
+import { EffectAdapter } from "../../adapters/effect_adapter.js";
 
 /**
  * Generates a human-readable description for a trait.
@@ -16,19 +17,9 @@ export function generateTraitDescription(trait) {
 }
 
 /**
- * Generates a human-readable description for an item effect.
- * @param {string} key - The effect key (e.g., 'hp', 'recruit_egg').
- * @param {any} value - The effect value.
- * @param {import("../managers/index.js").DataManager} [dataManager] - Optional data manager for lookups.
- * @returns {string} The description.
+ * Generates a human-readable description for an item effect from the same
+ * EffectSystem definition used to execute it.
  */
-export function generateEffectDescription(key, value, _dataManager) {
-    switch (key) {
-        case 'hp': return `Restores ${value} HP`;
-        case 'maxHp': return `Max HP +${value}`;
-        case 'xp': return `Grants ${value} XP`;
-        case 'recruit_egg': return `Recruits a monster`;
-        case 'hp_drain': return `Drains ${value} HP`;
-        default: return `${key}: ${value}`;
-    }
+export function generateEffectDescription(key, value) {
+    return EffectAdapter.getDescription(key, value);
 }

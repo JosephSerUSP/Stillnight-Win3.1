@@ -1,5 +1,5 @@
 import { ProgressionSystem } from "../../engine/systems/progression.js";
-import { evaluateFormula } from "../../core/utils.js";
+import { EffectAdapter } from "../../adapters/effect_adapter.js";
 
 export function selectBattlerDetails(battler, context, dataManager) {
     if (!battler) return null;
@@ -12,30 +12,21 @@ export function selectBattlerDetails(battler, context, dataManager) {
     const xpNeeded = ProgressionSystem.xpNeeded(battler.level, battler.expGrowth);
     const xpPercent = xpNeeded > 0 ? ((battler.xp || 0) / xpNeeded) * 100 : 0;
 
-    // Skills with resolved descriptions
+    const effectContext = {
+        skills: dataManager?.skills,
+        passives: dataManager?.passives,
+        source: battler,
+        target: battler,
+    };
+
     const skills = (battler.skills || []).map(sId => {
         const skill = dataManager.skills[sId];
         if (!skill) return { id: sId, name: sId };
 
-        let effectsText = "";
-        if (skill.effects && skill.effects.length > 0) {
-            const descriptions = [];
-            skill.effects.forEach(eff => {
-                 if (eff.type === 'hp_damage') {
-                     const val = Math.round(evaluateFormula(eff.formula, battler));
-                     descriptions.push(`Deals ~${val} Damage`);
-                 } else if (eff.type === 'hp_heal') {
-                     const val = Math.round(evaluateFormula(eff.formula, battler));
-                     descriptions.push(`Heals ~${val} HP`);
-                 } else if (eff.type === 'add_status') {
-                     const chance = Math.round((eff.chance || 1) * 100);
-                     descriptions.push(`${chance}% chance to add ${eff.status}`);
-                 }
-            });
-            if (descriptions.length > 0) {
-                effectsText = descriptions.join(", ");
-            }
-        }
+        const effectsText = (skill.effects || [])
+            .map(effect => EffectAdapter.getDescriptionForEffect(effect, effectContext))
+            .filter(Boolean)
+            .join(", ");
 
         let tooltipText = skill.description;
         if (effectsText) {
@@ -48,7 +39,6 @@ export function selectBattlerDetails(battler, context, dataManager) {
         };
     });
 
-    // Passives
     const passives = (battler.passives || []).map(pData => {
            const code = pData.code || pData.id;
            let def = null;
@@ -60,7 +50,7 @@ export function selectBattlerDetails(battler, context, dataManager) {
     });
 
     return {
-        source: battler, // For callbacks
+        source: battler,
         name: battler.name,
         level: battler.level,
         role: battler.role,
@@ -68,15 +58,12 @@ export function selectBattlerDetails(battler, context, dataManager) {
         maxHp: battler.maxHp,
         mp: battler.mp,
         maxMp: battler.maxMp,
-
-        // Stats
         atk: battler.atk,
         def: battler.def,
         mat: battler.mat,
         mdf: battler.mdf,
         agi: battler.agi,
         luk: battler.luk,
-
         xp: battler.xp,
         xpNeeded,
         xpPercent,
@@ -90,13 +77,10 @@ export function selectBattlerDetails(battler, context, dataManager) {
         } : null,
         baseEquipment: battler.baseEquipment,
         flavor: battler.flavor,
-
         skills,
         passives,
-
         evolutionStatus: evoStatus.status,
         evolutionData: evoStatus.evolution,
-
         sacrificeValue: battler.level * (battler.hp + battler.maxHp)
     };
 }
