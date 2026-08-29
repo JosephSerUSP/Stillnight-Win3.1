@@ -198,7 +198,8 @@ export class Window_Battle extends Window_Base {
             battlerId = `battler-enemy-${idx}`;
         } else if (isSummoner) {
             // Summoner (3rd row) - Fixed to center
-            top = battlerH * 7;
+            // Moved up to ensure visibility (battlerH * 5.5 = ~264px)
+            top = Math.floor(battlerH * 5.5);
             left = 0;
             width = "100%";
             textAlign = "center";
@@ -524,7 +525,7 @@ export class Window_Battle extends Window_Base {
   /**
    * Animates the consumption of the action preview text.
    */
-  animateActionConsumption(battler) {
+  animateActionConsumption(battler, duration = 750) {
     return new Promise((resolve) => {
       const ctx = this._getBattlerContext(battler);
       if (!ctx) {
@@ -554,31 +555,37 @@ export class Window_Battle extends Window_Base {
         return;
       }
 
-      let currentName = originalName;
-      const interval = 50;
+      const startTime = Date.now();
       const originalLength = originalName.length;
 
-      const step = () => {
-        if (currentName.length > 0) {
-          // Remove from END (slice(0, -1))
-          // Pad START with spaces to simulate moving right into arrow
-          currentName = currentName.slice(0, -1);
+      const animator = () => {
+        const now = Date.now();
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
 
-          // E.g. "Firaga" -> " Firag" -> "  Fira"
-          const displayString = currentName.padStart(originalLength, ' ');
-          actionNameSpan.textContent = `${displayString} --> `;
+        // Calculate how many characters to keep
+        const charsToKeep = Math.round(originalLength * (1 - progress));
+        const currentName = originalName.slice(0, charsToKeep);
 
-          setTimeout(step, interval);
+        const displayString = currentName.padStart(originalLength, ' ');
+        // Keep the interactive label or text, but replace text content.
+        // Since we are manipulating text for animation, we assume textContent is fine.
+        // We restore original setup or rely on re-render for tooltips later if needed,
+        // but this animation consumes it until it disappears.
+        actionNameSpan.textContent = `${displayString} --> `;
+
+        if (progress < 1) {
+            requestAnimationFrame(animator);
         } else {
-          if (targetLabel) {
-             targetLabel.classList.add('blink');
-             setTimeout(() => {
-                 targetLabel.classList.remove('blink');
-                 finalize();
-             }, 200);
-          } else {
-             finalize();
-          }
+            if (targetLabel) {
+                targetLabel.classList.add('blink');
+                setTimeout(() => {
+                    targetLabel.classList.remove('blink');
+                    finalize();
+                }, 200);
+            } else {
+                finalize();
+            }
         }
       };
 
@@ -587,8 +594,56 @@ export class Window_Battle extends Window_Base {
           resolve();
       };
 
-      step();
+      animator();
     });
+  }
+
+  /**
+   * Plays the battle intro animation (expanding gauges).
+   * Reverse of death sequence.
+   */
+  playIntroAnimation(battlers) {
+      if (!battlers || battlers.length === 0) return Promise.resolve();
+
+      const promises = battlers.map(battler => {
+          return new Promise((resolve) => {
+              const ctx = this._getBattlerContext(battler);
+              if (!ctx) { resolve(); return; }
+
+              const hpEl = this.getHpElement(ctx.index, ctx.isEnemy);
+              if (!hpEl) { resolve(); return; }
+
+              const gaugeLength = ctx.isSummoner ? GAUGE_LENGTH_SUMMONER : GAUGE_LENGTH_STANDARD;
+              // Start from empty
+              hpEl.textContent = `[]`;
+
+              const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+              const expand = async () => {
+                  // Expand steps
+                  for (let i = 0; i <= gaugeLength; i++) {
+                       // We can't use formatHpGaugeText directly because we want to animate the brackets expanding,
+                       // not just the fill.
+                       // Death anim: [   ] -> []
+                       // Intro: [] -> [ ] -> [## ] -> [#####]
+                       // Let's mimic death reverse: brackets get wider.
+                       // [i spaces]
+                       const fillAmount = Math.round((battler.hp / battler.maxHp) * i);
+                       const emptyAmount = i - fillAmount;
+                       const fillStr = "#".repeat(fillAmount);
+                       const emptyStr = " ".repeat(emptyAmount);
+                       hpEl.textContent = `[${fillStr}${emptyStr}]`;
+                       await delay(30);
+                  }
+                  // Final correct format
+                  hpEl.textContent = formatHpGaugeText(battler.hp, battler.maxHp, gaugeLength);
+                  resolve();
+              };
+              expand();
+          });
+      });
+
+      return Promise.all(promises);
   }
 }
 

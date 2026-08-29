@@ -186,9 +186,23 @@ export function createBattleUnitSlot(battlerView, options = {}) {
         previewDiv.style.whiteSpace = "nowrap";
         previewDiv.style.marginTop = "2px";
 
-        const actionSpan = document.createElement("span");
+        let actionSpan;
+        if (options.actionPreview.item) {
+             const typeStr = options.actionPreview.item.mpCost !== undefined || options.actionPreview.item.effects ? 'skill' : 'item';
+             actionSpan = createInteractiveLabel(options.actionPreview.item, typeStr);
+        } else {
+             actionSpan = document.createElement("span");
+             actionSpan.textContent = options.actionPreview.actionName;
+        }
+
         actionSpan.className = "action-name-arrow";
         actionSpan.dataset.actionName = options.actionPreview.actionName;
+        // Append arrow, overwriting textContent but keeping listeners if interactive label uses them correctly (listeners are on element)
+        // Wait, InteractiveLabel sets content. If we overwrite textContent, we lose icons if any.
+        // But the animation requires simple text manipulation.
+        // For preview purposes, we want the tooltip. The text will be animated away.
+        // If we want tooltip + animation:
+        // InteractiveLabel is likely a span with mouseover. Overwriting textContent is safe for the tooltip logic itself usually.
         actionSpan.textContent = `${options.actionPreview.actionName} --> `;
         previewDiv.appendChild(actionSpan);
 
