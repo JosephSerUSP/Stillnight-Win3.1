@@ -105,7 +105,7 @@ The project is transitioning to a "Hexagonal" (Ports & Adapters) architecture. C
 ### 5.3. Game_Map (`src/objects/map.js`)
 *   **Grid**: 2D array of tiles.
 *   **State**: Tracks `visited` (Fog of War) and `events`.
-*   **Role**: Mostly a data container now; logic has moved to `ExplorationSystem`.
+*   **Role**: Primary data container. Retains `updateEvents()` for frame-based logic (e.g. chaser events), but delegates movement processing to `ExplorationSystem`.
 
 ---
 
@@ -160,7 +160,9 @@ Used during combat rounds for maximum control and event batching.
 Used for Item/Skill usage from Menus (Scene_Map) or as a definition wrapper.
 1.  **Instantiation**: `new Game_Action(subject)`.
 2.  **Application**: `.apply(target, dataManager)` -> Returns `Event[]`.
-3.  **Effect Resolution**: Delegates to `EffectSystem.apply()`.
+3.  **Effect Resolution**:
+    *   **Skills/Items**: Delegates to `EffectSystem.apply()`.
+    *   **Attacks**: Processed internally via `_applyAttack` (handles hit/crit/damage locally).
 
 ```mermaid
 flowchart LR
@@ -207,6 +209,6 @@ When modifying this codebase, strictly adhere to these rules:
 ---
 
 ## 10. Transitional Architecture Notes
-*While the current implementation is functional, the following areas are in transition toward the ideal architecture:*
+*The following areas note the progress of the architectural migration:*
 
-*   **Logic Separation**: The migration of Battle, Exploration, and Interpreter logic to `src/engine/` is complete. The focus is now on cleaning up remaining coupling in `Game_Battler` and `DungeonGenerator`.
+*   **Logic Separation**: The migration of Battle, Exploration, and Interpreter logic to `src/engine/` is complete. `TraitManager` and `EncounterManager` have been fully replaced by pure logic modules `TraitRules` and `EncounterRules` in `src/engine/rules/`, completing the core engine migration.
