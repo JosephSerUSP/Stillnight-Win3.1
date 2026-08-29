@@ -153,6 +153,14 @@ export class Scene_Map extends Scene_Base {
     AudioAdapter.play('UI_SELECT');
     this.updateAll();
     this.checkMusic();
+
+    if (this.map.floorIndex === 0 && !this.party.storyFlags['intro_played']) {
+        const introEvent = this.dataManager.events.find(e => e.id === 'intro_cutscene');
+        if (introEvent && introEvent.scripts && introEvent.scripts.onStart) {
+            this.party.storyFlags['intro_played'] = true;
+            this.interpreter.executeSequence(introEvent.scripts.onStart, introEvent);
+        }
+    }
   }
 
   confirmNewGame() {
